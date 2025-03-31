@@ -31,12 +31,13 @@ object Form5: TForm5
     ExplicitWidth = 635
   end
   object spl2: TSplitter
-    Left = 635
+    Left = 705
     Top = 0
     Width = 7
     Height = 473
     Color = clActiveCaption
     ParentColor = False
+    ExplicitLeft = 635
     ExplicitHeight = 145
   end
   object btnOpenLNK: TButton
@@ -67,13 +68,11 @@ object Form5: TForm5
     ScrollBars = ssBoth
     TabOrder = 1
     WordWrap = False
-    ExplicitTop = 152
-    ExplicitWidth = 635
   end
   object vtrPregledPat: TVirtualStringTreeAspect
     Left = 0
     Top = 0
-    Width = 635
+    Width = 705
     Height = 473
     Align = alLeft
     AutoExpandDelay = 0
@@ -190,9 +189,6 @@ object Form5: TForm5
     ColumnAction = 2
     ColumnAspect = 0
     TakeFocus = True
-    ExplicitTop = -105
-    ExplicitWidth = 510
-    ExplicitHeight = 404
     Columns = <
       item
         CaptionAlignment = taCenter
