@@ -1,0 +1,180 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{33C74AAD-4EB5-4CF1-B0C8-E972F249AD27}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Hippocrates360.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Prawa\Prawa.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\Popup\Popup.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\TestCMDADB\TestCmdAdb.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\AspectGenerator\AspectTableGenerator.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\DetectUSB\DetectUSB.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Program Files\nsoftware\SecureBlackbox 2020 Delphi Edition - Backwards Compatibility Pack\demos\pkcs11certificatestorage\pkcs11certificatestorage.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VirtualData\Custom Sorting\TeeGrid_Custom_Sorting.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\ANALYSIS\ANALYSIS.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="AspTest.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Hippocrates360">
+        <MSBuild Projects="Hippocrates360.dproj"/>
+    </Target>
+    <Target Name="Hippocrates360:Clean">
+        <MSBuild Projects="Hippocrates360.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Hippocrates360:Make">
+        <MSBuild Projects="Hippocrates360.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Prawa">
+        <MSBuild Projects="..\Prawa\Prawa.dproj"/>
+    </Target>
+    <Target Name="Prawa:Clean">
+        <MSBuild Projects="..\Prawa\Prawa.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Prawa:Make">
+        <MSBuild Projects="..\Prawa\Prawa.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Popup">
+        <MSBuild Projects="..\Popup\Popup.dproj"/>
+    </Target>
+    <Target Name="Popup:Clean">
+        <MSBuild Projects="..\Popup\Popup.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Popup:Make">
+        <MSBuild Projects="..\Popup\Popup.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TestCmdAdb">
+        <MSBuild Projects="..\TestCMDADB\TestCmdAdb.dproj"/>
+    </Target>
+    <Target Name="TestCmdAdb:Clean">
+        <MSBuild Projects="..\TestCMDADB\TestCmdAdb.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestCmdAdb:Make">
+        <MSBuild Projects="..\TestCMDADB\TestCmdAdb.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="AspectTableGenerator">
+        <MSBuild Projects="..\AspectGenerator\AspectTableGenerator.dproj"/>
+    </Target>
+    <Target Name="AspectTableGenerator:Clean">
+        <MSBuild Projects="..\AspectGenerator\AspectTableGenerator.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AspectTableGenerator:Make">
+        <MSBuild Projects="..\AspectGenerator\AspectTableGenerator.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DetectUSB">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\DetectUSB\DetectUSB.dproj"/>
+    </Target>
+    <Target Name="DetectUSB:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\DetectUSB\DetectUSB.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DetectUSB:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\DetectUSB\DetectUSB.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="pkcs11certificatestorage">
+        <MSBuild Projects="C:\Program Files\nsoftware\SecureBlackbox 2020 Delphi Edition - Backwards Compatibility Pack\demos\pkcs11certificatestorage\pkcs11certificatestorage.dproj"/>
+    </Target>
+    <Target Name="pkcs11certificatestorage:Clean">
+        <MSBuild Projects="C:\Program Files\nsoftware\SecureBlackbox 2020 Delphi Edition - Backwards Compatibility Pack\demos\pkcs11certificatestorage\pkcs11certificatestorage.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="pkcs11certificatestorage:Make">
+        <MSBuild Projects="C:\Program Files\nsoftware\SecureBlackbox 2020 Delphi Edition - Backwards Compatibility Pack\demos\pkcs11certificatestorage\pkcs11certificatestorage.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TeeGrid_Custom_Sorting">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VirtualData\Custom Sorting\TeeGrid_Custom_Sorting.dproj"/>
+    </Target>
+    <Target Name="TeeGrid_Custom_Sorting:Clean">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VirtualData\Custom Sorting\TeeGrid_Custom_Sorting.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TeeGrid_Custom_Sorting:Make">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VirtualData\Custom Sorting\TeeGrid_Custom_Sorting.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ANALYSIS">
+        <MSBuild Projects="..\ANALYSIS\ANALYSIS.dproj"/>
+    </Target>
+    <Target Name="ANALYSIS:Clean">
+        <MSBuild Projects="..\ANALYSIS\ANALYSIS.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ANALYSIS:Make">
+        <MSBuild Projects="..\ANALYSIS\ANALYSIS.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PopView">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj"/>
+    </Target>
+    <Target Name="PopView:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PopView:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FmxPopView">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj"/>
+    </Target>
+    <Target Name="FmxPopView:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FmxPopView:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Rtti_Explorer_Seattle">
+        <MSBuild Projects="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj"/>
+    </Target>
+    <Target Name="Rtti_Explorer_Seattle:Clean">
+        <MSBuild Projects="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Rtti_Explorer_Seattle:Make">
+        <MSBuild Projects="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="AspTest">
+        <MSBuild Projects="AspTest.dproj"/>
+    </Target>
+    <Target Name="AspTest:Clean">
+        <MSBuild Projects="AspTest.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AspTest:Make">
+        <MSBuild Projects="AspTest.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

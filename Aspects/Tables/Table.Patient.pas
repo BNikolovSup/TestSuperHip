@@ -1,0 +1,2888 @@
+﻿unit Table.Patient;
+
+interface
+uses
+  Aspects.Collections, Aspects.Types,
+  VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
+  classes, system.SysUtils, windows, System.Generics.Collections,
+  VirtualTrees, DynWinPanel;
+
+type
+TCollectionForSort = class(TPersistent)
+  private
+    FItemClass: TCollectionItemClass;
+    FItems: TList<TCollectionItem>;
+  end;
+
+TFindedResult = record
+  PropIndex: Word;
+  DataPos: Cardinal;
+end;
+
+TTeeGRD = class(VCLTee.Grid.TTeeGrid);
+
+
+TPatientItem = class(TBaseItem)
+  public
+    type
+      TPropertyIndex = (Patient_AGE_IN_YEARS
+, Patient_AGE_IN_YEARS_INT
+, Patient_ALKOHOL_ID
+, Patient_AP
+, Patient_BABY_NUMBER
+, Patient_BELEJKI
+, Patient_BIRTH_DATE
+, Patient_BL
+, Patient_BLOOD_TYPE
+, Patient_CIGARI_ID
+, Patient_COUNTRY
+, Patient_DATA_HEALTH_INSURANCE
+, Patient_DATEFROM
+, Patient_DATEISSUE
+, Patient_DATETO
+, Patient_DATETO_TEXT
+, Patient_DATE_HEALTH_INSURANCE_CHECK
+, Patient_DATE_OTPISVANE
+, Patient_DATE_ZAPISVANE
+, Patient_DIE_DATE
+, Patient_DIE_FROM
+, Patient_DOHOD_ID
+, Patient_DOSIENOMER
+, Patient_DTEL
+, Patient_DZI_NUMBER
+, Patient_EGN
+, Patient_EHIC_NO
+, Patient_EHRH_PATIENT
+, Patient_EKATTE_RESIDENTIAL_ADDRESS
+, Patient_EKATTE_WORK_ADDRESS
+, Patient_EMAIL
+, Patient_ET
+, Patient_FNAME
+, Patient_FUND_ID
+, Patient_GDPR_PRINTED
+, Patient_GRAJD
+, Patient_HEALTH_INSURANCE_NAME
+, Patient_HEALTH_INSURANCE_NUMBER
+, Patient_ID
+, Patient_IS_NEBL_USL
+, Patient_IS_SECOND_JOB
+, Patient_JK
+, Patient_KYRMA3MES
+, Patient_KYRMA6MES
+, Patient_LAK_NUMBER
+, Patient_LKIZD
+, Patient_LKNO
+, Patient_LKOT
+, Patient_LK_VALID_TO
+, Patient_LNAME
+, Patient_MTEL
+, Patient_NAS_MQSTO
+, Patient_NOMER
+, Patient_NZIS_BEBE
+, Patient_NZIS_PID
+, Patient_NZIS_PID_TYPE
+, Patient_OBLAST
+, Patient_OBSHTINA
+, Patient_OSIGNO
+, Patient_OSIGUREN
+, Patient_PASS
+, Patient_PAT_KIND
+, Patient_PID_TYPE
+, Patient_PKUT
+, Patient_PREVIOUS_DOCTOR_ID
+, Patient_RACE
+, Patient_RECKNNO
+, Patient_RH
+, Patient_RZOK
+, Patient_RZOKR
+, Patient_SEM_POLOJ_ID
+, Patient_SEX_TYPE
+, Patient_SNAME
+, Patient_SOC_POLOJ_ID
+, Patient_STEL
+, Patient_TIME_HEALTH_INSURANCE_CHECK
+, Patient_TYPE_CERTIFICATE
+, Patient_ULICA
+, Patient_VH
+, Patient_WORK_CITY
+, Patient_WORK_CITY2
+, Patient_WORK_COMPANY
+, Patient_WORK_COMPANY2
+, Patient_WORK_JK
+, Patient_WORK_JK2
+, Patient_WORK_POSITION
+, Patient_WORK_POSITION2
+, Patient_WORK_PROFESSION
+, Patient_WORK_PROFESSION2
+, Patient_WORK_STREET_NAME
+, Patient_WORK_STREET_NAME2
+, Patient_WORK_STREET_NO
+, Patient_WORK_STREET_NO2
+, Patient_ZIP
+);
+      TSetProp = set of TPropertyIndex;
+      PRecPatient = ^TRecPatient;
+      TRecPatient = record
+        AGE_IN_YEARS: double;
+        AGE_IN_YEARS_INT: integer;
+        ALKOHOL_ID: word;
+        AP: AnsiString;
+        BABY_NUMBER: integer;
+        BELEJKI: AnsiString;
+        BIRTH_DATE: TDate;
+        BL: AnsiString;
+        BLOOD_TYPE: AnsiString;
+        CIGARI_ID: word;
+        COUNTRY: AnsiString;
+        DATA_HEALTH_INSURANCE: AnsiString;
+        DATEFROM: TDate;
+        DATEISSUE: TDate;
+        DATETO: TDate;
+        DATETO_TEXT: AnsiString;
+        DATE_HEALTH_INSURANCE_CHECK: TDate;
+        DATE_OTPISVANE: TDate;
+        DATE_ZAPISVANE: TDate;
+        DIE_DATE: TDate;
+        DIE_FROM: AnsiString;
+        DOHOD_ID: word;
+        DOSIENOMER: AnsiString;
+        DTEL: AnsiString;
+        DZI_NUMBER: AnsiString;
+        EGN: AnsiString;
+        EHIC_NO: AnsiString;
+        EHRH_PATIENT: boolean;
+        EKATTE_RESIDENTIAL_ADDRESS: AnsiString;
+        EKATTE_WORK_ADDRESS: AnsiString;
+        EMAIL: AnsiString;
+        ET: AnsiString;
+        FNAME: AnsiString;
+        FUND_ID: integer;
+        GDPR_PRINTED: boolean;
+        GRAJD: AnsiString;
+        HEALTH_INSURANCE_NAME: AnsiString;
+        HEALTH_INSURANCE_NUMBER: AnsiString;
+        ID: integer;
+        IS_NEBL_USL: boolean;
+        IS_SECOND_JOB: AnsiString;
+        JK: AnsiString;
+        KYRMA3MES: boolean;
+        KYRMA6MES: boolean;
+        LAK_NUMBER: integer;
+        LKIZD: TDate;
+        LKNO: AnsiString;
+        LKOT: AnsiString;
+        LK_VALID_TO: TDate;
+        LNAME: AnsiString;
+        MTEL: AnsiString;
+        NAS_MQSTO: AnsiString;
+        NOMER: AnsiString;
+        NZIS_BEBE: AnsiString;
+        NZIS_PID: AnsiString;
+        NZIS_PID_TYPE: word;
+        OBLAST: AnsiString;
+        OBSHTINA: AnsiString;
+        OSIGNO: AnsiString;
+        OSIGUREN: boolean;
+        PASS: AnsiString;
+        PAT_KIND: word;
+        PID_TYPE: AnsiString;
+        PKUT: AnsiString;
+        PREVIOUS_DOCTOR_ID: integer;
+        RACE: integer;
+        RECKNNO: AnsiString;
+        RH: AnsiString;
+        RZOK: AnsiString;
+        RZOKR: AnsiString;
+        SEM_POLOJ_ID: word;
+        SEX_TYPE: word;
+        SNAME: AnsiString;
+        SOC_POLOJ_ID: word;
+        STEL: AnsiString;
+        TIME_HEALTH_INSURANCE_CHECK: TTime;
+        TYPE_CERTIFICATE: AnsiString;
+        ULICA: AnsiString;
+        VH: AnsiString;
+        WORK_CITY: AnsiString;
+        WORK_CITY2: AnsiString;
+        WORK_COMPANY: AnsiString;
+        WORK_COMPANY2: AnsiString;
+        WORK_JK: AnsiString;
+        WORK_JK2: AnsiString;
+        WORK_POSITION: AnsiString;
+        WORK_POSITION2: AnsiString;
+        WORK_PROFESSION: AnsiString;
+        WORK_PROFESSION2: AnsiString;
+        WORK_STREET_NAME: AnsiString;
+        WORK_STREET_NAME2: AnsiString;
+        WORK_STREET_NO: AnsiString;
+        WORK_STREET_NO2: AnsiString;
+        ZIP: AnsiString;
+        setProp: TSetProp;
+      end;
+
+  public
+    PRecord: ^TRecPatient;
+	IndexInt: Integer;
+	IndexAnsiStr: PAnsiChar;
+    IndexAnsiStr1: AnsiString;
+    IndexField: TPropertyIndex;
+
+    constructor Create(Collection: TCollection); override;
+    destructor Destroy; override;
+    procedure InsertPatient;
+    procedure UpdatePatient;
+    procedure SavePatient(var dataPosition: Cardinal);
+  end;
+
+
+  TPatientColl = class(TBaseCollection)
+  private
+    FSearchingInt: Integer;
+    FSearchingValue: string;
+    function GetItem(Index: Integer): TPatientItem;
+    procedure SetItem(Index: Integer; const Value: TPatientItem);
+    procedure SetSearchingValue(const Value: string);
+  public
+    FindedRes: TFindedResult;
+    ListPatientSearch: TList<TPatientItem>;
+
+    constructor Create(ItemClass: TCollectionItemClass);override;
+    destructor destroy; override;
+
+    function AddItem(ver: word):TPatientItem;
+    procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+    procedure GetCellFromMap(propIndex: word; ARow: Integer; Patient: TPatientItem; var AValue:String);
+    procedure GetCellFromRecord(propIndex: word; Patient: TPatientItem; var AValue:String);
+    procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
+    procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
+	procedure DynControlEnter(Sender: TObject);
+    procedure SortByIndexValue(propIndex: TPatientItem.TPropertyIndex);
+    procedure SortByIndexInt;
+    procedure SortByIndexAnsiString;
+
+    function DisplayName(propIndex: Word): string;
+	function FieldCount: Integer;
+	procedure ShowGrid(Grid: TTeeGrid);
+	procedure ShowSearchedGrid(Grid: TTeeGrid);
+    
+    procedure IndexValue(propIndex: TPatientItem.TPropertyIndex);
+    property Items[Index: Integer]: TPatientItem read GetItem write SetItem;
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+  end;
+
+implementation
+
+{ TPatientItem }
+
+constructor TPatientItem.Create(Collection: TCollection);
+begin
+  inherited;
+end;
+
+destructor TPatientItem.Destroy;
+begin
+  if Assigned(PRecord) then
+    Dispose(PRecord);
+  inherited;
+end;
+
+procedure TPatientItem.InsertPatient;
+var
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  propIndx: TPropertyIndex;
+  pCardinalData: ^Cardinal;
+  pWordData: ^Word;
+begin
+  CollType := Aspects.Types.TCollectionsType.ctPatient;
+  pCardinalData := pointer(PByte(buf));
+  FPosMetaData := pCardinalData^;
+  pCardinalData := pointer(PByte(buf) + 4);
+  FLenMetaData := pCardinalData^;
+  metaPosition :=  FPosMetaData + FLenMetaData;
+
+  pCardinalData := pointer(PByte(buf) + 8);
+  FPosData := pCardinalData^;
+  pCardinalData := pointer(PByte(buf) + 12);
+  FLenData := pCardinalData^;
+  dataPosition :=  FPosData + FLenData;
+  case FVersion of
+    0:
+    begin
+      pWordData := pointer(PByte(buf) + metaPosition);
+      pWordData^  := word(CollType);
+      pWordData := pointer(PByte(buf) + metaPosition + 2);
+      pWordData^  := FVersion;
+      inc(metaPosition, 4);
+	  
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if Assigned(PRecord) and (propIndx in PRecord.setProp) then
+        begin
+          case propIndx of
+            Patient_AGE_IN_YEARS: SaveData(PRecord.AGE_IN_YEARS, PropPosition, metaPosition, dataPosition);
+            Patient_AGE_IN_YEARS_INT: SaveData(PRecord.AGE_IN_YEARS_INT, PropPosition, metaPosition, dataPosition);
+            Patient_ALKOHOL_ID: SaveData(PRecord.ALKOHOL_ID, PropPosition, metaPosition, dataPosition);
+            Patient_AP: SaveData(PRecord.AP, PropPosition, metaPosition, dataPosition);
+            Patient_BABY_NUMBER: SaveData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_BELEJKI: SaveData(PRecord.BELEJKI, PropPosition, metaPosition, dataPosition);
+            Patient_BIRTH_DATE: SaveData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_BL: SaveData(PRecord.BL, PropPosition, metaPosition, dataPosition);
+            Patient_BLOOD_TYPE: SaveData(PRecord.BLOOD_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_CIGARI_ID: SaveData(PRecord.CIGARI_ID, PropPosition, metaPosition, dataPosition);
+            Patient_COUNTRY: SaveData(PRecord.COUNTRY, PropPosition, metaPosition, dataPosition);
+            Patient_DATA_HEALTH_INSURANCE: SaveData(PRecord.DATA_HEALTH_INSURANCE, PropPosition, metaPosition, dataPosition);
+            Patient_DATEFROM: SaveData(PRecord.DATEFROM, PropPosition, metaPosition, dataPosition);
+            Patient_DATEISSUE: SaveData(PRecord.DATEISSUE, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO: SaveData(PRecord.DATETO, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO_TEXT: SaveData(PRecord.DATETO_TEXT, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_HEALTH_INSURANCE_CHECK: SaveData(PRecord.DATE_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_OTPISVANE: SaveData(PRecord.DATE_OTPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_ZAPISVANE: SaveData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_DATE: SaveData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_FROM: SaveData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
+            Patient_DOHOD_ID: SaveData(PRecord.DOHOD_ID, PropPosition, metaPosition, dataPosition);
+            Patient_DOSIENOMER: SaveData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
+            Patient_DTEL: SaveData(PRecord.DTEL, PropPosition, metaPosition, dataPosition);
+            Patient_DZI_NUMBER: SaveData(PRecord.DZI_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_EGN: SaveData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
+            Patient_EHIC_NO: SaveData(PRecord.EHIC_NO, PropPosition, metaPosition, dataPosition);
+            Patient_EHRH_PATIENT: SaveData(PRecord.EHRH_PATIENT, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_RESIDENTIAL_ADDRESS: SaveData(PRecord.EKATTE_RESIDENTIAL_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_WORK_ADDRESS: SaveData(PRecord.EKATTE_WORK_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EMAIL: SaveData(PRecord.EMAIL, PropPosition, metaPosition, dataPosition);
+            Patient_ET: SaveData(PRecord.ET, PropPosition, metaPosition, dataPosition);
+            Patient_FNAME: SaveData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
+            Patient_FUND_ID: SaveData(PRecord.FUND_ID, PropPosition, metaPosition, dataPosition);
+            Patient_GDPR_PRINTED: SaveData(PRecord.GDPR_PRINTED, PropPosition, metaPosition, dataPosition);
+            Patient_GRAJD: SaveData(PRecord.GRAJD, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NAME: SaveData(PRecord.HEALTH_INSURANCE_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NUMBER: SaveData(PRecord.HEALTH_INSURANCE_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
+            Patient_IS_NEBL_USL: SaveData(PRecord.IS_NEBL_USL, PropPosition, metaPosition, dataPosition);
+            Patient_IS_SECOND_JOB: SaveData(PRecord.IS_SECOND_JOB, PropPosition, metaPosition, dataPosition);
+            Patient_JK: SaveData(PRecord.JK, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA3MES: SaveData(PRecord.KYRMA3MES, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA6MES: SaveData(PRecord.KYRMA6MES, PropPosition, metaPosition, dataPosition);
+            Patient_LAK_NUMBER: SaveData(PRecord.LAK_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_LKIZD: SaveData(PRecord.LKIZD, PropPosition, metaPosition, dataPosition);
+            Patient_LKNO: SaveData(PRecord.LKNO, PropPosition, metaPosition, dataPosition);
+            Patient_LKOT: SaveData(PRecord.LKOT, PropPosition, metaPosition, dataPosition);
+            Patient_LK_VALID_TO: SaveData(PRecord.LK_VALID_TO, PropPosition, metaPosition, dataPosition);
+            Patient_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
+            Patient_MTEL: SaveData(PRecord.MTEL, PropPosition, metaPosition, dataPosition);
+            Patient_NAS_MQSTO: SaveData(PRecord.NAS_MQSTO, PropPosition, metaPosition, dataPosition);
+            Patient_NOMER: SaveData(PRecord.NOMER, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_BEBE: SaveData(PRecord.NZIS_BEBE, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID: SaveData(PRecord.NZIS_PID, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID_TYPE: SaveData(PRecord.NZIS_PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_OBLAST: SaveData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
+            Patient_OBSHTINA: SaveData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGNO: SaveData(PRecord.OSIGNO, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGUREN: SaveData(PRecord.OSIGUREN, PropPosition, metaPosition, dataPosition);
+            Patient_PASS: SaveData(PRecord.PASS, PropPosition, metaPosition, dataPosition);
+            Patient_PAT_KIND: SaveData(PRecord.PAT_KIND, PropPosition, metaPosition, dataPosition);
+            Patient_PID_TYPE: SaveData(PRecord.PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_PKUT: SaveData(PRecord.PKUT, PropPosition, metaPosition, dataPosition);
+            Patient_PREVIOUS_DOCTOR_ID: SaveData(PRecord.PREVIOUS_DOCTOR_ID, PropPosition, metaPosition, dataPosition);
+            Patient_RACE: SaveData(PRecord.RACE, PropPosition, metaPosition, dataPosition);
+            Patient_RECKNNO: SaveData(PRecord.RECKNNO, PropPosition, metaPosition, dataPosition);
+            Patient_RH: SaveData(PRecord.RH, PropPosition, metaPosition, dataPosition);
+            Patient_RZOK: SaveData(PRecord.RZOK, PropPosition, metaPosition, dataPosition);
+            Patient_RZOKR: SaveData(PRecord.RZOKR, PropPosition, metaPosition, dataPosition);
+            Patient_SEM_POLOJ_ID: SaveData(PRecord.SEM_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_SEX_TYPE: SaveData(PRecord.SEX_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
+            Patient_SOC_POLOJ_ID: SaveData(PRecord.SOC_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_STEL: SaveData(PRecord.STEL, PropPosition, metaPosition, dataPosition);
+            Patient_TIME_HEALTH_INSURANCE_CHECK: SaveData(PRecord.TIME_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_TYPE_CERTIFICATE: SaveData(PRecord.TYPE_CERTIFICATE, PropPosition, metaPosition, dataPosition);
+            Patient_ULICA: SaveData(PRecord.ULICA, PropPosition, metaPosition, dataPosition);
+            Patient_VH: SaveData(PRecord.VH, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY: SaveData(PRecord.WORK_CITY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY2: SaveData(PRecord.WORK_CITY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY: SaveData(PRecord.WORK_COMPANY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY2: SaveData(PRecord.WORK_COMPANY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK: SaveData(PRecord.WORK_JK, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK2: SaveData(PRecord.WORK_JK2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION: SaveData(PRecord.WORK_POSITION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION2: SaveData(PRecord.WORK_POSITION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION: SaveData(PRecord.WORK_PROFESSION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION2: SaveData(PRecord.WORK_PROFESSION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME: SaveData(PRecord.WORK_STREET_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME2: SaveData(PRecord.WORK_STREET_NAME2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO: SaveData(PRecord.WORK_STREET_NO, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO2: SaveData(PRecord.WORK_STREET_NO2, PropPosition, metaPosition, dataPosition);
+            Patient_ZIP: SaveData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          SaveNull(metaPosition);
+        end;
+      end;
+      pCardinalData := pointer(PByte(buf) + 4);
+      pCardinalData^  := metaPosition - FPosMetaData;
+      pCardinalData := pointer(PByte(buf) + 12);
+      pCardinalData^  := dataPosition - FPosData;
+    end;
+  end;
+end;
+
+procedure TPatientItem.SavePatient(var dataPosition: Cardinal);
+var
+  CollType: TCollectionsType;
+  metaPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctPatient;
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          SaveHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            Patient_AGE_IN_YEARS: SaveData(PRecord.AGE_IN_YEARS, PropPosition, metaPosition, dataPosition);
+            Patient_AGE_IN_YEARS_INT: SaveData(PRecord.AGE_IN_YEARS_INT, PropPosition, metaPosition, dataPosition);
+            Patient_ALKOHOL_ID: SaveData(PRecord.ALKOHOL_ID, PropPosition, metaPosition, dataPosition);
+            Patient_AP: SaveData(PRecord.AP, PropPosition, metaPosition, dataPosition);
+            Patient_BABY_NUMBER: SaveData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_BELEJKI: SaveData(PRecord.BELEJKI, PropPosition, metaPosition, dataPosition);
+            Patient_BIRTH_DATE: SaveData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_BL: SaveData(PRecord.BL, PropPosition, metaPosition, dataPosition);
+            Patient_BLOOD_TYPE: SaveData(PRecord.BLOOD_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_CIGARI_ID: SaveData(PRecord.CIGARI_ID, PropPosition, metaPosition, dataPosition);
+            Patient_COUNTRY: SaveData(PRecord.COUNTRY, PropPosition, metaPosition, dataPosition);
+            Patient_DATA_HEALTH_INSURANCE: SaveData(PRecord.DATA_HEALTH_INSURANCE, PropPosition, metaPosition, dataPosition);
+            Patient_DATEFROM: SaveData(PRecord.DATEFROM, PropPosition, metaPosition, dataPosition);
+            Patient_DATEISSUE: SaveData(PRecord.DATEISSUE, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO: SaveData(PRecord.DATETO, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO_TEXT: SaveData(PRecord.DATETO_TEXT, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_HEALTH_INSURANCE_CHECK: SaveData(PRecord.DATE_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_OTPISVANE: SaveData(PRecord.DATE_OTPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_ZAPISVANE: SaveData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_DATE: SaveData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_FROM: SaveData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
+            Patient_DOHOD_ID: SaveData(PRecord.DOHOD_ID, PropPosition, metaPosition, dataPosition);
+            Patient_DOSIENOMER: SaveData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
+            Patient_DTEL: SaveData(PRecord.DTEL, PropPosition, metaPosition, dataPosition);
+            Patient_DZI_NUMBER: SaveData(PRecord.DZI_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_EGN: SaveData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
+            Patient_EHIC_NO: SaveData(PRecord.EHIC_NO, PropPosition, metaPosition, dataPosition);
+            Patient_EHRH_PATIENT: SaveData(PRecord.EHRH_PATIENT, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_RESIDENTIAL_ADDRESS: SaveData(PRecord.EKATTE_RESIDENTIAL_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_WORK_ADDRESS: SaveData(PRecord.EKATTE_WORK_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EMAIL: SaveData(PRecord.EMAIL, PropPosition, metaPosition, dataPosition);
+            Patient_ET: SaveData(PRecord.ET, PropPosition, metaPosition, dataPosition);
+            Patient_FNAME: SaveData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
+            Patient_FUND_ID: SaveData(PRecord.FUND_ID, PropPosition, metaPosition, dataPosition);
+            Patient_GDPR_PRINTED: SaveData(PRecord.GDPR_PRINTED, PropPosition, metaPosition, dataPosition);
+            Patient_GRAJD: SaveData(PRecord.GRAJD, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NAME: SaveData(PRecord.HEALTH_INSURANCE_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NUMBER: SaveData(PRecord.HEALTH_INSURANCE_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
+            Patient_IS_NEBL_USL: SaveData(PRecord.IS_NEBL_USL, PropPosition, metaPosition, dataPosition);
+            Patient_IS_SECOND_JOB: SaveData(PRecord.IS_SECOND_JOB, PropPosition, metaPosition, dataPosition);
+            Patient_JK: SaveData(PRecord.JK, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA3MES: SaveData(PRecord.KYRMA3MES, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA6MES: SaveData(PRecord.KYRMA6MES, PropPosition, metaPosition, dataPosition);
+            Patient_LAK_NUMBER: SaveData(PRecord.LAK_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_LKIZD: SaveData(PRecord.LKIZD, PropPosition, metaPosition, dataPosition);
+            Patient_LKNO: SaveData(PRecord.LKNO, PropPosition, metaPosition, dataPosition);
+            Patient_LKOT: SaveData(PRecord.LKOT, PropPosition, metaPosition, dataPosition);
+            Patient_LK_VALID_TO: SaveData(PRecord.LK_VALID_TO, PropPosition, metaPosition, dataPosition);
+            Patient_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
+            Patient_MTEL: SaveData(PRecord.MTEL, PropPosition, metaPosition, dataPosition);
+            Patient_NAS_MQSTO: SaveData(PRecord.NAS_MQSTO, PropPosition, metaPosition, dataPosition);
+            Patient_NOMER: SaveData(PRecord.NOMER, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_BEBE: SaveData(PRecord.NZIS_BEBE, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID: SaveData(PRecord.NZIS_PID, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID_TYPE: SaveData(PRecord.NZIS_PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_OBLAST: SaveData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
+            Patient_OBSHTINA: SaveData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGNO: SaveData(PRecord.OSIGNO, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGUREN: SaveData(PRecord.OSIGUREN, PropPosition, metaPosition, dataPosition);
+            Patient_PASS: SaveData(PRecord.PASS, PropPosition, metaPosition, dataPosition);
+            Patient_PAT_KIND: SaveData(PRecord.PAT_KIND, PropPosition, metaPosition, dataPosition);
+            Patient_PID_TYPE: SaveData(PRecord.PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_PKUT: SaveData(PRecord.PKUT, PropPosition, metaPosition, dataPosition);
+            Patient_PREVIOUS_DOCTOR_ID: SaveData(PRecord.PREVIOUS_DOCTOR_ID, PropPosition, metaPosition, dataPosition);
+            Patient_RACE: SaveData(PRecord.RACE, PropPosition, metaPosition, dataPosition);
+            Patient_RECKNNO: SaveData(PRecord.RECKNNO, PropPosition, metaPosition, dataPosition);
+            Patient_RH: SaveData(PRecord.RH, PropPosition, metaPosition, dataPosition);
+            Patient_RZOK: SaveData(PRecord.RZOK, PropPosition, metaPosition, dataPosition);
+            Patient_RZOKR: SaveData(PRecord.RZOKR, PropPosition, metaPosition, dataPosition);
+            Patient_SEM_POLOJ_ID: SaveData(PRecord.SEM_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_SEX_TYPE: SaveData(PRecord.SEX_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
+            Patient_SOC_POLOJ_ID: SaveData(PRecord.SOC_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_STEL: SaveData(PRecord.STEL, PropPosition, metaPosition, dataPosition);
+            Patient_TIME_HEALTH_INSURANCE_CHECK: SaveData(PRecord.TIME_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_TYPE_CERTIFICATE: SaveData(PRecord.TYPE_CERTIFICATE, PropPosition, metaPosition, dataPosition);
+            Patient_ULICA: SaveData(PRecord.ULICA, PropPosition, metaPosition, dataPosition);
+            Patient_VH: SaveData(PRecord.VH, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY: SaveData(PRecord.WORK_CITY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY2: SaveData(PRecord.WORK_CITY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY: SaveData(PRecord.WORK_COMPANY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY2: SaveData(PRecord.WORK_COMPANY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK: SaveData(PRecord.WORK_JK, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK2: SaveData(PRecord.WORK_JK2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION: SaveData(PRecord.WORK_POSITION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION2: SaveData(PRecord.WORK_POSITION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION: SaveData(PRecord.WORK_PROFESSION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION2: SaveData(PRecord.WORK_PROFESSION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME: SaveData(PRecord.WORK_STREET_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME2: SaveData(PRecord.WORK_STREET_NAME2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO: SaveData(PRecord.WORK_STREET_NO, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO2: SaveData(PRecord.WORK_STREET_NO2, PropPosition, metaPosition, dataPosition);
+            Patient_ZIP: SaveData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+    end;
+  end;
+end;
+
+procedure TPatientItem.UpdatePatient;
+var
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctPatient;
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          UpdateHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            Patient_AGE_IN_YEARS: UpdateData(PRecord.AGE_IN_YEARS, PropPosition, metaPosition, dataPosition);
+            Patient_AGE_IN_YEARS_INT: UpdateData(PRecord.AGE_IN_YEARS_INT, PropPosition, metaPosition, dataPosition);
+            Patient_ALKOHOL_ID: UpdateData(PRecord.ALKOHOL_ID, PropPosition, metaPosition, dataPosition);
+            Patient_AP: UpdateData(PRecord.AP, PropPosition, metaPosition, dataPosition);
+            Patient_BABY_NUMBER: UpdateData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_BELEJKI: UpdateData(PRecord.BELEJKI, PropPosition, metaPosition, dataPosition);
+            Patient_BIRTH_DATE: UpdateData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_BL: UpdateData(PRecord.BL, PropPosition, metaPosition, dataPosition);
+            Patient_BLOOD_TYPE: UpdateData(PRecord.BLOOD_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_CIGARI_ID: UpdateData(PRecord.CIGARI_ID, PropPosition, metaPosition, dataPosition);
+            Patient_COUNTRY: UpdateData(PRecord.COUNTRY, PropPosition, metaPosition, dataPosition);
+            Patient_DATA_HEALTH_INSURANCE: UpdateData(PRecord.DATA_HEALTH_INSURANCE, PropPosition, metaPosition, dataPosition);
+            Patient_DATEFROM: UpdateData(PRecord.DATEFROM, PropPosition, metaPosition, dataPosition);
+            Patient_DATEISSUE: UpdateData(PRecord.DATEISSUE, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO: UpdateData(PRecord.DATETO, PropPosition, metaPosition, dataPosition);
+            Patient_DATETO_TEXT: UpdateData(PRecord.DATETO_TEXT, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_HEALTH_INSURANCE_CHECK: UpdateData(PRecord.DATE_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_OTPISVANE: UpdateData(PRecord.DATE_OTPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DATE_ZAPISVANE: UpdateData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_DATE: UpdateData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
+            Patient_DIE_FROM: UpdateData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
+            Patient_DOHOD_ID: UpdateData(PRecord.DOHOD_ID, PropPosition, metaPosition, dataPosition);
+            Patient_DOSIENOMER: UpdateData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
+            Patient_DTEL: UpdateData(PRecord.DTEL, PropPosition, metaPosition, dataPosition);
+            Patient_DZI_NUMBER: UpdateData(PRecord.DZI_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_EGN: UpdateData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
+            Patient_EHIC_NO: UpdateData(PRecord.EHIC_NO, PropPosition, metaPosition, dataPosition);
+            Patient_EHRH_PATIENT: UpdateData(PRecord.EHRH_PATIENT, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_RESIDENTIAL_ADDRESS: UpdateData(PRecord.EKATTE_RESIDENTIAL_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EKATTE_WORK_ADDRESS: UpdateData(PRecord.EKATTE_WORK_ADDRESS, PropPosition, metaPosition, dataPosition);
+            Patient_EMAIL: UpdateData(PRecord.EMAIL, PropPosition, metaPosition, dataPosition);
+            Patient_ET: UpdateData(PRecord.ET, PropPosition, metaPosition, dataPosition);
+            Patient_FNAME: UpdateData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
+            Patient_FUND_ID: UpdateData(PRecord.FUND_ID, PropPosition, metaPosition, dataPosition);
+            Patient_GDPR_PRINTED: UpdateData(PRecord.GDPR_PRINTED, PropPosition, metaPosition, dataPosition);
+            Patient_GRAJD: UpdateData(PRecord.GRAJD, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NAME: UpdateData(PRecord.HEALTH_INSURANCE_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_HEALTH_INSURANCE_NUMBER: UpdateData(PRecord.HEALTH_INSURANCE_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_ID: UpdateData(PRecord.ID, PropPosition, metaPosition, dataPosition);
+            Patient_IS_NEBL_USL: UpdateData(PRecord.IS_NEBL_USL, PropPosition, metaPosition, dataPosition);
+            Patient_IS_SECOND_JOB: UpdateData(PRecord.IS_SECOND_JOB, PropPosition, metaPosition, dataPosition);
+            Patient_JK: UpdateData(PRecord.JK, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA3MES: UpdateData(PRecord.KYRMA3MES, PropPosition, metaPosition, dataPosition);
+            Patient_KYRMA6MES: UpdateData(PRecord.KYRMA6MES, PropPosition, metaPosition, dataPosition);
+            Patient_LAK_NUMBER: UpdateData(PRecord.LAK_NUMBER, PropPosition, metaPosition, dataPosition);
+            Patient_LKIZD: UpdateData(PRecord.LKIZD, PropPosition, metaPosition, dataPosition);
+            Patient_LKNO: UpdateData(PRecord.LKNO, PropPosition, metaPosition, dataPosition);
+            Patient_LKOT: UpdateData(PRecord.LKOT, PropPosition, metaPosition, dataPosition);
+            Patient_LK_VALID_TO: UpdateData(PRecord.LK_VALID_TO, PropPosition, metaPosition, dataPosition);
+            Patient_LNAME: UpdateData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
+            Patient_MTEL: UpdateData(PRecord.MTEL, PropPosition, metaPosition, dataPosition);
+            Patient_NAS_MQSTO: UpdateData(PRecord.NAS_MQSTO, PropPosition, metaPosition, dataPosition);
+            Patient_NOMER: UpdateData(PRecord.NOMER, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_BEBE: UpdateData(PRecord.NZIS_BEBE, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID: UpdateData(PRecord.NZIS_PID, PropPosition, metaPosition, dataPosition);
+            Patient_NZIS_PID_TYPE: UpdateData(PRecord.NZIS_PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_OBLAST: UpdateData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
+            Patient_OBSHTINA: UpdateData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGNO: UpdateData(PRecord.OSIGNO, PropPosition, metaPosition, dataPosition);
+            Patient_OSIGUREN: UpdateData(PRecord.OSIGUREN, PropPosition, metaPosition, dataPosition);
+            Patient_PASS: UpdateData(PRecord.PASS, PropPosition, metaPosition, dataPosition);
+            Patient_PAT_KIND: UpdateData(PRecord.PAT_KIND, PropPosition, metaPosition, dataPosition);
+            Patient_PID_TYPE: UpdateData(PRecord.PID_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_PKUT: UpdateData(PRecord.PKUT, PropPosition, metaPosition, dataPosition);
+            Patient_PREVIOUS_DOCTOR_ID: UpdateData(PRecord.PREVIOUS_DOCTOR_ID, PropPosition, metaPosition, dataPosition);
+            Patient_RACE: UpdateData(PRecord.RACE, PropPosition, metaPosition, dataPosition);
+            Patient_RECKNNO: UpdateData(PRecord.RECKNNO, PropPosition, metaPosition, dataPosition);
+            Patient_RH: UpdateData(PRecord.RH, PropPosition, metaPosition, dataPosition);
+            Patient_RZOK: UpdateData(PRecord.RZOK, PropPosition, metaPosition, dataPosition);
+            Patient_RZOKR: UpdateData(PRecord.RZOKR, PropPosition, metaPosition, dataPosition);
+            Patient_SEM_POLOJ_ID: UpdateData(PRecord.SEM_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_SEX_TYPE: UpdateData(PRecord.SEX_TYPE, PropPosition, metaPosition, dataPosition);
+            Patient_SNAME: UpdateData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
+            Patient_SOC_POLOJ_ID: UpdateData(PRecord.SOC_POLOJ_ID, PropPosition, metaPosition, dataPosition);
+            Patient_STEL: UpdateData(PRecord.STEL, PropPosition, metaPosition, dataPosition);
+            Patient_TIME_HEALTH_INSURANCE_CHECK: UpdateData(PRecord.TIME_HEALTH_INSURANCE_CHECK, PropPosition, metaPosition, dataPosition);
+            Patient_TYPE_CERTIFICATE: UpdateData(PRecord.TYPE_CERTIFICATE, PropPosition, metaPosition, dataPosition);
+            Patient_ULICA: UpdateData(PRecord.ULICA, PropPosition, metaPosition, dataPosition);
+            Patient_VH: UpdateData(PRecord.VH, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY: UpdateData(PRecord.WORK_CITY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_CITY2: UpdateData(PRecord.WORK_CITY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY: UpdateData(PRecord.WORK_COMPANY, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_COMPANY2: UpdateData(PRecord.WORK_COMPANY2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK: UpdateData(PRecord.WORK_JK, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_JK2: UpdateData(PRecord.WORK_JK2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION: UpdateData(PRecord.WORK_POSITION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_POSITION2: UpdateData(PRecord.WORK_POSITION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION: UpdateData(PRecord.WORK_PROFESSION, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_PROFESSION2: UpdateData(PRecord.WORK_PROFESSION2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME: UpdateData(PRecord.WORK_STREET_NAME, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NAME2: UpdateData(PRecord.WORK_STREET_NAME2, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO: UpdateData(PRecord.WORK_STREET_NO, PropPosition, metaPosition, dataPosition);
+            Patient_WORK_STREET_NO2: UpdateData(PRecord.WORK_STREET_NO2, PropPosition, metaPosition, dataPosition);
+            Patient_ZIP: UpdateData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+    end;
+  end;
+end;
+
+{ TPatientColl }
+
+function TPatientColl.AddItem(ver: word): TPatientItem;
+begin
+  Result := TPatientItem(add);
+  Result.Version := ver;
+  case ver of // в зависимост от версията на записа
+    0:
+    begin
+    end;
+  end;
+end;
+
+
+constructor TPatientColl.Create(ItemClass: TCollectionItemClass);
+begin
+  inherited;
+  ListPatientSearch := TList<TPatientItem>.Create;
+  FindedRes.DataPos := 0;
+  FindedRes.PropIndex := MAXWORD;
+end;
+
+destructor TPatientColl.destroy;
+begin
+  FreeAndNil(ListPatientSearch);
+  inherited;
+end;
+
+function TPatientColl.DisplayName(propIndex: Word): string;
+begin
+  case TPatientItem.TPropertyIndex(propIndex) of
+    Patient_AGE_IN_YEARS: Result := 'AGE_IN_YEARS';
+    Patient_AGE_IN_YEARS_INT: Result := 'AGE_IN_YEARS_INT';
+    Patient_ALKOHOL_ID: Result := 'ALKOHOL_ID';
+    Patient_AP: Result := 'AP';
+    Patient_BABY_NUMBER: Result := 'BABY_NUMBER';
+    Patient_BELEJKI: Result := 'BELEJKI';
+    Patient_BIRTH_DATE: Result := 'BIRTH_DATE';
+    Patient_BL: Result := 'BL';
+    Patient_BLOOD_TYPE: Result := 'BLOOD_TYPE';
+    Patient_CIGARI_ID: Result := 'CIGARI_ID';
+    Patient_COUNTRY: Result := 'COUNTRY';
+    Patient_DATA_HEALTH_INSURANCE: Result := 'DATA_HEALTH_INSURANCE';
+    Patient_DATEFROM: Result := 'DATEFROM';
+    Patient_DATEISSUE: Result := 'DATEISSUE';
+    Patient_DATETO: Result := 'DATETO';
+    Patient_DATETO_TEXT: Result := 'DATETO_TEXT';
+    Patient_DATE_HEALTH_INSURANCE_CHECK: Result := 'DATE_HEALTH_INSURANCE_CHECK';
+    Patient_DATE_OTPISVANE: Result := 'DATE_OTPISVANE';
+    Patient_DATE_ZAPISVANE: Result := 'DATE_ZAPISVANE';
+    Patient_DIE_DATE: Result := 'DIE_DATE';
+    Patient_DIE_FROM: Result := 'DIE_FROM';
+    Patient_DOHOD_ID: Result := 'DOHOD_ID';
+    Patient_DOSIENOMER: Result := 'DOSIENOMER';
+    Patient_DTEL: Result := 'DTEL';
+    Patient_DZI_NUMBER: Result := 'DZI_NUMBER';
+    Patient_EGN: Result := 'EGN';
+    Patient_EHIC_NO: Result := 'EHIC_NO';
+    Patient_EHRH_PATIENT: Result := 'EHRH_PATIENT';
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: Result := 'EKATTE_RESIDENTIAL_ADDRESS';
+    Patient_EKATTE_WORK_ADDRESS: Result := 'EKATTE_WORK_ADDRESS';
+    Patient_EMAIL: Result := 'EMAIL';
+    Patient_ET: Result := 'ET';
+    Patient_FNAME: Result := 'FNAME';
+    Patient_FUND_ID: Result := 'FUND_ID';
+    Patient_GDPR_PRINTED: Result := 'GDPR_PRINTED';
+    Patient_GRAJD: Result := 'GRAJD';
+    Patient_HEALTH_INSURANCE_NAME: Result := 'HEALTH_INSURANCE_NAME';
+    Patient_HEALTH_INSURANCE_NUMBER: Result := 'HEALTH_INSURANCE_NUMBER';
+    Patient_ID: Result := 'ID';
+    Patient_IS_NEBL_USL: Result := 'IS_NEBL_USL';
+    Patient_IS_SECOND_JOB: Result := 'IS_SECOND_JOB';
+    Patient_JK: Result := 'JK';
+    Patient_KYRMA3MES: Result := 'KYRMA3MES';
+    Patient_KYRMA6MES: Result := 'KYRMA6MES';
+    Patient_LAK_NUMBER: Result := 'LAK_NUMBER';
+    Patient_LKIZD: Result := 'LKIZD';
+    Patient_LKNO: Result := 'LKNO';
+    Patient_LKOT: Result := 'LKOT';
+    Patient_LK_VALID_TO: Result := 'LK_VALID_TO';
+    Patient_LNAME: Result := 'LNAME';
+    Patient_MTEL: Result := 'MTEL';
+    Patient_NAS_MQSTO: Result := 'NAS_MQSTO';
+    Patient_NOMER: Result := 'NOMER';
+    Patient_NZIS_BEBE: Result := 'NZIS_BEBE';
+    Patient_NZIS_PID: Result := 'NZIS_PID';
+    Patient_NZIS_PID_TYPE: Result := 'NZIS_PID_TYPE';
+    Patient_OBLAST: Result := 'OBLAST';
+    Patient_OBSHTINA: Result := 'OBSHTINA';
+    Patient_OSIGNO: Result := 'OSIGNO';
+    Patient_OSIGUREN: Result := 'OSIGUREN';
+    Patient_PASS: Result := 'PASS';
+    Patient_PAT_KIND: Result := 'PAT_KIND';
+    Patient_PID_TYPE: Result := 'PID_TYPE';
+    Patient_PKUT: Result := 'PKUT';
+    Patient_PREVIOUS_DOCTOR_ID: Result := 'PREVIOUS_DOCTOR_ID';
+    Patient_RACE: Result := 'RACE';
+    Patient_RECKNNO: Result := 'RECKNNO';
+    Patient_RH: Result := 'RH';
+    Patient_RZOK: Result := 'RZOK';
+    Patient_RZOKR: Result := 'RZOKR';
+    Patient_SEM_POLOJ_ID: Result := 'SEM_POLOJ_ID';
+    Patient_SEX_TYPE: Result := 'SEX_TYPE';
+    Patient_SNAME: Result := 'SNAME';
+    Patient_SOC_POLOJ_ID: Result := 'SOC_POLOJ_ID';
+    Patient_STEL: Result := 'STEL';
+    Patient_TIME_HEALTH_INSURANCE_CHECK: Result := 'TIME_HEALTH_INSURANCE_CHECK';
+    Patient_TYPE_CERTIFICATE: Result := 'TYPE_CERTIFICATE';
+    Patient_ULICA: Result := 'ULICA';
+    Patient_VH: Result := 'VH';
+    Patient_WORK_CITY: Result := 'WORK_CITY';
+    Patient_WORK_CITY2: Result := 'WORK_CITY2';
+    Patient_WORK_COMPANY: Result := 'WORK_COMPANY';
+    Patient_WORK_COMPANY2: Result := 'WORK_COMPANY2';
+    Patient_WORK_JK: Result := 'WORK_JK';
+    Patient_WORK_JK2: Result := 'WORK_JK2';
+    Patient_WORK_POSITION: Result := 'WORK_POSITION';
+    Patient_WORK_POSITION2: Result := 'WORK_POSITION2';
+    Patient_WORK_PROFESSION: Result := 'WORK_PROFESSION';
+    Patient_WORK_PROFESSION2: Result := 'WORK_PROFESSION2';
+    Patient_WORK_STREET_NAME: Result := 'WORK_STREET_NAME';
+    Patient_WORK_STREET_NAME2: Result := 'WORK_STREET_NAME2';
+    Patient_WORK_STREET_NO: Result := 'WORK_STREET_NO';
+    Patient_WORK_STREET_NO2: Result := 'WORK_STREET_NO2';
+    Patient_ZIP: Result := 'ZIP';
+  end;
+end;
+
+procedure TPatientColl.DynControlEnter(Sender: TObject);
+begin
+  self.FindedRes.DataPos := 0;
+  self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
+  self.IndexValue(TPatientItem.TPropertyIndex(self.FindedRes.PropIndex));
+  //Self.SortByIndexValue(TPatientItem.TPropertyIndex(self.FindedRes.PropIndex));
+end;
+
+function TPatientColl.FieldCount: Integer;
+begin
+  Result := 94;
+end;
+
+procedure TPatientColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  Patient: TPatientItem;
+  ACol: Integer;
+  prop: TPatientItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if Count = 0 then Exit;
+
+  Patient := Items[ARow];
+  prop := TPatientItem.TPropertyIndex(ACol);
+  if Assigned(Patient.PRecord) and (prop in Patient.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, Patient, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, Patient, AValue);
+  end;
+end;
+
+procedure TPatientColl.GetCellFromRecord(propIndex: word; Patient: TPatientItem; var AValue: String);
+var
+  str: string;
+begin
+  case TPatientItem.TPropertyIndex(propIndex) of
+    Patient_AGE_IN_YEARS: str := FloatToStr(Patient.PRecord.AGE_IN_YEARS);
+    Patient_AGE_IN_YEARS_INT: str := inttostr(Patient.PRecord.AGE_IN_YEARS_INT);
+    Patient_ALKOHOL_ID: str := inttostr(Patient.PRecord.ALKOHOL_ID);
+    Patient_AP: str := (Patient.PRecord.AP);
+    Patient_BABY_NUMBER: str := inttostr(Patient.PRecord.BABY_NUMBER);
+    Patient_BELEJKI: str := (Patient.PRecord.BELEJKI);
+    Patient_BIRTH_DATE: str := DateToStr(Patient.PRecord.BIRTH_DATE);
+    Patient_BL: str := (Patient.PRecord.BL);
+    Patient_BLOOD_TYPE: str := (Patient.PRecord.BLOOD_TYPE);
+    Patient_CIGARI_ID: str := inttostr(Patient.PRecord.CIGARI_ID);
+    Patient_COUNTRY: str := (Patient.PRecord.COUNTRY);
+    Patient_DATA_HEALTH_INSURANCE: str := (Patient.PRecord.DATA_HEALTH_INSURANCE);
+    Patient_DATEFROM: str := DateToStr(Patient.PRecord.DATEFROM);
+    Patient_DATEISSUE: str := DateToStr(Patient.PRecord.DATEISSUE);
+    Patient_DATETO: str := DateToStr(Patient.PRecord.DATETO);
+    Patient_DATETO_TEXT: str := (Patient.PRecord.DATETO_TEXT);
+    Patient_DATE_HEALTH_INSURANCE_CHECK: str := DateToStr(Patient.PRecord.DATE_HEALTH_INSURANCE_CHECK);
+    Patient_DATE_OTPISVANE: str := DateToStr(Patient.PRecord.DATE_OTPISVANE);
+    Patient_DATE_ZAPISVANE: str := DateToStr(Patient.PRecord.DATE_ZAPISVANE);
+    Patient_DIE_DATE: str := DateToStr(Patient.PRecord.DIE_DATE);
+    Patient_DIE_FROM: str := (Patient.PRecord.DIE_FROM);
+    Patient_DOHOD_ID: str := inttostr(Patient.PRecord.DOHOD_ID);
+    Patient_DOSIENOMER: str := (Patient.PRecord.DOSIENOMER);
+    Patient_DTEL: str := (Patient.PRecord.DTEL);
+    Patient_DZI_NUMBER: str := (Patient.PRecord.DZI_NUMBER);
+    Patient_EGN: str := (Patient.PRecord.EGN);
+    Patient_EHIC_NO: str := (Patient.PRecord.EHIC_NO);
+    Patient_EHRH_PATIENT: str := BoolToStr(Patient.PRecord.EHRH_PATIENT, True);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: str := (Patient.PRecord.EKATTE_RESIDENTIAL_ADDRESS);
+    Patient_EKATTE_WORK_ADDRESS: str := (Patient.PRecord.EKATTE_WORK_ADDRESS);
+    Patient_EMAIL: str := (Patient.PRecord.EMAIL);
+    Patient_ET: str := (Patient.PRecord.ET);
+    Patient_FNAME: str := (Patient.PRecord.FNAME);
+    Patient_FUND_ID: str := inttostr(Patient.PRecord.FUND_ID);
+    Patient_GDPR_PRINTED: str := BoolToStr(Patient.PRecord.GDPR_PRINTED, True);
+    Patient_GRAJD: str := (Patient.PRecord.GRAJD);
+    Patient_HEALTH_INSURANCE_NAME: str := (Patient.PRecord.HEALTH_INSURANCE_NAME);
+    Patient_HEALTH_INSURANCE_NUMBER: str := (Patient.PRecord.HEALTH_INSURANCE_NUMBER);
+    Patient_ID: str := inttostr(Patient.PRecord.ID);
+    Patient_IS_NEBL_USL: str := BoolToStr(Patient.PRecord.IS_NEBL_USL, True);
+    Patient_IS_SECOND_JOB: str := (Patient.PRecord.IS_SECOND_JOB);
+    Patient_JK: str := (Patient.PRecord.JK);
+    Patient_KYRMA3MES: str := BoolToStr(Patient.PRecord.KYRMA3MES, True);
+    Patient_KYRMA6MES: str := BoolToStr(Patient.PRecord.KYRMA6MES, True);
+    Patient_LAK_NUMBER: str := inttostr(Patient.PRecord.LAK_NUMBER);
+    Patient_LKIZD: str := DateToStr(Patient.PRecord.LKIZD);
+    Patient_LKNO: str := (Patient.PRecord.LKNO);
+    Patient_LKOT: str := (Patient.PRecord.LKOT);
+    Patient_LK_VALID_TO: str := DateToStr(Patient.PRecord.LK_VALID_TO);
+    Patient_LNAME: str := (Patient.PRecord.LNAME);
+    Patient_MTEL: str := (Patient.PRecord.MTEL);
+    Patient_NAS_MQSTO: str := (Patient.PRecord.NAS_MQSTO);
+    Patient_NOMER: str := (Patient.PRecord.NOMER);
+    Patient_NZIS_BEBE: str := (Patient.PRecord.NZIS_BEBE);
+    Patient_NZIS_PID: str := (Patient.PRecord.NZIS_PID);
+    Patient_NZIS_PID_TYPE: str := inttostr(Patient.PRecord.NZIS_PID_TYPE);
+    Patient_OBLAST: str := (Patient.PRecord.OBLAST);
+    Patient_OBSHTINA: str := (Patient.PRecord.OBSHTINA);
+    Patient_OSIGNO: str := (Patient.PRecord.OSIGNO);
+    Patient_OSIGUREN: str := BoolToStr(Patient.PRecord.OSIGUREN, True);
+    Patient_PASS: str := (Patient.PRecord.PASS);
+    Patient_PAT_KIND: str := inttostr(Patient.PRecord.PAT_KIND);
+    Patient_PID_TYPE: str := (Patient.PRecord.PID_TYPE);
+    Patient_PKUT: str := (Patient.PRecord.PKUT);
+    Patient_PREVIOUS_DOCTOR_ID: str := inttostr(Patient.PRecord.PREVIOUS_DOCTOR_ID);
+    Patient_RACE: str := inttostr(Patient.PRecord.RACE);
+    Patient_RECKNNO: str := (Patient.PRecord.RECKNNO);
+    Patient_RH: str := (Patient.PRecord.RH);
+    Patient_RZOK: str := (Patient.PRecord.RZOK);
+    Patient_RZOKR: str := (Patient.PRecord.RZOKR);
+    Patient_SEM_POLOJ_ID: str := inttostr(Patient.PRecord.SEM_POLOJ_ID);
+    Patient_SEX_TYPE: str := inttostr(Patient.PRecord.SEX_TYPE);
+    Patient_SNAME: str := (Patient.PRecord.SNAME);
+    Patient_SOC_POLOJ_ID: str := inttostr(Patient.PRecord.SOC_POLOJ_ID);
+    Patient_STEL: str := (Patient.PRecord.STEL);
+    Patient_TIME_HEALTH_INSURANCE_CHECK: str := TimeToStr(Patient.PRecord.TIME_HEALTH_INSURANCE_CHECK);
+    Patient_TYPE_CERTIFICATE: str := (Patient.PRecord.TYPE_CERTIFICATE);
+    Patient_ULICA: str := (Patient.PRecord.ULICA);
+    Patient_VH: str := (Patient.PRecord.VH);
+    Patient_WORK_CITY: str := (Patient.PRecord.WORK_CITY);
+    Patient_WORK_CITY2: str := (Patient.PRecord.WORK_CITY2);
+    Patient_WORK_COMPANY: str := (Patient.PRecord.WORK_COMPANY);
+    Patient_WORK_COMPANY2: str := (Patient.PRecord.WORK_COMPANY2);
+    Patient_WORK_JK: str := (Patient.PRecord.WORK_JK);
+    Patient_WORK_JK2: str := (Patient.PRecord.WORK_JK2);
+    Patient_WORK_POSITION: str := (Patient.PRecord.WORK_POSITION);
+    Patient_WORK_POSITION2: str := (Patient.PRecord.WORK_POSITION2);
+    Patient_WORK_PROFESSION: str := (Patient.PRecord.WORK_PROFESSION);
+    Patient_WORK_PROFESSION2: str := (Patient.PRecord.WORK_PROFESSION2);
+    Patient_WORK_STREET_NAME: str := (Patient.PRecord.WORK_STREET_NAME);
+    Patient_WORK_STREET_NAME2: str := (Patient.PRecord.WORK_STREET_NAME2);
+    Patient_WORK_STREET_NO: str := (Patient.PRecord.WORK_STREET_NO);
+    Patient_WORK_STREET_NO2: str := (Patient.PRecord.WORK_STREET_NO2);
+    Patient_ZIP: str := (Patient.PRecord.ZIP);
+  else
+    begin
+      str := '';
+    end;
+  end;
+  AValue := str;
+end;
+
+procedure TPatientColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  Patient: TPatientItem;
+  ACol: Integer;
+  prop: TPatientItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if Count = 0 then Exit;
+
+  Patient := ListPatientSearch[ARow];
+  prop := TPatientItem.TPropertyIndex(ACol);
+  if Assigned(Patient.PRecord) and (prop in Patient.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, Patient, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, Patient, AValue);
+  end;
+end;
+
+procedure TPatientColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+var
+  Patient: TPatientItem;
+  prop: TPatientItem.TPropertyIndex;
+begin
+  if Count = 0 then Exit;
+
+  Patient := Items[ARow];
+  prop := TPatientItem.TPropertyIndex(ACol);
+  if Assigned(Patient.PRecord) and (prop in Patient.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, Patient, AFieldText);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, Patient, AFieldText);
+  end;
+end;
+
+procedure TPatientColl.GetCellFromMap(propIndex: word; ARow: Integer; Patient: TPatientItem; var AValue: String);
+var
+  str: string;
+  len: Word;
+  int: PInt;
+  wrd: PWord;
+  bt: PByte;
+  pstr: pchar;
+  pDbl: PDouble;
+  pbl: PBoolean;
+begin
+  case TPatientItem.TPropertyIndex(propIndex) of
+    Patient_AGE_IN_YEARS_INT: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_ALKOHOL_ID: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_AP: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_BABY_NUMBER: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_BELEJKI: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_BIRTH_DATE: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_BL: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_BLOOD_TYPE: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_CIGARI_ID: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_COUNTRY: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DATA_HEALTH_INSURANCE: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DATEFROM: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DATEISSUE: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DATETO: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DATETO_TEXT: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DATE_HEALTH_INSURANCE_CHECK: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DATE_OTPISVANE: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DATE_ZAPISVANE: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DIE_DATE: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_DIE_FROM: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DOHOD_ID: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_DOSIENOMER: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DTEL: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_DZI_NUMBER: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_EGN: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_EHIC_NO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_EHRH_PATIENT: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_EKATTE_WORK_ADDRESS: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_EMAIL: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_ET: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_FNAME: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_FUND_ID: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_GDPR_PRINTED: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_GRAJD: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_HEALTH_INSURANCE_NAME: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_HEALTH_INSURANCE_NUMBER: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_ID: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_IS_NEBL_USL: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_IS_SECOND_JOB: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_JK: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_KYRMA3MES: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_KYRMA6MES: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_LAK_NUMBER: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_LKIZD: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_LKNO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_LKOT: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_LK_VALID_TO: str :=  DateToStr(Patient.getDateMap(Self.Buf, Self.posData, propIndex));
+    Patient_LNAME: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_MTEL: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_NAS_MQSTO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_NOMER: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_NZIS_BEBE: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_NZIS_PID: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_NZIS_PID_TYPE: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_OBLAST: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_OBSHTINA: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_OSIGNO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_OSIGUREN: str :=  BoolToStr(Patient.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    Patient_PASS: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_PAT_KIND: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_PID_TYPE: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_PKUT: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_PREVIOUS_DOCTOR_ID: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_RACE: str :=  inttostr(Patient.getIntMap(Self.Buf, Self.posData, propIndex));
+    Patient_RECKNNO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_RH: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_RZOK: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_RZOKR: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_SEM_POLOJ_ID: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_SEX_TYPE: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_SNAME: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_SOC_POLOJ_ID: str :=  inttostr(Patient.getWordMap(Self.Buf, Self.posData, propIndex));
+    Patient_STEL: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_TIME_HEALTH_INSURANCE_CHECK: str :=  TimeToStr(Patient.getTimeMap(Self.Buf, Self.posData, propIndex));
+    Patient_TYPE_CERTIFICATE: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_ULICA: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_VH: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_CITY: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_CITY2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_COMPANY: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_COMPANY2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_JK: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_JK2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_POSITION: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_POSITION2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_PROFESSION: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_PROFESSION2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_STREET_NAME: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_STREET_NAME2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_STREET_NO: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_WORK_STREET_NO2: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Patient_ZIP: str :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+  else
+    begin
+      str := IntToStr(ARow + 1);
+    end;
+  end;
+  AValue := str;
+end;
+
+function TPatientColl.GetItem(Index: Integer): TPatientItem;
+begin
+  Result := TPatientItem(inherited GetItem(Index));
+end;
+
+
+procedure TPatientColl.IndexValue(propIndex: TPatientItem.TPropertyIndex);
+var
+  i: Integer;
+  len: Word;
+  TempItem: TPatientItem;
+begin
+  for i := 0 to self.Count - 1 do
+  begin
+    TempItem := self.Items[i];
+    case propIndex of
+      Patient_AGE_IN_YEARS_INT: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_AP:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+  end
+  else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_BABY_NUMBER: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_BELEJKI:
+  begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+    end;
+      Patient_BL:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+  end;
+      Patient_BLOOD_TYPE:
+  begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+    begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+    end;
+      Patient_COUNTRY:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+  end;
+      Patient_DATA_HEALTH_INSURANCE:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_DATETO_TEXT:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_DIE_FROM:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_DOSIENOMER:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_DTEL:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_DZI_NUMBER:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_EGN:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_EHIC_NO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_EKATTE_RESIDENTIAL_ADDRESS:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_EKATTE_WORK_ADDRESS:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_EMAIL:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_ET:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_FNAME:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_FUND_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_GRAJD:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_HEALTH_INSURANCE_NAME:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_HEALTH_INSURANCE_NUMBER:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_IS_SECOND_JOB:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_JK:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_LAK_NUMBER: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_LKNO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_LKOT:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_LNAME:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_MTEL:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_NAS_MQSTO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_NOMER:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_NZIS_BEBE:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_NZIS_PID:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_OBLAST:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_OBSHTINA:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_OSIGNO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_PASS:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_PID_TYPE:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_PKUT:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_PREVIOUS_DOCTOR_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_RACE: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      Patient_RECKNNO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_RH:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_RZOK:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_RZOKR:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_SNAME:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_STEL:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_TYPE_CERTIFICATE:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_ULICA:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_VH:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_CITY:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_CITY2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_COMPANY:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_COMPANY2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_JK:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_JK2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_POSITION:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_POSITION2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_PROFESSION:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_PROFESSION2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_STREET_NAME:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_STREET_NAME2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_STREET_NO:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_WORK_STREET_NO2:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      Patient_ZIP:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+    end;
+  end;
+end;
+
+procedure TPatientColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  isOld: Boolean;
+  Patient: TPatientItem;
+  ACol: Integer;
+begin
+  if Count = 0 then Exit;
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+
+  Patient := Items[ARow];
+  if not Assigned(Patient.PRecord) then
+  begin
+    New(Patient.PRecord);
+    Patient.PRecord.setProp := [];
+	CntUpdates := CntUpdates + 1;
+  end
+  else
+  begin
+    isOld := False;
+    case TPatientItem.TPropertyIndex(ACol) of
+      Patient_AGE_IN_YEARS_INT: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_ALKOHOL_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_AP: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_BABY_NUMBER: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_BELEJKI: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_BIRTH_DATE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_BL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_BLOOD_TYPE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_CIGARI_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_COUNTRY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DATA_HEALTH_INSURANCE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DATEFROM: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DATEISSUE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DATETO: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DATETO_TEXT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DATE_HEALTH_INSURANCE_CHECK: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DATE_OTPISVANE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DATE_ZAPISVANE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DIE_DATE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_DIE_FROM: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DOHOD_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_DOSIENOMER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DTEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_DZI_NUMBER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_EGN: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_EHIC_NO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_EHRH_PATIENT: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_EKATTE_WORK_ADDRESS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_EMAIL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_ET: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_FNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_FUND_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_GDPR_PRINTED: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_GRAJD: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_HEALTH_INSURANCE_NAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_HEALTH_INSURANCE_NUMBER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_IS_NEBL_USL: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_IS_SECOND_JOB: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_JK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_KYRMA3MES: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_KYRMA6MES: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_LAK_NUMBER: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_LKIZD: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_LKNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_LKOT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_LK_VALID_TO: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    Patient_LNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_MTEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_NAS_MQSTO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_NOMER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_NZIS_BEBE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_NZIS_PID: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_NZIS_PID_TYPE: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_OBLAST: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_OBSHTINA: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_OSIGNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_OSIGUREN: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    Patient_PASS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_PAT_KIND: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_PID_TYPE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_PKUT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_PREVIOUS_DOCTOR_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_RACE: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_RECKNNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_RH: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_RZOK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_RZOKR: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_SEM_POLOJ_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_SEX_TYPE: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_SNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_SOC_POLOJ_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    Patient_STEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_TIME_HEALTH_INSURANCE_CHECK: isOld :=  Patient.getTimeMap(Self.Buf, Self.posData, ACol) = StrToTime(AValue);
+    Patient_TYPE_CERTIFICATE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_ULICA: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_VH: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_CITY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_CITY2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_COMPANY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_COMPANY2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_JK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_JK2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_POSITION: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_POSITION2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_PROFESSION: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_PROFESSION2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_STREET_NAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_STREET_NAME2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_STREET_NO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_WORK_STREET_NO2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Patient_ZIP: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    end;
+  end;
+  if isOld then
+  begin
+    Exclude(Patient.PRecord.setProp, TPatientItem.TPropertyIndex(ACol));
+    if Patient.PRecord.setProp = [] then
+    begin
+      Dispose(Patient.PRecord);
+      Patient.PRecord := nil;
+      CntUpdates := CntUpdates - 1;
+      Exit;
+    end;
+  end;
+  Include(Patient.PRecord.setProp, TPatientItem.TPropertyIndex(ACol));
+  case TPatientItem.TPropertyIndex(ACol) of
+    Patient_AGE_IN_YEARS: Patient.PRecord.AGE_IN_YEARS := StrToFloat(AValue);
+    Patient_AGE_IN_YEARS_INT: Patient.PRecord.AGE_IN_YEARS_INT := StrToInt(AValue);
+    Patient_ALKOHOL_ID: Patient.PRecord.ALKOHOL_ID := StrToInt(AValue);
+    Patient_AP: Patient.PRecord.AP := AValue;
+    Patient_BABY_NUMBER: Patient.PRecord.BABY_NUMBER := StrToInt(AValue);
+    Patient_BELEJKI: Patient.PRecord.BELEJKI := AValue;
+    Patient_BIRTH_DATE: Patient.PRecord.BIRTH_DATE := StrToDate(AValue);
+    Patient_BL: Patient.PRecord.BL := AValue;
+    Patient_BLOOD_TYPE: Patient.PRecord.BLOOD_TYPE := AValue;
+    Patient_CIGARI_ID: Patient.PRecord.CIGARI_ID := StrToInt(AValue);
+    Patient_COUNTRY: Patient.PRecord.COUNTRY := AValue;
+    Patient_DATA_HEALTH_INSURANCE: Patient.PRecord.DATA_HEALTH_INSURANCE := AValue;
+    Patient_DATEFROM: Patient.PRecord.DATEFROM := StrToDate(AValue);
+    Patient_DATEISSUE: Patient.PRecord.DATEISSUE := StrToDate(AValue);
+    Patient_DATETO: Patient.PRecord.DATETO := StrToDate(AValue);
+    Patient_DATETO_TEXT: Patient.PRecord.DATETO_TEXT := AValue;
+    Patient_DATE_HEALTH_INSURANCE_CHECK: Patient.PRecord.DATE_HEALTH_INSURANCE_CHECK := StrToDate(AValue);
+    Patient_DATE_OTPISVANE: Patient.PRecord.DATE_OTPISVANE := StrToDate(AValue);
+    Patient_DATE_ZAPISVANE: Patient.PRecord.DATE_ZAPISVANE := StrToDate(AValue);
+    Patient_DIE_DATE: Patient.PRecord.DIE_DATE := StrToDate(AValue);
+    Patient_DIE_FROM: Patient.PRecord.DIE_FROM := AValue;
+    Patient_DOHOD_ID: Patient.PRecord.DOHOD_ID := StrToInt(AValue);
+    Patient_DOSIENOMER: Patient.PRecord.DOSIENOMER := AValue;
+    Patient_DTEL: Patient.PRecord.DTEL := AValue;
+    Patient_DZI_NUMBER: Patient.PRecord.DZI_NUMBER := AValue;
+    Patient_EGN: Patient.PRecord.EGN := AValue;
+    Patient_EHIC_NO: Patient.PRecord.EHIC_NO := AValue;
+    Patient_EHRH_PATIENT: Patient.PRecord.EHRH_PATIENT := StrToBool(AValue);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: Patient.PRecord.EKATTE_RESIDENTIAL_ADDRESS := AValue;
+    Patient_EKATTE_WORK_ADDRESS: Patient.PRecord.EKATTE_WORK_ADDRESS := AValue;
+    Patient_EMAIL: Patient.PRecord.EMAIL := AValue;
+    Patient_ET: Patient.PRecord.ET := AValue;
+    Patient_FNAME: Patient.PRecord.FNAME := AValue;
+    Patient_FUND_ID: Patient.PRecord.FUND_ID := StrToInt(AValue);
+    Patient_GDPR_PRINTED: Patient.PRecord.GDPR_PRINTED := StrToBool(AValue);
+    Patient_GRAJD: Patient.PRecord.GRAJD := AValue;
+    Patient_HEALTH_INSURANCE_NAME: Patient.PRecord.HEALTH_INSURANCE_NAME := AValue;
+    Patient_HEALTH_INSURANCE_NUMBER: Patient.PRecord.HEALTH_INSURANCE_NUMBER := AValue;
+    Patient_ID: Patient.PRecord.ID := StrToInt(AValue);
+    Patient_IS_NEBL_USL: Patient.PRecord.IS_NEBL_USL := StrToBool(AValue);
+    Patient_IS_SECOND_JOB: Patient.PRecord.IS_SECOND_JOB := AValue;
+    Patient_JK: Patient.PRecord.JK := AValue;
+    Patient_KYRMA3MES: Patient.PRecord.KYRMA3MES := StrToBool(AValue);
+    Patient_KYRMA6MES: Patient.PRecord.KYRMA6MES := StrToBool(AValue);
+    Patient_LAK_NUMBER: Patient.PRecord.LAK_NUMBER := StrToInt(AValue);
+    Patient_LKIZD: Patient.PRecord.LKIZD := StrToDate(AValue);
+    Patient_LKNO: Patient.PRecord.LKNO := AValue;
+    Patient_LKOT: Patient.PRecord.LKOT := AValue;
+    Patient_LK_VALID_TO: Patient.PRecord.LK_VALID_TO := StrToDate(AValue);
+    Patient_LNAME: Patient.PRecord.LNAME := AValue;
+    Patient_MTEL: Patient.PRecord.MTEL := AValue;
+    Patient_NAS_MQSTO: Patient.PRecord.NAS_MQSTO := AValue;
+    Patient_NOMER: Patient.PRecord.NOMER := AValue;
+    Patient_NZIS_BEBE: Patient.PRecord.NZIS_BEBE := AValue;
+    Patient_NZIS_PID: Patient.PRecord.NZIS_PID := AValue;
+    Patient_NZIS_PID_TYPE: Patient.PRecord.NZIS_PID_TYPE := StrToInt(AValue);
+    Patient_OBLAST: Patient.PRecord.OBLAST := AValue;
+    Patient_OBSHTINA: Patient.PRecord.OBSHTINA := AValue;
+    Patient_OSIGNO: Patient.PRecord.OSIGNO := AValue;
+    Patient_OSIGUREN: Patient.PRecord.OSIGUREN := StrToBool(AValue);
+    Patient_PASS: Patient.PRecord.PASS := AValue;
+    Patient_PAT_KIND: Patient.PRecord.PAT_KIND := StrToInt(AValue);
+    Patient_PID_TYPE: Patient.PRecord.PID_TYPE := AValue;
+    Patient_PKUT: Patient.PRecord.PKUT := AValue;
+    Patient_PREVIOUS_DOCTOR_ID: Patient.PRecord.PREVIOUS_DOCTOR_ID := StrToInt(AValue);
+    Patient_RACE: Patient.PRecord.RACE := StrToInt(AValue);
+    Patient_RECKNNO: Patient.PRecord.RECKNNO := AValue;
+    Patient_RH: Patient.PRecord.RH := AValue;
+    Patient_RZOK: Patient.PRecord.RZOK := AValue;
+    Patient_RZOKR: Patient.PRecord.RZOKR := AValue;
+    Patient_SEM_POLOJ_ID: Patient.PRecord.SEM_POLOJ_ID := StrToInt(AValue);
+    Patient_SEX_TYPE: Patient.PRecord.SEX_TYPE := StrToInt(AValue);
+    Patient_SNAME: Patient.PRecord.SNAME := AValue;
+    Patient_SOC_POLOJ_ID: Patient.PRecord.SOC_POLOJ_ID := StrToInt(AValue);
+    Patient_STEL: Patient.PRecord.STEL := AValue;
+    Patient_TIME_HEALTH_INSURANCE_CHECK: Patient.PRecord.TIME_HEALTH_INSURANCE_CHECK := StrToTime(AValue);
+    Patient_TYPE_CERTIFICATE: Patient.PRecord.TYPE_CERTIFICATE := AValue;
+    Patient_ULICA: Patient.PRecord.ULICA := AValue;
+    Patient_VH: Patient.PRecord.VH := AValue;
+    Patient_WORK_CITY: Patient.PRecord.WORK_CITY := AValue;
+    Patient_WORK_CITY2: Patient.PRecord.WORK_CITY2 := AValue;
+    Patient_WORK_COMPANY: Patient.PRecord.WORK_COMPANY := AValue;
+    Patient_WORK_COMPANY2: Patient.PRecord.WORK_COMPANY2 := AValue;
+    Patient_WORK_JK: Patient.PRecord.WORK_JK := AValue;
+    Patient_WORK_JK2: Patient.PRecord.WORK_JK2 := AValue;
+    Patient_WORK_POSITION: Patient.PRecord.WORK_POSITION := AValue;
+    Patient_WORK_POSITION2: Patient.PRecord.WORK_POSITION2 := AValue;
+    Patient_WORK_PROFESSION: Patient.PRecord.WORK_PROFESSION := AValue;
+    Patient_WORK_PROFESSION2: Patient.PRecord.WORK_PROFESSION2 := AValue;
+    Patient_WORK_STREET_NAME: Patient.PRecord.WORK_STREET_NAME := AValue;
+    Patient_WORK_STREET_NAME2: Patient.PRecord.WORK_STREET_NAME2 := AValue;
+    Patient_WORK_STREET_NO: Patient.PRecord.WORK_STREET_NO := AValue;
+    Patient_WORK_STREET_NO2: Patient.PRecord.WORK_STREET_NO2 := AValue;
+    Patient_ZIP: Patient.PRecord.ZIP := AValue;
+  end;
+end;
+
+procedure TPatientColl.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+var
+  isOld: Boolean;
+  Patient: TPatientItem;
+begin
+  if Count = 0 then Exit;
+
+  Patient := Items[ARow];
+  if not Assigned(Patient.PRecord) then
+  begin
+    New(Patient.PRecord);
+    Patient.PRecord.setProp := [];
+	  CntUpdates := CntUpdates + 1;
+  end
+  else
+  begin
+    isOld := False;
+    case TPatientItem.TPropertyIndex(ACol) of
+      Patient_AGE_IN_YEARS_INT: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_ALKOHOL_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_AP: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_BABY_NUMBER: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_BELEJKI: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_BIRTH_DATE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_BL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_BLOOD_TYPE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_CIGARI_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_COUNTRY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DATA_HEALTH_INSURANCE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DATEFROM: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DATEISSUE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DATETO: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DATETO_TEXT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DATE_HEALTH_INSURANCE_CHECK: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DATE_OTPISVANE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DATE_ZAPISVANE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DIE_DATE: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_DIE_FROM: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DOHOD_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_DOSIENOMER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DTEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_DZI_NUMBER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_EGN: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_EHIC_NO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_EHRH_PATIENT: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_EKATTE_WORK_ADDRESS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_EMAIL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_ET: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_FNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_FUND_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_GDPR_PRINTED: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_GRAJD: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_HEALTH_INSURANCE_NAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_HEALTH_INSURANCE_NUMBER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_IS_NEBL_USL: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_IS_SECOND_JOB: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_JK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_KYRMA3MES: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_KYRMA6MES: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_LAK_NUMBER: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_LKIZD: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_LKNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_LKOT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_LK_VALID_TO: isOld :=  Patient.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    Patient_LNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_MTEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_NAS_MQSTO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_NOMER: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_NZIS_BEBE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_NZIS_PID: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_NZIS_PID_TYPE: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_OBLAST: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_OBSHTINA: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_OSIGNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_OSIGUREN: isOld :=  Patient.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    Patient_PASS: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_PAT_KIND: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_PID_TYPE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_PKUT: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_PREVIOUS_DOCTOR_ID: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_RACE: isOld :=  Patient.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_RECKNNO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_RH: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_RZOK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_RZOKR: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_SEM_POLOJ_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_SEX_TYPE: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_SNAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_SOC_POLOJ_ID: isOld :=  Patient.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    Patient_STEL: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_TIME_HEALTH_INSURANCE_CHECK: isOld :=  Patient.getTimeMap(Self.Buf, Self.posData, ACol) = StrToTime(AFieldText);
+    Patient_TYPE_CERTIFICATE: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_ULICA: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_VH: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_CITY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_CITY2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_COMPANY: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_COMPANY2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_JK: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_JK2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_POSITION: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_POSITION2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_PROFESSION: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_PROFESSION2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_STREET_NAME: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_STREET_NAME2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_STREET_NO: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_WORK_STREET_NO2: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Patient_ZIP: isOld :=  Patient.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    end;
+  end;
+  if isOld then
+  begin
+    Exclude(Patient.PRecord.setProp, TPatientItem.TPropertyIndex(ACol));
+    if Patient.PRecord.setProp = [] then
+    begin
+      Dispose(Patient.PRecord);
+      Patient.PRecord := nil;
+      CntUpdates := CntUpdates - 1;
+      Exit;
+    end;
+  end;
+  Include(Patient.PRecord.setProp, TPatientItem.TPropertyIndex(ACol));
+  case TPatientItem.TPropertyIndex(ACol) of
+    Patient_AGE_IN_YEARS: Patient.PRecord.AGE_IN_YEARS := StrToFloat(AFieldText);
+    Patient_AGE_IN_YEARS_INT: Patient.PRecord.AGE_IN_YEARS_INT := StrToInt(AFieldText);
+    Patient_ALKOHOL_ID: Patient.PRecord.ALKOHOL_ID := StrToInt(AFieldText);
+    Patient_AP: Patient.PRecord.AP := AFieldText;
+    Patient_BABY_NUMBER: Patient.PRecord.BABY_NUMBER := StrToInt(AFieldText);
+    Patient_BELEJKI: Patient.PRecord.BELEJKI := AFieldText;
+    Patient_BIRTH_DATE: Patient.PRecord.BIRTH_DATE := StrToDate(AFieldText);
+    Patient_BL: Patient.PRecord.BL := AFieldText;
+    Patient_BLOOD_TYPE: Patient.PRecord.BLOOD_TYPE := AFieldText;
+    Patient_CIGARI_ID: Patient.PRecord.CIGARI_ID := StrToInt(AFieldText);
+    Patient_COUNTRY: Patient.PRecord.COUNTRY := AFieldText;
+    Patient_DATA_HEALTH_INSURANCE: Patient.PRecord.DATA_HEALTH_INSURANCE := AFieldText;
+    Patient_DATEFROM: Patient.PRecord.DATEFROM := StrToDate(AFieldText);
+    Patient_DATEISSUE: Patient.PRecord.DATEISSUE := StrToDate(AFieldText);
+    Patient_DATETO: Patient.PRecord.DATETO := StrToDate(AFieldText);
+    Patient_DATETO_TEXT: Patient.PRecord.DATETO_TEXT := AFieldText;
+    Patient_DATE_HEALTH_INSURANCE_CHECK: Patient.PRecord.DATE_HEALTH_INSURANCE_CHECK := StrToDate(AFieldText);
+    Patient_DATE_OTPISVANE: Patient.PRecord.DATE_OTPISVANE := StrToDate(AFieldText);
+    Patient_DATE_ZAPISVANE: Patient.PRecord.DATE_ZAPISVANE := StrToDate(AFieldText);
+    Patient_DIE_DATE: Patient.PRecord.DIE_DATE := StrToDate(AFieldText);
+    Patient_DIE_FROM: Patient.PRecord.DIE_FROM := AFieldText;
+    Patient_DOHOD_ID: Patient.PRecord.DOHOD_ID := StrToInt(AFieldText);
+    Patient_DOSIENOMER: Patient.PRecord.DOSIENOMER := AFieldText;
+    Patient_DTEL: Patient.PRecord.DTEL := AFieldText;
+    Patient_DZI_NUMBER: Patient.PRecord.DZI_NUMBER := AFieldText;
+    Patient_EGN: Patient.PRecord.EGN := AFieldText;
+    Patient_EHIC_NO: Patient.PRecord.EHIC_NO := AFieldText;
+    Patient_EHRH_PATIENT: Patient.PRecord.EHRH_PATIENT := StrToBool(AFieldText);
+    Patient_EKATTE_RESIDENTIAL_ADDRESS: Patient.PRecord.EKATTE_RESIDENTIAL_ADDRESS := AFieldText;
+    Patient_EKATTE_WORK_ADDRESS: Patient.PRecord.EKATTE_WORK_ADDRESS := AFieldText;
+    Patient_EMAIL: Patient.PRecord.EMAIL := AFieldText;
+    Patient_ET: Patient.PRecord.ET := AFieldText;
+    Patient_FNAME: Patient.PRecord.FNAME := AFieldText;
+    Patient_FUND_ID: Patient.PRecord.FUND_ID := StrToInt(AFieldText);
+    Patient_GDPR_PRINTED: Patient.PRecord.GDPR_PRINTED := StrToBool(AFieldText);
+    Patient_GRAJD: Patient.PRecord.GRAJD := AFieldText;
+    Patient_HEALTH_INSURANCE_NAME: Patient.PRecord.HEALTH_INSURANCE_NAME := AFieldText;
+    Patient_HEALTH_INSURANCE_NUMBER: Patient.PRecord.HEALTH_INSURANCE_NUMBER := AFieldText;
+    Patient_ID: Patient.PRecord.ID := StrToInt(AFieldText);
+    Patient_IS_NEBL_USL: Patient.PRecord.IS_NEBL_USL := StrToBool(AFieldText);
+    Patient_IS_SECOND_JOB: Patient.PRecord.IS_SECOND_JOB := AFieldText;
+    Patient_JK: Patient.PRecord.JK := AFieldText;
+    Patient_KYRMA3MES: Patient.PRecord.KYRMA3MES := StrToBool(AFieldText);
+    Patient_KYRMA6MES: Patient.PRecord.KYRMA6MES := StrToBool(AFieldText);
+    Patient_LAK_NUMBER: Patient.PRecord.LAK_NUMBER := StrToInt(AFieldText);
+    Patient_LKIZD: Patient.PRecord.LKIZD := StrToDate(AFieldText);
+    Patient_LKNO: Patient.PRecord.LKNO := AFieldText;
+    Patient_LKOT: Patient.PRecord.LKOT := AFieldText;
+    Patient_LK_VALID_TO: Patient.PRecord.LK_VALID_TO := StrToDate(AFieldText);
+    Patient_LNAME: Patient.PRecord.LNAME := AFieldText;
+    Patient_MTEL: Patient.PRecord.MTEL := AFieldText;
+    Patient_NAS_MQSTO: Patient.PRecord.NAS_MQSTO := AFieldText;
+    Patient_NOMER: Patient.PRecord.NOMER := AFieldText;
+    Patient_NZIS_BEBE: Patient.PRecord.NZIS_BEBE := AFieldText;
+    Patient_NZIS_PID: Patient.PRecord.NZIS_PID := AFieldText;
+    Patient_NZIS_PID_TYPE: Patient.PRecord.NZIS_PID_TYPE := StrToInt(AFieldText);
+    Patient_OBLAST: Patient.PRecord.OBLAST := AFieldText;
+    Patient_OBSHTINA: Patient.PRecord.OBSHTINA := AFieldText;
+    Patient_OSIGNO: Patient.PRecord.OSIGNO := AFieldText;
+    Patient_OSIGUREN: Patient.PRecord.OSIGUREN := StrToBool(AFieldText);
+    Patient_PASS: Patient.PRecord.PASS := AFieldText;
+    Patient_PAT_KIND: Patient.PRecord.PAT_KIND := StrToInt(AFieldText);
+    Patient_PID_TYPE: Patient.PRecord.PID_TYPE := AFieldText;
+    Patient_PKUT: Patient.PRecord.PKUT := AFieldText;
+    Patient_PREVIOUS_DOCTOR_ID: Patient.PRecord.PREVIOUS_DOCTOR_ID := StrToInt(AFieldText);
+    Patient_RACE: Patient.PRecord.RACE := StrToInt(AFieldText);
+    Patient_RECKNNO: Patient.PRecord.RECKNNO := AFieldText;
+    Patient_RH: Patient.PRecord.RH := AFieldText;
+    Patient_RZOK: Patient.PRecord.RZOK := AFieldText;
+    Patient_RZOKR: Patient.PRecord.RZOKR := AFieldText;
+    Patient_SEM_POLOJ_ID: Patient.PRecord.SEM_POLOJ_ID := StrToInt(AFieldText);
+    Patient_SEX_TYPE: Patient.PRecord.SEX_TYPE := StrToInt(AFieldText);
+    Patient_SNAME: Patient.PRecord.SNAME := AFieldText;
+    Patient_SOC_POLOJ_ID: Patient.PRecord.SOC_POLOJ_ID := StrToInt(AFieldText);
+    Patient_STEL: Patient.PRecord.STEL := AFieldText;
+    Patient_TIME_HEALTH_INSURANCE_CHECK: Patient.PRecord.TIME_HEALTH_INSURANCE_CHECK := StrToTime(AFieldText);
+    Patient_TYPE_CERTIFICATE: Patient.PRecord.TYPE_CERTIFICATE := AFieldText;
+    Patient_ULICA: Patient.PRecord.ULICA := AFieldText;
+    Patient_VH: Patient.PRecord.VH := AFieldText;
+    Patient_WORK_CITY: Patient.PRecord.WORK_CITY := AFieldText;
+    Patient_WORK_CITY2: Patient.PRecord.WORK_CITY2 := AFieldText;
+    Patient_WORK_COMPANY: Patient.PRecord.WORK_COMPANY := AFieldText;
+    Patient_WORK_COMPANY2: Patient.PRecord.WORK_COMPANY2 := AFieldText;
+    Patient_WORK_JK: Patient.PRecord.WORK_JK := AFieldText;
+    Patient_WORK_JK2: Patient.PRecord.WORK_JK2 := AFieldText;
+    Patient_WORK_POSITION: Patient.PRecord.WORK_POSITION := AFieldText;
+    Patient_WORK_POSITION2: Patient.PRecord.WORK_POSITION2 := AFieldText;
+    Patient_WORK_PROFESSION: Patient.PRecord.WORK_PROFESSION := AFieldText;
+    Patient_WORK_PROFESSION2: Patient.PRecord.WORK_PROFESSION2 := AFieldText;
+    Patient_WORK_STREET_NAME: Patient.PRecord.WORK_STREET_NAME := AFieldText;
+    Patient_WORK_STREET_NAME2: Patient.PRecord.WORK_STREET_NAME2 := AFieldText;
+    Patient_WORK_STREET_NO: Patient.PRecord.WORK_STREET_NO := AFieldText;
+    Patient_WORK_STREET_NO2: Patient.PRecord.WORK_STREET_NO2 := AFieldText;
+    Patient_ZIP: Patient.PRecord.ZIP := AFieldText;
+  end;
+end;
+
+procedure TPatientColl.SetItem(Index: Integer; const Value: TPatientItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+procedure TPatientColl.SetSearchingValue(const Value: string);
+var
+  i: Integer;
+begin
+  FSearchingValue := Value;
+  ListPatientSearch.Clear;
+  for i := 0 to self.Count - 1 do
+  begin
+    case  TPatientItem.TPropertyIndex(self.FindedRes.PropIndex) of
+	  Patient_AGE_IN_YEARS_INT: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_AP:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_BABY_NUMBER: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_BELEJKI:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_BL:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_BLOOD_TYPE:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_COUNTRY:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DATA_HEALTH_INSURANCE:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DATETO_TEXT:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DIE_FROM:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DOSIENOMER:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DTEL:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_DZI_NUMBER:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_EGN:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_EHIC_NO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_EKATTE_RESIDENTIAL_ADDRESS:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_EKATTE_WORK_ADDRESS:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_EMAIL:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_ET:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_FNAME:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_FUND_ID: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_GRAJD:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_HEALTH_INSURANCE_NAME:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_HEALTH_INSURANCE_NUMBER:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_ID: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_IS_SECOND_JOB:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_JK:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_LAK_NUMBER: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_LKNO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_LKOT:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_LNAME:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_MTEL:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_NAS_MQSTO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_NOMER:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_NZIS_BEBE:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_NZIS_PID:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_OBLAST:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_OBSHTINA:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_OSIGNO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_PASS:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_PID_TYPE:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_PKUT:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_PREVIOUS_DOCTOR_ID: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_RACE: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_RECKNNO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_RH:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_RZOK:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_RZOKR:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_SNAME:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_STEL:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_TYPE_CERTIFICATE:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_ULICA:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_VH:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_CITY:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_CITY2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_COMPANY:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_COMPANY2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_JK:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_JK2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_POSITION:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_POSITION2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_PROFESSION:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_PROFESSION2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_STREET_NAME:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_STREET_NAME2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_STREET_NO:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_WORK_STREET_NO2:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+      Patient_ZIP:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListPatientSearch.Add(self.Items[i]);
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TPatientColl.ShowGrid(Grid: TTeeGrid);
+var
+  i: word;
+
+begin
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCell;
+  TVirtualModeData(Grid.Data).OnSetValue:=self.SetCell;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 100;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 50;
+  Grid.Columns[self.FieldCount].Index := 0;
+
+end;
+
+procedure TPatientColl.ShowSearchedGrid(Grid: TTeeGrid);
+var
+  i: word;
+
+begin
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListPatientSearch.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListPatientSearch.Count]);
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
+  TVirtualModeData(Grid.Data).OnSetValue:=nil;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 110;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 90;
+  Grid.Columns[self.FieldCount].Index := 0;
+
+end;
+
+procedure TPatientColl.SortByIndexAnsiString;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
+        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TPatientColl.SortByIndexInt;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).IndexInt < (Items[P]).IndexInt do Inc(I);
+        while (Items[J]).IndexInt > (Items[P]).IndexInt do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TPatientColl.SortByIndexValue(propIndex: TPatientItem.TPropertyIndex);
+begin
+  case propIndex of
+    Patient_AGE_IN_YEARS_INT: SortByIndexInt;
+      Patient_AP: SortByIndexAnsiString;
+      Patient_BABY_NUMBER: SortByIndexInt;
+      Patient_BELEJKI: SortByIndexAnsiString;
+      Patient_BL: SortByIndexAnsiString;
+      Patient_BLOOD_TYPE: SortByIndexAnsiString;
+      Patient_COUNTRY: SortByIndexAnsiString;
+      Patient_DATA_HEALTH_INSURANCE: SortByIndexAnsiString;
+      Patient_DATETO_TEXT: SortByIndexAnsiString;
+      Patient_DIE_FROM: SortByIndexAnsiString;
+      Patient_DOSIENOMER: SortByIndexAnsiString;
+      Patient_DTEL: SortByIndexAnsiString;
+      Patient_DZI_NUMBER: SortByIndexAnsiString;
+      Patient_EGN: SortByIndexAnsiString;
+      Patient_EHIC_NO: SortByIndexAnsiString;
+      Patient_EKATTE_RESIDENTIAL_ADDRESS: SortByIndexAnsiString;
+      Patient_EKATTE_WORK_ADDRESS: SortByIndexAnsiString;
+      Patient_EMAIL: SortByIndexAnsiString;
+      Patient_ET: SortByIndexAnsiString;
+      Patient_FNAME: SortByIndexAnsiString;
+      Patient_FUND_ID: SortByIndexInt;
+      Patient_GRAJD: SortByIndexAnsiString;
+      Patient_HEALTH_INSURANCE_NAME: SortByIndexAnsiString;
+      Patient_HEALTH_INSURANCE_NUMBER: SortByIndexAnsiString;
+      Patient_ID: SortByIndexInt;
+      Patient_IS_SECOND_JOB: SortByIndexAnsiString;
+      Patient_JK: SortByIndexAnsiString;
+      Patient_LAK_NUMBER: SortByIndexInt;
+      Patient_LKNO: SortByIndexAnsiString;
+      Patient_LKOT: SortByIndexAnsiString;
+      Patient_LNAME: SortByIndexAnsiString;
+      Patient_MTEL: SortByIndexAnsiString;
+      Patient_NAS_MQSTO: SortByIndexAnsiString;
+      Patient_NOMER: SortByIndexAnsiString;
+      Patient_NZIS_BEBE: SortByIndexAnsiString;
+      Patient_NZIS_PID: SortByIndexAnsiString;
+      Patient_OBLAST: SortByIndexAnsiString;
+      Patient_OBSHTINA: SortByIndexAnsiString;
+      Patient_OSIGNO: SortByIndexAnsiString;
+      Patient_PASS: SortByIndexAnsiString;
+      Patient_PID_TYPE: SortByIndexAnsiString;
+      Patient_PKUT: SortByIndexAnsiString;
+      Patient_PREVIOUS_DOCTOR_ID: SortByIndexInt;
+      Patient_RACE: SortByIndexInt;
+      Patient_RECKNNO: SortByIndexAnsiString;
+      Patient_RH: SortByIndexAnsiString;
+      Patient_RZOK: SortByIndexAnsiString;
+      Patient_RZOKR: SortByIndexAnsiString;
+      Patient_SNAME: SortByIndexAnsiString;
+      Patient_STEL: SortByIndexAnsiString;
+      Patient_TYPE_CERTIFICATE: SortByIndexAnsiString;
+      Patient_ULICA: SortByIndexAnsiString;
+      Patient_VH: SortByIndexAnsiString;
+      Patient_WORK_CITY: SortByIndexAnsiString;
+      Patient_WORK_CITY2: SortByIndexAnsiString;
+      Patient_WORK_COMPANY: SortByIndexAnsiString;
+      Patient_WORK_COMPANY2: SortByIndexAnsiString;
+      Patient_WORK_JK: SortByIndexAnsiString;
+      Patient_WORK_JK2: SortByIndexAnsiString;
+      Patient_WORK_POSITION: SortByIndexAnsiString;
+      Patient_WORK_POSITION2: SortByIndexAnsiString;
+      Patient_WORK_PROFESSION: SortByIndexAnsiString;
+      Patient_WORK_PROFESSION2: SortByIndexAnsiString;
+      Patient_WORK_STREET_NAME: SortByIndexAnsiString;
+      Patient_WORK_STREET_NAME2: SortByIndexAnsiString;
+      Patient_WORK_STREET_NO: SortByIndexAnsiString;
+      Patient_WORK_STREET_NO2: SortByIndexAnsiString;
+      Patient_ZIP: SortByIndexAnsiString;
+  end;
+end;
+
+end.

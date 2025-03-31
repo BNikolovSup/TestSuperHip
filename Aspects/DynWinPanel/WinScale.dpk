@@ -1,0 +1,65 @@
+package WinScale;
+
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$DESCRIPTION 'ScaleForm'}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  vcl,
+  dbrtl,
+  vcldb,
+  VirtualTreesR,
+  DesignIDE,
+  GR32_RSXE5,
+  SynEdit_R,
+  vclx,
+  VCLTeeGrid,
+  TeeGrid,
+  VTR,
+  AspectsVirtual;
+
+contains
+  DynWinPanel in 'DynWinPanel.pas',
+  SizeGripMemo in 'SizeGripMemo.pas',
+  DBCheckBoxResize in 'DBCheckBoxResize.pas',
+  DynEditData in 'DynEditData.pas',
+  CustomGridDisp in 'CustomGridDisp.pas',
+  ControlTest in 'ControlTest.pas',
+  DynLabelData in 'DynLabelData.pas',
+  DynGroup in 'DynGroup.pas',
+  DynPropertyEditors in 'DynPropertyEditors.pas',
+  DynDatabase in 'DynDatabase.pas',
+  DynSpeedButton in 'DynSpeedButton.pas',
+  DynButtonData in 'DynButtonData.pas',
+  DynTabSet in 'DynTabSet.pas',
+  DynDateTimePicker in 'DynDateTimePicker.pas';
+
+//ComboBoxHip in 'compTest\ComboBoxHip.pas',
+  //Aspects.Types in 'Aspects.Types.pas';
+
+end.

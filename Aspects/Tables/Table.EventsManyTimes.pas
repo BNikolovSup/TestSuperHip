@@ -1,0 +1,810 @@
+unit Table.EventsManyTimes;
+
+interface
+uses
+  Aspects.Collections, Aspects.Types,
+  VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
+  classes, system.SysUtils, windows, System.Generics.Collections,
+  VirtualTrees;
+
+type
+TCollectionForSort = class(TPersistent)
+  private
+    FItemClass: TCollectionItemClass;
+    FItems: TList<TCollectionItem>;
+  end;
+
+TFindedResult = record
+  PropIndex: Word;
+  DataPos: Cardinal;
+end;
+
+TTeeGRD = class(VCLTee.Grid.TTeeGrid);
+TLogicalEventsManyTimes = (
+    HEALTH_INSURANCE_NAME,
+    HEALTH_INSURANCE_NUMBER,
+    DATA_HEALTH_INSURANCE,
+    DATE_HEALTH_INSURANCE_CHECK,
+    TIME_HEALTH_INSURANCE_CHECK,  //5
+    DATE_OTPISVANE,
+    DATE_ZAPISVANE,
+    DATEFROM,
+    DATEISSUE,
+    DATETO,  //10
+    DATETO_TEXT,
+    GRAJD,
+    IS_NEBL_USL,
+    OSIGNO,
+    OSIGUREN, //15
+    PASS, //
+    PREVIOUS_DOCTOR_ID,
+    TYPE_CERTIFICATE,
+    FUND_ID,
+    PAT_KIND,// 20
+    RZOK,
+    RZOKR,
+    NAS_MQSTO);
+TlogicalEventsManyTimesSet = set of TLogicalEventsManyTimes;
+
+
+TEventsManyTimesItem = class(TBaseItem)
+  public
+    type
+      TPropertyIndex = (EventsManyTimes_valInteger
+, EventsManyTimes_valAnsiString
+, EventsManyTimes_valTDate
+, EventsManyTimes_valTTime
+, EventsManyTimes_valboolean
+, EventsManyTimes_valword
+, EventsManyTimes_Logical
+);
+      TSetProp = set of TPropertyIndex;
+      PRecEventsManyTimes = ^TRecEventsManyTimes;
+      TRecEventsManyTimes = record
+        valInteger: integer;
+        valAnsiString: AnsiString;
+        valTDate: TDate;
+        valTTime: TTime;
+        valboolean: boolean;
+        valword: word;
+        Logical: TlogicalEventsManyTimesSet;
+        setProp: TSetProp;
+      end;
+
+  public
+    PRecord: ^TRecEventsManyTimes;
+	IndexInt: Integer;
+	IndexWord: word;
+	IndexAnsiStr: PAnsiChar;
+    IndexAnsiStr1: AnsiString;
+    IndexField: TPropertyIndex;
+	
+    constructor Create(Collection: TCollection); override;
+    destructor Destroy; override;
+    procedure InsertEventsManyTimes;
+    procedure UpdateEventsManyTimes;
+    procedure SaveEventsManyTimes(var dataPosition: Cardinal);
+  end;
+
+
+  TEventsManyTimesColl = class(TBaseCollection)
+  private
+    FSearchingInt: Integer;
+    FSearchingValue: string;
+    function GetItem(Index: Integer): TEventsManyTimesItem;
+    procedure SetItem(Index: Integer; const Value: TEventsManyTimesItem);
+    procedure SetSearchingValue(const Value: string);
+  public
+    tempItem: TEventsManyTimesItem;
+    FindedRes: TFindedResult;
+    ListEventsManyTimesSearch: TList<TEventsManyTimesItem>;
+
+    constructor Create(ItemClass: TCollectionItemClass);override;
+    destructor destroy; override;
+
+    function AddItem(ver: word):TEventsManyTimesItem;
+    procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+    procedure GetCellFromMap(propIndex: word; ARow: Integer; EventsManyTimes: TEventsManyTimesItem; var AValue:String);
+    procedure GetCellFromRecord(propIndex: word; EventsManyTimes: TEventsManyTimesItem; var AValue:String);
+    procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
+    procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
+    procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
+	procedure DynControlEnter(Sender: TObject);
+    procedure SortByIndexValue(propIndex: TEventsManyTimesItem.TPropertyIndex);
+    procedure SortByIndexInt;
+	procedure SortByIndexWord;
+    procedure SortByIndexAnsiString;
+
+	function DisplayName(propIndex: Word): string;
+	function FieldCount: Integer; override;
+	procedure ShowGrid(Grid: TTeeGrid);override;
+	procedure ShowSearchedGrid(Grid: TTeeGrid);
+    
+    procedure IndexValue(propIndex: TEventsManyTimesItem.TPropertyIndex);
+    property Items[Index: Integer]: TEventsManyTimesItem read GetItem write SetItem;
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+  end;
+
+implementation
+
+{ TEventsManyTimesItem }
+
+constructor TEventsManyTimesItem.Create(Collection: TCollection);
+begin
+  inherited;
+end;
+
+destructor TEventsManyTimesItem.Destroy;
+begin
+  if Assigned(PRecord) then
+    Dispose(PRecord);
+  inherited;
+end;
+
+procedure TEventsManyTimesItem.InsertEventsManyTimes;
+var
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  propIndx: TPropertyIndex;
+  pCardinalData: ^Cardinal;
+  pWordData: ^Word;
+begin
+  CollType := Aspects.Types.TCollectionsType.ctEventsManyTimes;
+  pCardinalData := pointer(PByte(buf));
+  FPosMetaData := pCardinalData^;
+  pCardinalData := pointer(PByte(buf) + 4);
+  FLenMetaData := pCardinalData^;
+  metaPosition :=  FPosMetaData + FLenMetaData;
+
+  pCardinalData := pointer(PByte(buf) + 8);
+  FPosData := pCardinalData^;
+  pCardinalData := pointer(PByte(buf) + 12);
+  FLenData := pCardinalData^;
+  dataPosition :=  FPosData + FLenData;
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  case FVersion of
+    0:
+    begin
+      pWordData := pointer(PByte(buf) + metaPosition);
+      pWordData^  := word(CollType);
+      pWordData := pointer(PByte(buf) + metaPosition + 2);
+      pWordData^  := FVersion;
+      inc(metaPosition, 4);
+	    Self.DataPos := metaPosition;
+	  
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if Assigned(PRecord) and (propIndx in PRecord.setProp) then
+        begin
+          case propIndx of
+            EventsManyTimes_valInteger: SaveData(PRecord.valInteger, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valAnsiString: SaveData(PRecord.valAnsiString, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTDate: SaveData(PRecord.valTDate, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTTime: SaveData(PRecord.valTTime, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valboolean: SaveData(PRecord.valboolean, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valword: SaveData(PRecord.valword, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          SaveNull(metaPosition);
+        end;
+      end;
+      pCardinalData := pointer(PByte(buf) + 4);
+      pCardinalData^  := metaPosition - FPosMetaData;
+      pCardinalData := pointer(PByte(buf) + 12);
+      pCardinalData^  := dataPosition - FPosData;
+    end;
+  end;
+end;
+
+procedure TEventsManyTimesItem.SaveEventsManyTimes(var dataPosition: Cardinal);
+var
+  CollType: TCollectionsType;
+  metaPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctEventsManyTimes;
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          SaveHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            EventsManyTimes_valInteger: SaveData(PRecord.valInteger, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valAnsiString: SaveData(PRecord.valAnsiString, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTDate: SaveData(PRecord.valTDate, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTTime: SaveData(PRecord.valTTime, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valboolean: SaveData(PRecord.valboolean, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valword: SaveData(PRecord.valword, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+    end;
+  end;
+end;
+
+procedure TEventsManyTimesItem.UpdateEventsManyTimes;
+var
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctEventsManyTimes;
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          UpdateHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            EventsManyTimes_valInteger: UpdateData(PRecord.valInteger, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valAnsiString: UpdateData(PRecord.valAnsiString, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTDate: UpdateData(PRecord.valTDate, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valTTime: UpdateData(PRecord.valTTime, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valboolean: UpdateData(PRecord.valboolean, PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_valword: UpdateData(PRecord.valword, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+    end;
+  end;
+end;
+
+{ TEventsManyTimesColl }
+
+function TEventsManyTimesColl.AddItem(ver: word): TEventsManyTimesItem;
+begin
+  Result := TEventsManyTimesItem(add);
+  Result.Version := ver;
+  case ver of // в зависимост от версията на записа
+    0:
+    begin
+    end;
+  end;
+end;
+
+
+constructor TEventsManyTimesColl.Create(ItemClass: TCollectionItemClass);
+begin
+  inherited;
+  tempItem := TEventsManyTimesItem.Create(nil);
+  ListEventsManyTimesSearch := TList<TEventsManyTimesItem>.Create;
+  FindedRes.DataPos := 0;
+  FindedRes.PropIndex := MAXWORD;
+end;
+
+destructor TEventsManyTimesColl.destroy;
+begin
+  FreeAndNil(ListEventsManyTimesSearch);
+  FreeAndNil(tempItem);
+  inherited;
+end;
+
+function TEventsManyTimesColl.DisplayName(propIndex: Word): string;
+begin
+  case TEventsManyTimesItem.TPropertyIndex(propIndex) of
+    EventsManyTimes_valInteger: Result := 'valInteger';
+    EventsManyTimes_valAnsiString: Result := 'valAnsiString';
+    EventsManyTimes_valTDate: Result := 'valTDate';
+    EventsManyTimes_valTTime: Result := 'valTTime';
+    EventsManyTimes_valboolean: Result := 'valboolean';
+    EventsManyTimes_valword: Result := 'valword';
+    EventsManyTimes_Logical: Result := 'Logical';
+  end;
+end;
+
+procedure TEventsManyTimesColl.DynControlEnter(Sender: TObject);
+begin
+  self.FindedRes.DataPos := 0;
+  //self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
+  self.IndexValue(TEventsManyTimesItem.TPropertyIndex(self.FindedRes.PropIndex));
+end;
+
+function TEventsManyTimesColl.FieldCount: Integer;
+begin
+  inherited;
+  Result := 7;
+end;
+
+procedure TEventsManyTimesColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  EventsManyTimes: TEventsManyTimesItem;
+  ACol: Integer;
+  prop: TEventsManyTimesItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if Count = 0 then Exit;
+
+  EventsManyTimes := Items[ARow];
+  prop := TEventsManyTimesItem.TPropertyIndex(ACol);
+  if Assigned(EventsManyTimes.PRecord) and (prop in EventsManyTimes.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, EventsManyTimes, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, EventsManyTimes, AValue);
+  end;
+end;
+
+procedure TEventsManyTimesColl.GetCellFromRecord(propIndex: word; EventsManyTimes: TEventsManyTimesItem; var AValue: String);
+var
+  str: string;
+begin
+  case TEventsManyTimesItem.TPropertyIndex(propIndex) of
+    EventsManyTimes_valInteger: str := inttostr(EventsManyTimes.PRecord.valInteger);
+    EventsManyTimes_valAnsiString: str := (EventsManyTimes.PRecord.valAnsiString);
+    EventsManyTimes_valTDate: str := DateToStr(EventsManyTimes.PRecord.valTDate);
+    EventsManyTimes_valTTime: str := TimeToStr(EventsManyTimes.PRecord.valTTime);
+    EventsManyTimes_valboolean: str := BoolToStr(EventsManyTimes.PRecord.valboolean, True);
+    EventsManyTimes_valword: str := inttostr(EventsManyTimes.PRecord.valword);
+    EventsManyTimes_Logical: str := EventsManyTimes.Logical32ToStr(TLogicalData32(EventsManyTimes.PRecord.Logical));
+  else
+    begin
+      str := '';
+    end;
+  end;
+  AValue := str;
+end;
+
+procedure TEventsManyTimesColl.GetCellListNodes(Sender: TObject;
+  const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  ACol: Integer;
+  prop: TEventsManyTimesItem.TPropertyIndex;
+begin
+  inherited;
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if (ListNodes.count - 1) < ARow then exit;
+
+  TempItem.DataPos := ListNodes[ARow].DataPos;
+  prop := TEventsManyTimesItem.TPropertyIndex(ACol);
+  GetCellFromMap(ACol, ARow, TempItem, AValue);
+end;
+
+procedure TEventsManyTimesColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  EventsManyTimes: TEventsManyTimesItem;
+  ACol: Integer;
+  prop: TEventsManyTimesItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if Count = 0 then Exit;
+
+  EventsManyTimes := ListEventsManyTimesSearch[ARow];
+  prop := TEventsManyTimesItem.TPropertyIndex(ACol);
+  if Assigned(EventsManyTimes.PRecord) and (prop in EventsManyTimes.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, EventsManyTimes, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, EventsManyTimes, AValue);
+  end;
+end;
+
+procedure TEventsManyTimesColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+var
+  EventsManyTimes: TEventsManyTimesItem;
+  prop: TEventsManyTimesItem.TPropertyIndex;
+begin
+  if Count = 0 then Exit;
+
+  EventsManyTimes := Items[ARow];
+  prop := TEventsManyTimesItem.TPropertyIndex(ACol);
+  if Assigned(EventsManyTimes.PRecord) and (prop in EventsManyTimes.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, EventsManyTimes, AFieldText);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, EventsManyTimes, AFieldText);
+  end;
+end;
+
+procedure TEventsManyTimesColl.GetCellFromMap(propIndex: word; ARow: Integer; EventsManyTimes: TEventsManyTimesItem; var AValue: String);
+var
+  str: string;
+  len: Word;
+  int: PInt;
+  wrd: PWord;
+  bt: PByte;
+  pstr: pchar;
+  pDbl: PDouble;
+  pbl: PBoolean;
+begin
+  case TEventsManyTimesItem.TPropertyIndex(propIndex) of
+    EventsManyTimes_valInteger: str :=  inttostr(EventsManyTimes.getIntMap(Self.Buf, Self.posData, propIndex));
+    EventsManyTimes_valAnsiString: str :=  EventsManyTimes.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    EventsManyTimes_valTDate: str :=  DateToStr(EventsManyTimes.getDateMap(Self.Buf, Self.posData, propIndex));
+    EventsManyTimes_valTTime: str :=  TimeToStr(EventsManyTimes.getTimeMap(Self.Buf, Self.posData, propIndex));
+    EventsManyTimes_valboolean: str :=  BoolToStr(EventsManyTimes.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    EventsManyTimes_valword: str :=  inttostr(EventsManyTimes.getWordMap(Self.Buf, Self.posData, propIndex));
+    EventsManyTimes_Logical: str :=  EventsManyTimes.Logical32ToStr(EventsManyTimes.getLogical32Map(Self.Buf, Self.posData, propIndex));
+  else
+    begin
+      str := IntToStr(ARow + 1);
+    end;
+  end;
+  AValue := str;
+end;
+
+function TEventsManyTimesColl.GetItem(Index: Integer): TEventsManyTimesItem;
+begin
+  Result := TEventsManyTimesItem(inherited GetItem(Index));
+end;
+
+
+procedure TEventsManyTimesColl.IndexValue(propIndex: TEventsManyTimesItem.TPropertyIndex);
+var
+  i: Integer;
+  len: Word;
+  TempItem: TEventsManyTimesItem;
+begin
+  for i := 0 to self.Count - 1 do
+  begin
+    TempItem := self.Items[i];
+    case propIndex of
+      EventsManyTimes_valInteger: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      EventsManyTimes_valAnsiString:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      EventsManyTimes_valword: TempItem.IndexWord :=  TempItem.getPWordMap(Self.Buf, self.posData, word(propIndex))^;
+    end;
+  end;
+end;
+
+procedure TEventsManyTimesColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  isOld: Boolean;
+  EventsManyTimes: TEventsManyTimesItem;
+  ACol: Integer;
+begin
+  if Count = 0 then Exit;
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+
+  EventsManyTimes := Items[ARow];
+  if not Assigned(EventsManyTimes.PRecord) then
+  begin
+    New(EventsManyTimes.PRecord);
+    EventsManyTimes.PRecord.setProp := [];
+	CntUpdates := CntUpdates + 1;
+  end
+  else
+  begin
+    isOld := False;
+    case TEventsManyTimesItem.TPropertyIndex(ACol) of
+      EventsManyTimes_valInteger: isOld :=  EventsManyTimes.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    EventsManyTimes_valAnsiString: isOld :=  EventsManyTimes.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    EventsManyTimes_valTDate: isOld :=  EventsManyTimes.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    EventsManyTimes_valTTime: isOld :=  EventsManyTimes.getTimeMap(Self.Buf, Self.posData, ACol) = StrToTime(AValue);
+    EventsManyTimes_valboolean: isOld :=  EventsManyTimes.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    EventsManyTimes_valword: isOld :=  EventsManyTimes.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    end;
+  end;
+  if isOld then
+  begin
+    Exclude(EventsManyTimes.PRecord.setProp, TEventsManyTimesItem.TPropertyIndex(ACol));
+    if EventsManyTimes.PRecord.setProp = [] then
+    begin
+      Dispose(EventsManyTimes.PRecord);
+      EventsManyTimes.PRecord := nil;
+      CntUpdates := CntUpdates - 1;
+      Exit;
+    end;
+  end;
+  Include(EventsManyTimes.PRecord.setProp, TEventsManyTimesItem.TPropertyIndex(ACol));
+  case TEventsManyTimesItem.TPropertyIndex(ACol) of
+    EventsManyTimes_valInteger: EventsManyTimes.PRecord.valInteger := StrToInt(AValue);
+    EventsManyTimes_valAnsiString: EventsManyTimes.PRecord.valAnsiString := AValue;
+    EventsManyTimes_valTDate: EventsManyTimes.PRecord.valTDate := StrToDate(AValue);
+    EventsManyTimes_valTTime: EventsManyTimes.PRecord.valTTime := StrToTime(AValue);
+    EventsManyTimes_valboolean: EventsManyTimes.PRecord.valboolean := StrToBool(AValue);
+    EventsManyTimes_valword: EventsManyTimes.PRecord.valword := StrToInt(AValue);
+    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical32(AValue));
+  end;
+end;
+
+procedure TEventsManyTimesColl.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+var
+  isOld: Boolean;
+  EventsManyTimes: TEventsManyTimesItem;
+begin
+  if Count = 0 then Exit;
+
+  EventsManyTimes := Items[ARow];
+  if not Assigned(EventsManyTimes.PRecord) then
+  begin
+    New(EventsManyTimes.PRecord);
+    EventsManyTimes.PRecord.setProp := [];
+	  CntUpdates := CntUpdates + 1;
+  end
+  else
+  begin
+    isOld := False;
+    case TEventsManyTimesItem.TPropertyIndex(ACol) of
+      EventsManyTimes_valInteger: isOld :=  EventsManyTimes.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    EventsManyTimes_valAnsiString: isOld :=  EventsManyTimes.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    EventsManyTimes_valTDate: isOld :=  EventsManyTimes.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    EventsManyTimes_valTTime: isOld :=  EventsManyTimes.getTimeMap(Self.Buf, Self.posData, ACol) = StrToTime(AFieldText);
+    EventsManyTimes_valboolean: isOld :=  EventsManyTimes.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    EventsManyTimes_valword: isOld :=  EventsManyTimes.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    end;
+  end;
+  if isOld then
+  begin
+    Exclude(EventsManyTimes.PRecord.setProp, TEventsManyTimesItem.TPropertyIndex(ACol));
+    if EventsManyTimes.PRecord.setProp = [] then
+    begin
+      Dispose(EventsManyTimes.PRecord);
+      EventsManyTimes.PRecord := nil;
+      CntUpdates := CntUpdates - 1;
+      Exit;
+    end;
+  end;
+  Include(EventsManyTimes.PRecord.setProp, TEventsManyTimesItem.TPropertyIndex(ACol));
+  case TEventsManyTimesItem.TPropertyIndex(ACol) of
+    EventsManyTimes_valInteger: EventsManyTimes.PRecord.valInteger := StrToInt(AFieldText);
+    EventsManyTimes_valAnsiString: EventsManyTimes.PRecord.valAnsiString := AFieldText;
+    EventsManyTimes_valTDate: EventsManyTimes.PRecord.valTDate := StrToDate(AFieldText);
+    EventsManyTimes_valTTime: EventsManyTimes.PRecord.valTTime := StrToTime(AFieldText);
+    EventsManyTimes_valboolean: EventsManyTimes.PRecord.valboolean := StrToBool(AFieldText);
+    EventsManyTimes_valword: EventsManyTimes.PRecord.valword := StrToInt(AFieldText);
+    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical32(AFieldText));
+  end;
+end;
+
+procedure TEventsManyTimesColl.SetItem(Index: Integer; const Value: TEventsManyTimesItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+procedure TEventsManyTimesColl.SetSearchingValue(const Value: string);
+var
+  i: Integer;
+begin
+  FSearchingValue := Value;
+  ListEventsManyTimesSearch.Clear;
+  for i := 0 to self.Count - 1 do
+  begin
+    case  TEventsManyTimesItem.TPropertyIndex(self.FindedRes.PropIndex) of
+	  EventsManyTimes_valInteger: 
+begin
+  if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+  begin
+    ListEventsManyTimesSearch.Add(self.Items[i]);
+  end;
+end;
+      EventsManyTimes_valAnsiString:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListEventsManyTimesSearch.Add(self.Items[i]);
+        end;
+      end;
+      EventsManyTimes_valword: 
+      begin
+        if IntToStr(self.Items[i].IndexWord) = FSearchingValue then
+        begin
+          ListEventsManyTimesSearch.Add(self.Items[i]);
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TEventsManyTimesColl.ShowGrid(Grid: TTeeGrid);
+var
+  i: word;
+
+begin
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCell;
+  TVirtualModeData(Grid.Data).OnSetValue:=self.SetCell;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 100;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 50;
+  Grid.Columns[self.FieldCount].Index := 0;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width + 1;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width - 1;
+
+end;
+
+procedure TEventsManyTimesColl.ShowSearchedGrid(Grid: TTeeGrid);
+var
+  i: word;
+
+begin
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListEventsManyTimesSearch.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListEventsManyTimesSearch.Count]);
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
+  TVirtualModeData(Grid.Data).OnSetValue:=nil;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 110;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 90;
+  Grid.Columns[self.FieldCount].Index := 0;
+
+end;
+
+procedure TEventsManyTimesColl.SortByIndexAnsiString;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
+        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TEventsManyTimesColl.SortByIndexInt;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).IndexInt < (Items[P]).IndexInt do Inc(I);
+        while (Items[J]).IndexInt > (Items[P]).IndexInt do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TEventsManyTimesColl.SortByIndexWord;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).IndexWord < (Items[P]).IndexWord do Inc(I);
+        while (Items[J]).IndexWord > (Items[P]).IndexWord do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TEventsManyTimesColl.SortByIndexValue(propIndex: TEventsManyTimesItem.TPropertyIndex);
+begin
+  case propIndex of
+    EventsManyTimes_valInteger: SortByIndexInt;
+      EventsManyTimes_valAnsiString: SortByIndexAnsiString;
+      EventsManyTimes_valword: SortByIndexWord;
+  end;
+end;
+
+end.

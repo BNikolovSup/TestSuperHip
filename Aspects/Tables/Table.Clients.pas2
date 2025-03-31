@@ -1,0 +1,370 @@
+unit Table.Clients;
+
+interface
+uses
+  Aspects.stream, Aspects.Collections, Aspects.Types,
+  Tee.Grid.Columns, Tee.GridData.Strings,
+  classes, system.SysUtils, windows;
+
+type
+
+TClientsItem = class(TBaseItem)
+  public
+    type
+      TPropertyIndex = (piNumber, piEik, piRegisterDate, piActive);
+      TSetProp = set of TPropertyIndex;
+      PRecClients = ^TRecClients;
+      TRecClients = record
+        piNumber: Cardinal;
+        piEik: String;
+        piRegisterDate: TDate;
+        piActive: Boolean;
+        setProp: TSetProp;
+      end;
+
+  public
+    PRecord: ^TRecClients;
+    function Stream: TAspectStream; override;
+    function FieldCount: Integer;
+    constructor Create(Collection: TCollection); override;
+    destructor Destroy; override;
+    procedure InsertClients;
+    procedure UpdateClients;
+    procedure SaveClients;
+  end;
+
+
+  TClientsColl = class(TCollection)
+  private
+    FAspectsStream: TAspectStream;
+    function GetItem(Index: Integer): TClientsItem;
+    procedure SetItem(Index: Integer; const Value: TClientsItem);
+  public
+    function AddItem(ver: word):TClientsItem;
+    function ReadItem(ver: word):TClientsItem;
+    procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+    procedure GetEditText(Sender:TObject; const ACol: integer; const ARow:Integer; var AValue:String);
+    procedure GetCellFromStream(propIndex: word; Clients: TClientsItem; var AValue:String);
+    procedure GetCellFromRecord(propIndex: word; Clients: TClientsItem; var AValue:String);
+    procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+    procedure SetEditText(Sender:TObject; const ACol:integer; const ARow:Integer; AValue:String);
+    function DisplayName(propIndex: Word): string;
+    
+    property Items[Index: Integer]: TClientsItem read GetItem write SetItem;
+    property AspectsStream: TAspectStream read FAspectsStream write FAspectsStream;
+  end;
+
+implementation
+
+{ TClientsItem }
+
+constructor TClientsItem.Create(Collection: TCollection);
+begin
+  inherited;
+end;
+
+destructor TClientsItem.Destroy;
+begin
+  if Assigned(PRecord) then
+    Dispose(PRecord);
+  inherited;
+end;
+
+function TClientsItem.FieldCount: Integer;
+begin
+  Result := 4;
+end;
+
+procedure TClientsItem.InsertClients;
+var
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctClients;
+  metaPosition := stream.PosMetaData + stream.LenMetaData;
+  dataPosition := stream.PosData + stream.LenData;
+  case FVersion of
+    0:
+    begin
+      stream.Position := metaPosition;
+      stream.Write(CollType, SizeOf(CollType));
+      stream.Write(FVersion, 2);
+      metaPosition := stream.Position;
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if Assigned(PRecord) and (propIndx in PRecord.setProp) then
+        begin
+          SaveHeaderData(PropPosition, dataPosition);
+          case propIndx of
+            piNumber: SaveData(PRecord.piNumber, PropPosition, metaPosition, dataPosition);
+            piEik: SaveData(PRecord.piEik, PropPosition, metaPosition, dataPosition);
+            piRegisterDate: SaveData(PRecord.piRegisterDate, PropPosition, metaPosition, dataPosition);
+            piActive: SaveData(PRecord.piActive, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          SaveNull(metaPosition);
+        end;
+      end;
+      stream.LenMetaData := stream.LenMetaData + (FieldCount) * 4 + 4;// последната 4 е за тип и версия
+    end;
+  end;
+end;
+
+procedure TClientsItem.SaveClients;
+var
+  stream: TAspectStream;
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  stream := TClientsColl(Collection).FAspectsStream;
+  CollType := ctClients;
+  dataPosition := stream.PosData + stream.LenData;
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          SaveHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            piNumber: SaveData(PRecord.piNumber, PropPosition, metaPosition, dataPosition);
+            piEik: SaveData(PRecord.piEik, PropPosition, metaPosition, dataPosition);
+            piRegisterDate: SaveData(PRecord.piRegisterDate, PropPosition, metaPosition, dataPosition);
+            piActive: SaveData(PRecord.piActive, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+      //stream.LenMetaData := stream.LenMetaData + (FieldCount) * 4 + 4;// последната 4 е за тип и версия
+    end;
+  end;
+end;
+
+function TClientsItem.Stream: TAspectStream;
+begin
+  Result := TClientsColl(Collection).AspectsStream;
+  //Result.Memory;
+end;
+
+procedure TClientsItem.UpdateClients;
+var
+  stream: TAspectStream;
+  CollType: TCollectionsType;
+  metaPosition, dataPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  stream := TClientsColl(Collection).FAspectsStream;
+  CollType := ctClients;
+  dataPosition := stream.PosData + stream.LenData;
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          UpdateHeaderData(PropPosition, dataPosition);
+          metaPosition := FDataPos + 4 * Integer(propIndx);
+          case propIndx of
+            piNumber: UpdateData(PRecord.piNumber, PropPosition, metaPosition, dataPosition);
+            piEik: UpdateData(PRecord.piEik, PropPosition, metaPosition, dataPosition);
+            piRegisterDate: UpdateData(PRecord.piRegisterDate, PropPosition, metaPosition, dataPosition);
+            piActive: UpdateData(PRecord.piActive, PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+      Dispose(PRecord);
+      PRecord := nil;
+      //stream.LenMetaData := stream.LenMetaData + (FieldCount) * 4 + 4;// последната 4 е за тип и версия
+    end;
+  end;
+end;
+
+{ TClientsColl }
+
+function TClientsColl.AddItem(ver: word): TClientsItem;
+begin
+  Result := TClientsItem(add);
+  Result.Version := ver;
+  Result.FDataPos := FAspectsStream.PosMetaData + FAspectsStream.LenMetaData + 4;
+end;
+
+
+function TClientsColl.DisplayName(propIndex: Word): string;
+begin
+  case TClientsItem.TPropertyIndex(propIndex) of
+    piNumber: Result := 'piNumber';
+    piEik: Result := 'piEik';
+    piRegisterDate: Result := 'piRegisterDate';
+    piActive: Result := 'piActive';
+  end;
+end;
+
+procedure TClientsColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  Clients: TClientsItem;
+  ACol: Integer;
+  prop: TClientsItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if Count = 0 then Exit;
+
+  Clients := Items[ARow];
+  prop := TClientsItem.TPropertyIndex(ACol);
+  if Assigned(Clients.PRecord) and (prop in Clients.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, Clients, AValue);
+  end
+  else
+  begin
+    GetCellFromStream(ACol, Clients, AValue);
+  end;
+end;
+
+procedure TClientsColl.GetCellFromRecord(propIndex: word; Clients: TClientsItem; var AValue: String);
+var
+  str: string;
+begin
+  case TClientsItem.TPropertyIndex(propIndex) of
+    piNumber: str := Clients.PRecord.piNumber);
+    piEik: str := (Clients.PRecord.piEik);
+    piRegisterDate: str := DateTostr(Clients.PRecord.piRegisterDate);
+    piActive: str := DateTostr(Clients.PRecord.piActive);
+  else
+    begin
+      str := '';
+    end;
+  end;
+  AValue := str;
+end;
+
+procedure TClientsColl.GetCellFromStream(propIndex: word; Clients: TClientsItem; var AValue: String);
+var
+  str: string;
+  len: Word;
+  int: PInt;
+  wrd: PWord;
+  bt: PByte;
+  pstr: pchar;
+  pDbl: PDouble;
+  pbl: PBoolean;
+begin
+  case TClientsItem.TPropertyIndex(propIndex) of
+    piNumber: str := Clients.ValueToString(propIndex, 
+    piEik: str := Clients.ValueToString(propIndex, pstr, len);
+    piRegisterDate: str := Clients.ValueToString(propIndex, pDbl);
+    piActive: str := Clients.ValueToString(propIndex, pDbl);
+  else
+    begin
+      str := '';
+    end;
+  end;
+  AValue := str;
+end;
+
+procedure TClientsColl.GetEditText(Sender: TObject; const ACol, ARow: Integer; var AValue: String);
+var
+  Clients: TClientsItem;
+  prop: TClientsItem.TPropertyIndex;
+begin
+  if Count = 0 then Exit;
+
+  Clients := Items[ARow];
+  prop := TClientsItem.TPropertyIndex(ACol);
+  if Assigned(Clients.PRecord) and (prop in Clients.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, Clients, AValue);
+  end
+  else
+  begin
+    GetCellFromStream(ACol, Clients, AValue);
+  end;
+end;
+
+function TClientsColl.GetItem(Index: Integer): TClientsItem;
+begin
+  Result := TClientsItem(inherited GetItem(Index));
+end;
+
+
+function TClientsColl.ReadItem(ver: word): TClientsItem;
+begin
+  Result := TClientsItem(add);
+  Result.Version := ver;
+
+  Result.FDataPos := FAspectsStream.Position;
+  case ver of // в зависимост от версията на записа
+    0:
+    begin
+      FAspectsStream.Position := FAspectsStream.Position + ((Result.FieldCount) * 4);// за тази версия просто прескачам ... бита
+    end;
+  end;
+end;
+
+procedure TClientsColl.SetCell(Sender: TObject; const AColumn: TColumn;
+           const ARow: Integer; var AValue: String);
+var
+  Clients: TClientsItem;
+  ACol: Integer;
+begin
+  if Count = 0 then Exit;
+  ACol := AColumn.Index;
+
+  Clients := Items[ARow];
+  if not Assigned(Clients.PRecord) then
+  begin
+    New(Clients.PRecord);
+    Clients.PRecord.setProp := [];
+  end;
+  Include(Clients.PRecord.setProp, TClientsItem.TPropertyIndex(ACol));
+  case TClientsItem.TPropertyIndex(ACol) of
+    piNumber: Clients.PRecord.piNumber
+    piEik: Clients.PRecord.piEik := AValue;
+    piRegisterDate: Clients.PRecord.piRegisterDate := StrToDate(AValue);
+    piActive: Clients.PRecord.piActive := StrToDate(AValue);
+  end;
+end;
+
+procedure TClientsColl.SetEditText(Sender: TObject; const ACol, ARow: Integer; AValue: String);
+var
+  Clients: TClientsItem;
+begin
+  if Count = 0 then Exit;
+
+  Clients := Items[ARow];
+  if not Assigned(Clients.PRecord) then
+  begin
+    New(Clients.PRecord);
+    Clients.PRecord.setProp := [];
+  end;
+  Include(Clients.PRecord.setProp, TClientsItem.TPropertyIndex(ACol));
+  case TClientsItem.TPropertyIndex(ACol) of
+    piNumber: Clients.PRecord.piNumber
+    piEik: Clients.PRecord.piEik := AValue;
+    piRegisterDate: Clients.PRecord.piRegisterDate := StrToDate(AValue);
+    piActive: Clients.PRecord.piActive := StrToDate(AValue);
+  end;
+end;
+
+procedure TClientsColl.SetItem(Index: Integer; const Value: TClientsItem);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+
+end.
