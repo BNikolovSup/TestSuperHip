@@ -6,7 +6,7 @@
 {         Generated on: 31.1.2025 ã. 13:37:51   }
 {       Generated from: D:\NzisSpec\L010.xml    }
 {   Settings stored in: D:\NzisSpec\L010.xdb    }
-{                                               }
+{  test git                                             }
 {***********************************************}
 
 unit L010;
