@@ -1185,8 +1185,8 @@ end;
 
 procedure TfrmSuperHip.btn1Click(Sender: TObject);
 begin
-  Application.CreateForm(TFrmRTTIExplLite, FrmRTTIExplLite);
-  FrmRTTIExplLite.Show;
+  //Application.CreateForm(TFrmRTTIExplLite, FrmRTTIExplLite);
+  //FrmRTTIExplLite.Show;
 end;
 
 procedure TfrmSuperHip.btn4Click(Sender: TObject);
@@ -7287,6 +7287,7 @@ procedure TfrmSuperHip.FormCreate(Sender: TObject);
 begin
   //Exit;
   vtrPregledPat.TakeFocus := False;
+
   FinderRec.LastFindedStr := '';
   mmoTest.Lines.Add(IntToStr(mmMain.Handle));
   pnlTest.Parent := vtrMinaliPregledi;
@@ -8194,8 +8195,8 @@ begin
     OpenCmd(AspectsHipFile);
     FindLNK(AspectsHipFile.GUID);
     if AspectsLinkPatPregFile <> nil then
-      //OpenLinkPatPreg(AspectsLinkPatPregFile);
-      AspectsLinkPatPregFile.OpenLinkFile;
+      OpenLinkPatPreg(AspectsLinkPatPregFile);
+     // AspectsLinkPatPregFile.OpenLinkFile;
     StartHistoryThread(FDbName);
     StartCertThread;
     if chkAspectDistr.Checked then

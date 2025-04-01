@@ -32,7 +32,7 @@
     Left = 580
     Top = 137
     Width = 7
-    Height = 505
+    Height = 485
     Color = clHighlight
     ParentColor = False
     ResizeStyle = rsUpdate
@@ -50,6 +50,7 @@
     ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
+    Visible = False
     object btn2: TSpeedButton
       Left = 344
       Top = 8
@@ -229,34 +230,28 @@
     Left = 0
     Top = 137
     Width = 580
-    Height = 505
+    Height = 485
     Align = alLeft
     Caption = 'pnlTree'
     ParentBackground = False
     ShowCaption = False
     TabOrder = 1
     OnResize = pnlTreeResize
-    ExplicitHeight = 485
     DesignSize = (
       580
-      505)
+      485)
     object pgcTree: TPageControl
       Left = 61
       Top = 49
       Width = 518
-      Height = 455
+      Height = 435
       ActivePage = tsTreePat
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
       OnChange = pgcTreeChange
-      ExplicitHeight = 435
       object tsTreePregledi: TTabSheet
         Caption = 'tsTreePregledi'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -433,10 +428,6 @@
         Caption = 'tsTreePat'
         ImageIndex = 1
         OnShow = tsTreePatShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrPregledPat: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -602,28 +593,19 @@
       object tsTreeRole: TTabSheet
         Caption = 'tsTreeRole'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pgcRole: TPageControl
           Left = 0
           Top = 0
           Width = 510
-          Height = 424
+          Height = 404
           ActivePage = tsRoleSelect
           Align = alClient
           DoubleBuffered = True
           ParentDoubleBuffered = False
           TabOrder = 0
           TabPosition = tpBottom
-          ExplicitHeight = 404
           object tsRoleSelect: TTabSheet
             Caption = #1048#1079#1073#1086#1088' '#1085#1072' '#1088#1086#1083#1103
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object scrlbxRole: TScrollBox
               Left = 0
               Top = 0
@@ -7682,10 +7664,6 @@
           object tsRoleManager: TTabSheet
             Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1085#1072' '#1088#1086#1083#1080#1090#1077
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object vtrRole: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -7841,10 +7819,6 @@
             Caption = #1055#1086#1084#1086#1097#1085#1072' '#1080#1085#1092'. '#1079#1072' '#1056#1086#1083#1080#1090#1077
             ImageIndex = 2
             OnShow = tsRoleDescrShow
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object vtrHelpHip: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -8002,10 +7976,6 @@
       object tsNomenNzis: TTabSheet
         Caption = 'tsNomenNzis'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrNomenNzis: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -8188,10 +8158,6 @@
       object tsTreeDBFB: TTabSheet
         Caption = 'tsTreeDBFB'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrFDB: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -8350,10 +8316,6 @@
       object tsTempVTR: TTabSheet
         Caption = 'tsTempVTR'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrTemp: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -8522,10 +8484,6 @@
       object tsGraph: TTabSheet
         Caption = 'tsGraph'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrGraph: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -8740,10 +8698,6 @@
       object tsNomenAnal: TTabSheet
         Caption = 'tsNomenAnal'
         ImageIndex = 7
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrNewAnal: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -8881,7 +8835,7 @@
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 0
               Text = #1048#1079#1089#1083#1077#1076#1074#1072#1085#1080#1103
-              Width = 264
+              Width = 260
             end
             item
               Alignment = taRightJustify
@@ -8904,10 +8858,6 @@
       object tsOptions: TTabSheet
         Caption = 'tsOptions'
         ImageIndex = 8
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrOptions: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9067,10 +9017,6 @@
       object tsVtrSearch: TTabSheet
         Caption = 'tsVtrSearch'
         ImageIndex = 9
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrSearch: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9226,10 +9172,6 @@
       object tsVTRDoctors: TTabSheet
         Caption = 'tsVTRDoctors'
         ImageIndex = 10
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrDoctor: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9391,10 +9333,6 @@
       object tsProfReg: TTabSheet
         Caption = 'tsProfReg'
         ImageIndex = 11
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrProfReg: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9954,20 +9892,19 @@
     Left = 587
     Top = 137
     Width = 986
-    Height = 505
+    Height = 485
     Align = alClient
     Caption = 'pnlWork'
     DoubleBuffered = True
     ParentDoubleBuffered = False
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 485
     DesignSize = (
       986
-      505)
+      485)
     object splSearchGrid: TSplitter
       Left = 1
-      Top = 326
+      Top = 306
       Width = 984
       Height = 7
       Cursor = crVSplit
@@ -9982,29 +9919,20 @@
       Left = 1
       Top = 42
       Width = 984
-      Height = 284
-      ActivePage = tsMemo
+      Height = 264
+      ActivePage = tsFMXForm
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 0
       OnChange = pgcWorkChange
       OnResize = pgcWorkResize
-      ExplicitHeight = 264
       object tsDynPanel: TTabSheet
         Caption = 'tsDynPanel'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object tsMinaliPregledi: TTabSheet
         Caption = 'tsMinaliPregledi'
         ImageIndex = 1
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrMinaliPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -10179,10 +10107,6 @@
         DoubleBuffered = True
         ImageIndex = 2
         ParentDoubleBuffered = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrTestFilter: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -10343,15 +10267,11 @@
       object tsMemo: TTabSheet
         Caption = 'tsMemo'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object mmoTest: TMemo
           Left = 0
           Top = 0
           Width = 976
-          Height = 256
+          Height = 236
           Align = alClient
           Color = clInactiveCaption
           Font.Charset = DEFAULT_CHARSET
@@ -10370,18 +10290,10 @@
       object tsPdf: TTabSheet
         Caption = 'tsPdf'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object tsSpisaci: TTabSheet
         Caption = 'tsSpisaci'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrSpisyci: TVirtualStringTreeHipp
           Left = 0
           Top = 64
@@ -10783,10 +10695,6 @@
         Tag = 32
         Caption = 'tsRTF'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlEditRtf: TPanel
           Left = 0
           Top = 0
@@ -10823,10 +10731,6 @@
         ParentDoubleBuffered = False
         OnHide = tsVideoHide
         OnShow = tsVideoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object MPHip: TWindowsMediaPlayer
           Left = 0
           Top = 41
@@ -10867,10 +10771,6 @@
       object tsTest: TTabSheet
         Caption = 'tsTest'
         ImageIndex = 8
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlStatusDB: TPanel
           Left = 0
           Top = 0
@@ -11169,10 +11069,6 @@
         DoubleBuffered = False
         ImageIndex = 9
         ParentDoubleBuffered = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlTopExcel: TPanel
           Left = 0
           Top = 0
@@ -11209,10 +11105,6 @@
       object tsGrid: TTabSheet
         Caption = 'tsGrid'
         ImageIndex = 10
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object grdNom: TTeeGrid
           AlignWithMargins = True
           Left = 3
@@ -11287,10 +11179,6 @@
       object tsVTR_XML: TTabSheet
         Caption = 'tsVTR_XML'
         ImageIndex = 11
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object treeview: TVirtualStringTree
           Left = 0
           Top = 0
@@ -11338,10 +11226,6 @@
       object tsXML: TTabSheet
         Caption = 'tsXML'
         ImageIndex = 12
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object tlbXml: TToolBar
           Left = 0
           Top = 0
@@ -11442,10 +11326,6 @@
       object tsOptionsNotes: TTabSheet
         Caption = 'tsOptionsNotes'
         ImageIndex = 13
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object imgOptionNote: TImage
           Left = 56
           Top = 104
@@ -14845,10 +14725,6 @@
         ParentDoubleBuffered = False
         OnMouseEnter = tsFMXFormMouseEnter
         OnResize = tsFMXFormResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object fmxCntrDyn: TFireMonkeyContainer
           Left = 0
           Top = 0
@@ -14862,10 +14738,6 @@
       object tsExpression: TTabSheet
         Caption = 'tsExpression'
         ImageIndex = 15
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object mmoIn: TMemo
           Left = 40
           Top = 24
@@ -14895,10 +14767,6 @@
       object tsNZIS: TTabSheet
         Caption = 'tsNZIS'
         ImageIndex = 16
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object btnToken: TButton
           Left = 16
           Top = 3
@@ -15124,14 +14992,13 @@
     end
     object pnlNzisMessages: TPanel
       Left = 1
-      Top = 333
+      Top = 313
       Width = 984
       Height = 125
       Align = alBottom
       Caption = 'pnlNzisMessages'
       ShowCaption = False
       TabOrder = 3
-      ExplicitTop = 313
       object splNzisReqResp: TSplitter
         Left = 876
         Top = 30
@@ -15256,7 +15123,7 @@
     end
     object pnlGridSearch: TPanel
       Left = 1
-      Top = 458
+      Top = 438
       Width = 984
       Height = 46
       Align = alBottom
@@ -15264,7 +15131,6 @@
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 4
-      ExplicitTop = 438
       object grdSearch: TTeeGrid
         AlignWithMargins = True
         Left = 4
@@ -15330,14 +15196,13 @@
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 642
+    Top = 622
     Width = 1573
     Height = 1
     Panels = <
       item
         Width = 50
       end>
-    ExplicitTop = 622
   end
   object hntLek: TBalloonHint
     Delay = 300
@@ -39754,7 +39619,7 @@
     Left = 376
     Top = 56
     Bitmap = {
-      494C010167008804841310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804881310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43329,7 +43194,7 @@
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C13881320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C138C1320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
