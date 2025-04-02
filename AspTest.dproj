@@ -96,12 +96,102 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="AspectiTest.pas">
-            <Form>Form5</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
+        <DCCReference Include="FMX\Parnassus.FMXContainer.pas"/>
+        <DCCReference Include="FMX\Parnassus.FMXContainerReg.pas"/>
+        <DCCReference Include="NzisThreadFull.pas"/>
+        <DCCReference Include="ThreadLoadDB.pas"/>
+        <DCCReference Include="Options.pas"/>
+        <DCCReference Include="DbHelper.pas"/>
+        <DCCReference Include="VTREditors.pas"/>
+        <DCCReference Include="HistoryNav.pas"/>
+        <DCCReference Include="NZISSuperAddress.pas"/>
+        <DCCReference Include="DlgSuperCert23.pas"/>
+        <DCCReference Include="FILE_SUBM_PL.pas"/>
+        <DCCReference Include="ADB_DataUnit.pas"/>
+        <DCCReference Include="Fmx.HipTypes.pas"/>
+        <DCCReference Include="FMX\ProfForm.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.PatientNew.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.PregledNew.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL050.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL088.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL132.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL134.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL139.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL142.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL022.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL024.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL038.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Role.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Unfav.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Diagnosis.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.DiagnosticReport.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Doctor.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.EventsManyTimes.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Exam_boln_list.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.ExamImmunization.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.MDN.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Mkb.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NasMesto.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NomenNzis.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Oblast.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Obshtina.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.PatientNZOK.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.PR001.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Practica.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Procedures.pas"/>
+        <DCCReference Include="Aspects\Tables\RealObj.RealHipp.pas"/>
+        <DCCReference Include="Aspects\ProfGraph.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.ExamAnalysis.pas"/>
+        <DCCReference Include="Aspects\Tables\RealObj.NzisNomen.pas"/>
+        <DCCReference Include="DM.pas"/>
+        <DCCReference Include="HistoryThread.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Patient.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Pregled.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Therapy.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Types.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Addres.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Assessment.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Consult.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Diagnosis.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.Doctor.pas"/>
+        <DCCReference Include="DBCollections\DBCollection.MedNapr.pas"/>
+        <DCCReference Include="Nzis.Types.pas"/>
+        <DCCReference Include="DynWinPanel\RoleButton.pas"/>
+        <DCCReference Include="DynWinPanel\DynSpeedButton.pas"/>
+        <DCCReference Include="FMX\StatusItem.pas"/>
+        <DCCReference Include="FMX\FinderFormFMX.pas"/>
+        <DCCReference Include="X006.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.KARTA_PROFILAKTIKA2017.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_QUESTIONNAIRE_RESPONSE.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_PLANNED_TYPE.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.BLANKA_MED_NAPR.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_ANSWER_VALUE.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_QUESTIONNAIRE_ANSWER.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_RESULT_DIAGNOSTIC_REPORT.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.NZIS_DIAGNOSTIC_REPORT.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL144.pas"/>
+        <DCCReference Include="X002.pas"/>
+        <DCCReference Include="L010.pas"/>
+        <DCCReference Include="CertHelper.pas"/>
+        <DCCReference Include="X004.pas"/>
+        <DCCReference Include="AspectPerformerThread.pas"/>
+        <DCCReference Include="x010.pas"/>
+        <DCCReference Include="X014.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.CL037.pas"/>
+        <DCCReference Include="WalkFunctions.pas"/>
+        <DCCReference Include="CertThread.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.Certificates.pas"/>
+        <DCCReference Include="Aspects\SearchThread.pas"/>
+        <DCCReference Include="Aspects\Nzis.Nomen.baseCL000.pas"/>
         <DCCReference Include="Aspects\Aspects.Collections.pas"/>
         <DCCReference Include="Aspects\Aspects.Types.pas"/>
+        <DCCReference Include="Aspects\RealObj.RealNzis.pas"/>
+        <DCCReference Include="..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas"/>
+        <DCCReference Include="..\PDFViewer\PDFium.Frame.pas"/>
+        <DCCReference Include="AspectiTest.pas">
+            <Form>Form5</Form>
+        </DCCReference>
+        <DCCReference Include="FMX\NewFMX\New.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

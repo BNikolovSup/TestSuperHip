@@ -3,14 +3,18 @@ unit AspectiTest;
 interface
 
 uses
+  FMX.Forms,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, system.Diagnostics, system.TimeSpan,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Imaging.GIFImg, VirtualTrees, system.Rtti,
+
   VirtualStringTreeAspect,
   Aspects.Types,
   Aspects.Collections,
+  New,
 
-  Table.PregledNew
+  Table.PregledNew, Parnassus.FMXContainer
+
   ;
 
 type
@@ -20,11 +24,14 @@ type
     spl1: TSplitter;
     vtrPregledPat: TVirtualStringTreeAspect;
     spl2: TSplitter;
+    pnlTop: TPanel;
+    fmxCntrDyn: TFireMonkeyContainer;
     procedure btnOpenLNKClick(Sender: TObject);
     procedure vtrPregledPatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure fmxCntrDynCreateFMXForm(var Form: TCommonCustomForm);
   private
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
@@ -49,7 +56,6 @@ procedure TForm5.btnOpenLNKClick(Sender: TObject);
 var
   fileLinkName, fileAdbName: string;
 begin
-  //test git hub11113333444455555
   Stopwatch := TStopwatch.StartNew;
   fileLinkName := 'D:\VSS\Hippocrates40\bin\Hippocrates360\AspHip{1AA755B0-D6DF-4B98-BAC8-99036AD8009F}.lnk';
   fileAdbName := 'D:\VSS\Hippocrates40\bin\Hippocrates360\AspHip{1AA755B0-D6DF-4B98-BAC8-99036AD8009F}.adb';
@@ -67,6 +73,15 @@ begin
   mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 
   OpenADB(AspectsHipFile);
+end;
+
+procedure TForm5.fmxCntrDynCreateFMXForm(var Form: TCommonCustomForm);
+begin
+  if not Assigned(Form) then
+  begin
+    frmfmxNew := TfrmfmxNew.Create(nil);
+    Form := frmfmxNew;
+  end;
 end;
 
 procedure TForm5.FormCreate(Sender: TObject);
@@ -130,7 +145,7 @@ begin
       case data.vid of
         vvPregled:
         begin
-          CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_NRN));
+          CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_TERAPY));
         end;
       end;
     end;

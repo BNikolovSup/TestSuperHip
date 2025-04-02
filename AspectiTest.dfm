@@ -3,7 +3,7 @@ object Form5: TForm5
   Top = 0
   Caption = 'Form5'
   ClientHeight = 627
-  ClientWidth = 968
+  ClientWidth = 1023
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -13,15 +13,12 @@ object Form5: TForm5
   OldCreateOrder = False
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  DesignSize = (
-    968
-    627)
   PixelsPerInch = 96
   TextHeight = 13
   object spl1: TSplitter
     Left = 0
     Top = 473
-    Width = 968
+    Width = 1023
     Height = 7
     Cursor = crVSplit
     Align = alBottom
@@ -32,28 +29,19 @@ object Form5: TForm5
   end
   object spl2: TSplitter
     Left = 705
-    Top = 0
+    Top = 41
     Width = 7
-    Height = 473
+    Height = 432
     Color = clActiveCaption
     ParentColor = False
     ExplicitLeft = 635
+    ExplicitTop = 0
     ExplicitHeight = 145
-  end
-  object btnOpenLNK: TButton
-    Left = 872
-    Top = 8
-    Width = 75
-    Height = 25
-    Anchors = [akTop, akRight]
-    Caption = 'btnOpenLNK'
-    TabOrder = 0
-    OnClick = btnOpenLNKClick
   end
   object mmoTest: TMemo
     Left = 0
     Top = 480
-    Width = 968
+    Width = 1023
     Height = 147
     Align = alBottom
     Color = clInactiveCaption
@@ -66,14 +54,14 @@ object Form5: TForm5
       'mmoTest')
     ParentFont = False
     ScrollBars = ssBoth
-    TabOrder = 1
+    TabOrder = 0
     WordWrap = False
   end
   object vtrPregledPat: TVirtualStringTreeAspect
     Left = 0
-    Top = 0
+    Top = 41
     Width = 705
-    Height = 473
+    Height = 432
     Align = alLeft
     AutoExpandDelay = 0
     ChangeDelay = 10
@@ -84,7 +72,7 @@ object Form5: TForm5
     Header.Height = 35
     Header.Options = [hoColumnResize, hoDrag, hoOwnerDraw, hoShowImages, hoShowSortGlyphs, hoVisible]
     Indent = 14
-    TabOrder = 2
+    TabOrder = 1
     TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
     TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
@@ -214,5 +202,35 @@ object Form5: TForm5
         Width = 400
       end>
     DefaultText = ''
+  end
+  object pnlTop: TPanel
+    Left = 0
+    Top = 0
+    Width = 1023
+    Height = 41
+    Align = alTop
+    Caption = 'pnlTop'
+    TabOrder = 2
+    DesignSize = (
+      1023
+      41)
+    object btnOpenLNK: TButton
+      Left = 15
+      Top = 10
+      Width = 75
+      Height = 25
+      Anchors = [akTop, akRight]
+      Caption = 'btnOpenLNK'
+      TabOrder = 0
+      OnClick = btnOpenLNKClick
+    end
+  end
+  object fmxCntrDyn: TFireMonkeyContainer
+    Left = 712
+    Top = 41
+    Width = 311
+    Height = 432
+    OnCreateFMXForm = fmxCntrDynCreateFMXForm
+    Align = alClient
   end
 end
