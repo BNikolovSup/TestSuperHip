@@ -6,6 +6,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
   FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit, System.Math,
+  System.TimeSpan, system.Diagnostics,
   Options, System.Generics.Collections, WalkFunctions, RealObj.RealHipp,
   Table.Doctor;
 
@@ -50,6 +51,13 @@ type
     FloatAnimation1: TFloatAnimation;
     rct1: TRectangle;
     slctn1: TSelection;
+    slctnpnt1: TSelectionPoint;
+    brshPregled: TBrushObject;
+    brshImun: TBrushObject;
+    brshNotPregled: TBrushObject;
+    brshAnal: TBrushObject;
+    brshKonsult: TBrushObject;
+    txtTest: TText;
     procedure scrlbxNewCalcContentBounds(Sender: TObject;
       var ContentBounds: TRectF);
     procedure scrlbxNewMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -62,18 +70,24 @@ type
       Shift: TShiftState; X, Y: Single);
     procedure expndrNewResize(Sender: TObject);
     procedure rctBtnLibClick(Sender: TObject);
+    procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
+    procedure scldlytNewResize(Sender: TObject);
 
   private
     FScaleDyn: Single;
     LstItems: TList<TItemsLabel>;
     idxItems: Integer;
+
+    Stopwatch: TStopwatch;
+    Elapsed: TTimeSpan;
     procedure SetScaleDyn(const Value: Single);
 
 
   public
     procedure ClearBlanka;
     procedure FillBlanka;
-    property scaleDyn: Single read FScaleDyn write SetScaleDyn;
+    procedure AddItem(indexItem: Integer);
+    property ScaleDyn: Single read FScaleDyn write SetScaleDyn;
   end;
 
 var
@@ -85,9 +99,40 @@ implementation
 
 
 
+procedure TfrmfmxNew.AddItem(indexItem: Integer);
+var
+  TempRect: TRectangle;
+  TempItemsLabel: TItemsLabel;
+begin
+  if indexItem > (LstItems.Count - 1) then
+  begin
+    TempRect := TRectangle(rctBKItems.Clone(nil));
+    TempItemsLabel := TItemsLabel.Create;
+    TempItemsLabel.RctItem := TempRect;
+    TempRect.TagObject := TempItemsLabel;
+    LstItems.Add(TempItemsLabel);
+  end
+  else
+  begin
+    TempItemsLabel := LstItems[indexItem];
+    TempRect := TempItemsLabel.RctItem;
+  end;
+
+  TempRect.Position.Y := 0;
+  TempRect.Parent := lytInExpander;
+end;
+
 procedure TfrmfmxNew.ClearBlanka;
+var
+  i: Integer;
 begin
   rctBKItems.Parent := nil;
+  for i := 0 to LstItems.Count - 1 do
+  begin
+    LstItems[i].RctItem.Parent := nil;
+  end;
+
+  idxItems := 0;
 end;
 
 procedure TfrmfmxNew.expndrNewResize(Sender: TObject);
@@ -99,7 +144,6 @@ begin
     if lytInExpander.ChildrenCount > 0 then
     begin
       lytInExpander.Height := 5;
-      lytInExpander.RecalcSize;
       h := (lytInExpander.Margins.Top) + 25;
       expndrNew.Height := InnerChildrenRect(lytInExpander).Height / FScaleDyn + h + 4;
       lytInExpander.Height := expndrNew.Height;
@@ -120,10 +164,17 @@ procedure TfrmfmxNew.FillBlanka;
 var
   i: Integer;
   TempRect: TRectangle;
+  TempItemsLabel: TItemsLabel;
 begin
-  for i := 0 to 10 do
+  for i := 0 to 40 do
   begin
+    //AddItem(idxItems);
+//    inc(idxItems);
+
     TempRect := TRectangle(rctBKItems.Clone(nil));
+    TempItemsLabel := TItemsLabel.Create;
+    TempItemsLabel.RctItem := TempRect;
+    LstItems.Add(TempItemsLabel);
     TempRect.Position.Y := 0;
     TempRect.Parent := lytInExpander;
   end;
@@ -143,11 +194,16 @@ end;
 
 procedure TfrmfmxNew.rctBtnLibClick(Sender: TObject);
 begin
+  Stopwatch := TStopwatch.StartNew;
+  ClearBlanka;
   FillBlanka;
   expndrNew.RecalcSize;
+
   scldlytNew.OriginalHeight := expndrNew.Height + expndrNew.Margins.Top + 10;
   scldlytNew.Height := scldlytNew.OriginalHeight * FScaleDyn;
   lytNewItem.Height := scldlytNew.OriginalHeight;
+  Elapsed := Stopwatch.Elapsed;
+  txtTest.Text := ( Format('fill за %f',[Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmfmxNew.rctBtnLibMouseDown(Sender: TObject; Button: TMouseButton;
@@ -166,6 +222,13 @@ begin
   FloatAnimation1.Inverse := false;
   FloatAnimation22.Start;
   FloatAnimation1.Start;
+end;
+
+procedure TfrmfmxNew.scldlytNewResize(Sender: TObject);
+begin
+  if slctnpnt1.IsFocused then Exit;
+  slctnpnt1.Position.X := scldlytNew.BoundsRect.Right;
+
 end;
 
 procedure TfrmfmxNew.scrlbxNewCalcContentBounds(Sender: TObject;
@@ -220,6 +283,12 @@ end;
 procedure TfrmfmxNew.SetScaleDyn(const Value: Single);
 begin
   FScaleDyn := Value;
+end;
+
+procedure TfrmfmxNew.slctnpnt1Track(Sender: TObject; var X, Y: Single);
+begin
+  scldlytNew.OriginalWidth := x / FScaleDyn;
+  scldlytNew.Width := scldlytNew.OriginalWidth * FScaleDyn;
 end;
 
 end.
