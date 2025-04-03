@@ -211,18 +211,32 @@ object Form5: TForm5
     Align = alTop
     Caption = 'pnlTop'
     TabOrder = 2
-    DesignSize = (
-      1023
-      41)
     object btnOpenLNK: TButton
       Left = 15
       Top = 10
       Width = 75
       Height = 25
-      Anchors = [akTop, akRight]
       Caption = 'btnOpenLNK'
       TabOrder = 0
       OnClick = btnOpenLNKClick
+    end
+    object btnLoopLink: TButton
+      Left = 120
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'btnLoopLink'
+      TabOrder = 1
+      OnClick = btnLoopLinkClick
+    end
+    object btnLoopTree: TButton
+      Left = 216
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'btnLoopTree'
+      TabOrder = 2
+      OnClick = btnLoopTreeClick
     end
   end
   object fmxCntrDyn: TFireMonkeyContainer

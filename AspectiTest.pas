@@ -7,6 +7,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, system.Diagnostics, system.TimeSpan,
   Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.Imaging.GIFImg, VirtualTrees, system.Rtti,
+  System.Generics.Collections,
 
   VirtualStringTreeAspect,
   Aspects.Types,
@@ -26,12 +27,16 @@ type
     spl2: TSplitter;
     pnlTop: TPanel;
     fmxCntrDyn: TFireMonkeyContainer;
+    btnLoopLink: TButton;
+    btnLoopTree: TButton;
     procedure btnOpenLNKClick(Sender: TObject);
     procedure vtrPregledPatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure fmxCntrDynCreateFMXForm(var Form: TCommonCustomForm);
+    procedure btnLoopLinkClick(Sender: TObject);
+    procedure btnLoopTreeClick(Sender: TObject);
   private
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
@@ -51,6 +56,63 @@ implementation
 {$R *.dfm}
 
 { TForm5 }
+
+procedure TForm5.btnLoopLinkClick(Sender: TObject);
+var
+  linkPos: cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  node: PVirtualNode;
+  buf: Pointer;
+
+  data: PAspRec;
+  cntPreg: Integer;
+  lstPreg: TList<PVirtualNode>;
+  DatePreg, testDate: TDate;
+  testTime: TTime;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  buf := AspectsLinkPatPregFile.Buf;
+  linkPos := 100;
+  cntPreg := 0;
+  testDate := EncodeDate(2024, 12, 02);
+  testTime := EncodeTime(12, 00, 00, 00);
+  pCardinalData := pointer(PByte(Buf));
+  PosLinkData := pCardinalData^;
+  lstPreg := TList<PVirtualNode>.create;
+
+  while linkPos <= PosLinkData do
+  begin
+    node := pointer(PByte(Buf) + linkpos);
+    data := Pointer(PByte(node)+ lenNode);
+    //case data.vid of
+//      vvPregled:
+//      begin
+//        DatePreg := CollPregled.getDateMap(Data.DataPos, Word(PregledNew_START_DATE));
+//        if DatePreg >= testDate then
+//        begin
+//          if CollPregled.getDateMap(Data.DataPos, Word(PregledNew_START_TIME)) >= testTime then
+//          begin
+//            lstPreg.Add(node);
+//          end;
+//        end;
+//      end;
+//    end;
+    Inc(linkPos, LenData);
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('LoopLink за %f',[Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('Брой прегледи за %d',[lstPreg.Count]));
+  lstPreg.Clear;
+  lstPreg.Free;
+end;
+
+procedure TForm5.btnLoopTreeClick(Sender: TObject);
+var
+  patNode: PVirtualNode;
+begin
+  patNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
+end;
 
 procedure TForm5.btnOpenLNKClick(Sender: TObject);
 var
