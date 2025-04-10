@@ -20,7 +20,7 @@ uses
 
 type
 
-  TEditFindLabel = class
+  TEditCotLabel = class
     edt: TEdit;
     captTxt: TText;
     cot1: TRectangle;
@@ -37,7 +37,7 @@ type
     Lyt: TLayout;
     LytIn: TLayout;
     CollectionsType: TCollectionsType;
-    lstEditFind: TList<TEditFindLabel>;
+    lstEditFind: TList<TEditCotLabel>;
     constructor create;
     destructor destroy; override;
   end;
@@ -139,6 +139,7 @@ type
   private
     FScaleDyn: Single;
     FIsFinding: Boolean;
+    idxEditsCot: Integer;
     procedure SetScaleDyn(const Value: Single);
     procedure OnSetTextSearchEDT(Vid: TVtrVid; Text: string; field: Word; Condition: TConditionSet);
   public
@@ -149,8 +150,11 @@ type
     CollPatient: TRealPatientNewColl;
     CollPregled: TRealPregledNewColl;
     lstExpanedrTable: TList<TExpanerTableLabel>;
+    lstEditCot: TList<TEditCotLabel>;
     thrSearch: TSearchThread;
     procedure AddExpanderPat(idxListExpander: Integer; RunNode: PVirtualNode);
+    procedure AddExpanderPat1(idxListExpander: Integer; RunNode: PVirtualNode);
+    procedure AddEditCot(idxEditCot: Integer; lyt: TLayout; field: word);
     procedure AddExpanderPreg(idxListExpander: Integer; RunNode: PVirtualNode);
     property scaleDyn: Single read FScaleDyn write SetScaleDyn;
     property IsFinding: Boolean read FIsFinding write FIsFinding;
@@ -175,6 +179,36 @@ implementation
 
 
 { TForm9 }
+
+procedure TfrmFinder.AddEditCot(idxEditCot: Integer; lyt: TLayout; field: word);
+var
+  TempEditCot: TEdit;
+  TempEditLabel: TEditCotLabel;
+begin
+  if idxEditCot > (lstEditCot.Count - 1) then
+  begin
+    TempEditCot := TEdit(edtForCloning.Clone(nil));
+    TempEditLabel := TEditCotLabel.Create;
+    TempEditLabel.edt := TempEditCot;
+    TempEditLabel.field := field;
+    TempEditCot.TagObject := TempEditLabel;
+    lstEditCot.Add(TempEditLabel);
+  end
+  else
+  begin
+    TempEditLabel := lstEditCot[idxEditCot];
+    TempEditCot := TempEditLabel.edt;
+  end;
+
+  //ArctCot1 := WalkChildrenRectStyle(edt, 'Cot1');
+ // ArctCot1.OnMouseUp  := rctCot1MouseUp;
+  TempEditCot.Position.y := 0;
+  TempEditCot.Align  := TAlignLayout.Top;
+  TempEditCot.Visible := True;
+  TempEditCot.TextPrompt := CollPatient.DisplayName(field);
+  TempEditCot.OnValidating := edtForCloningValidating;
+  TempEditCot.Parent := lyt;
+end;
 
 procedure TfrmFinder.AddExpanderPat(idxListExpander: Integer; RunNode: PVirtualNode);
 var
@@ -254,6 +288,64 @@ begin
 //        end;
     end;
     //CollPatient.ListEditDyn.Add(edt);
+  end;
+  TempExpIn.RecalcSize;
+  h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
+  TempExpndrLyt.Height := h + 75;
+  if h = 0 then
+  begin
+
+    TempExpander.Height := 55;
+  end
+  else
+  begin
+    TempExpander.Height := h+ 35;
+  end;
+  scldlyt1.Repaint;
+end;
+
+procedure TfrmFinder.AddExpanderPat1(idxListExpander: Integer;
+  RunNode: PVirtualNode);
+var
+  TempExpndrLyt, TempExpIn: TLayout;   ///TExpanerTableLabel;
+  TempExpander: TExpander;
+  i: integer;
+  act: TAsectTypeKind;
+  edt: TEdit;
+  ArctCot1: TRectangle;
+  h: Single;
+begin
+  if (lstExpanedrTable.Count - 1) < idxListExpander then
+  begin
+    TempExpndrLyt := TLayout(self.lytPatient.Clone(self));
+    TempExpndrLyt.Align := TAlignLayout.Top;
+    TempExpndrLyt.Visible := True;
+    TempExpander := WalkChildrenExpander(TempExpndrLyt);
+    TempExpIn := WalkChildrenLyt(TempExpander);
+    TempExpander.Text := 'test';
+    TempExpndrLyt.Tag := nativeint(RunNode);
+    TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
+    TempExpndrLyt.Parent := Self.scldlyt1;
+  end
+  else
+  begin
+
+  end;
+
+  for i := 0 to CollPatient.FieldCount - 1 do
+  begin
+    act := CollPatient.PropType(i);
+    case act of
+      actAnsiString:
+      begin
+        AddEditCot(idxEditsCot, TempExpIn, i);
+        inc(idxEditsCot)
+      end;
+      actTDate:
+      begin
+
+      end;
+    end;
   end;
   TempExpIn.RecalcSize;
   h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
@@ -405,8 +497,14 @@ begin
 end;
 
 procedure TfrmFinder.edtForCloningValidating(Sender: TObject; var Text: string);
+var
+  TempEditCot: TEdit;
+  TempEditLabel: TEditCotLabel;
 begin
-  OnSetTextSearchEDT(vvPatient, Text, Word(PatientNew_EGN), [TConditionType.cotContain]);
+  TempEditCot := TEdit(Sender);
+  TempEditLabel := TEditCotLabel(TempEditCot.TagObject);
+
+  OnSetTextSearchEDT(vvPatient, Text, TempEditLabel.field, [TConditionType.cotContain]);
 end;
 
 procedure TfrmFinder.FormCreate(Sender: TObject);
@@ -417,12 +515,14 @@ begin
   scldlyt2.Align := TAlignLayout.Client;
   edtForCloning.Visible := False;
   lstExpanedrTable := TList<TExpanerTableLabel>.Create;
+  lstEditCot := TList<TEditCotLabel>.Create;
   lytPatient.Visible := False;
 end;
 
 procedure TfrmFinder.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(lstExpanedrTable);
+  FreeAndNil(lstEditCot);
 end;
 
 procedure TfrmFinder.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -526,7 +626,7 @@ begin
     vvPatient:
     begin
       CollPatient.OnSetTextSearchEDT(Text, field, Condition);
-      CollPatient.ListForFDB[0].ArrCondition[Word(PatientNew_EGN)] := [cotContain];
+      CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
   end;
@@ -601,7 +701,7 @@ end;
 constructor TExpanerTableLabel.create;
 begin
   inherited;
-  lstEditFind := TList<TEditFindLabel>.create;
+  lstEditFind := TList<TEditCotLabel>.create;
 end;
 
 destructor TExpanerTableLabel.destroy;

@@ -30,20 +30,21 @@
   TextHeight = 13
   object spl1: TSplitter
     Left = 580
-    Top = 137
+    Top = 1
     Width = 7
-    Height = 485
+    Height = 621
     Color = clHighlight
     ParentColor = False
     ResizeStyle = rsUpdate
     ExplicitLeft = 500
+    ExplicitTop = 137
     ExplicitHeight = 525
   end
   object Panel1: TPanel
     Left = 0
     Top = 0
     Width = 1573
-    Height = 137
+    Height = 1
     Align = alTop
     Caption = 'Panel1'
     DoubleBuffered = True
@@ -228,9 +229,9 @@
   end
   object pnlTree: TPanel
     Left = 0
-    Top = 137
+    Top = 1
     Width = 580
-    Height = 485
+    Height = 621
     Align = alLeft
     Caption = 'pnlTree'
     ParentBackground = False
@@ -239,12 +240,12 @@
     OnResize = pnlTreeResize
     DesignSize = (
       580
-      485)
+      621)
     object pgcTree: TPageControl
       Left = 61
       Top = 49
       Width = 518
-      Height = 435
+      Height = 571
       ActivePage = tsTreePat
       Align = alClient
       Style = tsFlatButtons
@@ -256,7 +257,7 @@
           Left = 0
           Top = 41
           Width = 473
-          Height = 363
+          Height = 499
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -432,10 +433,10 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           Align = alClient
           AutoExpandDelay = 0
-          ChangeDelay = 10
+          ChangeDelay = 2
           Color = clInfoBk
           Colors.GridLineColor = 12189116
           DefaultNodeHeight = 27
@@ -597,7 +598,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           ActivePage = tsRoleSelect
           Align = alClient
           DoubleBuffered = True
@@ -610,7 +611,7 @@
               Left = 0
               Top = 0
               Width = 502
-              Height = 378
+              Height = 514
               VertScrollBar.Smooth = True
               VertScrollBar.Tracking = True
               Align = alClient
@@ -7668,7 +7669,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 378
+              Height = 514
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7823,7 +7824,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 378
+              Height = 514
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7980,7 +7981,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 363
+          Height = 499
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8162,7 +8163,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 404
+          Height = 540
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -8320,7 +8321,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 363
+          Height = 499
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8488,7 +8489,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 363
+          Height = 499
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8702,7 +8703,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           Align = alClient
           Color = clInfoBk
           Colors.GridLineColor = 12189116
@@ -8862,7 +8863,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9021,7 +9022,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 404
+          Height = 540
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -9176,7 +9177,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9337,7 +9338,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 404
+          Height = 540
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9490,7 +9491,7 @@
       Left = -1
       Top = 6
       Width = 60
-      Height = 0
+      Height = 96
       Margins.Top = 0
       BevelOuter = bvRaised
       CloseStyle = svcCompact
@@ -9890,9 +9891,9 @@
   end
   object pnlWork: TPanel
     Left = 587
-    Top = 137
+    Top = 1
     Width = 986
-    Height = 485
+    Height = 621
     Align = alClient
     Caption = 'pnlWork'
     DoubleBuffered = True
@@ -9901,10 +9902,10 @@
     TabOrder = 2
     DesignSize = (
       986
-      485)
+      621)
     object splSearchGrid: TSplitter
       Left = 1
-      Top = 306
+      Top = 442
       Width = 984
       Height = 7
       Cursor = crVSplit
@@ -9919,8 +9920,8 @@
       Left = 1
       Top = 42
       Width = 984
-      Height = 264
-      ActivePage = tsFMXForm
+      Height = 400
+      ActivePage = tsMemo
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -9937,7 +9938,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 236
+          Height = 372
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Margins.Top = 0
@@ -10111,7 +10112,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 236
+          Height = 372
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -10271,7 +10272,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 236
+          Height = 372
           Align = alClient
           Color = clInactiveCaption
           Font.Charset = DEFAULT_CHARSET
@@ -10298,7 +10299,7 @@
           Left = 0
           Top = 64
           Width = 976
-          Height = 172
+          Height = 308
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -10735,7 +10736,7 @@
           Left = 0
           Top = 41
           Width = 976
-          Height = 195
+          Height = 331
           Align = alClient
           TabOrder = 0
           ExplicitWidth = 245
@@ -10745,7 +10746,7 @@
             0000000008000200000000000300010000000B00FFFF0300000000000B00FFFF
             08000200000000000300320000000B00000008000A000000660075006C006C00
             00000B0000000B0000000B00FFFF0B00FFFF0B00000008000200000000000800
-            020000000000080002000000000008000200000000000B000000DF6400002714
+            020000000000080002000000000008000200000000000B000000DF6400003622
             0000}
         end
         object pnlTopVideo: TPanel
@@ -10840,7 +10841,7 @@
           Left = 0
           Top = 65
           Width = 976
-          Height = 60
+          Height = 176
           Align = alTop
           Caption = 'pnlStatusDB'
           ParentBackground = False
@@ -10875,7 +10876,7 @@
           end
           object pnlMetaDataNomenNzis: TPanel
             Left = 480
-            Top = 77
+            Top = 43
             Width = 185
             Height = 27
             Margins.Left = 0
@@ -10889,7 +10890,7 @@
           end
           object pnlDataNomenNzis: TPanel
             Left = -31
-            Top = 77
+            Top = 43
             Width = 185
             Height = 27
             Margins.Left = 0
@@ -10904,9 +10905,9 @@
         end
         object vtrRecentDB: TVirtualStringTreeHipp
           Left = 0
-          Top = 125
+          Top = 241
           Width = 976
-          Height = 111
+          Height = 131
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -11110,7 +11111,7 @@
           Left = 3
           Top = 44
           Width = 970
-          Height = 189
+          Height = 325
           Columns = <>
           ReadOnly = False
           Selected.FullRow = True
@@ -11183,7 +11184,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 236
+          Height = 372
           Align = alClient
           EditDelay = 200
           Font.Charset = DEFAULT_CHARSET
@@ -11277,7 +11278,7 @@
           Left = 0
           Top = 22
           Width = 976
-          Height = 214
+          Height = 350
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -14729,7 +14730,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 236
+          Height = 372
           OnCreateFMXForm = fmxCntrDynCreateFMXForm
           OnDestroyFMXForm = fmxCntrDynDestroyFMXForm
           Align = alClient
@@ -14980,7 +14981,7 @@
     end
     object btnPull: TButton
       Left = -1
-      Top = 0
+      Top = 3
       Width = 22
       Height = 25
       Anchors = [akLeft]
@@ -14992,7 +14993,7 @@
     end
     object pnlNzisMessages: TPanel
       Left = 1
-      Top = 313
+      Top = 449
       Width = 984
       Height = 125
       Align = alBottom
@@ -15123,7 +15124,7 @@
     end
     object pnlGridSearch: TPanel
       Left = 1
-      Top = 438
+      Top = 574
       Width = 984
       Height = 46
       Align = alBottom
@@ -15131,27 +15132,46 @@
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 4
+      OnMouseMove = pnlGridSearchMouseMove
       object grdSearch: TTeeGrid
         AlignWithMargins = True
         Left = 4
         Top = 4
         Width = 859
         Height = 38
-        Columns = <>
+        Columns = <
+          item
+            Format.Brush.Visible = True
+            Format.Brush.Color = xCF0000FF
+            LoadOrder = 0
+            Header.Format.Brush.Visible = True
+            Header.Format.Brush.Color = x000000FF
+            Header.ParentFormat = False
+            ParentFormat = False
+          end>
+        Header.Format.Brush.Color = x000000FF
         ReadOnly = False
+        OnColumnResized = grdSearchColumnResized
         OnSelect = grdSearchSelect
         Align = alClient
         UseDockManager = False
         ParentBackground = False
         ParentColor = False
+        PopupMenu = pmActionPreg
         TabOrder = 0
+        OnAlignPosition = grdSearchAlignPosition
         OnMouseDown = grdSearchMouseDown
         OnMouseEnter = grdSearchMouseEnter
+        OnMouseMove = grdSearchMouseMove
+        OnMouseUp = grdSearchMouseUp
+        ExplicitLeft = 1
+        ExplicitTop = 3
         _Headers = (
           1
           'TColumnHeaderBand'
           <
             item
+              Format.Brush.Color = x000000FF
             end>)
       end
       object tlb1: TToolBar
@@ -15205,6 +15225,7 @@
       end>
   end
   object hntLek: TBalloonHint
+    Style = bhsStandard
     Delay = 300
     Left = 1040
     Top = 16
@@ -39619,7 +39640,7 @@
     Left = 376
     Top = 56
     Bitmap = {
-      494C010167008804881310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804941310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43062,8 +43083,8 @@
     Enabled = False
     Interval = 500
     OnTimer = tmr1Timer
-    Left = 936
-    Top = 24
+    Left = 952
+    Top = 88
   end
   object dlgOpenPL: TOpenDialog
     Filter = 'CSV file|*.csv'
@@ -43194,7 +43215,7 @@
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C138C1320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C13981320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -56935,6 +56956,14 @@
     object mniDeletePerm1: TMenuItem
       Caption = #1047#1072#1083#1080#1095#1072#1074#1072#1085#1077
       OnClick = mniDeletePerm1Click
+    end
+  end
+  object pmGrdSearch: TPopupMenu
+    Left = 512
+    Top = 200
+    object mnimemotest1: TMenuItem
+      Caption = 'memotest'
+      OnClick = mnimemotest1Click
     end
   end
 end

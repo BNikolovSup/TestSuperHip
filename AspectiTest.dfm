@@ -29,9 +29,9 @@ object Form5: TForm5
   end
   object spl2: TSplitter
     Left = 705
-    Top = 41
+    Top = 113
     Width = 7
-    Height = 432
+    Height = 360
     Color = clActiveCaption
     ParentColor = False
     ExplicitLeft = 635
@@ -59,9 +59,9 @@ object Form5: TForm5
   end
   object vtrPregledPat: TVirtualStringTreeAspect
     Left = 0
-    Top = 41
+    Top = 113
     Width = 705
-    Height = 432
+    Height = 360
     Align = alLeft
     AutoExpandDelay = 0
     ChangeDelay = 10
@@ -77,6 +77,7 @@ object Form5: TForm5
     TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
     TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
     TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
+    OnChange = vtrPregledPatChange
     OnGetText = vtrPregledPatGetText
     ImageWaitPiss.Data = {
       0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
@@ -177,6 +178,8 @@ object Form5: TForm5
     ColumnAction = 2
     ColumnAspect = 0
     TakeFocus = True
+    ExplicitTop = 345
+    ExplicitHeight = 128
     Columns = <
       item
         CaptionAlignment = taCenter
@@ -207,10 +210,13 @@ object Form5: TForm5
     Left = 0
     Top = 0
     Width = 1023
-    Height = 41
+    Height = 113
     Align = alTop
     Caption = 'pnlTop'
+    DoubleBuffered = True
+    ParentDoubleBuffered = False
     TabOrder = 2
+    OnMouseMove = pnlTopMouseMove
     object btnOpenLNK: TButton
       Left = 15
       Top = 10
@@ -222,7 +228,7 @@ object Form5: TForm5
     end
     object btnLoopLink: TButton
       Left = 120
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Caption = 'btnLoopLink'
@@ -238,13 +244,62 @@ object Form5: TForm5
       TabOrder = 2
       OnClick = btnLoopTreeClick
     end
+    object tgrd1: TTeeGrid
+      Left = 801
+      Top = 12
+      Width = 513
+      Height = 23
+      Cursor = crHourGlass
+      Columns = <>
+      ReadOnly = False
+      UseDockManager = False
+      ParentBackground = False
+      ParentColor = False
+      TabOrder = 3
+      OnMouseMove = tgrd1MouseMove
+      _Headers = (
+        2
+        'TColumnHeaderBand'
+        ''
+        <
+          item
+          end
+          item
+          end>)
+    end
+    object btnCreateNewLink: TButton
+      Left = 312
+      Top = 8
+      Width = 121
+      Height = 25
+      Caption = 'btnCreateNewLink'
+      TabOrder = 4
+      OnClick = btnCreateNewLinkClick
+    end
+    object btnOpenLnkOptions: TButton
+      Left = 448
+      Top = 8
+      Width = 121
+      Height = 25
+      Caption = 'btnOpenLnkOptions'
+      TabOrder = 5
+      OnClick = btnOpenLnkOptionsClick
+    end
   end
   object fmxCntrDyn: TFireMonkeyContainer
     Left = 712
-    Top = 41
+    Top = 113
     Width = 311
-    Height = 432
+    Height = 360
     OnCreateFMXForm = fmxCntrDynCreateFMXForm
     Align = alClient
+    ExplicitTop = 345
+    ExplicitHeight = 128
+  end
+  object hntLek: TBalloonHint
+    Style = bhsStandard
+    Delay = 300
+    Left = 995
+    Top = 16
   end
 end

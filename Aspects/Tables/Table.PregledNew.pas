@@ -69,7 +69,7 @@ TPregledNewItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-        PregledNew_AMB_LISTN
+         PregledNew_AMB_LISTN
        , PregledNew_ANAMN
        , PregledNew_COPIED_FROM_NRN
        , PregledNew_GS
@@ -168,6 +168,7 @@ TPregledNewItem = class(TBaseItem)
 	PRecordSearch: ^TPregledNewItem.TRecPregledNew;
     ArrPropSearch: TArray<TPregledNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPregledNewItem.TPropertyIndex>;
+    ArrayPropOrder: TArray<TPregledNewItem.TPropertyIndex>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -193,6 +194,7 @@ TPregledNewItem = class(TBaseItem)
 
 	function DisplayName(propIndex: Word): string; override;
 	function FieldCount: Integer; override;
+
 	procedure ShowGrid(Grid: TTeeGrid); override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TPregledNewItem>);
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
@@ -507,6 +509,8 @@ begin
 end;
 
 constructor TPregledNewColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
   TempFindedItem := TPregledNewItem.Create(nil);
@@ -516,6 +520,11 @@ begin
   New(PRecordSearch);
   PRecordSearch.setProp := [];
   ListForFDB := TList<TPregledNewItem>.create;
+  SetLength(ArrayPropOrder, FieldCount);
+  for i := 0 to FieldCount - 1 do
+  begin
+    ArrayPropOrder[i] := TPregledNewItem.TPropertyIndex(i);
+  end;
 end;
 
 destructor TPregledNewColl.destroy;
@@ -605,14 +614,18 @@ var
   prop: TPregledNewItem.TPropertyIndex;
 begin
   inherited;
-  if ARow < 0 then Exit;
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
 
   //TVirtualModeData(Sender).ColumnList[0].TagObject
   try
     ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
-    TempFindedItem.DataPos := ListDataPos[RowSelect].DataPos;
+    TempFindedItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
   except
     AValue := 'ddddd';
     Exit;

@@ -1,4 +1,4 @@
-unit SuperHipp;  //clone loopsearch  aspect errrr  savepreg  .ini
+unit SuperHipp;  //clone loopsearch  aspect errrr  savepreg  .rtt lnk
 interface
 
 uses
@@ -374,6 +374,8 @@ type
     pmActionPregRev: TPopupMenu;
     mniDeletePerm1: TMenuItem;
     tlbNzisMess: TToolBar;
+    pmGrdSearch: TPopupMenu;
+    mnimemotest1: TMenuItem;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -470,6 +472,8 @@ type
     procedure FillListPL_NZOKFromDB(uin: string; collPat: TRealPatientNewColl);
     procedure FillListPL_ADB(collPat: TRealPatientNewColl);
     procedure Button1Click(Sender: TObject);
+    procedure HoverChange(Sender: TObject);
+    procedure ColMoved(const ACol: TColumn; const OldCol, NewCol: integer);
     procedure vtrPregledPatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vtrPregledPatDrawButton(sender: TVirtualStringTreeAspect; node: PVirtualNode; var ButonVisible: Boolean; const numButton: Integer;
       var imageIndex: Integer);
@@ -644,6 +648,17 @@ type
     procedure btnCertClick(Sender: TObject);
     procedure mniDeletePerm1Click(Sender: TObject);
     procedure btn1Click(Sender: TObject);
+    procedure grdSearchMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure grdSearchMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure pnlGridSearchMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure grdSearchAlignPosition(Sender: TWinControl; Control: TControl;
+      var NewLeft, NewTop, NewWidth, NewHeight: Integer; var AlignRect: TRect;
+      AlignInfo: TAlignInfo);
+    procedure grdSearchColumnResized(Sender: TObject; const AColumn: TColumn);
+    procedure mnimemotest1Click(Sender: TObject);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -792,7 +807,6 @@ type
     procedure DoUSBRemove(sender: TObject);
 
   protected  // iterate
-    procedure IterateSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure IterateFilterGraph(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure IterateFilterOnlyCloning(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure IterateRemoveFilter(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
@@ -957,7 +971,6 @@ type
     procedure ShowTokensFMX();
     procedure FindADB(AGUID: TList<TGUID>);
     procedure FindLNK(AGUID: TGUID);
-    procedure IterateVTRSearch;
     procedure CalcStatusDB;
     procedure AddCl(cl: string);
     procedure RefreshEvent(sender: TObject);
@@ -2850,6 +2863,11 @@ procedure TfrmSuperHip.CMDialogKey(var Msg: TCMDialogKey);
 begin
   if Screen.ActiveControl = fmxCntrDyn then
     Msg.Result := 1;
+end;
+
+procedure TfrmSuperHip.ColMoved(const ACol: TColumn; const OldCol, NewCol: integer);
+begin
+  //
 end;
 
 procedure TfrmSuperHip.DeleteAnalFromMdn(sender: tobject; var MdnLink,
@@ -7287,6 +7305,9 @@ procedure TfrmSuperHip.FormCreate(Sender: TObject);
 begin
   //Exit;
   vtrPregledPat.TakeFocus := False;
+  grdSearch.Header.Hover.OnChange := HoverChange;
+  grdSearch.Header.Selected.OnChange := HoverChange;
+  grdSearch.Header.Columns.OnMoved := ColMoved;
 
   FinderRec.LastFindedStr := '';
   mmoTest.Lines.Add(IntToStr(mmMain.Handle));
@@ -7963,6 +7984,19 @@ begin
   vtrPregledPat.FocusedNode := node;
 end;
 
+procedure TfrmSuperHip.grdSearchAlignPosition(Sender: TWinControl;
+  Control: TControl; var NewLeft, NewTop, NewWidth, NewHeight: Integer;
+  var AlignRect: TRect; AlignInfo: TAlignInfo);
+begin
+  //
+end;
+
+procedure TfrmSuperHip.grdSearchColumnResized(Sender: TObject;
+  const AColumn: TColumn);
+begin
+  //
+end;
+
 procedure TfrmSuperHip.grdSearchMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -7976,10 +8010,36 @@ begin
   //FmxProfForm.Focused := nil;
 end;
 
+procedure TfrmSuperHip.grdSearchMouseMove(Sender: TObject; Shift: TShiftState;
+  X, Y: Integer);
+begin
+
+  if not hntLek.ShowingHint then
+  begin
+    hntLek.Title := 'ddd';
+    hntLek.Description := 'desk';
+    hntLek.HideAfter := 5000;
+    hntLek.ShowHint(grdSearch.ClientToScreen(Point(x, y)));
+  end;
+  //else
+//    hntLek.PositionAt(Rect);;
+  if (thrSearch <> nil) and thrSearch.IsSorting then
+  begin
+    //grdSearch.Hint := 'ddddd';
+    //Application.ShowHint := True;
+  end;
+end;
+
+procedure TfrmSuperHip.grdSearchMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  //
+end;
+
 procedure TfrmSuperHip.grdSearchSelect(Sender: TObject);
 var
   dataList, data, tagData: PAspRec;
-  runNode: PVirtualNode;
+  runNode, nodeList: PVirtualNode;
   bufLink: Pointer;
   linkPos, FPosLinkData: Cardinal;
   pCardinalData: PCardinal;
@@ -8001,25 +8061,23 @@ begin
     begin
       if (CollPatient.ListDataPos.count - 1) < SelRow then
       Exit;
-      dataList := CollPatient.ListDataPos[SelRow];
+      nodeList := CollPatient.ListDataPos[SelRow];
 
-      //if KeyCNT then
-      begin
-       // KeyCNT := False;
-        runNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
-        while runNode <> nil  do
-        begin
-          data := pointer(PByte(runNode) + lenNode);
-          if data.DataPos = dataList.DataPos then
-          begin
-            vtrPregledPat.Selected[runNode] := True;
-            Break;
-          end;
-          runNode := runNode.NextSibling;
-        end;
-        ProfGraphClick(nil);
-        vtrGraph.Repaint;
-      end;
+      //begin
+//        runNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
+//        while runNode <> nil  do
+//        begin
+//          data := pointer(PByte(runNode) + lenNode);
+//          if data.DataPos = dataList.DataPos then
+//          begin
+//            vtrPregledPat.Selected[runNode] := True;
+//            Break;
+//          end;
+//          runNode := runNode.NextSibling;
+//        end;
+//        ProfGraphClick(nil);
+//        vtrGraph.Repaint;
+//      end;
     end;
     vvPregled:
     begin
@@ -8027,37 +8085,46 @@ begin
       Exit;
       if CollPregled.lastBottom = - 1 then
       begin
-        dataList := CollPregled.ListDataPos[SelRow];
+        nodeList := CollPregled.ListDataPos[SelRow];
       end
       else
       begin
-        dataList := CollPregled.ListDataPos[SelRow + CollPregled.offsetTop];
+        nodeList := CollPregled.ListDataPos[SelRow + CollPregled.offsetTop];
+      end;
+      if vtrPregledPat.GetFirstSelected <> nodeList then
+      begin
+        //vtrPregledPat.Selected[nodeList] := True;
+        vtrPreglediChange_Patients(vtrPregledPat, nodeList);
+      end
+      else
+      begin
+        vtrPreglediChange_Patients(vtrPregledPat, nodeList);
       end;
 
-      buflink := AspectsLinkPatPregFile.Buf;
-      linkPos := 100;
-      pCardinalData := pointer(PByte(buflink));
-      FPosLinkData := pCardinalData^;
-      while linkpos < FPosLinkData do
-      begin
-        RunNode := pointer(PByte(bufLink) + linkpos);
-        data := pointer(PByte(RunNode) + lenNode);
-        if data.DataPos = dataList.DataPos then
-        begin
-          if vtrPregledPat.GetFirstSelected <> runNode then
-          begin
-            vtrPregledPat.Selected[runNode] := True;
-          end
-          else
-          begin
-            vtrPreglediChange_Patients(vtrPregledPat, runNode);
-          end;
-          FmxProfForm.WindowState := wsMaximized;
-          //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
-            Break;
-        end;
-        Inc(linkPos, LenData);
-      end;
+      //buflink := AspectsLinkPatPregFile.Buf;
+//      linkPos := 100;
+//      pCardinalData := pointer(PByte(buflink));
+//      FPosLinkData := pCardinalData^;
+//      while linkpos < FPosLinkData do
+//      begin
+//        RunNode := pointer(PByte(bufLink) + linkpos);
+//        data := pointer(PByte(RunNode) + lenNode);
+//        if data.DataPos = dataList.DataPos then
+//        begin
+//          if vtrPregledPat.GetFirstSelected <> runNode then
+//          begin
+//            vtrPregledPat.Selected[runNode] := True;
+//          end
+//          else
+//          begin
+//            vtrPreglediChange_Patients(vtrPregledPat, runNode);
+//          end;
+//          FmxProfForm.WindowState := wsMaximized;
+//          //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
+//            Break;
+//        end;
+//        Inc(linkPos, LenData);
+//      end;
     end;
   end;
 
@@ -8580,36 +8647,6 @@ begin
   Sender.IsFiltered[Node] := false;
 end;
 
-procedure TfrmSuperHip.IterateSearch(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
-var
-  Adata: PAspRec;
-  preg: TPregledNewItem;
-begin
-  Adata := pointer(PByte(node) + lenNode);
-  case Adata.vid of
-    vvPatient:
-    begin
-      if adata.DataPos = CollPatient.FindedRes.DataPos then
-      begin
-        vtrPregledPat.Selected[Node] := True;
-        vtrPregledPat.FocusedNode := Node;
-        //mmoLog.Lines.Add(IntToStr(Integer(node)));
-        Abort := True;
-      end;
-    end;
-    vvPregled:
-    begin
-      if adata.DataPos = CollPregled.FindedRes.DataPos then
-      begin
-        vtrPregledPat.Selected[Node] := True;
-        vtrPregledPat.FocusedNode := Node;
-        //mmoLog.Lines.Add(IntToStr(Integer(node)));
-        Abort := True;
-      end;
-    end;
-  end;
-end;
-
 procedure TfrmSuperHip.IterateSendedNzisNomen(Sender: TBaseVirtualTree; Node: PVirtualNode; AData: Pointer; var Abort: Boolean);
 begin
   Application.ProcessMessages;
@@ -8625,13 +8662,6 @@ end;
 procedure TfrmSuperHip.IterateTestEmpty(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
 begin
 
-end;
-
-procedure TfrmSuperHip.IterateVTRSearch;
-begin
-  Stopwatch := TStopwatch.StartNew;
-  vtrPregledPat.IterateSubtree(vtrPregledPat.GetFirst(), IterateSearch, nil);
-  Elapsed := Stopwatch.Elapsed;
 end;
 
 procedure TfrmSuperHip.lblDescrDblClick(Sender: TObject);
@@ -9699,7 +9729,7 @@ var
 begin
   vtrSearch.NodeDataSize := SizeOf(tasprec);
   vtrSearch.BeginUpdate;
-  CollPatient.ListForFDB.Clear;
+  CollPatient.ListForFinder.Clear;
 
   vPat := vtrSearch.AddChild(nil, nil);
   data := vtrSearch.GetNodeData(vpat);
@@ -9881,6 +9911,16 @@ begin
   //pnlRoleView.Roles.Items[3].MainButtons.Items[0].Description
   //pnlRoleView.Roles.Items[3].MainButtons.Items[0].Click;
   HipNomenAnalsClick(nil);
+end;
+
+procedure TfrmSuperHip.mnimemotest1Click(Sender: TObject);
+var
+  i: Integer;
+begin
+  for i := 0 to grdSearch.Columns.Count - 1 do
+  begin
+    mmoTest.Lines.Add(Format('%d', [grdSearch.Columns[i].Id]));// := grdSearch.Columns[i].Index;
+  end;
 end;
 
 procedure TfrmSuperHip.mniN1Click(Sender: TObject);
@@ -10277,6 +10317,7 @@ var
   dataPatRevision: PAspRec;
 begin
   Stopwatch := TStopwatch.StartNew;
+  //FmxProfForm.scldlyt1.BeginUpdate;
   FmxProfForm.ClearListsPreg;
   FmxProfForm.linkPreg := linkPreg;
   if AspectsNomFile = nil then
@@ -10574,6 +10615,7 @@ begin
   FmxProfForm.InitSetings;
 
   Elapsed := Stopwatch.Elapsed;
+  //FmxProfForm.scldlyt1.endupdate;
   mmoTest.Lines.Add( 'DYN ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
@@ -11007,6 +11049,12 @@ begin
   vtrGraph.Clear;
 end;
 
+procedure TfrmSuperHip.pnlGridSearchMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  //
+end;
+
 procedure TfrmSuperHip.pnlRoleViewClick(Sender: TObject);
 begin
   vtrPregledPat.BeginUpdate;
@@ -11046,6 +11094,11 @@ begin
   OpenLinkNomenHipAnals;
   pnlTree.Width := 580;
   pgcTree.ActivePage := tsNomenAnal;
+end;
+
+procedure TfrmSuperHip.HoverChange(Sender: TObject);
+begin
+  //
 end;
 
 procedure TfrmSuperHip.httpNZISCertificateNeededEx(Sender: TObject;
@@ -12587,6 +12640,8 @@ procedure TfrmSuperHip.appEvntsMainMessage(var Msg: tagMSG;
   var Handled: Boolean);
 var
   MouseDelta: SmallInt;
+  p: TPoint;
+  ACol: TColumn;
 begin
   if Msg.Message = WM_MOUSEWHEEL then
   begin
@@ -12637,7 +12692,57 @@ begin
 //    begin
 //      FmxProfForm.DoTabHandlingXE();
 //    end;
-  end;
+  end
+  else
+  if Msg.Message = WM_RBUTTONUP then
+  begin
+    p := grdSearch.ScreenToClient(Mouse.CursorPos);
+    if PtInRect(grdSearch.ClientRect, p) then
+    begin
+      ACol := grdSearch.Header.Columns.FindAt(p.X, 1000);
+      ACol.Header.Format.Brush.Color := clRed;
+      ACol.Header.Format.Brush.Visible := True;
+      ACol.Header.ParentFormat := False;
+      pmGrdSearch.Popup(Mouse.CursorPos.X, Mouse.CursorPos.y);
+
+      Handled := True;
+    end
+    else
+      Handled := False;
+  end
+  else
+  if Msg.Message = WM_RBUTTONDOWN then
+  begin
+    p := grdSearch.ScreenToClient(Mouse.CursorPos);
+    if PtInRect(grdSearch.ClientRect, p) then
+      Handled := True
+    else
+      Handled := False;
+  end
+  else
+  if Msg.Message = WM_MOUSEMOVE then
+  begin
+    if (thrSearch <> nil) and thrSearch.IsSorting then
+    begin
+      p := grdSearch.ScreenToClient(Mouse.CursorPos);
+      if PtInRect(grdSearch.ClientRect, p) then
+        Handled := True
+      else
+
+    end
+    else
+    begin
+      Handled := False;
+    end;
+  end
+  //else
+//  if Msg.Message = WM_MOUSEACTIVATE then
+//  begin
+//    if grdSearch.MouseInClient then // and (not grdSearch.Focused) then
+//      Handled := True
+//    else
+//      Handled := False;
+//  end;
 
 end;
 
@@ -13151,7 +13256,7 @@ var
   pat: TPatientNewItem;
 begin
   Stopwatch := TStopwatch.StartNew;
-  pat := CollPatient.ListForFDB[0];
+  pat := CollPatient.ListForFinder[0];
   //if (not chk.IsNull) and (chk.IsChecked) then
 //  begin
 //    Include(pat.PRecord.Logical, TLogicalPatientNew(chk.IndexLog));
@@ -13490,8 +13595,8 @@ begin
   case data.vid of
     vvPatient:
     begin
-      FmxFinderFrm.ArrCondition := CollPatient.ListForFDB.Items[0].ArrCondition;
-      FmxFinderFrm.AddExpanderPat(0, nil);
+      FmxFinderFrm.ArrCondition := CollPatient.ListForFinder.Items[0].ArrCondition;
+      FmxFinderFrm.AddExpanderPat1(0, nil);
 
     end;
     vvPregled:

@@ -6,11 +6,15 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
   FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit, System.Math,
-  System.TimeSpan, system.Diagnostics,
-  Options, System.Generics.Collections, WalkFunctions, RealObj.RealHipp,
-  Table.Doctor;
+  System.TimeSpan, system.Diagnostics, VirtualTrees,
+  Options, System.Generics.Collections, WalkFunctions,
+  RealObj.RealHipp, ADB_DataUnit,
+  Table.Doctor,
+  Table.PatientNew,
+  Aspects.Types, Aspects.Collections, FMX.ScrollBox, FMX.Memo;
 
 type
+
   TItemsLabel = class
     RctItem: TRectangle;
     RctColorItem: TRectangle;
@@ -34,8 +38,6 @@ type
     rctBKItems: TRectangle;
     rctColorItem: TRectangle;
     lytIcon: TLayout;
-    rctIcon: TRectangle;
-    animIcon: TFloatAnimation;
     lytLeftText: TLayout;
     txtLeft: TText;
     txtItemsCapt: TText;
@@ -58,6 +60,8 @@ type
     brshAnal: TBrushObject;
     brshKonsult: TBrushObject;
     txtTest: TText;
+    rctIcon: TRectangle;
+    animIcon: TFloatAnimation;
     procedure scrlbxNewCalcContentBounds(Sender: TObject;
       var ContentBounds: TRectF);
     procedure scrlbxNewMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -72,6 +76,8 @@ type
     procedure rctBtnLibClick(Sender: TObject);
     procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
     procedure scldlytNewResize(Sender: TObject);
+    procedure edtLibFileNamePainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
 
   private
     FScaleDyn: Single;
@@ -84,10 +90,17 @@ type
 
 
   public
+    Adb_DM: TADBDataModule;
+    patNodes: TPatNodes;
+    collBase: TBaseCollection;
     procedure ClearBlanka;
     procedure FillBlanka;
     procedure AddItem(indexItem: Integer);
+
+
+    procedure FillPatient(node: PVirtualNode);
     property ScaleDyn: Single read FScaleDyn write SetScaleDyn;
+
   end;
 
 var
@@ -118,7 +131,8 @@ begin
     TempRect := TempItemsLabel.RctItem;
   end;
 
-  TempRect.Position.Y := 0;
+  //TempRect.Height := 2*indexItem  + 65;
+  //TempRect.Position.Y := 10000;
   TempRect.Parent := lytInExpander;
 end;
 
@@ -130,9 +144,24 @@ begin
   for i := 0 to LstItems.Count - 1 do
   begin
     LstItems[i].RctItem.Parent := nil;
+   // LstItems[i].RctItem.Position.y := 100000;
   end;
 
   idxItems := 0;
+end;
+
+procedure TfrmfmxNew.edtLibFileNamePainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  dataPat: paspRec;
+begin
+  if edtLibFileName.IsFocused then Exit;
+  if patNodes = nil then Exit;
+
+
+  dataPat := Pointer(PByte(patNodes.patNode) + lenNode);
+  edtLibFileName.Text := collBase.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_FNAME));
+
 end;
 
 procedure TfrmfmxNew.expndrNewResize(Sender: TObject);
@@ -166,37 +195,69 @@ var
   TempRect: TRectangle;
   TempItemsLabel: TItemsLabel;
 begin
-  for i := 0 to 40 do
+  for i := 0 to 400 do
   begin
-    //AddItem(idxItems);
-//    inc(idxItems);
+    AddItem(idxItems);
+    inc(idxItems);
 
-    TempRect := TRectangle(rctBKItems.Clone(nil));
-    TempItemsLabel := TItemsLabel.Create;
-    TempItemsLabel.RctItem := TempRect;
-    LstItems.Add(TempItemsLabel);
-    TempRect.Position.Y := 0;
-    TempRect.Parent := lytInExpander;
+   // TempRect := TRectangle(rctBKItems.Clone(nil));
+//    TempRect.Height := Random(300) + 65;
+//    TempItemsLabel := TItemsLabel.Create;
+//    TempItemsLabel.RctItem := TempRect;
+//    LstItems.Add(TempItemsLabel);
+//    TempRect.Position.Y := 0;
+//    TempRect.Parent := lytInExpander;
   end;
+end;
+
+procedure TfrmfmxNew.FillPatient(node: PVirtualNode);
+var
+
+  i: Integer;
+begin
+  scldlytNew.BeginUpdate;
+  Stopwatch := TStopwatch.StartNew;
+  if patNodes <> nil then
+    FreeAndNil(patNodes);
+  patNodes := Adb_DM.GetPatNodes(node);
+  ClearBlanka;
+  for i := 0 to patNodes.pregs.Count - 1 do
+  begin
+    AddItem(idxItems);
+    inc(idxItems);
+  end;
+  scldlytNew.EndUpdate;
+  expndrNew.RecalcSize;
+
+  scldlytNew.OriginalHeight := expndrNew.Height + expndrNew.Margins.Top + 10;
+  scldlytNew.Height := scldlytNew.OriginalHeight * FScaleDyn;
+  lytNewItem.Height := scldlytNew.OriginalHeight;
+  Elapsed := Stopwatch.Elapsed;
+  txtTest.Text := ( Format('fill %d за %f',[patNodes.pregs.Count, Elapsed.TotalMilliseconds]));
+  //scldlytNew.Repaint;
 end;
 
 procedure TfrmfmxNew.FormCreate(Sender: TObject);
 begin
   FScaleDyn := 1;
   LstItems := TList<TItemsLabel>.Create;
+  collBase := TBaseCollection.Create(TBaseItem);
   //ClearBlanka;
 end;
 
 procedure TfrmfmxNew.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(LstItems);
+  FreeAndNil(collBase);
 end;
 
 procedure TfrmfmxNew.rctBtnLibClick(Sender: TObject);
 begin
+  scldlytNew.BeginUpdate;
   Stopwatch := TStopwatch.StartNew;
   ClearBlanka;
   FillBlanka;
+  scldlytNew.EndUpdate;
   expndrNew.RecalcSize;
 
   scldlytNew.OriginalHeight := expndrNew.Height + expndrNew.Margins.Top + 10;
@@ -287,8 +348,10 @@ end;
 
 procedure TfrmfmxNew.slctnpnt1Track(Sender: TObject; var X, Y: Single);
 begin
+  scldlytNew.BeginUpdate;
   scldlytNew.OriginalWidth := x / FScaleDyn;
   scldlytNew.Width := scldlytNew.OriginalWidth * FScaleDyn;
+  scldlytNew.EndUpdate;
 end;
 
 end.

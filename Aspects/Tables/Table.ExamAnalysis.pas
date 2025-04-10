@@ -419,7 +419,7 @@ begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListDataPos.count - 1) < ARow then exit;
 
-  TempItem.DataPos := ListDataPos[ARow].DataPos;
+  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
   prop := TExamAnalysisItem.TPropertyIndex(ACol);
   GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;

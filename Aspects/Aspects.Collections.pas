@@ -5,7 +5,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Dialogs, VirtualTrees, VirtualStringTreeAspect, Tee.Grid.Columns,
   System.Generics.Collections, Aspects.Types, VCLTee.Grid, Tee.Grid.Header, Tee.Renders ,
-  Tee.GridData.Strings, Vcl.StdCtrls, System.Win.ScktComp;
+  Tee.GridData.Strings, Vcl.StdCtrls, System.Win.ScktComp, Vcl.Controls, Vcl.Graphics;
 type
 
   TParamProp = 0..255;
@@ -367,7 +367,7 @@ TCollectionForSort = class(TPersistent)
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
     function GetPRecord: Pointer; virtual;
-    procedure NewPrecord; virtual;
+    procedure NewPRecord; virtual;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); virtual;
     function GetCollType: TCollectionsType; virtual;
     function Logical32ToStr(log: TLogicalData32): string;
@@ -421,6 +421,8 @@ TCollectionForSort = class(TPersistent)
     FfirstTop: Integer;
     FoffsetTop: Integer;
     FSortAsc: Boolean;
+    FColumnForSort: Integer;
+    FOnSortCol: TNotifyEvent;
     procedure SetCntUpdates(const Value: Integer);
     procedure SetfirstTop(const Value: Integer);
     procedure SetlastBottom(const Value: Integer);
@@ -431,11 +433,14 @@ TCollectionForSort = class(TPersistent)
     procedure HeaderCanSortBy(const AColumn: TColumn; var CanSort: Boolean);
     procedure HeaderSortBy(Sender: TObject; const AColumn: TColumn);
     procedure HeaderSortState(const AColumn:TColumn; var State:TSortState);
+    procedure grdSearchClickedHeader(Sender: TObject);
   public
     streamComm: TCommandStream;
     cmdFile: TFileCMDStream;
-    ListDataPos: TList<PAspRec>; // за търсене
+    ListDataPos: TList<Pvirtualnode>; // за търсене
     ListNodes: TList<PAspRec>;
+
+
 
     constructor Create(ItemClass: TCollectionItemClass);virtual;
 
@@ -444,6 +449,7 @@ TCollectionForSort = class(TPersistent)
     function getAnsiStringMap(dataPos: cardinal; propIndex: word): AnsiString;
     function getAnsiStringMapOfset(Ofset: cardinal; propIndex: word): AnsiString;
     function getDateMap(dataPos: cardinal; propIndex: word): Tdate;
+    function getDateMapPos(dataPos: cardinal; propIndex: word): Tdate;
     function getIntMap(dataPos: cardinal; propIndex: word): integer;
     function getWordMap(dataPos: cardinal; propIndex: word): word;
     function getCardMap(dataPos: cardinal; propIndex: word): cardinal;
@@ -461,7 +467,6 @@ TCollectionForSort = class(TPersistent)
     function PropType(propIndex: Word): TAsectTypeKind; virtual;
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
     procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
-    function AddItem(ver: word):TBaseItem; virtual;
     function CollType: TCollectionsType; virtual;
     procedure SortListByDataPos(lst: TList<TBaseItem>);
     procedure ShowGrid(Grid: TTeeGrid);virtual;
@@ -473,6 +478,7 @@ TCollectionForSort = class(TPersistent)
     function FindItemFromDataPos(dataPos: cardinal): Integer;
     function GetNodeFromID(linkBuf: pointer; vv: TVtrVid; propIndex: Word; id: integer): PVirtualNode;
     procedure OpenAdbFull(aspPos: Cardinal);
+    function OrderProp(index: Integer): Integer;
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -488,6 +494,9 @@ TCollectionForSort = class(TPersistent)
     property lastBottom: Integer read FlastBottom write SetlastBottom;
     property offsetBottom: Integer read FoffsetBottom write SetoffsetBottom;
     property SortAsc: Boolean read FSortAsc write FSortAsc;
+    property ColumnForSort: Integer read FColumnForSort write FColumnForSort;
+
+    property OnSortCol: TNotifyEvent read FOnSortCol write FOnSortCol;
   end;
 
   //TRevisionItem = class(TBaseItem)
@@ -557,7 +566,7 @@ begin
   end;
 end;
 
-destructor TBaseItem.destroy;
+destructor TBaseItem.Destroy;
 begin
   
   inherited;
@@ -1461,7 +1470,7 @@ begin
   end;
 end;
 
-procedure TBaseItem.NewPrecord;
+procedure TBaseItem.NewPRecord;
 begin
 //
 end;
@@ -2552,10 +2561,6 @@ end;
 
 { TBaseCollection }
 
-function TBaseCollection.AddItem(ver: word): TBaseItem;
-begin
-end;
-
 function TBaseCollection.CollType: TCollectionsType;
 begin
   //Result := ctAspect;
@@ -2568,12 +2573,13 @@ begin
   FForLaterSave := TList<TForLaterSave>.Create;
   FCntUpdates := 0;
   FCntInADB := 0;
-  ListDataPos := TList<PAspRec>.Create;
+  ListDataPos := TList<PVirtualNode>.Create;
   ListNodes := TList<PAspRec>.Create;
   FoffsetTop := 0;
   FoffsetBottom := 0;
   FfirstTop := -1;
   FlastBottom := -1;
+  FColumnForSort := -1;
 end;
 
 destructor TBaseCollection.destroy;
@@ -2712,6 +2718,24 @@ begin
   Result := pData^;
 end;
 
+function TBaseCollection.getDateMapPos(dataPos: cardinal;
+  propIndex: word): Tdate;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TDate;
+begin
+  //p := pointer(PByte(buf) + dataPos + 4*propIndex); //
+//  if p^ = 0 then
+//  begin
+//    Result := 0;
+//    Exit;
+//  end;
+//  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset); //
+  Result := pData^;
+end;
+
 function TBaseCollection.getDoubleMap(dataPos: cardinal;
   propIndex: word): Double;
 var
@@ -2839,10 +2863,19 @@ begin
   Result := pData^;
 end;
 
+procedure TBaseCollection.grdSearchClickedHeader(Sender: TObject);
+begin
+
+  FColumnForSort := TColumn(sender).ID ;
+  TColumn(sender).Header.Changed;
+  if Assigned(FOnSortCol) then
+    FOnSortCol(Self);
+end;
+
 procedure TBaseCollection.HeaderCanSortBy(const AColumn: TColumn;
   var CanSort: Boolean);
 begin
-  CanSort:=(AColumn<>nil);// and (AColumn.Index<>4);
+  CanSort:=(AColumn<>nil) and (AColumn.Index = FColumnForSort);
 end;
 
 procedure TBaseCollection.HeaderSortBy(Sender: TObject; const AColumn: TColumn);
@@ -2853,10 +2886,12 @@ end;
 procedure TBaseCollection.HeaderSortState(const AColumn: TColumn;
   var State: TSortState);
 begin
+  if (AColumn.Index <> FColumnForSort) then exit;
+
   if SortAsc then
-     State:=Descending
+     State := TSortState.Descending
   else
-     State:=Ascending;
+     State := TSortState.Ascending;
 end;
 
 procedure TBaseCollection.IncCntInADB;
@@ -2874,6 +2909,11 @@ begin
   BaseItem.DataPos := aspPos;
   Inc(aspPos, (self.FieldCount) * 4);
   self.IncCntInADB;
+end;
+
+function TBaseCollection.OrderProp(index: Integer): Integer;
+begin
+
 end;
 
 function TBaseCollection.PropType(propIndex: Word): TAsectTypeKind;
@@ -2999,12 +3039,15 @@ begin
   begin
     Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, FlastBottom);
   end;
+  Grid.OnClickedHeader := grdSearchClickedHeader;
+  //Grid.Header.Hover.OnChange
   Grid.Header.SortRender:= TSortableHeader.Create(Grid.Header.Changed);
   Grid.Header.Sortable := True;
   // Set custom events
   TSortableHeader(Grid.Header.SortRender).OnCanSort:=HeaderCanSortBy;
   TSortableHeader(Grid.Header.SortRender).OnSortBy:=HeaderSortBy;
   TSortableHeader(Grid.Header.SortRender).OnSortState:=HeaderSortState;
+
   for i := 0 to self.FieldCount - 1 do
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
@@ -3025,12 +3068,12 @@ begin
   Grid.Columns[self.FieldCount].Index := 0;
 
    //долното трябва да иде на опции
-  Grid.Columns[9].Index:= 1;
-  Grid.Columns[2].Visible:= False;
-  Grid.Columns[6].Visible:= False;
-  Grid.Columns[0].Locked := TColumnLocked.Left;
-  Grid.Columns[1].Locked := TColumnLocked.Left;
-  Grid.Columns[2].Locked := TColumnLocked.Left;
+ // Grid.Columns[9].Index:= 1;
+//  Grid.Columns[2].Visible:= False;
+//  Grid.Columns[6].Visible:= False;
+//  Grid.Columns[0].Locked := TColumnLocked.Left;
+//  Grid.Columns[1].Locked := TColumnLocked.Left;
+//  Grid.Columns[2].Locked := TColumnLocked.Left;
 
   //Grid.Columns[9].ta
 
@@ -3069,15 +3112,15 @@ procedure TBaseCollection.SortListDataPos;
 procedure QuickSort(L, R: Integer);
   var
     I, J, P : Integer;
-    Save : PAspRec;
+    Save : PVirtualNode;
   begin
     repeat
       I := L;
       J := R;
       P := (L + R) shr 1;
       repeat
-        while (ListDataPos[I]).DataPos > (ListDataPos[P]).DataPos do Inc(I);
-        while (ListDataPos[J]).DataPos < (ListDataPos[P]).DataPos do Dec(J);
+        while PAspRec(Pointer(PByte(ListDataPos[I]) + lenNode)).DataPos > PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos do Inc(I);
+        while PAspRec(Pointer(PByte(ListDataPos[J]) + lenNode)).DataPos < PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos do Dec(J);
         if I <= J then begin
           Save := ListDataPos[I];
           ListDataPos[I] := ListDataPos[J];
@@ -3533,9 +3576,11 @@ var
   AInt64: Int64;
   data: PAspRec;
 begin
+  if FVTR = nil then Exit;
+
   FVTR.BeginUpdate;
 
-  pCardinalData := pointer(PByte(self.FBuf) + 4);
+  pCardinalData := pointer(PByte(self.FBuf) + 4);// адреса от предния път
   oldBuf := pCardinalData^;
   if Cardinal(self.Buf) >= oldBuf then
   begin
@@ -3549,6 +3594,9 @@ begin
   pCardinalData^ := Cardinal(self.Buf);
   pCardinalData := pointer(PByte(self.Buf) + 8);
   oldRoot := pCardinalData^;
+  pCardinalData := pointer(PByte(self.Buf) + 12);
+  //oldRoot := pCardinalData^;
+
 
   linkPos := 100;
   pCardinalData := pointer(PByte(self.Buf));

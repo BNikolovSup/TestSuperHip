@@ -132,7 +132,8 @@ type
              vvCL022,
              vvProfCard,
              vvRootDeput,
-             vvPatientRevision);
+             vvPatientRevision,
+             vvRootOptions);
 
 
 

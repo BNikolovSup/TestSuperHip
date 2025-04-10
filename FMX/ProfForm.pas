@@ -7349,6 +7349,7 @@ var
   imun: TRealExamImmunizationItem;
 begin
   Stopwatch := TStopwatch.StartNew;
+  //scldlyt1.BeginUpdate;
   ListPlaneds.Clear;
   FIsVtrPregled := True;
   cl132 := TRealCl132Item.Create(nil);
@@ -7529,6 +7530,7 @@ begin
   Elapsed := Stopwatch.Elapsed;
   btn1.Text := FloatToStr(Elapsed.TotalMilliseconds);
   flwlytVizitFor.Repaint;
+  //scldlyt1.endUpdate;
 end;
 
 procedure TfrmProfFormFMX.FillRightLYT(dataPreg: PAspRec);
@@ -7631,6 +7633,7 @@ begin
   lytEndRight.BringToFront;
   //lytRight.RecalcSize;
   lytRightResize(nil);
+
 end;
 
 function TfrmProfFormFMX.FindVacantIndexPreg(): integer;

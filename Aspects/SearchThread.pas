@@ -1,13 +1,13 @@
 unit SearchThread;
-           //bot
+           //showmess
 interface
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.StdCtrls, Winapi.Messages,
   system.Diagnostics, system.TimeSpan, Winapi.ActiveX, VirtualTrees, VirtualStringTreeAspect,
   VirtualStringTreeHipp, RealObj.RealHipp, System.Generics.Collections,
-  Aspects.Types, Aspects.Collections, VCLTee.Grid,
-  Table.PatientNew, Table.PregledNew, Table.Doctor, Table.Diagnosis, Table.ExamImmunization
-
+  Aspects.Types, Aspects.Collections, VCLTee.Grid, Vcl.Dialogs,
+  Table.PatientNew, Table.PregledNew, Table.Doctor, Table.Diagnosis, Table.ExamImmunization,
+  RTTI, Winapi.Windows
     ;
 
 type
@@ -37,12 +37,20 @@ type
     FCntPregInPat: Integer;
     FCntDiagInPreg: Integer;
     FCntImunInPreg: Integer;
+    FOnlySort: Boolean;
+    FcollPreg: TPregledNewColl;
+    ListAnsi: TList<AnsiString>;
+    FIsSorting: Boolean;
 
     procedure SetNodeADB(const Value: PVirtualNode);
     procedure SetSearchedText(const Value: string);
     procedure SortListDataPos(ListDataPos: TList<PAspRec>);
-    procedure SortListDataPosColl(ListDataPos: TList<PAspRec>);
+    procedure SortListDataPosColl(ListDataPos: TList<PVirtualNode>);
+    procedure SortListPropIndexColl(ListDataPos: TList<PVirtualNode>);
+    procedure SortListPropIndexCollNew(Coll: TBaseCollection; propIndex: word);
     procedure SortCollByPropertyAnsiStr(coll: TBaseCollection);
+    procedure SetcollPreg(const Value: TPregledNewColl);
+    procedure DoCollPregSort(senedr: TObject);
 
   protected
     Stopwatch: TStopwatch;
@@ -60,7 +68,7 @@ type
     VTR_searched: TVirtualStringTreeHipp;
     CollForFind: TBaseCollection;
     CollPat: TPatientNewColl;
-    collPreg: TPregledNewColl;
+
     CollExamImun: TExamImmunizationColl;
     //collPatForSearch: TPatientNewColl;
     //collPregForSearch: TRealPregledNewColl;
@@ -78,12 +86,16 @@ type
     procedure Start;
 
     //property SearchedText: string read FSearchedText write SetSearchedText;
+    property collPreg: TPregledNewColl read FcollPreg write SetcollPreg;
+
     property NodeADB_: PVirtualNode read FNodeADB write SetNodeADB;
     property OnShowGrid: TNotifyEvent read FOnShowGrid write FOnShowGrid;
     property IsClose: Boolean read FIsClose write FIsClose;
     property CntPregInPat: Integer read FCntPregInPat write FCntPregInPat;
     property CntDiagInPreg: Integer read FCntDiagInPreg write FCntDiagInPreg;
     property CntImunInPreg: Integer read FCntImunInPreg write FCntImunInPreg;
+    property OnlySort: Boolean read FOnlySort write FOnlySort;
+    property IsSorting: Boolean read FIsSorting write FIsSorting;
   end;
 implementation
 
@@ -118,13 +130,13 @@ begin
   end;
 
   j := 0;
-  SetLength(collPreg.ArrPropSearchClc, 0);
-  for i := 0 to Length(collPreg.ArrPropSearch) - 1 do
+  SetLength(FcollPreg.ArrPropSearchClc, 0);
+  for i := 0 to Length(FcollPreg.ArrPropSearch) - 1 do
   begin
-    if collPreg.ArrPropSearch[i] in collPreg.PRecordSearch.setProp then
+    if FcollPreg.ArrPropSearch[i] in FcollPreg.PRecordSearch.setProp then
     begin
-      SetLength(collPreg.ArrPropSearchClc, j + 1);
-      collPreg.ArrPropSearchClc[j] := collPreg.ArrPropSearch[i];
+      SetLength(FcollPreg.ArrPropSearchClc, j + 1);
+      FcollPreg.ArrPropSearchClc[j] := FcollPreg.ArrPropSearch[i];
       inc(j);
     end;
   end;
@@ -136,10 +148,14 @@ begin
   FNodeADB := nil;
   IsStart := true;
   FStop := True;
-  FStoped := False;
+  FStoped := True;
   FIsClose := False;
   FcntPregInPat := -1;
   FCntImunInPreg := -1;
+  FOnlySort := False;
+  FIsSorting := False;
+  ListAnsi := TList<AnsiString>.Create;
+
 
 end;
 
@@ -149,6 +165,12 @@ begin
   inherited;
 end;
 
+
+procedure TSearchThread.DoCollPregSort(senedr: TObject);
+begin
+  Self.OnlySort := True;
+  Self.Start;
+end;
 
 procedure TSearchThread.DoSearchVTR2;
 var
@@ -191,7 +213,7 @@ begin
   tempDoctor := TDoctorItem.Create(nil);
   tempDiag := TDiagnosisItem.Create(nil);
   tempImun := TRealExamImmunizationItem.Create(nil);
-  collPreg.ListDataPos.Clear;
+  FcollPreg.ListDataPos.Clear;
   collPat.ListDataPos.Clear;
   CalcArrayPropSearch;
 
@@ -200,7 +222,7 @@ begin
   begin
     if FStop then
     begin
-      collPreg.ListDataPos.Clear;
+      FcollPreg.ListDataPos.Clear;
       collPat.ListDataPos.Clear;
       if Assigned(FOnShowGrid) then
         FOnShowGrid(Self);
@@ -229,7 +251,7 @@ begin
             end;
             dataPreg := dataRunPreg;
             temppreg.DataPos := dataRunPreg.DataPos;
-            if temppreg.IsFullFinded(Self.BufADB, FPosDataADB, collPreg) then
+            if temppreg.IsFullFinded(Self.BufADB, FPosDataADB, FcollPreg) then
             begin
               AcntImunInPreg := 0;
               mkbNode := pregNode.FirstChild;
@@ -286,7 +308,7 @@ begin
         begin
           if (AcntImunInPreg > -1) and (dataPreg <> nil) then
           begin
-            collPreg.ListDataPos.Add(dataPreg);
+            FcollPreg.ListDataPos.Add(FindedPregNode);
             inc(AcntPregInPat);
           end;
           //CollPat.Tag := CollPat.Tag + 1;
@@ -307,7 +329,7 @@ begin
       end;
       -1: //изпълнено е условието за пациента, но няма прегледи
       begin
-        collPat.ListDataPos.Add(dataPat);
+        collPat.ListDataPos.Add(patNode);
       end;
       0: // има прегледи, но не е изпълнено условието за прегледите или по нататък
       begin
@@ -319,13 +341,13 @@ begin
         begin
           if (FcntPregInPat = AcntPregInPat) then
           begin
-            collPat.ListDataPos.Add(dataPat);
+            collPat.ListDataPos.Add(patNode);
           end
           else
           begin
             for I := 1 to AcntPregInPat do
             begin
-              collPreg.ListDataPos.Delete(collPreg.ListDataPos.Count - 1);
+              FcollPreg.ListDataPos.Delete(FcollPreg.ListDataPos.Count - 1);
             end;
           end;
         end
@@ -334,19 +356,19 @@ begin
         begin
           if (FCntImunInPreg = ACntImunInPreg) then
           begin
-            collPat.ListDataPos.Add(dataPat);
+            collPat.ListDataPos.Add(patNode);
           end
           else
           begin
             for I := 1 to ACntImunInPreg do
             begin
-              collPreg.ListDataPos.Delete(collPreg.ListDataPos.Count - 1);
+              FcollPreg.ListDataPos.Delete(FcollPreg.ListDataPos.Count - 1);
             end;
           end;
         end
         else
         begin
-          collPat.ListDataPos.Add(dataPat);
+          collPat.ListDataPos.Add(patNode);
         end;
       end;
 
@@ -355,10 +377,11 @@ begin
     patNode := patNode.NextSibling;
   end;
 
-  if (collPreg.ListDataPos.Count > 0) or (CollPat.ListDataPos.Count > 0) then
+  if (FcollPreg.ListDataPos.Count > 0) or (CollPat.ListDataPos.Count > 0) then
   begin
     Stopwatch := TStopwatch.StartNew;
     SortListDataPosColl(collPreg.ListDataPos);
+    //SortListPropIndexCollNew(FcollPreg, Word(PregledNew_ANAMN));
     Elapsed := Stopwatch.Elapsed;
     //mmoTest.Lines.Add( Format('grdSearchSelect за %f',[ Elapsed.TotalMilliseconds]));
     if Assigned(FOnShowGrid) then
@@ -367,7 +390,7 @@ begin
   else
   begin
     collPat.ListDataPos.Clear;
-    collPreg.ListDataPos.Clear;
+    FcollPreg.ListDataPos.Clear;
     if Assigned(FOnShowGrid) then
       FOnShowGrid(Self);
   end;
@@ -383,6 +406,7 @@ end;
 procedure TSearchThread.Execute;
 var
   comInitStatus: THandle;
+  fieldType: string;
 begin
   comInitStatus := S_FALSE;
   try
@@ -394,7 +418,30 @@ begin
         if (not IsStart)  then
         begin
           IsStart := True;
-          DoSearchVTR2;
+          if FOnlySort then
+          begin
+            Stopwatch := TStopwatch.StartNew;
+            FOnlySort := false;
+            //Sleep(10000);
+            FStop := true;
+
+            if FStoped then
+            begin
+              FIsSorting := True;
+              FStop := False;
+              grdSearch.Cursor :=  crHourGlass;
+              SortListPropIndexCollNew(collPreg, collPreg.ColumnForSort - 1);
+              grdSearch.Repaint;
+              FIsSorting := false;
+              grdSearch.Cursor :=  crDefault;
+              Elapsed := Stopwatch.Elapsed;
+              fieldType := TRttiEnumerationType.GetName(TPregledNewItem.TPropertyIndex(collPreg.ColumnForSort - 1));
+             // ShowMessage(Format('sort %s за %f',[fieldType, Elapsed.TotalMilliseconds]));
+            end;
+            //mmoTest.Lines.Add( Format('grdSearchSelect за %f',[ Elapsed.TotalMilliseconds]));
+          end
+          else
+            DoSearchVTR2;
         end;
         if FIsClose then
           Exit;
@@ -418,7 +465,13 @@ begin
     Abort := True;
   Adata := pointer(PByte(node) + lenNode);
   if Adata.vid = RunItem.childVid then
-    CollForFind.ListDataPos.Add(Adata);
+    CollForFind.ListDataPos.Add(node);
+end;
+
+procedure TSearchThread.SetcollPreg(const Value: TPregledNewColl);
+begin
+  FcollPreg := Value;
+  FcollPreg.OnSortCol := DoCollPregSort;
 end;
 
 procedure TSearchThread.SetNodeADB(const Value: PVirtualNode);
@@ -488,10 +541,10 @@ procedure QuickSort(L, R: Integer);
       J := R;
       P := (L + R) shr 1;
       repeat
-        while collPreg.getAnsiStringMap(ListDataPos[I].DataPos, Word(PregledNew_NRN)) <
-              collPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Inc(I);
-        while collPreg.getAnsiStringMap(ListDataPos[J].DataPos, Word(PregledNew_NRN))  >
-              collPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Dec(J);
+        while FcollPreg.getAnsiStringMap(ListDataPos[I].DataPos, Word(PregledNew_NRN)) <
+              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Inc(I);
+        while FcollPreg.getAnsiStringMap(ListDataPos[J].DataPos, Word(PregledNew_NRN))  >
+              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Dec(J);
         if I <= J then begin
           Save := ListDataPos[I];
           ListDataPos[I] := ListDataPos[J];
@@ -515,11 +568,11 @@ begin
   end;
 end;
 
-procedure TSearchThread.SortListDataPosColl(ListDataPos: TList<PAspRec>);
+procedure TSearchThread.SortListDataPosColl(ListDataPos: TList<PVirtualNode>);
 procedure QuickSort(L, R: Integer);
   var
     I, J, P : Integer;
-    Save : PAspRec;
+    Save : PVirtualNode;
   begin
     if FStop then
     begin
@@ -530,8 +583,8 @@ procedure QuickSort(L, R: Integer);
       J := R;
       P := (L + R) shr 1;
       repeat
-        while (ListDataPos[I]).DataPos > (ListDataPos[P]).DataPos do Inc(I);
-        while (ListDataPos[J]).DataPos < (ListDataPos[P]).DataPos do Dec(J);
+        while PAspRec(Pointer(PByte(ListDataPos[I]) + lenNode)).DataPos > PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos do Inc(I);
+        while PAspRec(Pointer(PByte(ListDataPos[J]) + lenNode)).DataPos < PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos do Dec(J);
         if I <= J then begin
           Save := ListDataPos[I];
           ListDataPos[I] := ListDataPos[J];
@@ -552,6 +605,125 @@ begin
   if (ListDataPos.count >1 ) then
   begin
     QuickSort(0,ListDataPos.count-1);
+  end;
+end;
+
+procedure TSearchThread.SortListPropIndexColl(ListDataPos: TList<PVirtualNode>);
+  function conditionI(i, p: integer): Boolean;
+  var
+  datPosI, datPosP: Cardinal;
+  begin
+    datPosI := PAspRec(Pointer(PByte(ListDataPos[I]) + lenNode)).DataPos;
+    datPosP := PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos;
+    Result := FcollPreg.getAnsiStringMap(datPosI, Word(PregledNew_NRN)) < FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN));
+  end;
+
+  function conditionJ(j, p: integer): Boolean;
+  var
+  datPosJ, datPosP: Cardinal;
+  begin
+    datPosJ := PAspRec(Pointer(PByte(ListDataPos[J]) + lenNode)).DataPos;
+    datPosP := PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos;
+    Result := FcollPreg.getAnsiStringMap(datPosJ, Word(PregledNew_NRN)) > FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN));
+  end;
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : PVirtualNode;
+
+  begin
+    if FStop then
+    begin
+      Exit;
+    end;
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while conditionI(i, p) do
+          Inc(i);
+        while conditionJ(j, p) do
+          Dec(J);
+        if I <= J then begin
+          Save := ListDataPos[I];
+          ListDataPos[I] := ListDataPos[J];
+          ListDataPos[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (ListDataPos.count >1 ) then
+  begin
+    QuickSort(0,ListDataPos.count-1);
+  end;
+end;
+
+procedure TSearchThread.SortListPropIndexCollNew(Coll: TBaseCollection; propIndex: word);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : AnsiString;
+    saveList: PVirtualNode;
+  begin
+    repeat
+     // Sleep(1);//  за тесттване на бавно сортиране
+      if FStop then
+      begin
+        ListAnsi.Clear;
+        //ListAnsi.Free;
+        FStoped := True;
+        Exit;
+      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (ListAnsi[I])< (ListAnsi[P]) do Inc(I);
+        while (ListAnsi[J]) > (ListAnsi[P]) do Dec(J);
+        if I <= J then begin
+          Save := ListAnsi[I];
+          saveList := ListDataPos[I];
+          ListAnsi[I] := ListAnsi[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListAnsi[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Coll.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+
+    for i := 0 to ListDataPos.Count - 1 do
+      ListAnsi.Add(FcollPreg.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListAnsi.count-1);
+    ListAnsi.Clear;
+    //ListAnsi.Free;
+    FStoped := True;
   end;
 end;
 

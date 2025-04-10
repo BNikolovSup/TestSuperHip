@@ -45,6 +45,9 @@
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\MemoValidating\MemoValidating.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -179,14 +182,23 @@
     <Target Name="MemoValidating:Make">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\MemoValidating\MemoValidating.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TestGoroFmx">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj"/>
+    </Target>
+    <Target Name="TestGoroFmx:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestGoroFmx:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest;MemoValidating"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

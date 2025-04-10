@@ -2063,19 +2063,19 @@ object frmfmxNew: TfrmfmxNew
             Position.Y = 30.000000000000000000
             ShowCheck = False
             Size.Width = 509.000000000000000000
-            Size.Height = 195.000000000000000000
+            Size.Height = 171.000000000000000000
             Size.PlatformDefault = False
             StyleLookup = 'xpdrMaintStyle1'
             Text = #1057#1087#1080#1089#1098#1082' '#1089' '#1087#1086#1089#1090#1072#1074#1077#1085#1080#1090#1077' ....'
             TextAlign = Center
             TabOrder = 1
             OnResize = expndrNewResize
-            ContentSize = '170'
+            ContentSize = '146'
             object lytInExpander: TLayout
               StyleName = 'NoCalc'
               Align = Top
-              Margins.Top = 100.000000000000000000
-              Position.Y = 100.000000000000000000
+              Margins.Top = 70.000000000000000000
+              Position.Y = 70.000000000000000000
               Size.Width = 509.000000000000000000
               Size.Height = 88.000000000000000000
               Size.PlatformDefault = False
@@ -2089,7 +2089,7 @@ object frmfmxNew: TfrmfmxNew
                 Margins.Bottom = 2.000000000000000000
                 Position.X = 5.000000000000000000
                 Size.Width = 499.000000000000000000
-                Size.Height = 65.000000000000000000
+                Size.Height = 81.000000000000000000
                 Size.PlatformDefault = False
                 Stroke.Color = xFFB69090
                 XRadius = 7.000000000000000000
@@ -2098,9 +2098,9 @@ object frmfmxNew: TfrmfmxNew
                   StyleName = 'ColorItem'
                   Align = Contents
                   Fill.Color = xFFD6CDBE
-                  Opacity = 0.400000005960464500
+                  Opacity = 0.400000005960464400
                   Size.Width = 499.000000000000000000
-                  Size.Height = 65.000000000000000000
+                  Size.Height = 81.000000000000000000
                   Size.PlatformDefault = False
                   Stroke.Kind = None
                 end
@@ -2109,9 +2109,34 @@ object frmfmxNew: TfrmfmxNew
                   Margins.Left = 5.000000000000000000
                   Position.X = 5.000000000000000000
                   Size.Width = 44.000000000000000000
-                  Size.Height = 65.000000000000000000
+                  Size.Height = 81.000000000000000000
                   Size.PlatformDefault = False
                   TabOrder = 0
+                  object lytLeftText: TLayout
+                    Align = MostLeft
+                    Margins.Left = -28.000000000000000000
+                    Position.X = -28.000000000000000000
+                    Size.Width = 27.000000000000000000
+                    Size.Height = 81.000000000000000000
+                    Size.PlatformDefault = False
+                    TabOrder = 1
+                    object txtLeft: TText
+                      StyleName = 'txtKey'
+                      Opacity = 0.699999988079071100
+                      Margins.Left = -27.000000000000000000
+                      Position.X = -15.000000000000000000
+                      Position.Y = 20.000000000000000000
+                      RotationAngle = 270.000000000000000000
+                      Size.Width = 54.000000000000000000
+                      Size.Height = 25.000000000000000000
+                      Size.PlatformDefault = False
+                      TextSettings.Font.Family = 'Segoe UI Black'
+                      TextSettings.Font.Size = 14.000000000000000000
+                      TextSettings.Font.Style = [fsBold]
+                      TextSettings.FontColor = claBlue
+                      TextSettings.WordWrap = False
+                    end
+                  end
                   object rctIcon: TRectangle
                     StyleName = 'btnIcon'
                     Align = VertCenter
@@ -2257,7 +2282,7 @@ object frmfmxNew: TfrmfmxNew
                     Margins.Left = 2.000000000000000000
                     Margins.Right = 2.000000000000000000
                     Position.X = 1.000000000000000000
-                    Position.Y = 12.000000000000000000
+                    Position.Y = 20.000000000000000000
                     Size.Width = 41.000000000000000000
                     Size.Height = 40.000000000000000000
                     Size.PlatformDefault = False
@@ -2272,31 +2297,6 @@ object frmfmxNew: TfrmfmxNew
                       StopValue = 3.000000000000000000
                       Trigger = 'IsMouseOver=true'
                       TriggerInverse = 'IsMouseOver=false'
-                    end
-                  end
-                  object lytLeftText: TLayout
-                    Align = MostLeft
-                    Margins.Left = -28.000000000000000000
-                    Position.X = -28.000000000000000000
-                    Size.Width = 27.000000000000000000
-                    Size.Height = 65.000000000000000000
-                    Size.PlatformDefault = False
-                    TabOrder = 1
-                    object txtLeft: TText
-                      StyleName = 'txtKey'
-                      Opacity = 0.699999988079071000
-                      Margins.Left = -27.000000000000000000
-                      Position.X = -15.000000000000000000
-                      Position.Y = 20.000000000000000000
-                      RotationAngle = 270.000000000000000000
-                      Size.Width = 54.000000000000000000
-                      Size.Height = 25.000000000000000000
-                      Size.PlatformDefault = False
-                      TextSettings.Font.Family = 'Segoe UI Black'
-                      TextSettings.Font.Size = 14.000000000000000000
-                      TextSettings.Font.Style = [fsBold]
-                      TextSettings.FontColor = claBlue
-                      TextSettings.WordWrap = False
                     end
                   end
                 end
@@ -2340,7 +2340,7 @@ object frmfmxNew: TfrmfmxNew
             Position.X = 37.000000000000000000
             Position.Y = 35.000000000000000000
             Size.Width = 436.000000000000000000
-            Size.Height = 94.000000000000000000
+            Size.Height = 70.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
             object Layout4: TLayout
@@ -2361,6 +2361,7 @@ object frmfmxNew: TfrmfmxNew
                 Size.PlatformDefault = False
                 TextPrompt = #1041#1080#1073#1083#1080#1086#1090#1077#1082#1072'....'
                 StyledSettings = [Size]
+                OnPainting = edtLibFileNamePainting
               end
               object lytBtnHeader: TLayout
                 Align = Left
@@ -2633,6 +2634,7 @@ object frmfmxNew: TfrmfmxNew
                   Size.PlatformDefault = False
                   Stroke.Kind = None
                   OnClick = rctBtnLibClick
+                  OnDblClick = rctBtnLibClick
                   OnMouseDown = rctBtnLibMouseDown
                   OnMouseUp = rctBtnLibMouseUp
                   object FloatAnimation21: TFloatAnimation
@@ -2669,19 +2671,19 @@ object frmfmxNew: TfrmfmxNew
               Position.X = 16.000000000000000000
               Position.Y = 32.000000000000000000
               Size.Width = 385.000000000000000000
-              Size.Height = 49.000000000000000000
+              Size.Height = 25.000000000000000000
               Size.PlatformDefault = False
               object rct1: TRectangle
                 Align = Contents
                 HitTest = False
                 Size.Width = 385.000000000000000000
-                Size.Height = 49.000000000000000000
+                Size.Height = 25.000000000000000000
                 Size.PlatformDefault = False
               end
             end
             object txtTest: TText
               Position.X = 48.000000000000000000
-              Position.Y = 48.000000000000000000
+              Position.Y = 33.000000000000000000
               Size.Width = 297.000000000000000000
               Size.Height = 25.000000000000000000
               Size.PlatformDefault = False

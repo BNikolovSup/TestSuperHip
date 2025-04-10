@@ -120,15 +120,11 @@ PatientNew_BABY_NUMBER
 
   TPatientNewColl = class(TBaseCollection)
   private
-    FSearchingInt: Integer;
-    FSearchingValue: string;
     function GetItem(Index: Integer): TPatientNewItem;
     procedure SetItem(Index: Integer; const Value: TPatientNewItem);
-    procedure SetSearchingValue(const Value: string);
   public
-    FindedRes: TFindedResult;
 	  tempItem: TPatientNewItem;
-	  ListForFDB: TList<TPatientNewItem>;
+	  ListForFinder: TList<TPatientNewItem>;
     ListPatientNewSearch: TList<TPatientNewItem>;
 	  PRecordSearch: ^TPatientNewItem.TRecPatientNew;
     ArrPropSearch: TArray<TPatientNewItem.TPropertyIndex>;
@@ -150,7 +146,6 @@ PatientNew_BABY_NUMBER
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-	procedure DynControlEnter(Sender: TObject);
     procedure SortByIndexValue(propIndex: TPatientNewItem.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
@@ -166,7 +161,6 @@ PatientNew_BABY_NUMBER
     procedure IndexValue(propIndex: TPatientNewItem.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TPatientNewItem.TPropertyIndex);
     property Items[Index: Integer]: TPatientNewItem read GetItem write SetItem;
-    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
     procedure OnSetTextSearchLog(Log: TlogicalPatientNewSet);
@@ -299,35 +293,35 @@ begin
     if Result = false then
       Exit;
     pidx := TPatientNewColl(coll).ArrPropSearchClc[i];
-	  ATempItem := TPatientNewColl(coll).ListForFDB.Items[0];
+	  ATempItem := TPatientNewColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
         PatientNew_BABY_NUMBER: Result := IsFinded(ATempItem.PRecord.BABY_NUMBER, buf, FPosDataADB, word(PatientNew_BABY_NUMBER), cot);
-            PatientNew_BIRTH_DATE: Result := IsFinded(ATempItem.PRecord.BIRTH_DATE, buf, FPosDataADB, word(PatientNew_BIRTH_DATE), cot);
-            PatientNew_DIE_DATE: Result := IsFinded(ATempItem.PRecord.DIE_DATE, buf, FPosDataADB, word(PatientNew_DIE_DATE), cot);
-            PatientNew_DIE_FROM: Result := IsFinded(ATempItem.PRecord.DIE_FROM, buf, FPosDataADB, word(PatientNew_DIE_FROM), cot);
-            PatientNew_DOSIENOMER: Result := IsFinded(ATempItem.PRecord.DOSIENOMER, buf, FPosDataADB, word(PatientNew_DOSIENOMER), cot);
-            PatientNew_DZI_NUMBER: Result := IsFinded(ATempItem.PRecord.DZI_NUMBER, buf, FPosDataADB, word(PatientNew_DZI_NUMBER), cot);
-            PatientNew_EGN: Result := IsFinded(ATempItem.PRecord.EGN, buf, FPosDataADB, word(PatientNew_EGN), cot);
-            PatientNew_EHIC_NO: Result := IsFinded(ATempItem.PRecord.EHIC_NO, buf, FPosDataADB, word(PatientNew_EHIC_NO), cot);
-            PatientNew_FNAME: Result := IsFinded(ATempItem.PRecord.FNAME, buf, FPosDataADB, word(PatientNew_FNAME), cot);
-            PatientNew_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(PatientNew_ID), cot);
-            PatientNew_LAK_NUMBER: Result := IsFinded(ATempItem.PRecord.LAK_NUMBER, buf, FPosDataADB, word(PatientNew_LAK_NUMBER), cot);
-            PatientNew_LNAME: Result := IsFinded(ATempItem.PRecord.LNAME, buf, FPosDataADB, word(PatientNew_LNAME), cot);
-            PatientNew_NZIS_BEBE: Result := IsFinded(ATempItem.PRecord.NZIS_BEBE, buf, FPosDataADB, word(PatientNew_NZIS_BEBE), cot);
-            PatientNew_NZIS_PID: Result := IsFinded(ATempItem.PRecord.NZIS_PID, buf, FPosDataADB, word(PatientNew_NZIS_PID), cot);
-            PatientNew_RACE: Result := IsFinded(ATempItem.PRecord.RACE, buf, FPosDataADB, word(PatientNew_RACE), cot);
-            PatientNew_SNAME: Result := IsFinded(ATempItem.PRecord.SNAME, buf, FPosDataADB, word(PatientNew_SNAME), cot);
-            PatientNew_Logical: Result := IsFinded(TLogicalData32(ATempItem.PRecord.Logical), buf, FPosDataADB, word(PatientNew_Logical), cot);
+        PatientNew_BIRTH_DATE: Result := IsFinded(ATempItem.PRecord.BIRTH_DATE, buf, FPosDataADB, word(PatientNew_BIRTH_DATE), cot);
+        PatientNew_DIE_DATE: Result := IsFinded(ATempItem.PRecord.DIE_DATE, buf, FPosDataADB, word(PatientNew_DIE_DATE), cot);
+        PatientNew_DIE_FROM: Result := IsFinded(ATempItem.PRecord.DIE_FROM, buf, FPosDataADB, word(PatientNew_DIE_FROM), cot);
+        PatientNew_DOSIENOMER: Result := IsFinded(ATempItem.PRecord.DOSIENOMER, buf, FPosDataADB, word(PatientNew_DOSIENOMER), cot);
+        PatientNew_DZI_NUMBER: Result := IsFinded(ATempItem.PRecord.DZI_NUMBER, buf, FPosDataADB, word(PatientNew_DZI_NUMBER), cot);
+        PatientNew_EGN: Result := IsFinded(ATempItem.PRecord.EGN, buf, FPosDataADB, word(PatientNew_EGN), cot);
+        PatientNew_EHIC_NO: Result := IsFinded(ATempItem.PRecord.EHIC_NO, buf, FPosDataADB, word(PatientNew_EHIC_NO), cot);
+        PatientNew_FNAME: Result := IsFinded(ATempItem.PRecord.FNAME, buf, FPosDataADB, word(PatientNew_FNAME), cot);
+        PatientNew_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(PatientNew_ID), cot);
+        PatientNew_LAK_NUMBER: Result := IsFinded(ATempItem.PRecord.LAK_NUMBER, buf, FPosDataADB, word(PatientNew_LAK_NUMBER), cot);
+        PatientNew_LNAME: Result := IsFinded(ATempItem.PRecord.LNAME, buf, FPosDataADB, word(PatientNew_LNAME), cot);
+        PatientNew_NZIS_BEBE: Result := IsFinded(ATempItem.PRecord.NZIS_BEBE, buf, FPosDataADB, word(PatientNew_NZIS_BEBE), cot);
+        PatientNew_NZIS_PID: Result := IsFinded(ATempItem.PRecord.NZIS_PID, buf, FPosDataADB, word(PatientNew_NZIS_PID), cot);
+        PatientNew_RACE: Result := IsFinded(ATempItem.PRecord.RACE, buf, FPosDataADB, word(PatientNew_RACE), cot);
+        PatientNew_SNAME: Result := IsFinded(ATempItem.PRecord.SNAME, buf, FPosDataADB, word(PatientNew_SNAME), cot);
+        PatientNew_Logical: Result := IsFinded(TLogicalData32(ATempItem.PRecord.Logical), buf, FPosDataADB, word(PatientNew_Logical), cot);
       end;
     end;
   end;
 end;
 
-procedure TPatientNewItem.NewPrecord;
+procedure TPatientNewItem.NewPRecord;
 begin
-  inherited;
+  inherited NewPRecord;
   New(PRecord);
   PRecord.setProp := [];
 end;
@@ -449,7 +443,7 @@ begin
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
   ItemForSearch.PRecord.Logical := [];
-  Result := ListForFDB.Add(ItemForSearch);
+  Result := ListForFinder.Add(ItemForSearch);
 end;
 
 constructor TPatientNewColl.Create(ItemClass: TCollectionItemClass);
@@ -457,9 +451,7 @@ begin
   inherited;
   tempItem := TPatientNewItem.Create(nil);
   ListPatientNewSearch := TList<TPatientNewItem>.Create;
-  ListForFDB := TList<TPatientNewItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TPatientNewItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
 end;
@@ -467,7 +459,7 @@ end;
 destructor TPatientNewColl.destroy;
 begin
   FreeAndNil(ListPatientNewSearch);
-  FreeAndNil(ListForFDB);
+  FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -498,14 +490,7 @@ begin
   end;
 end;
 
-procedure TPatientNewColl.DynControlEnter(Sender: TObject);
-begin
-  self.FindedRes.DataPos := 0;
-  //self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
-  self.IndexValue(TPatientNewItem.TPropertyIndex(self.FindedRes.PropIndex));
-end;
-
-function TPatientNewColl.FieldCount: Integer; 
+function TPatientNewColl.FieldCount: Integer;
 begin
   inherited;
   Result := 17;
@@ -541,7 +526,7 @@ begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListDataPos.count - 1) < ARow then exit;
 
-  TempItem.DataPos := ListDataPos[ARow].DataPos;
+  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
   prop := TPatientNewItem.TPropertyIndex(ACol);
   GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
@@ -583,9 +568,9 @@ var
   prop: TPatientNewItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFDB.Count = 0 then Exit;
+  if ListForFinder.Count = 0 then Exit;
 
-  AtempItem := ListForFDB[ARow];
+  AtempItem := ListForFinder[ARow];
   prop := TPatientNewItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -846,31 +831,31 @@ procedure TPatientNewColl.OnSetTextSearchEDT(Text: string; field: Word; Conditio
 begin
   if Text = '' then
   begin
-    Exclude(ListForFDB[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(field));
+    Exclude(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(field));
   end
   else
   begin
-    include(ListForFDB[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(field));
+    include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(field));
     //ListForFDB[0].ArrCondition[edt.Field] := [cotNotContain]; //  не му е тука м€стото. само за тест е. тр€бва да се получава от финдера
   end;
-  Self.PRecordSearch.setProp := ListForFDB[0].PRecord.setProp;
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
   if cotSens in Condition then
   begin
     case TPatientNewItem.TPropertyIndex(field) of
-      PatientNew_EGN: ListForFDB[0].PRecord.EGN  := Text;
-      PatientNew_FNAME: ListForFDB[0].PRecord.FNAME  := Text;
-      PatientNew_SNAME: ListForFDB[0].PRecord.SNAME  := Text;
-      PatientNew_ID: ListForFDB[0].PRecord.ID  := StrToInt(Text);
+      PatientNew_EGN: ListForFinder[0].PRecord.EGN  := Text;
+      PatientNew_FNAME: ListForFinder[0].PRecord.FNAME  := Text;
+      PatientNew_SNAME: ListForFinder[0].PRecord.SNAME  := Text;
+      PatientNew_ID: ListForFinder[0].PRecord.ID  := StrToInt(Text);
       //PatientNew_BIRTH_DATE: ListForFDB[0].PRecord.BIRTH_DATE  := StrToInt(edt.Text);
     end;
   end
   else
   begin
     case TPatientNewItem.TPropertyIndex(field) of
-      PatientNew_EGN: ListForFDB[0].PRecord.EGN  := AnsiUpperCase(Text);
-      PatientNew_FNAME: ListForFDB[0].PRecord.FNAME  := AnsiUpperCase(Text);
-      PatientNew_SNAME: ListForFDB[0].PRecord.SNAME  := AnsiUpperCase(Text);
-      PatientNew_ID: ListForFDB[0].PRecord.ID  := StrToInt(Text);
+      PatientNew_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
+      PatientNew_FNAME: ListForFinder[0].PRecord.FNAME  := AnsiUpperCase(Text);
+      PatientNew_SNAME: ListForFinder[0].PRecord.SNAME  := AnsiUpperCase(Text);
+      PatientNew_ID: ListForFinder[0].PRecord.ID  := StrToInt(Text);
       //PatientNew_BIRTH_DATE: ListForFDB[0].PRecord.BIRTH_DATE  := StrToInt(edt.Text);
     end;
   end;
@@ -878,7 +863,7 @@ end;
 
 procedure TPatientNewColl.OnSetTextSearchLog(Log: TlogicalPatientNewSet);
 begin
-  ListForFDB[0].PRecord.Logical := Log;
+  ListForFinder[0].PRecord.Logical := Log;
 end;
 
 function TPatientNewColl.PropType(propIndex: Word): TAsectTypeKind;
@@ -915,33 +900,32 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   PatientNew := Items[ARow];
   if not Assigned(PatientNew.PRecord) then
   begin
     New(PatientNew.PRecord);
     PatientNew.PRecord.setProp := [];
-	CntUpdates := CntUpdates + 1;
+   	CntUpdates := CntUpdates + 1;
   end
   else
   begin
-    isOld := False;
     case TPatientNewItem.TPropertyIndex(ACol) of
       PatientNew_BABY_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
-    PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
-    PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_DZI_NUMBER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_EGN: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_EHIC_NO: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_FNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_ID: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    PatientNew_LAK_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    PatientNew_LNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_NZIS_BEBE: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_NZIS_PID: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    PatientNew_SNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+      PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+      PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_DZI_NUMBER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_EGN: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_EHIC_NO: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_FNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_ID: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      PatientNew_LAK_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      PatientNew_LNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_NZIS_BEBE: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_NZIS_PID: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      PatientNew_SNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     end;
   end;
   if isOld then
@@ -983,7 +967,7 @@ var
   PatientNew: TPatientNewItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False;
   PatientNew := Items[ARow];
   if not Assigned(PatientNew.PRecord) then
   begin
@@ -993,23 +977,22 @@ begin
   end
   else
   begin
-    isOld := False;
     case TPatientNewItem.TPropertyIndex(ACol) of
       PatientNew_BABY_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
-    PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
-    PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_DZI_NUMBER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_EGN: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_EHIC_NO: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_FNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_ID: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    PatientNew_LAK_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    PatientNew_LNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_NZIS_BEBE: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_NZIS_PID: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    PatientNew_SNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+      PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+      PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_DZI_NUMBER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_EGN: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_EHIC_NO: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_FNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_ID: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      PatientNew_LAK_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      PatientNew_LNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_NZIS_BEBE: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_NZIS_PID: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      PatientNew_SNAME: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     end;
   end;
   if isOld then
@@ -1050,110 +1033,6 @@ begin
   inherited SetItem(Index, Value);
 end;
 
-procedure TPatientNewColl.SetSearchingValue(const Value: string);
-var
-  i: Integer;
-begin
-  FSearchingValue := Value;
-  ListPatientNewSearch.Clear;
-  for i := 0 to self.Count - 1 do
-  begin
-    case  TPatientNewItem.TPropertyIndex(self.FindedRes.PropIndex) of
-	  PatientNew_BABY_NUMBER: 
-begin
-  if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-  begin
-    ListPatientNewSearch.Add(self.Items[i]);
-  end;
-end;
-      PatientNew_DIE_FROM:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_DOSIENOMER:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_DZI_NUMBER:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_EGN:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_EHIC_NO:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_FNAME:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_ID: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_LAK_NUMBER: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_LNAME:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_NZIS_BEBE:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_NZIS_PID:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-      PatientNew_SNAME:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListPatientNewSearch.Add(self.Items[i]);
-        end;
-      end;
-    end;
-  end;
-end;
-
 procedure TPatientNewColl.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
@@ -1186,7 +1065,7 @@ var
   i: word;
 
 begin
-  ListForFDB := LST;
+  ListForFinder := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
