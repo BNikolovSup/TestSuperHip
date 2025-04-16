@@ -1,4 +1,4 @@
-unit SuperHipp;  //clone loopsearch  aspect errrr  savepreg  .rtt lnk
+unit SuperHipp;  //clone loopsearch  aspect errrr  discone  .rtt lnk
 interface
 
 uses
@@ -376,6 +376,11 @@ type
     tlbNzisMess: TToolBar;
     pmGrdSearch: TPopupMenu;
     mnimemotest1: TMenuItem;
+    pmSearchTable: TPopupMenu;
+    mniPregledSearchView: TMenuItem;
+    mniPatientSearchView: TMenuItem;
+    tsLinkOptions: TTabSheet;
+    vtrLinkOptions: TVirtualStringTreeAspect;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -621,7 +626,6 @@ type
     procedure btn9Click(Sender: TObject);
     procedure btn10Click(Sender: TObject);
     procedure mniSortStartPregClick(Sender: TObject);
-    procedure grdSearchMouseEnter(Sender: TObject);
     procedure tsFMXFormMouseEnter(Sender: TObject);
     procedure grdSearchMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -648,17 +652,16 @@ type
     procedure btnCertClick(Sender: TObject);
     procedure mniDeletePerm1Click(Sender: TObject);
     procedure btn1Click(Sender: TObject);
-    procedure grdSearchMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure grdSearchMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
     procedure pnlGridSearchMouseMove(Sender: TObject; Shift: TShiftState; X,
       Y: Integer);
-    procedure grdSearchAlignPosition(Sender: TWinControl; Control: TControl;
-      var NewLeft, NewTop, NewWidth, NewHeight: Integer; var AlignRect: TRect;
-      AlignInfo: TAlignInfo);
-    procedure grdSearchColumnResized(Sender: TObject; const AColumn: TColumn);
     procedure mnimemotest1Click(Sender: TObject);
+    procedure mniPregledSearchViewClick(Sender: TObject);
+    procedure mniPatientSearchViewClick(Sender: TObject);
+    procedure vtrLinkOptionsGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+      var CellText: string);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -747,6 +750,7 @@ type
    procedure OpenLinkPatPreg(LNK: TMappedFile);
    procedure OpenLinkNomenHipAnals;
    procedure InitVTRs;
+   procedure LoadLinkOptions;
    procedure InitColl;
    procedure FreeColl;
    procedure FreeFMXDin;
@@ -900,6 +904,7 @@ type
     AspectsHipFile : TMappedFile;
     AspectsLinkPatPregFile : TMappedLinkFile;
     AspectsLinkNomenHipAnalFile : TMappedFile;
+    AspectsOptionsLinkFile: TMappedLinkFile;
 
 
     AnalsNewColl: TAnalsNewColl;
@@ -2362,6 +2367,33 @@ begin
       vtrNomenNzis.RepaintNode(node);
     end;
     80:
+    begin
+      data := vtrNomenNzis.GetNodeData(node);
+      FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      UpdateRoot(FRoot, ListNomenNzisNames[data.index].Cl000Coll);
+
+      FRoot._Release;
+
+      ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+      mmoTest.Lines.Assign( ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      idnom := data.index;
+      case idNom of
+        24: ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(CL024Coll);
+        38: ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(CL038Coll);
+        88: ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(CL088Coll);
+        132: ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(CL132Coll);
+        134: ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(CL134Coll);
+        139:ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(CL139Coll);
+        142:ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(CL142Coll);
+        144:ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(CL144Coll);
+
+      end;
+      caption := '';
+      //ListNomenNzisNames[data.index].ArrStr[1];
+//      ListNomenNzisNames[data.index].Cl000Coll;
+    end;
+
+    77:
     begin
       data := vtrNomenNzis.GetNodeData(node);
       FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
@@ -7236,8 +7268,8 @@ begin
   end;
 
 
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
-  pCardinalData^ := linkpos;
+  //pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+//  pCardinalData^ := linkpos;
   node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
 
   vtrPregledPat.InternalConnectNode_cmd(node, vtrPregledPat.RootNode, vtrPregledPat, amAddChildFirst);
@@ -7984,30 +8016,12 @@ begin
   vtrPregledPat.FocusedNode := node;
 end;
 
-procedure TfrmSuperHip.grdSearchAlignPosition(Sender: TWinControl;
-  Control: TControl; var NewLeft, NewTop, NewWidth, NewHeight: Integer;
-  var AlignRect: TRect; AlignInfo: TAlignInfo);
-begin
-  //
-end;
-
-procedure TfrmSuperHip.grdSearchColumnResized(Sender: TObject;
-  const AColumn: TColumn);
-begin
-  //
-end;
-
 procedure TfrmSuperHip.grdSearchMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
   FmxProfForm.Focused := nil;
-  StatusBar1.SetFocus;
+  //StatusBar1.SetFocus;
   grdSearch.SetFocus;
-end;
-
-procedure TfrmSuperHip.grdSearchMouseEnter(Sender: TObject);
-begin
-  //FmxProfForm.Focused := nil;
 end;
 
 procedure TfrmSuperHip.grdSearchMouseMove(Sender: TObject; Shift: TShiftState;
@@ -8028,12 +8042,6 @@ begin
     //grdSearch.Hint := 'ddddd';
     //Application.ShowHint := True;
   end;
-end;
-
-procedure TfrmSuperHip.grdSearchMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  //
 end;
 
 procedure TfrmSuperHip.grdSearchSelect(Sender: TObject);
@@ -8142,6 +8150,7 @@ end;
 
 procedure TfrmSuperHip.InitColl;
 begin
+
   CollDoctor := TRealDoctorColl.Create(TRealDoctorItem);
   ListDoctorForFDB := TList<TDoctorItem>.create;
   ListPregledLinkForInsert := TList<PVirtualNode>.create;
@@ -8228,6 +8237,8 @@ begin
   NZIS_ANSWER_VALUETemp := TRealNZIS_ANSWER_VALUEItem.Create(nil);
   NZIS_DIAGNOSTIC_REPORTTemp := TRealNZIS_DIAGNOSTIC_REPORTItem.Create(nil);
   NZIS_Result_DIAGNOSTIC_REPORTTemp := TRealNZIS_Result_DIAGNOSTIC_REPORTItem.Create(nil);
+
+  LoadLinkOptions;
 end;
 
 procedure TfrmSuperHip.initDB;
@@ -8728,6 +8739,34 @@ begin
 
   nzisThr.StreamData := ListNomenNzisNames[nomenId].xmlStream;
   nzisThr.Resume;
+end;
+
+procedure TfrmSuperHip.LoadLinkOptions;
+var
+  fileLinkOptName: string;
+begin
+  if AspectsOptionsLinkFile <> nil then
+  begin
+    vtrLinkOptions.InternalDisconnectNode(vtrLinkOptions.RootNode.FirstChild, false);
+    AspectsOptionsLinkFile.Free;
+    AspectsOptionsLinkFile := nil;
+  end;
+
+  fileLinkOptName := 'd:\LinkOptions.lnk';
+
+  AspectsOptionsLinkFile := TMappedLinkFile.Create(fileLinkOptName, false, TGUID.Empty);
+
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('MapLink çà %f',[Elapsed.TotalMilliseconds]));
+
+
+  AspectsOptionsLinkFile.FVTR := vtrLinkOptions;
+  Stopwatch := TStopwatch.StartNew;
+  AspectsOptionsLinkFile.OpenLinkFile;
+  CollPregled.linkOptions := AspectsOptionsLinkFile;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('ÇàðåæäàíåLinkOptions %d çà %f',[vtrLinkOptions.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+
 end;
 
 procedure TfrmSuperHip.LoadThreadDB(dbName: string);
@@ -9954,6 +9993,18 @@ begin
  // vtrTemp.FullCollapse(node);
   vtrTemp.IterateSubtree(node, IterateFilterOnlyCloning, nil);
   vtrTemp.EndUpdate;
+end;
+
+procedure TfrmSuperHip.mniPatientSearchViewClick(Sender: TObject);
+begin
+  grdSearch.Tag := word(vvPatient);
+  thrSearch.CollPat.ShowLinksGrid(grdSearch);
+end;
+
+procedure TfrmSuperHip.mniPregledSearchViewClick(Sender: TObject);
+begin
+  grdSearch.Tag := word(vvPregled);
+  thrSearch.collPreg.ShowLinksGrid(grdSearch);
 end;
 
 procedure TfrmSuperHip.mniRemontCloningsClick(Sender: TObject);
@@ -15040,6 +15091,45 @@ procedure TfrmSuperHip.vtrHelpHipGetText(Sender: TBaseVirtualTree; Node: PVirtua
 begin
   CellText := AZipHelpFile.FileName[node.Index];
 
+end;
+
+procedure TfrmSuperHip.vtrLinkOptionsGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  data: PAspRec;
+begin
+  data := Pointer(PByte(Node) + lenNode);
+  case Column of
+    0:
+    begin
+      case data.vid of
+        vvPregled:
+        begin
+          //if CollPregled <> nil then
+
+          //CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_TERAPY));
+        end;
+        vvFieldSearchOption:
+        begin
+          CellText := CollPregled.DisplayName(node.Dummy);
+        end
+      else
+        begin
+          CellText := IntToStr(Cardinal(Pointer(PByte(Node) - PByte(AspectsOptionsLinkFile.Buf))));
+        end;
+      end;
+    end;
+    1:
+    begin
+      //CellText := IntToStr(Data.DataPos);
+      CellText := format('index = %d  ;  rank = %d', [node.Dummy, Node.Index]); //IntToStr(node.Index);
+    end;
+    2:
+    begin
+      CellText := TRttiEnumerationType.GetName(Data.vid);
+    end;
+  end;
 end;
 
 procedure TfrmSuperHip.vtrMinaliPreglediAfterCellPaint(Sender: TBaseVirtualTree; TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;

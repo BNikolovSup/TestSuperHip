@@ -464,6 +464,8 @@ TCollectionForSort = class(TPersistent)
 
     function FieldCount: Integer; virtual;
     function DisplayName(propIndex: Word): string; virtual;
+    function RankSortOption(propIndex: Word): cardinal; virtual;
+
     function PropType(propIndex: Word): TAsectTypeKind; virtual;
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
     procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
@@ -472,6 +474,7 @@ TCollectionForSort = class(TPersistent)
     procedure ShowGrid(Grid: TTeeGrid);virtual;
     procedure IncCntInADB;
     procedure ShowLinksGrid(Grid: TTeeGrid);virtual;
+    procedure OrderFieldsSearch(Grid: TTeeGrid);virtual;
     procedure ShowListNodesGrid (Grid: TTeeGrid);virtual;
     procedure FillListNodes(Link: TMappedFile; vv: TVtrVid);
     function GetNodeFromDataPos(Link: TMappedFile; vv: TVtrVid; dataPos: cardinal): PVirtualNode;
@@ -2865,8 +2868,8 @@ end;
 
 procedure TBaseCollection.grdSearchClickedHeader(Sender: TObject);
 begin
-
-  FColumnForSort := TColumn(sender).ID ;
+  //ar
+  FColumnForSort := TColumn(sender).tag;
   TColumn(sender).Header.Changed;
   if Assigned(FOnSortCol) then
     FOnSortCol(Self);
@@ -2875,7 +2878,7 @@ end;
 procedure TBaseCollection.HeaderCanSortBy(const AColumn: TColumn;
   var CanSort: Boolean);
 begin
-  CanSort:=(AColumn<>nil) and (AColumn.Index = FColumnForSort);
+  CanSort:=(AColumn<>nil) and (AColumn.tag = FColumnForSort);
 end;
 
 procedure TBaseCollection.HeaderSortBy(Sender: TObject; const AColumn: TColumn);
@@ -2886,7 +2889,7 @@ end;
 procedure TBaseCollection.HeaderSortState(const AColumn: TColumn;
   var State: TSortState);
 begin
-  if (AColumn.Index <> FColumnForSort) then exit;
+  if (AColumn.tag <> FColumnForSort) then exit;
 
   if SortAsc then
      State := TSortState.Descending
@@ -2911,6 +2914,11 @@ begin
   self.IncCntInADB;
 end;
 
+procedure TBaseCollection.OrderFieldsSearch(Grid: TTeeGrid);
+begin
+
+end;
+
 function TBaseCollection.OrderProp(index: Integer): Integer;
 begin
 
@@ -2919,6 +2927,11 @@ end;
 function TBaseCollection.PropType(propIndex: Word): TAsectTypeKind;
 begin
   Result := actNone;
+end;
+
+function TBaseCollection.RankSortOption(propIndex: Word): cardinal;
+begin
+
 end;
 
 procedure TBaseCollection.SetAnsiStringMap(dataPos: cardinal; propIndex: word;
@@ -3051,8 +3064,6 @@ begin
   for i := 0 to self.FieldCount - 1 do
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
-    TVirtualModeData(Grid.Data).SortBy(Grid.Columns[i]);
-    //TVirtualModeData(Grid.Data).IsSorted(Grid.Columns[i], asss);
   end;
   TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListDataPos.Count]);
 
@@ -3062,10 +3073,13 @@ begin
   for i := 0 to self.FieldCount - 1 do
   begin
     Grid.Columns[i].Width.Value := 110;
+    Grid.Columns[i].Tag := i;
   end;
 
   Grid.Columns[self.FieldCount].Width.Value := 90;
   Grid.Columns[self.FieldCount].Index := 0;
+
+  OrderFieldsSearch(Grid);
 
    //долното трябва да иде на опции
  // Grid.Columns[9].Index:= 1;
@@ -3544,8 +3558,7 @@ begin
   begin
     FVTR.InitNode(TreeLink);
   end;
-  FVTR.InternalConnectNode_cmd(TreeLink, TargetNode,
-                    FVTR, mode, FStreamCmdFile);
+  FVTR.InternalConnectNode_cmd(TreeLink, TargetNode, FVTR, mode, FStreamCmdFile);
   pCardinalData^ := linkpos;
 end;
 
@@ -3576,11 +3589,9 @@ var
   AInt64: Int64;
   data: PAspRec;
 begin
-  if FVTR = nil then Exit;
-
   FVTR.BeginUpdate;
 
-  pCardinalData := pointer(PByte(self.FBuf) + 4);// адреса от предния път
+  pCardinalData := pointer(PByte(self.Buf) + 4);
   oldBuf := pCardinalData^;
   if Cardinal(self.Buf) >= oldBuf then
   begin
@@ -3594,9 +3605,8 @@ begin
   pCardinalData^ := Cardinal(self.Buf);
   pCardinalData := pointer(PByte(self.Buf) + 8);
   oldRoot := pCardinalData^;
-  pCardinalData := pointer(PByte(self.Buf) + 12);
-  //oldRoot := pCardinalData^;
 
+  //mmotest.Lines.Add(Format('BufLink  = %d', [cardinal(AspectsLinkPatPregFile.Buf)]));
 
   linkPos := 100;
   pCardinalData := pointer(PByte(self.Buf));
@@ -3634,6 +3644,7 @@ begin
 
       node := pointer(PByte(self.Buf) + linkpos);
       Exclude(node.States, vsSelected);
+      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -3641,6 +3652,7 @@ begin
       begin
         data.DataPos := data.DataPos + deltaBuf;
       end;
+
     end;
   end
   else
@@ -3669,6 +3681,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(self.Buf) + linkpos);
         Exclude(node.States, vsSelected);
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -3676,16 +3689,23 @@ begin
         end;
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
+        //if data.vid <> vvPatient then
+//          Exclude(node.States, vsFiltered);
       end;
     end
     else
     begin
+      //PregledColl.Capacity := 1000000;
       while linkPos <= FPosLinkData do
       begin
         Inc(linkPos, LenData);
         node := pointer(PByte(self.Buf) + linkpos);
         Exclude(node.States, vsSelected);
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Exclude(node.States, vsInitialized);
         data := pointer(PByte(node) + lenNode);
+        //if data.vid <> vvPatient then
+//          Exclude(node.States, vsFiltered);
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
       end;
@@ -3693,16 +3713,24 @@ begin
   end;
 
 
-  pCardinalData := pointer(PByte(self.Buf));
-  pCardinalData^ := linkpos;
+  //pCardinalData := pointer(PByte(self.Buf));
+//  pCardinalData^ := linkpos;
   node := pointer(PByte(self.Buf) + 100);
 
   FVTR.InternalConnectNode_cmd(node, FVTR.RootNode, FVTR, amAddChildFirst);
   FVTR.BufLink := self.Buf;
+  //node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+  //vtrPregledPat.InternalDisconnectNode(node, false);
   pCardinalData := pointer(PByte(self.Buf) + 8);
   pCardinalData^ := Cardinal(FVTR.RootNode);
   FVTR.UpdateVerticalScrollBar(true);
   FVTR.EndUpdate;
+  //vtrPregledPat.Sort(vtrPregledPat.RootNode.FirstChild, 0, sdAscending, false);
+  //self.FVTR := FVTR;
+  //AspectsLinkPatPregFile.FStreamCmdFile := streamCmdFile;
+//  FDBHelper.AdbLink := AspectsLinkPatPregFile;
+//  FmxProfForm.AspLink := AspectsLinkPatPregFile;
+  //mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 end;
 
 { TFileCMDStream }

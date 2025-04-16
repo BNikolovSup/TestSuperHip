@@ -39,6 +39,7 @@ type
     FCntImunInPreg: Integer;
     FOnlySort: Boolean;
     FcollPreg: TPregledNewColl;
+    FCollPat: TPatientNewColl;
     ListAnsi: TList<AnsiString>;
     FIsSorting: Boolean;
 
@@ -51,6 +52,7 @@ type
     procedure SortCollByPropertyAnsiStr(coll: TBaseCollection);
     procedure SetcollPreg(const Value: TPregledNewColl);
     procedure DoCollPregSort(senedr: TObject);
+    procedure SetcollPat(const Value: TPatientNewColl);
 
   protected
     Stopwatch: TStopwatch;
@@ -67,7 +69,7 @@ type
     RunItem: TRunItem;
     VTR_searched: TVirtualStringTreeHipp;
     CollForFind: TBaseCollection;
-    CollPat: TPatientNewColl;
+
 
     CollExamImun: TExamImmunizationColl;
     //collPatForSearch: TPatientNewColl;
@@ -87,6 +89,7 @@ type
 
     //property SearchedText: string read FSearchedText write SetSearchedText;
     property collPreg: TPregledNewColl read FcollPreg write SetcollPreg;
+    property collPat: TPatientNewColl read FCollPat write SetcollPat;
 
     property NodeADB_: PVirtualNode read FNodeADB write SetNodeADB;
     property OnShowGrid: TNotifyEvent read FOnShowGrid write FOnShowGrid;
@@ -106,13 +109,13 @@ var
   i, j: Integer;
 begin
   j := 0;
-  SetLength(collPat.ArrPropSearchClc, 0);
-  for i := 0 to Length(collPat.ArrPropSearch) - 1 do
+  SetLength(FCollPat.ArrPropSearchClc, 0);
+  for i := 0 to Length(FCollPat.ArrPropSearch) - 1 do
   begin
-    if collPat.ArrPropSearch[i] in collPat.PRecordSearch.setProp then
+    if FCollPat.ArrPropSearch[i] in FCollPat.PRecordSearch.setProp then
     begin
-      SetLength(collPat.ArrPropSearchClc, j + 1);
-      collPat.ArrPropSearchClc[j] := collPat.ArrPropSearch[i];
+      SetLength(FCollPat.ArrPropSearchClc, j + 1);
+      FCollPat.ArrPropSearchClc[j] := FCollPat.ArrPropSearch[i];
       inc(j);
     end;
   end;
@@ -214,7 +217,7 @@ begin
   tempDiag := TDiagnosisItem.Create(nil);
   tempImun := TRealExamImmunizationItem.Create(nil);
   FcollPreg.ListDataPos.Clear;
-  collPat.ListDataPos.Clear;
+  FCollPat.ListDataPos.Clear;
   CalcArrayPropSearch;
 
   patNode := node.FirstChild;
@@ -223,16 +226,16 @@ begin
     if FStop then
     begin
       FcollPreg.ListDataPos.Clear;
-      collPat.ListDataPos.Clear;
+      FCollPat.ListDataPos.Clear;
       if Assigned(FOnShowGrid) then
         FOnShowGrid(Self);
       Exit;
     end;
-    CollPat.Tag := -1;
+    FCollPat.Tag := -1;
     dataPat := pointer(PByte(patNode) + lenNode);
     tempPat.DataPos := dataPat.DataPos;
     egn := tempPat.getAnsiStringMap(BufADB, FPosDataADB, word(PatientNew_EGN));
-    if tempPat.IsFullFinded(Self.BufADB, FPosDataADB, CollPat) then
+    if tempPat.IsFullFinded(Self.BufADB, FPosDataADB, FCollPat) then
     begin
       pregNode := patNode.FirstChild;
       FindedPregNode := pregNode;
@@ -245,9 +248,9 @@ begin
         case dataRunPreg.vid of
           vvPregled:   // ако е преглед
           begin
-            if CollPat.Tag < 0 then
+            if FCollPat.Tag < 0 then
             begin
-              CollPat.Tag := 0;
+              FCollPat.Tag := 0;
             end;
             dataPreg := dataRunPreg;
             temppreg.DataPos := dataRunPreg.DataPos;
@@ -320,20 +323,22 @@ begin
     else
     begin
       Self.bufLink := Self.bufLink;
-      CollPat.Tag := -2;
+      FCollPat.Tag := -2;
     end;
-    case CollPat.tag of
+    case FCollPat.tag of
       -2: //не е изпълнено условието за пациента
       begin
-        CollPat.Tag := -2;
+        FCollPat.Tag := -2;
       end;
       -1: //изпълнено е условието за пациента, но няма прегледи
       begin
-        collPat.ListDataPos.Add(patNode);
+        FCollPat.ListDataPos.Add(patNode);
       end;
       0: // има прегледи, но не е изпълнено условието за прегледите или по нататък
       begin
-        CollPat.Tag := 0;
+        FCollPat.Tag := 0;
+        FCollPat.ListDataPos.Add(patNode);
+
       end;
     else
       begin
@@ -341,7 +346,7 @@ begin
         begin
           if (FcntPregInPat = AcntPregInPat) then
           begin
-            collPat.ListDataPos.Add(patNode);
+            FCollPat.ListDataPos.Add(patNode);
           end
           else
           begin
@@ -356,7 +361,7 @@ begin
         begin
           if (FCntImunInPreg = ACntImunInPreg) then
           begin
-            collPat.ListDataPos.Add(patNode);
+            FCollPat.ListDataPos.Add(patNode);
           end
           else
           begin
@@ -368,7 +373,7 @@ begin
         end
         else
         begin
-          collPat.ListDataPos.Add(patNode);
+          FCollPat.ListDataPos.Add(patNode);
         end;
       end;
 
@@ -377,7 +382,7 @@ begin
     patNode := patNode.NextSibling;
   end;
 
-  if (FcollPreg.ListDataPos.Count > 0) or (CollPat.ListDataPos.Count > 0) then
+  if (FcollPreg.ListDataPos.Count > 0) or (FCollPat.ListDataPos.Count > 0) then
   begin
     Stopwatch := TStopwatch.StartNew;
     SortListDataPosColl(collPreg.ListDataPos);
@@ -389,7 +394,7 @@ begin
   end
   else
   begin
-    collPat.ListDataPos.Clear;
+    FCollPat.ListDataPos.Clear;
     FcollPreg.ListDataPos.Clear;
     if Assigned(FOnShowGrid) then
       FOnShowGrid(Self);
@@ -430,12 +435,16 @@ begin
               FIsSorting := True;
               FStop := False;
               grdSearch.Cursor :=  crHourGlass;
-              SortListPropIndexCollNew(collPreg, collPreg.ColumnForSort - 1);
+              case TVtrVid(grdSearch.Tag) of
+                vvPregled: SortListPropIndexCollNew(collPreg, collPreg.ArrayPropOrderSearchOptions[collPreg.ColumnForSort]);
+                vvPatient: SortListPropIndexCollNew(collPat, collPat.ColumnForSort);
+              end;
+
               grdSearch.Repaint;
               FIsSorting := false;
               grdSearch.Cursor :=  crDefault;
               Elapsed := Stopwatch.Elapsed;
-              fieldType := TRttiEnumerationType.GetName(TPregledNewItem.TPropertyIndex(collPreg.ColumnForSort - 1));
+              fieldType := TRttiEnumerationType.GetName(TPregledNewItem.TPropertyIndex(collPreg.ColumnForSort));
              // ShowMessage(Format('sort %s за %f',[fieldType, Elapsed.TotalMilliseconds]));
             end;
             //mmoTest.Lines.Add( Format('grdSearchSelect за %f',[ Elapsed.TotalMilliseconds]));
@@ -466,6 +475,12 @@ begin
   Adata := pointer(PByte(node) + lenNode);
   if Adata.vid = RunItem.childVid then
     CollForFind.ListDataPos.Add(node);
+end;
+
+procedure TSearchThread.SetcollPat(const Value: TPatientNewColl);
+begin
+  FCollPat := Value;
+  FCollPat.OnSortCol := DoCollPregSort;
 end;
 
 procedure TSearchThread.SetcollPreg(const Value: TPregledNewColl);
@@ -719,7 +734,7 @@ begin
   begin
 
     for i := 0 to ListDataPos.Count - 1 do
-      ListAnsi.Add(FcollPreg.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+      ListAnsi.Add(Coll.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
     QuickSort(0,ListAnsi.count-1);
     ListAnsi.Clear;
     //ListAnsi.Free;

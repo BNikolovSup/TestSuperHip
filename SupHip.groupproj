@@ -48,6 +48,15 @@
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="D:\Write\Medicine\Medicine\Medicine.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\17.0\Samples\Object Pascal\Multi-Device Samples\User Interface\DragAndDrop\DragAndDrop.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\Components\Hipp\Source\VtrHip.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -191,14 +200,41 @@
     <Target Name="TestGoroFmx:Make">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestGoroFMX\TestGoroFmx.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Medicine">
+        <MSBuild Projects="D:\Write\Medicine\Medicine\Medicine.dproj"/>
+    </Target>
+    <Target Name="Medicine:Clean">
+        <MSBuild Projects="D:\Write\Medicine\Medicine\Medicine.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Medicine:Make">
+        <MSBuild Projects="D:\Write\Medicine\Medicine\Medicine.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DragAndDrop">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\17.0\Samples\Object Pascal\Multi-Device Samples\User Interface\DragAndDrop\DragAndDrop.dproj"/>
+    </Target>
+    <Target Name="DragAndDrop:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\17.0\Samples\Object Pascal\Multi-Device Samples\User Interface\DragAndDrop\DragAndDrop.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DragAndDrop:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\17.0\Samples\Object Pascal\Multi-Device Samples\User Interface\DragAndDrop\DragAndDrop.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="VtrHip">
+        <MSBuild Projects="..\..\Components\Hipp\Source\VtrHip.dproj"/>
+    </Target>
+    <Target Name="VtrHip:Clean">
+        <MSBuild Projects="..\..\Components\Hipp\Source\VtrHip.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="VtrHip:Make">
+        <MSBuild Projects="..\..\Components\Hipp\Source\VtrHip.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

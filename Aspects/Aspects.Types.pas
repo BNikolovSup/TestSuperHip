@@ -133,7 +133,9 @@ type
              vvProfCard,
              vvRootDeput,
              vvPatientRevision,
-             vvRootOptions);
+             vvRootOptions,
+             vvOptionSearch,
+             vvFieldSearchOption);
 
 
 

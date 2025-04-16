@@ -5,7 +5,8 @@ interface
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
-  FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit, System.Math,
+  FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit,
+  System.Math, FMX.Platform, VirtualStringTreeAspect,
   System.TimeSpan, system.Diagnostics, VirtualTrees,
   Options, System.Generics.Collections, WalkFunctions,
   RealObj.RealHipp, ADB_DataUnit,
@@ -25,6 +26,8 @@ type
   //constructor create;
   //destructor destroy; override;
   end;
+
+
 
   TfrmfmxNew = class(TForm)
     lytNewItem: TLayout;
@@ -78,6 +81,15 @@ type
     procedure scldlytNewResize(Sender: TObject);
     procedure edtLibFileNamePainting(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
+    procedure edtLibFileNameDragEnter(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF);
+    procedure edtLibFileNameDragEnd(Sender: TObject);
+    procedure edtLibFileNameDragDrop(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF);
+    procedure edtLibFileNameMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure edtLibFileNameMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
 
   private
     FScaleDyn: Single;
@@ -86,6 +98,7 @@ type
 
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
+    FOnStartDragFMX: TNotifyEvent;
     procedure SetScaleDyn(const Value: Single);
 
 
@@ -100,6 +113,7 @@ type
 
     procedure FillPatient(node: PVirtualNode);
     property ScaleDyn: Single read FScaleDyn write SetScaleDyn;
+    property OnStartDragFMX: TNotifyEvent read FOnStartDragFMX write FOnStartDragFMX;
 
   end;
 
@@ -148,6 +162,52 @@ begin
   end;
 
   idxItems := 0;
+end;
+
+procedure TfrmfmxNew.edtLibFileNameDragDrop(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF);
+begin
+  //
+end;
+
+procedure TfrmfmxNew.edtLibFileNameDragEnd(Sender: TObject);
+begin
+  //
+end;
+
+procedure TfrmfmxNew.edtLibFileNameDragEnter(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF);
+begin
+  //Data.Source := Self;
+  //Data.Files := ['dddd', 'wwwww'];
+
+end;
+
+procedure TfrmfmxNew.edtLibFileNameMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  Svc: IFMXDragDropService;
+  DragData: TDragObject;
+  DragImage: TBitmap;
+  //obj: TObject;
+begin
+  if TPlatformServices.Current.SupportsPlatformService(IFMXDragDropService, Svc) then
+  begin
+    DragImage := edtLibFileName.MakeScreenshot;
+    DragData.Source := TDropFmxObject.Create;
+    TDropFmxObject(DragData.Source).VtrType := word(vvOptionGridSearch);
+
+    if Assigned(fOnStartDragFMX) then
+      FOnStartDragFMX(DragData.Source);
+    Svc.BeginDragDrop(self, DragData, DragImage);
+
+  end;
+end;
+
+procedure TfrmfmxNew.edtLibFileNameMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+  //
 end;
 
 procedure TfrmfmxNew.edtLibFileNamePainting(Sender: TObject; Canvas: TCanvas;

@@ -5,7 +5,7 @@ uses
   Aspects.Collections, Aspects.Types,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -163,12 +163,15 @@ TPregledNewItem = class(TBaseItem)
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	ListForFDB: TList<TPregledNewItem>;
+    linkOptions: TMappedLinkFile;
+	  ListForFDB: TList<TPregledNewItem>;
     ListPregledNewSearch: TList<TPregledNewItem>;
-	PRecordSearch: ^TPregledNewItem.TRecPregledNew;
+   	PRecordSearch: ^TPregledNewItem.TRecPregledNew;
     ArrPropSearch: TArray<TPregledNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPregledNewItem.TPropertyIndex>;
     ArrayPropOrder: TArray<TPregledNewItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
+
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -176,32 +179,37 @@ TPregledNewItem = class(TBaseItem)
     function AddItem(ver: word):TPregledNewItem;
     function AddItemForSearch: Integer;
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-	procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-  function PropType(propIndex: Word): TAsectTypeKind; override;
+    procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+    procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
+    function PropType(propIndex: Word): TAsectTypeKind; override;
     procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellFromMap(propIndex: word; ARow: Integer; PregledNew: TPregledNewItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; PregledNew: TPregledNewItem; var AValue:String);
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
+	  procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-	procedure DynControlEnter(Sender: TObject);
+	  procedure DynControlEnter(Sender: TObject);
     procedure SortByIndexValue(propIndex: TPregledNewItem.TPropertyIndex);
     procedure SortByIndexInt;
-	procedure SortByIndexWord;
-	procedure SortByIndexAnsiString;
+    procedure SortByIndexWord;
+    procedure SortByIndexAnsiString;
 
-	function DisplayName(propIndex: Word): string; override;
-	function FieldCount: Integer; override;
+    function DisplayName(propIndex: Word): string; override;
+    function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch(Grid: TTeeGrid);override;
+    function FieldCount: Integer; override;
 
-	procedure ShowGrid(Grid: TTeeGrid); override;
-	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TPregledNewItem>);
-	procedure ShowSearchedGrid(Grid: TTeeGrid);
-  procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
-  procedure IndexValue(propIndex: TPregledNewItem.TPropertyIndex);
-  property Items[Index: Integer]: TPregledNewItem read GetItem write SetItem;
-  property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure ShowGrid(Grid: TTeeGrid); override;
+    procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TPregledNewItem>);
+    procedure ShowSearchedGrid(Grid: TTeeGrid);
+    procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+    procedure IndexValue(propIndex: TPregledNewItem.TPropertyIndex);
+    property Items[Index: Integer]: TPregledNewItem read GetItem write SetItem;
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 
   end;
 
@@ -521,10 +529,23 @@ begin
   PRecordSearch.setProp := [];
   ListForFDB := TList<TPregledNewItem>.create;
   SetLength(ArrayPropOrder, FieldCount);
+  SetLength(ArrayPropOrderSearchOptions, FieldCount);
   for i := 0 to FieldCount - 1 do
   begin
     ArrayPropOrder[i] := TPregledNewItem.TPropertyIndex(i);
+    ArrayPropOrderSearchOptions[i] := i;
   end;
+
+end;
+
+function TPregledNewColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
 end;
 
 destructor TPregledNewColl.destroy;
@@ -534,6 +555,8 @@ begin
   FreeAndNil(TempFindedItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
+  //ArrayPropOrderSearchOptions.Free;
+  //ArrayPropOrder.free;
   inherited;
 end;
 
@@ -542,7 +565,7 @@ begin
   inherited;
   case TPregledNewItem.TPropertyIndex(propIndex) of
     PregledNew_AMB_LISTN: Result := 'AMB_LISTN';
-    PregledNew_ANAMN: Result := 'ANAMN';
+    PregledNew_ANAMN: Result := 'Анамнеза';
     PregledNew_COPIED_FROM_NRN: Result := 'COPIED_FROM_NRN';
     PregledNew_GS: Result := 'GS';
     PregledNew_ID: Result := 'ID';
@@ -584,6 +607,71 @@ function TPregledNewColl.FieldCount: Integer;
 begin
   inherited;
   Result := 29;
+end;
+
+function TPregledNewColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvPregledRoot then
+    begin
+      Result := Run;
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+end;
+
+function TPregledNewColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearch, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  vOptionSearch := nil;
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    if dataRun.vid = vvOptionSearch then
+    begin
+      vOptionSearch := run;
+      Break;
+    end;
+    run := run.NextSibling;
+  end;
+  if vOptionSearch = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearch, 0, vRootPregOptions , amAddChildLast, vOptionSearch, linkPos);
+  end;
+  Result := vOptionSearch;
+  if vOptionSearch.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchOption, 0, vOptionSearch , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TPregledNewColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -633,8 +721,9 @@ begin
 
 
 
-  prop := TPregledNewItem.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, RowSelect, TempFindedItem, AValue);
+  //prop := ArrayPropOrderSearchOptions[ACol];
+  //prop := TPregledNewItem.TPropertyIndex(ACol);
+  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempFindedItem, AValue);
 end;
 
 procedure TPregledNewColl.GetCellFromRecord(propIndex: word; PregledNew: TPregledNewItem; var AValue: String);
@@ -984,6 +1073,54 @@ begin
   end;
 end;
 
+procedure TPregledNewColl.OrderFieldsSearch(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  lstNode: TList<PVirtualNode>;
+  i, index, rank: Integer;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  Comparison :=
+    function(const Left, Right: PVirtualNode): Integer
+    begin
+      Result := Right.Dummy  - Left.Dummy;
+    end;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  run := FieldCollOptionNode.FirstChild;
+  lstNode := TList<PVirtualNode>.create;
+  //Grid.Columns.beginUpdate;
+  while run <> nil do
+  begin
+    lstNode.Add(run);
+    //TVirtualModeData(Grid.Data).in
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
+    //Grid.Columns[run.index].tag := run.Dummy + 1;
+    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    //Grid.Columns[run.index + 1].Index:= run.Dummy + 1;
+    run := run.NextSibling;
+  end;
+  //Grid.Columns.EndUpdate;
+  //lstNode.Sort(TComparer<PVirtualNode>.Construct(Comparison));
+//  for i := 1 to lstNode.Count - 1 do
+//  begin
+//    rank := lstNode[i].Dummy + 1;
+//    index :=  lstNode[i].Index + 1;
+//    Grid.Columns.Items[i].Index := rank;
+//   // Grid.Columns[index].Index:= rank;
+//  end;
+  lstNode.Free;
+  //Grid.Columns[5].Index:= 1;
+  //Grid.Columns[2].Visible:= False;
+//  Grid.Columns[6].Visible:= False;
+//  Grid.Columns[0].Locked := TColumnLocked.Left;
+//  Grid.Columns[1].Locked := TColumnLocked.Left;
+//  Grid.Columns[2].Locked := TColumnLocked.Left;
+end;
+
 function TPregledNewColl.PropType(propIndex: Word): TAsectTypeKind;
 begin
   inherited;
@@ -1008,6 +1145,11 @@ begin
   else
     Result := actNone;
   end
+end;
+
+function TPregledNewColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure TPregledNewColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
