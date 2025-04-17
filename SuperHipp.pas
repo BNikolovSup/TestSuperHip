@@ -12949,10 +12949,10 @@ begin
   if not Assigned(thrSearch) then
   begin
 
-    CollPregled.IndexValue(PregledNew_ANAMN); // за забързване на търсенето (предизвиква операционната система да кешира ...)
+    //CollPregled.IndexValue(PregledNew_ANAMN); // за забързване на търсенето (предизвиква операционната система да кешира ...)
     //CollPregled.Clear;
 
-    CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN, PregledNew_ANAMN];
+    //CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN, PregledNew_ANAMN];
 
     thrSearch := TSearchThread.Create(true);
     FmxFinderFrm.thrSearch := thrSearch;

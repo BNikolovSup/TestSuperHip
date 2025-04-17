@@ -2,7 +2,7 @@ unit Table.PregledNew;
 
 interface //dateeditdyn
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
   VirtualTrees, VCLTee.Control, System.Generics.Defaults;
@@ -194,6 +194,7 @@ TPregledNewItem = class(TBaseItem)
     procedure SortByIndexInt;
     procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+    procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
     function DisplayName(propIndex: Word): string; override;
     function RankSortOption(propIndex: Word): cardinal; override;
@@ -201,6 +202,7 @@ TPregledNewItem = class(TBaseItem)
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
     procedure OrderFieldsSearch(Grid: TTeeGrid);override;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
     function FieldCount: Integer; override;
 
     procedure ShowGrid(Grid: TTeeGrid); override;
@@ -593,6 +595,44 @@ begin
     PregledNew_VISIT_TYPE_ID: Result := 'VISIT_TYPE_ID';
     PregledNew_VSD_TYPE: Result := 'VSD_TYPE';
     PregledNew_Logical: Result := 'Logical';
+  end;
+end;
+
+procedure TPregledNewColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
+begin
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
 end;
 
@@ -1047,6 +1087,7 @@ begin
   end;
 end;
 
+
 procedure TPregledNewColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TPregledNewItem;
@@ -1079,6 +1120,7 @@ var
   Comparison: TComparison<PVirtualNode>;
   lstNode: TList<PVirtualNode>;
   i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
 begin
   inherited;
   if linkOptions = nil then  Exit;
@@ -1092,15 +1134,28 @@ begin
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
   run := FieldCollOptionNode.FirstChild;
   lstNode := TList<PVirtualNode>.create;
+  SetLength(ArrCol, FieldCount);
+  for i := 0 to FieldCount - 1 do
+  begin
+    ArrCol[i] := Grid.Columns[i+ 1];
+  end;
+  for i := 1 to Length(ArrCol) - 1 do
+  begin
+    index := TVirtualModeData(Grid.Data).IndexOf(ArrCol[i]);
+    ArrCol[i].Header.Text := ArrCol[i].Header.Text  + ' ' + IntToStr(index);
+    ArrCol[index].Index := run.Dummy ;
+    run := run.NextSibling;
+  end;
   //Grid.Columns.beginUpdate;
   while run <> nil do
   begin
     lstNode.Add(run);
-    //TVirtualModeData(Grid.Data).in
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
+    //index := TVirtualModeData(Grid.Data).IndexOf(Grid.Columns[run.index + 1]);
+    //Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
+    //TVirtualModeData(Grid.Data).IndexOf(Grid.Columns[run.index + 1]);
     //Grid.Columns[run.index].tag := run.Dummy + 1;
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
-    //Grid.Columns[run.index + 1].Index:= run.Dummy + 1;
+    //ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    //Grid.Columns[index].Index:= run.Dummy + 1;
     run := run.NextSibling;
   end;
   //Grid.Columns.EndUpdate;
@@ -1121,6 +1176,28 @@ begin
 //  Grid.Columns[2].Locked := TColumnLocked.Left;
 end;
 
+procedure TPregledNewColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
+    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    run := run.NextSibling;
+  end;
+
+end;
+
 function TPregledNewColl.PropType(propIndex: Word): TAsectTypeKind;
 begin
   inherited;
@@ -1128,20 +1205,27 @@ begin
     PregledNew_AMB_LISTN: Result := actinteger;
     PregledNew_ANAMN: Result := actAnsiString;
     PregledNew_COPIED_FROM_NRN: Result := actAnsiString;
-    PregledNew_GS: Result := actWord;
-    PregledNew_ID: Result := actInteger;
+    PregledNew_GS: Result := actword;
+    PregledNew_ID: Result := actinteger;
     PregledNew_IZSL: Result := actAnsiString;
-    PregledNew_MEDTRANSKM: Result := actAnsiString;
-    //PregledNew_NAPRAVLENIE_AMBL_NOMER: Result := actAnsiString;
-//    PregledNew_: Result := actAnsiString;
-//    PregledNew_: Result := actinteger;
-//    PregledNew_: Result := actinteger;
-//    PregledNew_: Result := actAnsiString;
-//    PregledNew_: Result := actAnsiString;
-//    PregledNew_: Result := actAnsiString;
-//    PregledNew_: Result := actdouble;
-//    PregledNew_: Result := actAnsiString;
-//    PregledNew_: Result := actLogical;
+    PregledNew_MEDTRANSKM: Result := actinteger;
+    PregledNew_NOMERBELEGKA: Result := actAnsiString;
+    PregledNew_NOMERKASHAPARAT: Result := actAnsiString;
+    PregledNew_NRD: Result := actword;
+    PregledNew_NRN: Result := actAnsiString;
+    PregledNew_NZIS_STATUS: Result := actword;
+    PregledNew_OBSHTAPR: Result := actword;
+    PregledNew_PATIENTOF_NEOTL: Result := actAnsiString;
+    PregledNew_PATIENTOF_NEOTLID: Result := actinteger;
+    PregledNew_PREVENTIVE_TYPE: Result := actword;
+    PregledNew_START_DATE: Result := actTDate;
+    PregledNew_START_TIME: Result := actTime;
+    PregledNew_SYST: Result := actAnsiString;
+    PregledNew_TALON_LKK: Result := actAnsiString;
+    PregledNew_TERAPY: Result := actAnsiString;
+    PregledNew_THREAD_IDS: Result := actAnsiString;
+    PregledNew_VSD_TYPE: Result := actword;
+    PregledNew_Logical: Result := actLogical;
   else
     Result := actNone;
   end

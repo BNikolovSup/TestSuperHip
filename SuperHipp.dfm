@@ -15315,6 +15315,8 @@
         PopupMenu = pmGrdSearch
         TabOrder = 0
         OnMouseDown = grdSearchMouseDown
+        ExplicitLeft = 5
+        ExplicitTop = 3
         _Headers = (
           1
           'TColumnHeaderBand'

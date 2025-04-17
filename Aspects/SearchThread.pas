@@ -41,6 +41,9 @@ type
     FcollPreg: TPregledNewColl;
     FCollPat: TPatientNewColl;
     ListAnsi: TList<AnsiString>;
+    ListInt: TList<Integer>;
+    ListDate: TList<TDate>;
+    ListTime: TList<TTime>;
     FIsSorting: Boolean;
 
     procedure SetNodeADB(const Value: PVirtualNode);
@@ -48,8 +51,11 @@ type
     procedure SortListDataPos(ListDataPos: TList<PAspRec>);
     procedure SortListDataPosColl(ListDataPos: TList<PVirtualNode>);
     procedure SortListPropIndexColl(ListDataPos: TList<PVirtualNode>);
-    procedure SortListPropIndexCollNew(Coll: TBaseCollection; propIndex: word);
-    procedure SortCollByPropertyAnsiStr(coll: TBaseCollection);
+    procedure SortAnsiListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+    procedure SortIntListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+    procedure SortDateListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+    procedure SortTimeListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+    procedure SortCollByPropertyAnsiStr(coll: TBaseCollection; SortAsc: boolean = true);
     procedure SetcollPreg(const Value: TPregledNewColl);
     procedure DoCollPregSort(senedr: TObject);
     procedure SetcollPat(const Value: TPatientNewColl);
@@ -158,6 +164,9 @@ begin
   FOnlySort := False;
   FIsSorting := False;
   ListAnsi := TList<AnsiString>.Create;
+  ListInt := TList<Integer>.Create;
+  ListDate := TList<Tdate>.Create;
+  ListTime := TList<Ttime>.Create;
 
 
 end;
@@ -412,6 +421,8 @@ procedure TSearchThread.Execute;
 var
   comInitStatus: THandle;
   fieldType: string;
+  propIndex: Word;
+  propType: TAsectTypeKind;
 begin
   comInitStatus := S_FALSE;
   try
@@ -435,9 +446,21 @@ begin
               FIsSorting := True;
               FStop := False;
               grdSearch.Cursor :=  crHourGlass;
+
               case TVtrVid(grdSearch.Tag) of
-                vvPregled: SortListPropIndexCollNew(collPreg, collPreg.ArrayPropOrderSearchOptions[collPreg.ColumnForSort]);
-                vvPatient: SortListPropIndexCollNew(collPat, collPat.ColumnForSort);
+                vvPregled:
+                begin
+                  propIndex := collPreg.ArrayPropOrderSearchOptions[collPreg.ColumnForSort];
+                  propType := collPreg.PropType(propIndex);
+                  case propType of
+                    actAnsiString: SortAnsiListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+                    actInteger: SortIntListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+                    actTDate: SortDateListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+                    actTime: SortTimeListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+                  end;
+
+                end;
+                //vvPatient: SortAnsiListPropIndexCollNew(collPat, collPat.ColumnForSort);
               end;
 
               grdSearch.Repaint;
@@ -499,7 +522,7 @@ begin
 
 end;
 
-procedure TSearchThread.SortCollByPropertyAnsiStr(coll: TBaseCollection);
+procedure TSearchThread.SortCollByPropertyAnsiStr(coll: TBaseCollection; SortAsc: boolean);
 var
   sc : TList<TCollectionItem>;
 
@@ -513,10 +536,20 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while coll.getAnsiStringMap(TBaseItem(coll.Items[I]).FDataPos, Word(PregledNew_ANAMN)) <
-              coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Inc(I);
-        while coll.getAnsiStringMap(TBaseItem(coll.Items[J]).FDataPos, Word(PregledNew_ANAMN))  >
-              coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Dec(J);
+        if SortAsc then
+        begin
+          while coll.getAnsiStringMap(TBaseItem(coll.Items[I]).FDataPos, Word(PregledNew_ANAMN)) <
+                coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Inc(I);
+          while coll.getAnsiStringMap(TBaseItem(coll.Items[J]).FDataPos, Word(PregledNew_ANAMN))  >
+                coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Dec(J);
+        end
+        else
+        begin
+          while coll.getAnsiStringMap(TBaseItem(coll.Items[I]).FDataPos, Word(PregledNew_ANAMN)) >
+                coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Inc(I);
+          while coll.getAnsiStringMap(TBaseItem(coll.Items[J]).FDataPos, Word(PregledNew_ANAMN))  <
+                coll.getAnsiStringMap(TBaseItem(coll.Items[P]).FDataPos, Word(PregledNew_ANAMN)) do Dec(J);
+        end;
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -538,6 +571,136 @@ begin
   begin
     sc := TCollectionForSort(coll).FItems;
     QuickSort(0,coll.count-1);
+  end;
+end;
+
+procedure TSearchThread.SortDateListPropIndexCollNew(Coll: TBaseCollection;
+  propIndex: word; SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : TDate;
+    saveList: PVirtualNode;
+  begin
+    repeat
+     // Sleep(1);//  за тесттване на бавно сортиране
+      if FStop then
+      begin
+        ListDate.Clear;
+        FStoped := True;
+        Exit;
+      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while (ListDate[I])< (ListDate[P]) do Inc(I);
+          while (ListDate[J]) > (ListDate[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListDate[I])> (ListDate[P]) do Inc(I);
+          while (ListDate[J]) < (ListDate[P]) do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListDate[I];
+          saveList := ListDataPos[I];
+          ListDate[I] := ListDate[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListDate[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Coll.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListDate.Add(Coll.getDateMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListDate.count-1);
+    ListDate.Clear;
+    FStoped := True;
+  end;
+end;
+
+procedure TSearchThread.SortIntListPropIndexCollNew(Coll: TBaseCollection;
+  propIndex: word; SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : integer;
+    saveList: PVirtualNode;
+  begin
+    repeat
+     // Sleep(1);//  за тесттване на бавно сортиране
+      if FStop then
+      begin
+        ListInt.Clear;
+        FStoped := True;
+        Exit;
+      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while (ListInt[I])< (ListInt[P]) do Inc(I);
+          while (ListInt[J]) > (ListInt[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListInt[I])> (ListInt[P]) do Inc(I);
+          while (ListInt[J]) < (ListInt[P]) do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListInt[I];
+          saveList := ListDataPos[I];
+          ListInt[I] := ListInt[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListInt[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Coll.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListInt.Add(Coll.getIntMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListInt.count-1);
+    ListInt.Clear;
+    FStoped := True;
   end;
 end;
 
@@ -683,7 +846,72 @@ begin
   end;
 end;
 
-procedure TSearchThread.SortListPropIndexCollNew(Coll: TBaseCollection; propIndex: word);
+procedure TSearchThread.SortTimeListPropIndexCollNew(Coll: TBaseCollection;
+  propIndex: word; SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : TTime;
+    saveList: PVirtualNode;
+  begin
+    repeat
+      //Sleep(1);//  за тесттване на бавно сортиране
+      if FStop then
+      begin
+        ListTime.Clear;
+        FStoped := True;
+        Exit;
+      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while (ListTime[I])< (ListTime[P]) do Inc(I);
+          while (ListTime[J]) > (ListTime[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListTime[I])> (ListTime[P]) do Inc(I);
+          while (ListTime[J]) < (ListTime[P]) do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListTime[I];
+          saveList := ListDataPos[I];
+          ListTime[I] := ListTime[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListTime[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Coll.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListTime.Add(Coll.getTimeMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListTime.count-1);
+    ListTime.Clear;
+    FStoped := True;
+  end;
+end;
+
+procedure TSearchThread.SortAnsiListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
 var
  ListDataPos: TList<PVirtualNode>;
  i: Integer;
@@ -707,8 +935,16 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while (ListAnsi[I])< (ListAnsi[P]) do Inc(I);
-        while (ListAnsi[J]) > (ListAnsi[P]) do Dec(J);
+        if SortIsAsc then
+        begin
+          while (ListAnsi[I])< (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) > (ListAnsi[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListAnsi[I])> (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) < (ListAnsi[P]) do Dec(J);
+        end;
         if I <= J then begin
           Save := ListAnsi[I];
           saveList := ListDataPos[I];
@@ -732,7 +968,6 @@ begin
   ListDataPos := Coll.ListDataPos;
   if (ListDataPos.count >1 ) then
   begin
-
     for i := 0 to ListDataPos.Count - 1 do
       ListAnsi.Add(Coll.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
     QuickSort(0,ListAnsi.count-1);

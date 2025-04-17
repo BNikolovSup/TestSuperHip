@@ -440,6 +440,8 @@ TCollectionForSort = class(TPersistent)
     ListDataPos: TList<Pvirtualnode>; // за търсене
     ListNodes: TList<PAspRec>;
 
+    ListAnsi: TList<AnsiString>;
+
 
 
     constructor Create(ItemClass: TCollectionItemClass);virtual;
@@ -449,6 +451,7 @@ TCollectionForSort = class(TPersistent)
     function getAnsiStringMap(dataPos: cardinal; propIndex: word): AnsiString;
     function getAnsiStringMapOfset(Ofset: cardinal; propIndex: word): AnsiString;
     function getDateMap(dataPos: cardinal; propIndex: word): Tdate;
+    function getTimeMap(dataPos: cardinal; propIndex: word): TTime;
     function getDateMapPos(dataPos: cardinal; propIndex: word): Tdate;
     function getIntMap(dataPos: cardinal; propIndex: word): integer;
     function getWordMap(dataPos: cardinal; propIndex: word): word;
@@ -475,6 +478,7 @@ TCollectionForSort = class(TPersistent)
     procedure IncCntInADB;
     procedure ShowLinksGrid(Grid: TTeeGrid);virtual;
     procedure OrderFieldsSearch(Grid: TTeeGrid);virtual;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);virtual;
     procedure ShowListNodesGrid (Grid: TTeeGrid);virtual;
     procedure FillListNodes(Link: TMappedFile; vv: TVtrVid);
     function GetNodeFromDataPos(Link: TMappedFile; vv: TVtrVid; dataPos: cardinal): PVirtualNode;
@@ -482,6 +486,7 @@ TCollectionForSort = class(TPersistent)
     function GetNodeFromID(linkBuf: pointer; vv: TVtrVid; propIndex: Word; id: integer): PVirtualNode;
     procedure OpenAdbFull(aspPos: Cardinal);
     function OrderProp(index: Integer): Integer;
+    procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);virtual;
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -500,6 +505,7 @@ TCollectionForSort = class(TPersistent)
     property ColumnForSort: Integer read FColumnForSort write FColumnForSort;
 
     property OnSortCol: TNotifyEvent read FOnSortCol write FOnSortCol;
+
   end;
 
   //TRevisionItem = class(TBaseItem)
@@ -2578,6 +2584,7 @@ begin
   FCntInADB := 0;
   ListDataPos := TList<PVirtualNode>.Create;
   ListNodes := TList<PAspRec>.Create;
+  ListAnsi := TList<AnsiString>.Create;
   FoffsetTop := 0;
   FoffsetBottom := 0;
   FfirstTop := -1;
@@ -2590,6 +2597,7 @@ begin
   FreeAndNil(FForLaterSave);
   FreeAndNil(ListDataPos);
   FreeAndNil(ListNodes);
+  FreeAndNil(ListAnsi);
   streamComm.Free;
   inherited;
 end;
@@ -2849,6 +2857,23 @@ begin
   end;
 end;
 
+function TBaseCollection.getTimeMap(dataPos: cardinal; propIndex: word): TTime;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TTime;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex); //
+  if p^ = 0 then
+  begin
+    Result := 0;
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset); //
+  Result := pData^;
+end;
+
 function TBaseCollection.getWordMap(dataPos: cardinal; propIndex: word): word;
 var
   P: ^Cardinal;
@@ -2904,6 +2929,11 @@ end;
 
 
 
+procedure TBaseCollection.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+begin
+
+end;
+
 procedure TBaseCollection.OpenAdbFull(aspPos: Cardinal);
 var
   BaseItem: TBaseItem;
@@ -2915,6 +2945,11 @@ begin
 end;
 
 procedure TBaseCollection.OrderFieldsSearch(Grid: TTeeGrid);
+begin
+
+end;
+
+procedure TBaseCollection.OrderFieldsSearch1(Grid: TTeeGrid);
 begin
 
 end;
@@ -3053,7 +3088,7 @@ begin
     Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, FlastBottom);
   end;
   Grid.OnClickedHeader := grdSearchClickedHeader;
-  //Grid.Header.Hover.OnChange
+  Grid.Columns.OnMoved := DoColMoved;
   Grid.Header.SortRender:= TSortableHeader.Create(Grid.Header.Changed);
   Grid.Header.Sortable := True;
   // Set custom events
@@ -3079,7 +3114,7 @@ begin
   Grid.Columns[self.FieldCount].Width.Value := 90;
   Grid.Columns[self.FieldCount].Index := 0;
 
-  OrderFieldsSearch(Grid);
+  OrderFieldsSearch1(Grid);
 
    //долното трябва да иде на опции
  // Grid.Columns[9].Index:= 1;
