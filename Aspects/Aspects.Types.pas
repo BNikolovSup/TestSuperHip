@@ -134,8 +134,8 @@ type
              vvRootDeput,
              vvPatientRevision,
              vvRootOptions,
-             vvOptionSearch,
-             vvFieldSearchOption);
+             vvOptionSearchGrid,
+             vvFieldSearchGridOption);
 
 
 

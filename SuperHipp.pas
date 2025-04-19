@@ -15110,7 +15110,7 @@ begin
 
           //CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_TERAPY));
         end;
-        vvFieldSearchOption:
+        vvFieldSearchGridOption:
         begin
           CellText := CollPregled.DisplayName(node.Dummy);
         end

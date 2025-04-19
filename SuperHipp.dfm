@@ -9610,10 +9610,8 @@
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          ExplicitLeft = -4
-          ExplicitTop = -3
-          ExplicitWidth = 638
-          ExplicitHeight = 428
+          ExplicitLeft = -1
+          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter

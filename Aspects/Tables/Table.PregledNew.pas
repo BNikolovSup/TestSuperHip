@@ -688,7 +688,7 @@ begin
   while run <> nil do
   begin
     dataRun := pointer(PByte(run) + lenNode);
-    if dataRun.vid = vvOptionSearch then
+    if dataRun.vid = vvOptionSearchGrid then
     begin
       vOptionSearch := run;
       Break;
@@ -697,14 +697,14 @@ begin
   end;
   if vOptionSearch = nil then
   begin
-    linkOptions.AddNewNode(vvOptionSearch, 0, vRootPregOptions , amAddChildLast, vOptionSearch, linkPos);
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearch, linkPos);
   end;
   Result := vOptionSearch;
   if vOptionSearch.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
-      linkOptions.AddNewNode(vvFieldSearchOption, 0, vOptionSearch , amAddChildLast, run, linkPos);
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearch , amAddChildLast, run, linkPos);
       run.Dummy := i;
     end;
   end
