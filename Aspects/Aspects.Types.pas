@@ -135,7 +135,8 @@ type
              vvPatientRevision,
              vvRootOptions,
              vvOptionSearchGrid,
-             vvFieldSearchGridOption);
+             vvFieldSearchGridOption,
+             vvOptionSearchCot);
 
 
 

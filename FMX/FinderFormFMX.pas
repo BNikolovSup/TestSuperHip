@@ -120,6 +120,7 @@ type
     anim2: TFloatAnimation;
     anim3: TFloatAnimation;
     pdyn1: TPopup;
+    lytBlanka: TLayout;
 
     procedure FormShow(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -156,6 +157,7 @@ type
     procedure AddExpanderPat1(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure AddEditCot(idxEditCot: Integer; lyt: TLayout; field: word);
     procedure AddExpanderPreg(idxListExpander: Integer; RunNode: PVirtualNode);
+    procedure RecalcBlanka;
     property scaleDyn: Single read FScaleDyn write SetScaleDyn;
     property IsFinding: Boolean read FIsFinding write FIsFinding;
 
@@ -322,10 +324,11 @@ begin
     TempExpndrLyt.Visible := True;
     TempExpander := WalkChildrenExpander(TempExpndrLyt);
     TempExpIn := WalkChildrenLyt(TempExpander);
-    TempExpander.Text := 'test';
+    TempExpander.Text := 'Пациент';
     TempExpndrLyt.Tag := nativeint(RunNode);
     TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
-    TempExpndrLyt.Parent := Self.scldlyt1;
+    TempExpndrLyt.Parent := Self.lytBlanka;
+    TempExpndrLyt.Margins.Right := 30;
   end
   else
   begin
@@ -382,12 +385,13 @@ begin
     TempExpIn := WalkChildrenLyt(TempExpander);
 
     //TempExpndrLyt.Width := flwlytVizitFor.Width ;
-    TempExpander.Text := 'test';
+    TempExpander.Text := 'Преглед';
+    TempExpndrLyt.Margins.Left := 30;
     TempExpndrLyt.Tag := nativeint(RunNode);
    // LstExpanders.Add(TempExpndrLyt);
     //TempExpndrLyt := LstExpanders[idxListExpander];
     TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 10000);
-    TempExpndrLyt.Parent := Self.scldlyt1;
+    TempExpndrLyt.Parent := Self.lytBlanka;
     //TempExpndrLyt.OnResize := Expander1Resize;
   end
   else
@@ -659,6 +663,19 @@ begin
     anim.StartValue := 1;
     anim.StopValue := 2;
   end;
+end;
+
+procedure TfrmFinder.RecalcBlanka;
+var
+  h: Single;
+begin
+  lytBlanka.Height := 10;
+  h := InnerChildrenRect(lytBlanka).Height / FScaleDyn;
+  scldlyt1.OriginalHeight := h;
+  scldlyt1.Height := scldlyt1.OriginalHeight * FScaleDyn;
+  lytBlanka.Height := scldlyt1.OriginalHeight;
+//  Elapsed := Stopwatch.Elapsed;
+//  txtTest.Text := ( Format('fill за %f',[Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmFinder.scrlbx1CalcContentBounds(Sender: TObject;

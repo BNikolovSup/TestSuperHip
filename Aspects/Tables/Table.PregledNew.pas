@@ -199,6 +199,8 @@ TPregledNewItem = class(TBaseItem)
     function DisplayName(propIndex: Word): string; override;
     function RankSortOption(propIndex: Word): cardinal; override;
     function FindRootCollOptionNode(): PVirtualNode;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
     procedure OrderFieldsSearch(Grid: TTeeGrid);override;
@@ -542,12 +544,30 @@ end;
 
 function TPregledNewColl.CreateRootCollOptionNode(): PVirtualNode;
 var
-  NodeRoot: PVirtualNode;
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
   linkPos: Cardinal;
   pCardinalData: PCardinal;
+  i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
   linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 destructor TPregledNewColl.destroy;
@@ -606,7 +626,7 @@ begin
   inherited;
   if linkOptions = nil then Exit;
 
-  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
   run := FieldCollOptionNode.FirstChild;
   pSource := nil;
   pTarget := nil;
@@ -673,38 +693,88 @@ begin
     end;
     inc(linkPos, LenData);
   end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+end;
+
+function TPregledNewColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TPregledNewColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
 end;
 
 function TPregledNewColl.FindSearchFieldCollOptionNode(): PVirtualNode;
 var
   linkPos: Cardinal;
-  run, vOptionSearch, vRootPregOptions: PVirtualNode;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
   i: Integer;
   dataRun: PAspRec;
 begin
   vRootPregOptions := self.FindRootCollOptionNode();
-  vOptionSearch := nil;
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
   run := vRootPregOptions.FirstChild;
   while run <> nil do
   begin
     dataRun := pointer(PByte(run) + lenNode);
-    if dataRun.vid = vvOptionSearchGrid then
-    begin
-      vOptionSearch := run;
-      Break;
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
     end;
+
     run := run.NextSibling;
   end;
-  if vOptionSearch = nil then
+  if vOptionSearchGrid = nil then
   begin
-    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearch, linkPos);
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
   end;
-  Result := vOptionSearch;
-  if vOptionSearch.ChildCount <> FieldCount then
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
-      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearch , amAddChildLast, run, linkPos);
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
       run.Dummy := i;
     end;
   end

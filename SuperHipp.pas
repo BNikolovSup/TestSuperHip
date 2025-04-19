@@ -8301,9 +8301,17 @@ begin
 //   FmxTest.OnSetTextSearch := OnSetTextSearch;
 //
   FmxFinderFrm := TfrmFinder.Create(nil);
+  CollPatient.AddItemForSearch;
+  CollPregled.AddItemForSearch;
   FmxFinderFrm.CollPatient := CollPatient;
-    FmxFinderFrm.CollPregled := CollPregled;
-   FmxFinderFrm.OnShow := OnShowFindFprm;
+  FmxFinderFrm.CollPregled := CollPregled;
+
+  FmxFinderFrm.ArrCondition := CollPregled.ListForFDB.Items[0].ArrCondition;
+  FmxFinderFrm.AddExpanderPat1(0, nil);
+  FmxFinderFrm.AddExpanderPreg(0, nil);
+  FmxFinderFrm.RecalcBlanka;
+
+  FmxFinderFrm.OnShow := OnShowFindFprm;
 
 
 
@@ -9766,24 +9774,24 @@ var
   vPat, vPreg: PVirtualNode;
   data: PAspRec;
 begin
-  vtrSearch.NodeDataSize := SizeOf(tasprec);
-  vtrSearch.BeginUpdate;
+  //vtrSearch.NodeDataSize := SizeOf(tasprec);
+  //vtrSearch.BeginUpdate;
   CollPatient.ListForFinder.Clear;
 
-  vPat := vtrSearch.AddChild(nil, nil);
-  data := vtrSearch.GetNodeData(vpat);
-  data.index := CollPatient.AddItemForSearch;// шаблон за търсене.
-  data.DataPos := 0;
-  data.vid := vvPatient;
-
-  vPreg := vtrSearch.AddChild(vpat, nil);
-  data := vtrSearch.GetNodeData(vPreg);
-  data.index := CollPregled.AddItemForSearch;// шаблон за търсене.
-  data.DataPos := 0;
-  data.vid := vvPregled;
-
-
-  vtrSearch.EndUpdate;
+  //vPat := vtrSearch.AddChild(nil, nil);
+  //data := vtrSearch.GetNodeData(vpat);
+  //data.index := CollPatient.AddItemForSearch;// шаблон за търсене.
+  //data.DataPos := 0;
+//  data.vid := vvPatient;
+//
+//  vPreg := vtrSearch.AddChild(vpat, nil);
+//  data := vtrSearch.GetNodeData(vPreg);
+//  data.index := CollPregled.AddItemForSearch;// шаблон за търсене.
+//  data.DataPos := 0;
+//  data.vid := vvPregled;
+//
+//
+//  vtrSearch.EndUpdate;
 end;
 
 procedure TfrmSuperHip.LoadVtrSpisyciNeblUsl;
@@ -12931,15 +12939,17 @@ var
   ss: TPregledNewItem.TPropertyIndex;
 
 begin
-  if FmxFinderFrm = nil then
-  begin
-    FmxFinderFrm := TfrmFinder.Create(nil);
-    FmxFinderFrm.CollPatient := CollPatient;
-    FmxFinderFrm.CollPregled := CollPregled;
-    FmxFinderFrm.OnShow := OnShowFindFprm;
-  end;
-  if vtrSearch.RootNodeCount < 1 then
-    LoadVtrSearch;
+  //if FmxFinderFrm = nil then
+//  begin
+//    FmxFinderFrm := TfrmFinder.Create(nil);
+//    FmxFinderFrm.CollPatient := CollPatient;
+//    FmxFinderFrm.CollPregled := CollPregled;
+//    FmxFinderFrm.OnShow := OnShowFindFprm;
+//  end;
+  //if vtrSearch.RootNodeCount < 1 then
+//    LoadVtrSearch;
+//  CollPatient.ListForFinder.Clear;
+
   InternalChangeWorkPage(tsFMXForm);
 
 

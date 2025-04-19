@@ -166,7 +166,7 @@ begin
   linkpos := 100;
   AspectsOptionsLinkFile.AddNewNode(vvRootOptions, 0, vtrLinkOptions.RootNode, amAddChildLast, TreeLink, linkPos);
   for i := 0 to 100000 do
-    AspectsOptionsLinkFile.AddNewNode(vvOptionSearch, 0, TreeLink, amAddChildLast, TreeLink1, linkPos);
+    AspectsOptionsLinkFile.AddNewNode(vvOptionSearchGrid, 0, TreeLink, amAddChildLast, TreeLink1, linkPos);
 
   pCardinalData := pointer(PByte(AspectsOptionsLinkFile.Buf) + 4);
   pCardinalData^ := Cardinal(AspectsOptionsLinkFile.Buf);
@@ -967,7 +967,7 @@ begin
 
           //CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_TERAPY));
         end;
-        vvFieldSearchOption:
+        vvFieldSearchGridOption:
         begin
           CellText := CollPregled.DisplayName(node.Dummy);
         end

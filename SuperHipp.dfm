@@ -246,7 +246,7 @@
       Top = 49
       Width = 518
       Height = 571
-      ActivePage = tsLinkOptions
+      ActivePage = tsVtrSearch
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
@@ -39787,7 +39787,7 @@
     ColorDepth = cd32Bit
     AllocBy = 40
     Left = 376
-    Top = 56
+    Top = 88
     Bitmap = {
       494C0101670088049C1310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
@@ -43237,8 +43237,8 @@
   end
   object dlgOpenPL: TOpenDialog
     Filter = 'CSV file|*.csv'
-    Left = 433
-    Top = 45
+    Left = 449
+    Top = 5
   end
   object appEvntsMain: TApplicationEvents
     OnException = appEvntsMainException

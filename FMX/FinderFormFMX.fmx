@@ -2047,6 +2047,13 @@ object frmFinder: TfrmFinder
         XRadius = 20.000000000000000000
         YRadius = 20.000000000000000000
       end
+      object lytBlanka: TLayout
+        Align = Client
+        Size.Width = 500.000000000000000000
+        Size.Height = 878.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+      end
     end
   end
   object brshCOT_starting: TBrushObject
@@ -2948,7 +2955,7 @@ object frmFinder: TfrmFinder
     Size.PlatformDefault = False
     TabOrder = 3
     object xpdrPatient: TExpander
-      Align = Left
+      Align = Top
       Font.Size = 14.000000000000000000
       Font.Style = [fsBold, fsUnderline]
       StyledSettings = [Family, FontColor]
@@ -2959,7 +2966,7 @@ object frmFinder: TfrmFinder
       Position.X = 10.000000000000000000
       Position.Y = 30.000000000000000000
       ShowCheck = False
-      Size.Width = 471.000000000000000000
+      Size.Width = 477.000000000000000000
       Size.Height = 269.000000000000000000
       Size.PlatformDefault = False
       StyleLookup = 'xpdrMaintStyle1'
@@ -2971,13 +2978,14 @@ object frmFinder: TfrmFinder
         Align = Top
         Margins.Top = 35.000000000000000000
         Position.Y = 35.000000000000000000
-        Size.Width = 471.000000000000000000
+        Size.Width = 477.000000000000000000
         Size.Height = 145.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
       end
     end
     object lytEGN: TLayout
+      Anchors = [akLeft, akTop, akRight]
       Position.X = 40.000000000000000000
       Position.Y = 38.000000000000000000
       Size.Width = 425.000000000000000000
@@ -3009,6 +3017,7 @@ object frmFinder: TfrmFinder
       end
     end
     object lytPatName: TLayout
+      Anchors = [akLeft, akTop, akRight]
       Position.X = 40.000000000000000000
       Position.Y = 61.000000000000000000
       Size.Width = 425.000000000000000000
@@ -6532,7 +6541,7 @@ object frmFinder: TfrmFinder
         000008334D3F6281ACD1FA12090B0000000049454E44AE426082}
       Fill.Bitmap.WrapMode = TileStretch
       Fill.Kind = Bitmap
-      Opacity = 0.400000005960464500
+      Opacity = 0.400000005960464400
       Margins.Top = 2.000000000000000000
       Margins.Bottom = 2.000000000000000000
       Position.X = 284.000000000000000000
@@ -6592,7 +6601,7 @@ object frmFinder: TfrmFinder
         82}
       Fill.Bitmap.WrapMode = TileStretch
       Fill.Kind = Bitmap
-      Opacity = 0.400000005960464500
+      Opacity = 0.400000005960464400
       Margins.Top = 2.000000000000000000
       Margins.Bottom = 2.000000000000000000
       Position.X = 304.000000000000000000
@@ -6648,7 +6657,7 @@ object frmFinder: TfrmFinder
         F8BB2FF3BE0DFD300000000049454E44AE426082}
       Fill.Bitmap.WrapMode = TileStretch
       Fill.Kind = Bitmap
-      Opacity = 0.400000005960464500
+      Opacity = 0.400000005960464400
       Margins.Top = 2.000000000000000000
       Margins.Bottom = 2.000000000000000000
       Position.X = 324.000000000000000000
@@ -6739,7 +6748,7 @@ object frmFinder: TfrmFinder
         0000000049454E44AE426082}
       Fill.Bitmap.WrapMode = TileStretch
       Fill.Kind = Bitmap
-      Opacity = 0.400000005960464500
+      Opacity = 0.400000005960464400
       Margins.Top = 2.000000000000000000
       Margins.Bottom = 2.000000000000000000
       Position.X = 344.000000000000000000
@@ -6828,7 +6837,7 @@ object frmFinder: TfrmFinder
         49454E44AE426082}
       Fill.Bitmap.WrapMode = TileStretch
       Fill.Kind = Bitmap
-      Opacity = 0.400000005960464500
+      Opacity = 0.400000005960464400
       Margins.Top = 2.000000000000000000
       Margins.Bottom = 2.000000000000000000
       Position.X = 364.000000000000000000
