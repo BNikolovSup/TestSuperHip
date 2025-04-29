@@ -47,30 +47,7 @@ TCollectionForSort = class(TPersistent)
     vTreeLink: PVirtualNode;
   end;
 
-  //TVirtualNodeRevision = packed record
-//    Index,                   // index of node with regard to its parent
-//    ChildCount: Cardinal;    // number of child nodes
-//    NodeHeight: Word;        // height in pixels
-//    States: TVirtualNodeStates; // states describing various properties of the node (expanded, initialized etc.)
-//    Align: Byte;             // line/button alignment
-//    Revision: array[0..2] of Byte;
-//    //CheckState: TCheckState; // indicates the current check state (e.g. checked, pressed etc.)
-////    CheckType: TCheckType;   // indicates which check type shall be used for this node
-////    Dummy: Byte;             // dummy value to fill DWORD boundary       TODO: Is this still necessary?
-//    TotalCount,              // sum of this node, all of its child nodes and their child nodes etc.
-//    TotalHeight: Cardinal;   // height in pixels this node covers on screen including the height of all of its
-//                             // children
-//    // Note: Some copy routines require that all pointers (as well as the data area) in a node are
-//    //       located at the end of the node! Hence if you want to add new member fields (except pointers to internal
-//    //       data) then put them before field Parent.
-//    Parent,                  // reference to the node's parent (for the root this contains the treeview)
-//    PrevSibling,             // link to the node's previous sibling or nil if it is the first node
-//    NextSibling,             // link to the node's next sibling or nil if it is the last node
-//    FirstChild,              // link to the node's first child...
-//    LastChild: PVirtualNode; // link to the node's last child...
-//  end;
-
-
+  TGridForSrarch = class(TTeeGrid);
 
 
   TOnCntUpdates = procedure (sender: TObject; cnt: Integer) of object;
@@ -484,9 +461,11 @@ TCollectionForSort = class(TPersistent)
     function GetNodeFromDataPos(Link: TMappedFile; vv: TVtrVid; dataPos: cardinal): PVirtualNode;
     function FindItemFromDataPos(dataPos: cardinal): Integer;
     function GetNodeFromID(linkBuf: pointer; vv: TVtrVid; propIndex: Word; id: integer): PVirtualNode;
-    procedure OpenAdbFull(aspPos: Cardinal);
+    procedure OpenAdbFull(var aspPos: Cardinal);
     function OrderProp(index: Integer): Integer;
     procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);virtual;
+    procedure GrdSearhKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -1779,6 +1758,7 @@ var
   pStr: Pointer;
   streamComm: TCommandStream;
 begin
+
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
   len :=  Length(strData) ;
@@ -2900,6 +2880,17 @@ begin
     FOnSortCol(Self);
 end;
 
+procedure TBaseCollection.GrdSearhKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  WMKey: TWMKey;
+begin
+  inherited;
+  //WMKey.Msg := WM_KEYUP;
+//  WMKey.CharCode := VK_DOWN;
+//  TGridForSrarch(Sender).DoKeyUp(WMKey);
+end;
+
 procedure TBaseCollection.HeaderCanSortBy(const AColumn: TColumn;
   var CanSort: Boolean);
 begin
@@ -2934,7 +2925,7 @@ begin
 
 end;
 
-procedure TBaseCollection.OpenAdbFull(aspPos: Cardinal);
+procedure TBaseCollection.OpenAdbFull(var aspPos: Cardinal);
 var
   BaseItem: TBaseItem;
 begin
@@ -3089,6 +3080,7 @@ begin
   end;
   Grid.OnClickedHeader := grdSearchClickedHeader;
   Grid.Columns.OnMoved := DoColMoved;
+  TGridForSrarch(Grid).OnKeyUp := GrdSearhKeyUp;
   Grid.Header.SortRender:= TSortableHeader.Create(Grid.Header.Changed);
   Grid.Header.Sortable := True;
   // Set custom events

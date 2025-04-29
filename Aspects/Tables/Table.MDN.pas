@@ -112,7 +112,7 @@ TMDNItem = class(TBaseItem)
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
 
-	function DisplayName(propIndex: Word): string;
+	function DisplayName(propIndex: Word): string; override;
 	function FieldCount: Integer;override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowSearchedGrid(Grid: TTeeGrid);

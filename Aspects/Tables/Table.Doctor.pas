@@ -103,7 +103,7 @@ TDoctorItem = class(TBaseItem)
     procedure SortByIndexAnsiString;
 
 	function DisplayName(propIndex: Word): string;
-	function FieldCount: Integer;
+	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
     

@@ -1,5 +1,7 @@
 program Hippocrates360;
 // statusitem.
+{$R *.dres}
+
 uses
   Parnassus.FMXContainer in 'FMX\Parnassus.FMXContainer.pas',
   Parnassus.FMXContainerReg in 'FMX\Parnassus.FMXContainerReg.pas',
@@ -11,7 +13,6 @@ uses
   Vcl.Themes,
   Vcl.Styles,
   NzisThreadFull in 'NzisThreadFull.pas',
-
   ThreadLoadDB in 'ThreadLoadDB.pas',
   Options in 'Options.pas',
   DbHelper in 'DbHelper.pas',
@@ -71,7 +72,6 @@ uses
   Nzis.Types in 'Nzis.Types.pas',
   RoleButton in 'DynWinPanel\RoleButton.pas',
   DynSpeedButton in 'DynWinPanel\DynSpeedButton.pas',
-  StatusItem in 'FMX\StatusItem.pas',
   FinderFormFMX in 'FMX\FinderFormFMX.pas',
   X006 in 'X006.pas',
   FmxWelcomeScreen in 'FmxWelcomeScreen.pas' {frmWelcomeScreen},
@@ -103,6 +103,7 @@ uses
   RealObj.RealNzis in 'Aspects\RealObj.RealNzis.pas',
   MainRttiExpl in '..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas',
   PDFium.Frame in '..\PDFViewer\PDFium.Frame.pas';
+
 {$R *.res}
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 begin
@@ -114,6 +115,7 @@ begin
   FormatSettings.DecimalSeparator := '.';
   FormatSettings.ShortDateFormat := 'DD.MM.YYYY';
   Application.UpdateFormatSettings := False;
+  LoadKeyBoardLayout('00040402',1);
 
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
   if ParamStr(1) <> '' then

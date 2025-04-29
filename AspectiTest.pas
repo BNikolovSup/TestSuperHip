@@ -55,6 +55,8 @@ type
     tsNodeProperty: TTabSheet;
     cbbVtrVid: TComboBox;
     btnRootOptionPregled: TButton;
+    btn1: TButton;
+    btnRes: TButton;
     procedure btnOpenLNKClick(Sender: TObject);
     procedure OlenLink;
     procedure vtrLinkOptionsGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
@@ -92,6 +94,8 @@ type
     procedure cbbVtrVidChange(Sender: TObject);
     procedure cbbVtrVidKeyPress(Sender: TObject; var Key: Char);
     procedure btnRootOptionPregledClick(Sender: TObject);
+    procedure btn1Click(Sender: TObject);
+    procedure btnResClick(Sender: TObject);
   private
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
@@ -140,6 +144,11 @@ implementation
 {$R *.dfm}
 
 { TForm5 }
+
+procedure TForm5.btn1Click(Sender: TObject);
+begin
+  LoadKeyBoardLayout('00040402',1);
+end;
 
 procedure TForm5.btnCreateNewLinkClick(Sender: TObject);
 var
@@ -327,6 +336,11 @@ begin
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrLinkOptions.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 
+end;
+
+procedure TForm5.btnResClick(Sender: TObject);
+begin
+ // UpdateResource()
 end;
 
 procedure TForm5.btnRootOptionPregledClick(Sender: TObject);

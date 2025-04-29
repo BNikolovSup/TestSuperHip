@@ -194,7 +194,7 @@
       Left = 1096
       Top = 7
       Width = 185
-      Height = 41
+      Height = 80
       Margins.Left = 100
       Margins.Top = 0
       Margins.Right = 30
@@ -246,7 +246,7 @@
       Top = 49
       Width = 518
       Height = 571
-      ActivePage = tsVtrSearch
+      ActivePage = tsTempVTR
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
@@ -464,6 +464,9 @@
           OnGetPopupMenu = vtrPregledPatGetPopupMenu
           OnKeyAction = vtrPregledPatKeyAction
           OnKeyPress = vtrPregledPatKeyPress
+          OnNodeCopied = vtrPregledPatNodeCopied
+          OnNodeCopying = vtrPregledPatNodeCopying
+          OnSaveNode = vtrPregledPatSaveNode
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -8339,12 +8342,14 @@
           ParentCtl3D = False
           StateImages = imgList1
           TabOrder = 0
-          TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toEditOnDblClick]
+          TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toVariableNodeHeight, toEditOnDblClick]
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toAlwaysSelectNode]
           OnChange = vtrTempChange
           OnGetText = vtrPreglediGetText
-          OnInitNode = vtrPreglediInitNode
+          OnInitNode = vtrTempInitNode
+          OnLoadNode = vtrTempLoadNode
+          OnMeasureItem = vtrTempMeasureItem
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -8446,6 +8451,8 @@
           TakeFocus = True
           OnDrawButton = vtrTempDrawButton
           OnButtonClick = vtrTempButtonClick
+          ExplicitLeft = -1
+          ExplicitTop = 42
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -8480,6 +8487,15 @@
           Caption = 'pnlFiltertemp'
           PopupMenu = pmTempVtr
           TabOrder = 1
+          object btn12: TButton
+            Left = 15
+            Top = 1
+            Width = 75
+            Height = 25
+            Caption = 'btn12'
+            TabOrder = 0
+            OnClick = btn12Click
+          end
         end
       end
       object tsGraph: TTabSheet
@@ -8731,6 +8747,7 @@
           OnGetText = vtrNewAnalGetText
           OnInitNode = vtrNewAnalInitNode
           OnMeasureItem = vtrNewAnalMeasureItem
+          OnSaveNode = vtrNewAnalSaveNode
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -9610,8 +9627,6 @@
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          ExplicitLeft = -1
-          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9644,7 +9659,7 @@
       Left = -1
       Top = 6
       Width = 60
-      Height = 56
+      Height = 0
       Margins.Top = 0
       BevelOuter = bvRaised
       CloseStyle = svcCompact
@@ -10074,7 +10089,7 @@
       Top = 42
       Width = 984
       Height = 400
-      ActivePage = tsFMXForm
+      ActivePage = tsGrid
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -15134,7 +15149,7 @@
     end
     object btnPull: TButton
       Left = -1
-      Top = 16
+      Top = 13
       Width = 24
       Height = 26
       Anchors = [akLeft]
@@ -15313,8 +15328,6 @@
         PopupMenu = pmGrdSearch
         TabOrder = 0
         OnMouseDown = grdSearchMouseDown
-        ExplicitLeft = 5
-        ExplicitTop = 3
         _Headers = (
           1
           'TColumnHeaderBand'
@@ -39767,29 +39780,29 @@
           C6575BC3E1D0CAA68686A5AD9DAD9F37373777FDD003B7AF8E1FD5FFC2FDFFC2
           F1FF001D097D152EBBDF2A0000000049454E44AE426082}
       end>
-    Left = 472
-    Top = 72
+    Left = 800
+    Top = 240
   end
   object SynXML: TSynXMLSyn
     Options.AutoDetectEnabled = False
     Options.AutoDetectLineLimit = 0
     Options.Visible = False
     WantBracesParsed = False
-    Left = 560
-    Top = 64
+    Left = 872
+    Top = 256
   end
   object dlgOpenDB: TOpenDialog
     Filter = 'GDB|*.gdb'
-    Left = 632
-    Top = 80
+    Left = 640
+    Top = 144
   end
   object imgList1: TImageList
     ColorDepth = cd32Bit
     AllocBy = 40
-    Left = 376
-    Top = 88
+    Left = 728
+    Top = 248
     Bitmap = {
-      494C0101670088049C1310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804A81310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43245,13 +43258,13 @@
     OnMessage = appEvntsMainMessage
     OnShowHint = appEvntsMainShowHint
     OnShortCut = appEvntsMainShortCut
-    Left = 720
-    Top = 48
+    Left = 736
+    Top = 120
   end
   object dlgOpenXML_PL: TOpenDialog
     Filter = 'XML file|*.xml'
-    Left = 281
-    Top = 69
+    Left = 641
+    Top = 245
   end
   object pmTempVtr: TPopupMenu
     Left = 504
@@ -43295,7 +43308,14 @@
       end
       object mniHip: TMenuItem
         Caption = #1061#1080#1087#1086#1082#1088#1072#1090
-        OnClick = mniHipClick
+        object mniAnals: TMenuItem
+          Caption = #1048#1079#1089#1083#1077#1076#1074#1072#1085#1080#1103
+          OnClick = mniAnalsClick
+        end
+        object mniMkb10: TMenuItem
+          Caption = #1052#1050#1041'10'
+          OnClick = mniMkb10Click
+        end
       end
     end
     object mniSpisaci: TMenuItem
@@ -43364,7 +43384,7 @@
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C13A01320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C13AC1320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

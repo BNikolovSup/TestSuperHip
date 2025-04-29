@@ -172,7 +172,6 @@
         <DCCReference Include="Nzis.Types.pas"/>
         <DCCReference Include="DynWinPanel\RoleButton.pas"/>
         <DCCReference Include="DynWinPanel\DynSpeedButton.pas"/>
-        <DCCReference Include="FMX\StatusItem.pas"/>
         <DCCReference Include="FMX\FinderFormFMX.pas"/>
         <DCCReference Include="X006.pas"/>
         <DCCReference Include="FmxWelcomeScreen.pas">
@@ -208,6 +207,16 @@
         <DCCReference Include="Aspects\RealObj.RealNzis.pas"/>
         <DCCReference Include="..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas"/>
         <DCCReference Include="..\PDFViewer\PDFium.Frame.pas"/>
+        <RcItem Include="Res\MKB_Groups.txt">
+            <ContainerId>ResourceItem</ContainerId>
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>Resource_GroupMkb</ResourceId>
+        </RcItem>
+        <RcItem Include="Res\MKB_SubGroups.txt">
+            <ContainerId>ResourceItem</ContainerId>
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>Resource_SubGroupMkb</ResourceId>
+        </RcItem>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -236,9 +245,21 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="2">
+                <DeployFile LocalName="Res\MKB_SubGroups.txt" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="..\..\..\Hippocrates40\bin\Hippocrates360\Hippocrates360.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>Hippocrates360.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Res\MKB_Groups.txt" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

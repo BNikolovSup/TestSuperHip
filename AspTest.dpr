@@ -2,6 +2,8 @@ program AspTest;
   // wel
 
 
+{$R *.dres}
+
 uses
   Parnassus.FMXContainer in 'FMX\Parnassus.FMXContainer.pas',
   Parnassus.FMXContainerReg in 'FMX\Parnassus.FMXContainerReg.pas',
@@ -9,7 +11,6 @@ uses
   Winapi.Windows,
   System.SysUtils,
   System.StrUtils,
-  //SuperHipp in 'SuperHipp.pas' {frmSuperHip},
   Vcl.Themes,
   Vcl.Styles,
   NzisThreadFull in 'NzisThreadFull.pas',
@@ -75,7 +76,6 @@ uses
   StatusItem in 'FMX\StatusItem.pas',
   FinderFormFMX in 'FMX\FinderFormFMX.pas',
   X006 in 'X006.pas',
-  //FmxWelcomeScreen in 'FmxWelcomeScreen.pas' {frmWelcomeScreen},
   Table.KARTA_PROFILAKTIKA2017 in 'Aspects\Tables\Table.KARTA_PROFILAKTIKA2017.pas',
   Table.NZIS_QUESTIONNAIRE_RESPONSE in 'Aspects\Tables\Table.NZIS_QUESTIONNAIRE_RESPONSE.pas',
   Table.NZIS_PLANNED_TYPE in 'Aspects\Tables\Table.NZIS_PLANNED_TYPE.pas',
@@ -96,7 +96,6 @@ uses
   WalkFunctions in 'WalkFunctions.pas',
   CertThread in 'CertThread.pas',
   Table.Certificates in 'Aspects\Tables\Table.Certificates.pas',
-  //Tokens in 'FMX\Tokens.pas' {frmFmxTokens},
   SearchThread in 'Aspects\SearchThread.pas',
   Nzis.Nomen.baseCL000 in 'Aspects\Nzis.Nomen.baseCL000.pas',
   Aspects.Collections in 'Aspects\Aspects.Collections.pas',

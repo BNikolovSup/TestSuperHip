@@ -136,7 +136,9 @@ type
              vvRootOptions,
              vvOptionSearchGrid,
              vvFieldSearchGridOption,
-             vvOptionSearchCot);
+             vvOptionSearchCot,
+             vvMKBGroup,
+             vvMKBSubGroup);
 
 
 

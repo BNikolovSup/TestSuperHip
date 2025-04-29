@@ -85,8 +85,8 @@ type
     brshbjctCOT_contain: TBrushObject;
     edtForCloning: TEdit;
     rctMenu: TRectangle;
-    lytPatient: TLayout;
-    xpdrPatient: TExpander;
+    lytCollection: TLayout;
+    expndrCollection: TExpander;
     lytEGN: TLayout;
     txtEGN: TText;
     edtEGN: TEdit;
@@ -130,7 +130,7 @@ type
     procedure lstCotAnyClick(Sender: TObject);
     procedure edtForCloningCotOptionClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure xpdrPatientResize(Sender: TObject);
+    procedure expndrCollectionResize(Sender: TObject);
     procedure edtForCloningValidating(Sender: TObject; var Text: string);
     procedure rctCot1MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
@@ -153,7 +153,6 @@ type
     lstExpanedrTable: TList<TExpanerTableLabel>;
     lstEditCot: TList<TEditCotLabel>;
     thrSearch: TSearchThread;
-    procedure AddExpanderPat(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure AddExpanderPat1(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure AddEditCot(idxEditCot: Integer; lyt: TLayout; field: word);
     procedure AddExpanderPreg(idxListExpander: Integer; RunNode: PVirtualNode);
@@ -204,7 +203,7 @@ begin
 
   //ArctCot1 := WalkChildrenRectStyle(edt, 'Cot1');
  // ArctCot1.OnMouseUp  := rctCot1MouseUp;
-  TempEditCot.Position.y := 0;
+  TempEditCot.Position.y := 10000;
   TempEditCot.Align  := TAlignLayout.Top;
   TempEditCot.Visible := True;
   TempEditCot.TextPrompt := CollPatient.DisplayName(field);
@@ -212,99 +211,7 @@ begin
   TempEditCot.Parent := lyt;
 end;
 
-procedure TfrmFinder.AddExpanderPat(idxListExpander: Integer; RunNode: PVirtualNode);
-var
-  TempExpndrLyt, TempExpIn: TLayout;   ///TExpanerTableLabel;
-  TempExpander: TExpander;
-  i: integer;
-  act: TAsectTypeKind;
-  edt: TEdit;
-  ArctCot1: TRectangle;
-  h: Single;
-begin
-  if (lstExpanedrTable.Count - 1) < idxListExpander then
-  begin
-    TempExpndrLyt := TLayout(self.lytPatient.Clone(self));
-    TempExpndrLyt.Align := TAlignLayout.Top;
-    TempExpndrLyt.Visible := True;
-    TempExpander := WalkChildrenExpander(TempExpndrLyt);
-    TempExpIn := WalkChildrenLyt(TempExpander);
 
-    //TempExpndrLyt.Width := flwlytVizitFor.Width ;
-    TempExpander.Text := 'test';
-    TempExpndrLyt.Tag := nativeint(RunNode);
-   // LstExpanders.Add(TempExpndrLyt);
-    //TempExpndrLyt := LstExpanders[idxListExpander];
-    TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
-    TempExpndrLyt.Parent := Self.scldlyt1;
-    //TempExpndrLyt.OnResize := Expander1Resize;
-  end
-  else
-  begin
-//    TempExpndrLyt := LstExpanders[idxListExpander];
-//    TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
-//    TempExpndrLyt.Height := 61;
-//    TempExpndrLyt.Parent := flwlytVizitFor;
-//    TempExpndrLyt.Width := flwlytVizitFor.Width ;
-//    TempExpndrLyt.Text := pr001Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(PR001_Description));
-//    TempExpndrLyt.Tag := nativeInt(RunNode);
-//    TempExpndrLyt.OnResize := Expander1Resize;
-//
-  end;
-
-  for i := 0 to CollPatient.FieldCount - 1 do
-  begin
-    act := CollPatient.PropType(i);
-    case act of
-      actAnsiString:
-      begin
-        edt := TEdit(self.edtForCloning.Clone(self));
-        ArctCot1 := WalkChildrenRectStyle(edt, 'Cot1');
-        ArctCot1.OnMouseUp  := rctCot1MouseUp;
-        edt.Position.y := 0;
-        edt.Align  := TAlignLayout.Top;
-        edt.Parent := TempExpIn;
-        edt.Visible := True;
-        edt.TextPrompt := CollPatient.DisplayName(i);
-        edt.OnValidating := edtForCloningValidating;
-        //edt.Field := i;// филд от пациент
-//          edt.VidTable := vvPatient; // пациент
-//          CollPatient.ListForFDB[0].ArrCondition[edt.Field] := [cotNotContain];
-//          edt.Condition := CollPatient.ListForFDB[0].ArrCondition[edt.Field];
-//          TCustomEditModelDyn(edt.model).FEditDyn := edt;
-          //edt.OnSetTextSearchEDT := OnSetTextSearchEDT;
-//          edt.LblText := CollPatient.DisplayName(i);
-//          edt.OnCotOptionClick := FmxFinderFrm.edtForCloningCotOptionClick;
-//          edt.OnChangeCOP := edtChangeCOP;
-      end;
-      //actTDate:
-//        begin
-//          datEdit := TDateEditDyn(FmxTest.dtedtBirth.Clone(FmxFinderFrm.expanderPat));
-//          datEdit.Parent := FmxFinderFrm.expanderPat;
-//          datEdit.Visible := True;
-//          datEdit.Position.y := 10000;
-//          datEdit.Align  := TAlignLayout.Top;
-//          datEdit.Field := i;
-//          datEdit.VidTable := vvPatient;
-//          datEdit.OnSetTextSearchDEDT := OnSetTextSearchDTEDT;
-//        end;
-    end;
-    //CollPatient.ListEditDyn.Add(edt);
-  end;
-  TempExpIn.RecalcSize;
-  h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
-  TempExpndrLyt.Height := h + 75;
-  if h = 0 then
-  begin
-
-    TempExpander.Height := 55;
-  end
-  else
-  begin
-    TempExpander.Height := h+ 35;
-  end;
-  scldlyt1.Repaint;
-end;
 
 procedure TfrmFinder.AddExpanderPat1(idxListExpander: Integer;
   RunNode: PVirtualNode);
@@ -319,15 +226,18 @@ var
 begin
   if (lstExpanedrTable.Count - 1) < idxListExpander then
   begin
-    TempExpndrLyt := TLayout(self.lytPatient.Clone(self));
+    TempExpndrLyt := TLayout(self.lytCollection.Clone(self));
+    TempExpander := WalkChildrenExpander(TempExpndrLyt);
+    TempExpander.OnResize := expndrCollectionResize;
+
     TempExpndrLyt.Align := TAlignLayout.Top;
     TempExpndrLyt.Visible := True;
-    TempExpander := WalkChildrenExpander(TempExpndrLyt);
+
     TempExpIn := WalkChildrenLyt(TempExpander);
     TempExpander.Text := 'Пациент';
     TempExpndrLyt.Tag := nativeint(RunNode);
     TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
-    TempExpndrLyt.Parent := Self.lytBlanka;
+
     TempExpndrLyt.Margins.Right := 30;
   end
   else
@@ -350,19 +260,10 @@ begin
       end;
     end;
   end;
-  TempExpIn.RecalcSize;
-  h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
-  TempExpndrLyt.Height := h + 75;
-  if h = 0 then
-  begin
+  TempExpndrLyt.Parent := Self.lytBlanka;
+  TempExpander.RecalcSize;
 
-    TempExpander.Height := 55;
-  end
-  else
-  begin
-    TempExpander.Height := h+ 35;
-  end;
-  scldlyt1.Repaint;
+  //scldlyt1.Repaint;
 end;
 
 procedure TfrmFinder.AddExpanderPreg(idxListExpander: Integer;
@@ -378,7 +279,7 @@ var
 begin
   if (lstExpanedrTable.Count - 1) < idxListExpander then
   begin
-    TempExpndrLyt := TLayout(self.lytPatient.Clone(self));
+    TempExpndrLyt := TLayout(self.lytCollection.Clone(self));
     TempExpndrLyt.Align := TAlignLayout.Top;
     TempExpndrLyt.Visible := True;
     TempExpander := WalkChildrenExpander(TempExpndrLyt);
@@ -456,8 +357,9 @@ begin
   end
   else
   begin
-    TempExpander.Height := h+ 35;
+    TempExpander.Height := h+ 45;
   end;
+  TempExpIn.Height := TempExpander.Height;
   scldlyt1.Repaint;
 end;
 
@@ -520,7 +422,7 @@ begin
   edtForCloning.Visible := False;
   lstExpanedrTable := TList<TExpanerTableLabel>.Create;
   lstEditCot := TList<TEditCotLabel>.Create;
-  lytPatient.Visible := False;
+  lytCollection.Visible := False;
 end;
 
 procedure TfrmFinder.FormDestroy(Sender: TObject);
@@ -689,21 +591,29 @@ begin
   FScaleDyn := Value;
 end;
 
-procedure TfrmFinder.xpdrPatientResize(Sender: TObject);
+procedure TfrmFinder.expndrCollectionResize(Sender: TObject);
 var
   h: Single;
-  TempExpIn: TExpander;
+  TempExpander: TExpander;
+  TempExpIn, TempExpndrLyt: TLayout;
 begin
-  //h := InnerChildrenRect(TempExpIn).Height/FScaleDyn ;
-//  TempExpander.Height := h + 35;
-//  if h = 0 then
-//  begin
-//    TempExpander.Height := 55;
-//  end
-//  else
-//  begin
-//    TempExpander.Height := h+ 35;
-//  end;
+  TempExpander := TExpander(Sender);
+  TempExpndrLyt := TLayout(TempExpander.Parent);
+  TempExpIn := WalkChildrenLytStyle(TempExpander, 'LytIn');
+  TempExpIn.Height := 10;
+  if not TempExpander.IsExpanded then
+  begin
+    TempExpander.Height := 55;
+    TempExpndrLyt.Height := 75;
+  end
+  else
+  begin
+    h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
+    TempExpander.Height := h+ 75;
+    TempExpIn.Height := TempExpander.Height + 35;
+    TempExpndrLyt.Height := h + 95;
+  end;
+
 end;
 
 { TStyleSuggestEditProxy }

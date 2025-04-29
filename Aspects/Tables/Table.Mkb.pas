@@ -25,10 +25,11 @@ TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 TMkbItem = class(TBaseItem)
   public
     type
-      TPropertyIndex = (Mkb_CODE
-, Mkb_NAME
-, Mkb_NOTE
-);
+      TPropertyIndex = (
+      Mkb_CODE
+    , Mkb_NAME
+    , Mkb_NOTE
+    );
       TSetProp = set of TPropertyIndex;
       PRecMkb = ^TRecMkb;
       TRecMkb = record
@@ -58,12 +59,15 @@ TMkbItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+    FIsSortedMKB: Boolean;
+
     function GetItem(Index: Integer): TMkbItem;
     procedure SetItem(Index: Integer; const Value: TMkbItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
     ListMkbSearch: TList<TMkbItem>;
+    MkbGroups, MkbSubGroups: TStringList;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -82,14 +86,15 @@ TMkbItem = class(TBaseItem)
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
 
-	function DisplayName(propIndex: Word): string;
-	function FieldCount: Integer;
-	procedure ShowGrid(Grid: TTeeGrid);override;
-	procedure ShowSearchedGrid(Grid: TTeeGrid);
+    function DisplayName(propIndex: Word): string;
+    function FieldCount: Integer; override;
+    procedure ShowGrid(Grid: TTeeGrid);override;
+    procedure ShowSearchedGrid(Grid: TTeeGrid);
     
     procedure IndexValue(propIndex: TMkbItem.TPropertyIndex);
     property Items[Index: Integer]: TMkbItem read GetItem write SetItem;
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    property IsSortedMKB: Boolean read FIsSortedMKB write FIsSortedMKB;
   end;
 
 implementation
@@ -138,14 +143,19 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
         if Assigned(PRecord) and (propIndx in PRecord.setProp) then
         begin
           case propIndx of
-            Mkb_CODE: SaveData(PRecord.CODE, PropPosition, metaPosition, dataPosition);
+            Mkb_CODE:
+            begin
+              if PRecord.CODE = '*' then
+                PRecord.CODE := '*';
+              SaveData(PRecord.CODE, PropPosition, metaPosition, dataPosition);
+            end;
             Mkb_NAME: SaveData(PRecord.NAME, PropPosition, metaPosition, dataPosition);
             Mkb_NOTE: SaveData(PRecord.NOTE, PropPosition, metaPosition, dataPosition);
           end;
@@ -250,11 +260,16 @@ begin
   ListMkbSearch := TList<TMkbItem>.Create;
   FindedRes.DataPos := 0;
   FindedRes.PropIndex := MAXWORD;
+  FIsSortedMKB := False;
+  MkbGroups := TStringList.Create;
+  MkbSubGroups := TStringList.Create;
 end;
 
 destructor TMkbColl.destroy;
 begin
   FreeAndNil(ListMkbSearch);
+  MkbGroups.Free;
+  MkbSubGroups.Free;
   inherited;
 end;
 
@@ -396,15 +411,17 @@ begin
     TempItem := self.Items[i];
     case propIndex of
       Mkb_CODE:
-begin
-  TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-  if TempItem.IndexAnsiStr <> nil then
-  begin
-    TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-  end
-  else
-    TempItem.IndexAnsiStr1 := '';
-end;
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+          if TempItem.IndexAnsiStr1 = '*' then
+            TempItem.IndexAnsiStr1 := '*';
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
       Mkb_NAME:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
@@ -730,8 +747,8 @@ procedure TMkbColl.SortByIndexValue(propIndex: TMkbItem.TPropertyIndex);
 begin
   case propIndex of
     Mkb_CODE: SortByIndexAnsiString;
-      Mkb_NAME: SortByIndexAnsiString;
-      Mkb_NOTE: SortByIndexAnsiString;
+    Mkb_NAME: SortByIndexAnsiString;
+    Mkb_NOTE: SortByIndexAnsiString;
   end;
 end;
 

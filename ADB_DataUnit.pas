@@ -82,13 +82,14 @@ uses
     ExamAnals: TList<PVirtualNode>;
     diags: TList<PVirtualNode>;
     pregs: TList<PVirtualNode>;
+    CollDiag: TRealDiagnosisColl;
 
     constructor create;
     destructor destroy; override;
 
     function GetNZISPidType(buf: pointer; posdata: cardinal): TNZISidentifierType;
     function GetPrevProfPregled(dateNow: TDate; pregColl: TPregledNewColl; exceptPreg: TRealPregledNewItem = nil): Cardinal;
-
+    procedure SortDiag(SortIsAsc: Boolean);
   end;
 
   TNodesSendedToNzis = class
@@ -503,9 +504,16 @@ begin
 
   patNodes := GetPatNodes(PatNode);// обикаля дървото
   doc := TRealDoctorItem.Create(nil);
-  dataDoc := pointer(PByte(patNodes.docNode) + lenNode);
-  doc.DataPos := dataDoc.DataPos;
-  SenderId := doc.getAnsiStringMap(buf, posData, word(Doctor_UIN));
+  if patNodes.docNode <> nil then
+  begin
+    dataDoc := pointer(PByte(patNodes.docNode) + lenNode);
+    doc.DataPos := dataDoc.DataPos;
+    SenderId := doc.getAnsiStringMap(buf, posData, word(Doctor_UIN));
+  end
+  else
+  begin
+    SenderId := '0000000000';
+  end;
   FillXmlStreamHeader(XmlStream, L009, SenderId);
 
   addTagToStream(XmlStream, 'nhis:contents', '');
@@ -668,7 +676,15 @@ begin
             1:
             begin
               valueQuant := Double.ToString(CollNZIS_ANSWER_VALUEColl.getDoubleMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
-              AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              //AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              if answ.AnswNode.Dummy in[1, 2, 3]  then
+              begin
+                AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.Dummy]), False, answ.AnswNode);
+              end
+              else
+              begin
+                AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              end;
               AddTagToStream(XmlStream, 'nhis:valueScale',  Format('value="%d"',[Cl028Code]));
               AddTagToStream(XmlStream, 'nhis:valueQuantity',  Format('value="%s"',[valueQuant]));
             end;
@@ -711,7 +727,15 @@ begin
             begin
               valDate := CollNZIS_ANSWER_VALUEColl.getDateMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
               valueDate := FormatDateTime('YYYY-MM-DD', valDate);
-              AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              //AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              if answ.AnswNode.Dummy in[1, 2, 3]  then
+              begin
+                AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.Dummy]), False, answ.AnswNode);
+              end
+              else
+              begin
+                AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
+              end;
               AddTagToStream(XmlStream, 'nhis:valueScale',  Format('value="%d"',[Cl028Code]));
               AddTagToStream(XmlStream, 'nhis:valueDate',  Format('value="%s"',[valueDate]));
             end;
@@ -1511,7 +1535,7 @@ begin
             end;
             vvDiag:
             begin
-
+              Result.diags.Add(runMDN);
             end;
           end;
           runMDN := runMDN.NextSibling;
@@ -2227,6 +2251,65 @@ begin
       delta := (Floor(dateNow) - Floor(datePreg));
       Result := data.DataPos;
     end;
+  end;
+end;
+
+procedure TPatNodes.SortDiag(SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+ ListAnsi: TList<AnsiString>;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : AnsiString;
+    saveList: PVirtualNode;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while (ListAnsi[I])< (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) > (ListAnsi[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListAnsi[I])> (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) < (ListAnsi[P]) do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListAnsi[I];
+          saveList := ListDataPos[I];
+          ListAnsi[I] := ListAnsi[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListAnsi[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Self.diags;
+  ListAnsi := TList<AnsiString>.Create;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListAnsi.Add(CollDiag.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, word(Diagnosis_code_CL011)));
+    QuickSort(0,ListAnsi.count-1);
+    ListAnsi.Clear;
+    ListAnsi.Free;
   end;
 end;
 

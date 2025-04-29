@@ -52,6 +52,7 @@ interface
 
   TMnDiag = class
     edtMkb: TEdit;
+    btnDropDownMKB: TRectangle;
     edtMkbAdd: TEdit;
     MKB: TRealDiagnosisItem;
     LinkMkb: PVirtualNode;
@@ -60,7 +61,7 @@ interface
   TMnsLabel = class
     MnsLyt: TLayout;
 
-    GridLayoutMkb: TGridLayout;
+    GridLayoutMkb: TLayout;
     EdtNrn: TEdit;
     edtSpec: TEdit;
     edtSpecName: TEdit;
@@ -110,6 +111,7 @@ interface
   function WalkChildrenTextStyle(Parent: TFmxObject; styleName: string): TText;
   function WalkChildrenExpander(Parent: TFmxObject): Texpander;
   function WalkChildrenLyt(Parent: TFmxObject): TLayout;
+  function WalkChildrenLytStyle(Parent: TFmxObject; styleName: string): TLayout;
   function InnerChildrenRect(control: TControl): TRectF;
 
 implementation
@@ -369,9 +371,9 @@ begin
   for i := 0 to Parent.ChildrenCount-1 do
   begin
     Child := Parent.Children[i];
-    if (Child is TGridLayout) then
+    if (Child is TLayout) then
     begin
-      MnLabel.GridLayoutMkb := TGridLayout(Child);
+      MnLabel.GridLayoutMkb := TLayout(Child);
       MnLabel.LstMkbs.Clear;
       WalkChildrenEdtMn(Child, MnLabel);
     end
@@ -391,6 +393,7 @@ begin
     begin
       MkblLabel := TMnDiag.Create;
       MkblLabel.edtMkb := Tedit(Child);
+      MkblLabel.btnDropDownMKB := WalkChildrenRect(MkblLabel.edtMkb);
       MnLabel.LstMkbs.Add(MkblLabel);
     end
     else
@@ -689,6 +692,29 @@ begin
     else
     begin
       Result := WalkChildrenLyt(Child);
+      if Result <> nil then
+        Exit;
+    end;
+  end;
+end;
+
+function WalkChildrenLytStyle(Parent: TFmxObject; styleName: string): TLayout;
+var
+  i: Integer;
+  Child: TFmxObject;
+begin
+  Result := nil;
+  for i := 0 to Parent.ChildrenCount-1 do
+  begin
+    Child := Parent.Children[i];
+    if (Child is TLayout) and (Child.StyleName = styleName) then
+    begin
+      Result := TLayout(Child);
+      Exit;
+    end
+    else
+    begin
+      Result := WalkChildrenLytStyle(Child, styleName);
       if Result <> nil then
         Exit;
     end;

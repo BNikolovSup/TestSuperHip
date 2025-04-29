@@ -825,12 +825,30 @@ TRealUnfavColl = class(TUnfavColl)
     FPregledID: Integer;
     FLinkNode: PVirtualNode;
     FSpecNzis: string;
+    FICD_CODE2_ADD: string;
+    FICD_CODE3_ADD: string;
+    FICD_CODE2: string;
+    FICD_CODE_ADD: string;
+    FICD_CODE3: string;
+    FICD_CODE: string;
+    procedure SetICD_CODE_ADD(const Value: string);
+    procedure SetICD_CODE2_ADD(const Value: string);
+    procedure SetICD_CODE3_ADD(const Value: string);
+    procedure SetICD_CODE(const Value: string);
 
   public
     FDiagnosis: TList<TRealDiagnosisItem>;
     FPregled: TRealPregledNewItem;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
+
+    property ICD_CODE: string read FICD_CODE write SetICD_CODE;
+    property ICD_CODE2: string read FICD_CODE2 write FICD_CODE2;
+    property ICD_CODE2_ADD: string read FICD_CODE2_ADD write SetICD_CODE2_ADD;
+    property ICD_CODE3: string read FICD_CODE3 write FICD_CODE3;
+    property ICD_CODE3_ADD: string read FICD_CODE3_ADD write SetICD_CODE3_ADD;
+    property ICD_CODE_ADD: string read FICD_CODE_ADD write SetICD_CODE_ADD;
+
     property PregledID: Integer read FPregledID write FPregledID;
     property SpecNzis: string read FSpecNzis write FSpecNzis;
     property LinkNode: PVirtualNode read FLinkNode write FLinkNode;
@@ -843,6 +861,7 @@ TRealUnfavColl = class(TUnfavColl)
     procedure SetItem(Index: Integer; const Value: TRealBLANKA_MED_NAPRItem);
 
   public
+    FCollDiag: TRealDiagnosisColl;
     procedure SortByPregID;
     procedure SortBySpecNzis;
     function GetItemsFromDataPos(dataPos: Cardinal):TRealBLANKA_MED_NAPRItem;
@@ -3983,6 +4002,137 @@ destructor TRealBLANKA_MED_NAPRItem.destroy;
 begin
   FreeAndNil(FDiagnosis);
   inherited;
+end;
+
+procedure TRealBLANKA_MED_NAPRItem.SetICD_CODE(const Value: string);
+begin
+  FICD_CODE := Value;
+end;
+
+procedure TRealBLANKA_MED_NAPRItem.SetICD_CODE2_ADD(const Value: string);
+var
+  diag: TRealDiagnosisItem;
+begin
+  FICD_CODE2_ADD := Value;
+  if FICD_CODE2 = '' then exit;
+  if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
+  begin
+    diag := TRealDiagnosisItem(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.Add);
+  end
+  else
+  begin
+    Exit;
+  end;
+  diag.MainMkb := FICD_CODE2;
+  diag.AddMkb := FICD_CODE2_ADD;
+  diag.Rank := 3;
+
+  New(diag.PRecord);
+  diag.PRecord.setProp := [];
+  if FICD_CODE2_ADD <> '' then
+  begin
+    diag.PRecord.additionalCode_CL011 := FICD_CODE2_ADD;
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+  end;
+  if FICD_CODE2 <> '' then
+  begin
+    diag.PRecord.code_CL011 := FICD_CODE2;
+    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
+  end;
+  diag.PRecord.rank := diag.Rank;
+  Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.InsertDiagnosis;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Len := TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Size;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm, 0);
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+
+  Self.FDiagnosis.Add(diag);
+end;
+
+procedure TRealBLANKA_MED_NAPRItem.SetICD_CODE3_ADD(const Value: string);
+var
+  diag: TRealDiagnosisItem;
+begin
+  FICD_CODE3_ADD := Value;
+  if FICD_CODE3 = '' then exit;
+  if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
+  begin
+    diag := TRealDiagnosisItem(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.Add);
+  end
+  else
+  begin
+    Exit;
+  end;
+  diag.MainMkb := FICD_CODE3;
+  diag.AddMkb := FICD_CODE3_ADD;
+  diag.Rank := 4;
+
+  New(diag.PRecord);
+  diag.PRecord.setProp := [];
+  if FICD_CODE3_ADD <> '' then
+  begin
+    diag.PRecord.additionalCode_CL011 := FICD_CODE3_ADD;
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+  end;
+  if FICD_CODE3 <> '' then
+  begin
+    diag.PRecord.code_CL011 := FICD_CODE3;
+    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
+  end;
+  diag.PRecord.rank := diag.Rank;
+  Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.InsertDiagnosis;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Len := TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Size;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm, 0);
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+
+  Self.FDiagnosis.Add(diag);
+end;
+
+procedure TRealBLANKA_MED_NAPRItem.SetICD_CODE_ADD(const Value: string);
+var
+  diag: TRealDiagnosisItem;
+begin
+  FICD_CODE_ADD := Value;
+  if FICD_CODE = '' then exit;
+  if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
+  begin
+    diag := TRealDiagnosisItem(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.Add);
+  end
+  else
+  begin
+    Exit;
+  end;
+  diag.MainMkb := FICD_CODE;
+  diag.AddMkb := FICD_CODE_ADD;
+  diag.Rank := 1;
+
+  New(diag.PRecord);
+  diag.PRecord.setProp := [];
+  if FICD_CODE_ADD <> '' then
+  begin
+    diag.PRecord.additionalCode_CL011 := FICD_CODE_ADD;
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+  end;
+  if FICD_CODE <> '' then
+  begin
+    diag.PRecord.code_CL011 := FICD_CODE;
+    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
+  end;
+  diag.PRecord.rank := diag.Rank;
+  Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.InsertDiagnosis;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Len := TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm.Size;
+  TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealBLANKA_MED_NAPRColl(Collection).FCollDiag.streamComm, 0);
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+
+  Self.FDiagnosis.Add(diag);
 end;
 
 { TRealExamImmunizationItem }

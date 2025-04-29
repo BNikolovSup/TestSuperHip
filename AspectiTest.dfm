@@ -112,6 +112,24 @@ object Form5: TForm5
       TabOrder = 5
       OnClick = btnUpClick
     end
+    object btn1: TButton
+      Left = 696
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'KeyBrd'
+      TabOrder = 6
+      OnClick = btn1Click
+    end
+    object btnRes: TButton
+      Left = 792
+      Top = 8
+      Width = 75
+      Height = 25
+      Caption = 'btnRes'
+      TabOrder = 7
+      OnClick = btnResClick
+    end
   end
   object pnlMain: TPanel
     Left = 0
@@ -268,8 +286,6 @@ object Form5: TForm5
         ColumnAspect = 0
         TakeFocus = True
         OnDragDropFMX = vtrLinkOptionsDragDropFMX
-        ExplicitLeft = -4
-        ExplicitTop = -3
         Columns = <
           item
             CaptionAlignment = taCenter

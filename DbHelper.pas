@@ -45,6 +45,7 @@ uses
     //ADB
     procedure InsertAdbPregledField(TempItem: TRealPregledNewItem);
     procedure InsertAdbMdnField(TempItem: TRealMDNItem);
+    procedure InsertAdbMnField(TempItem: TRealBLANKA_MED_NAPRItem);
 
     //saveToHip
     procedure SavePregledFDB(preg: TRealPregledNewItem; ibsql: TIBSQL);
@@ -137,6 +138,14 @@ begin
   Include(TempItem.PRecord.setProp, MDN_DATA);
   TempItem.PRecord.id := 0;
   Include(TempItem.PRecord.setProp, MDN_ID);
+end;
+
+procedure TDbHelper.InsertAdbMnField(TempItem: TRealBLANKA_MED_NAPRItem);
+begin
+  TempItem.PRecord.ISSUE_DATE := Date;
+  Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ISSUE_DATE);
+  TempItem.PRecord.id := 0;
+  Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ID);
 end;
 
 procedure TDbHelper.InsertAdbPregledField(TempItem: TRealPregledNewItem);
@@ -935,8 +944,8 @@ var
   dataPosition: Cardinal;
 begin
   ibsqlBLANKA_MED_NAPR := ibsql;
-  if (not ibsqlBLANKA_MED_NAPR.Fields[0].IsNull)
-  then
+ // if (not ibsqlBLANKA_MED_NAPR.Fields[0].IsNull)
+//  then
  // begin
 //    TempItem.PRecord.ATTACHED_DOCS := ibsqlBLANKA_MED_NAPR.Fields[0].AsString;
 //    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ATTACHED_DOCS);
@@ -947,42 +956,15 @@ begin
 //    TempItem.PRecord.DIAGNOSES := ibsqlBLANKA_MED_NAPR.Fields[1].AsString;
 //    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_DIAGNOSES);
 //  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[2].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE := ibsqlBLANKA_MED_NAPR.Fields[2].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE);
-//  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[3].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE2 := ibsqlBLANKA_MED_NAPR.Fields[3].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE2);
-//  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[4].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE2_ADD := ibsqlBLANKA_MED_NAPR.Fields[4].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE2_ADD);
-//  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[5].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE3 := ibsqlBLANKA_MED_NAPR.Fields[5].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE3);
-//  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[6].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE3_ADD := ibsqlBLANKA_MED_NAPR.Fields[6].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE3_ADD);
-//  end;
-//  if (not ibsqlBLANKA_MED_NAPR.Fields[7].IsNull)
-//  then
-//  begin
-//    TempItem.PRecord.ICD_CODE_ADD := ibsqlBLANKA_MED_NAPR.Fields[7].AsString;
-//    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ICD_CODE_ADD);
-//  end;
+
+  TempItem.ICD_CODE := ibsqlBLANKA_MED_NAPR.Fields[2].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlBLANKA_MED_NAPR.Fields[7].AsString;
+  TempItem.ICD_CODE2 := ibsqlBLANKA_MED_NAPR.Fields[3].AsString;
+  TempItem.ICD_CODE2_ADD := ibsqlBLANKA_MED_NAPR.Fields[4].AsString;
+  TempItem.ICD_CODE3 := ibsqlBLANKA_MED_NAPR.Fields[5].AsString;
+  TempItem.ICD_CODE3_ADD := ibsqlBLANKA_MED_NAPR.Fields[6].AsString;
+
+
   if (not ibsqlBLANKA_MED_NAPR.Fields[8].IsNull)
   then
   begin
@@ -1044,39 +1026,31 @@ begin
      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_SPECIALITY_ID);
   end;
   TempItem.SpecNzis := ibsqlBLANKA_MED_NAPR.Fields[22].AsString;
-  TempItem.PregledID := ibsqlBLANKA_MED_NAPR.Fields[8].AsInteger;
+  TempItem.PregledID := ibsqlBLANKA_MED_NAPR.Fields[12].AsInteger;
 
 
-  //TempItem. := ibsqlBLANKA_MED_NAPR.Fields[21].AsString = 'Y';
-//  TempItem.CELIACDISEASE25 := ibsqlKARTA_PROFILAKTIKA2017.Fields[22].AsString = 'Y';
-//  TempItem.COLORECTALCARCINOMA21 := ibsqlKARTA_PROFILAKTIKA2017.Fields[23].AsString = 'Y';
-//  TempItem.CROHN63 := ibsqlKARTA_PROFILAKTIKA2017.Fields[24].AsString = 'Y';
-//  TempItem.DIABETESRELATIVES31 := ibsqlKARTA_PROFILAKTIKA2017.Fields[25].AsString = 'Y';
-//  TempItem.DIABETESRELATIVESSECOND70 := ibsqlKARTA_PROFILAKTIKA2017.Fields[26].AsString = 'Y';
-//  TempItem.DYNAMISMPSA28 := ibsqlKARTA_PROFILAKTIKA2017.Fields[27].AsString = 'Y';
-//  TempItem.DYSLIPIDAEMIA11 := ibsqlKARTA_PROFILAKTIKA2017.Fields[28].AsString = 'Y';
-//  TempItem.FRUITSVEGETABLES66 := ibsqlKARTA_PROFILAKTIKA2017.Fields[29].AsString = 'Y';
-//  TempItem.HPVVAKSINA69 := ibsqlKARTA_PROFILAKTIKA2017.Fields[30].AsString = 'Y';
-//  TempItem.ILLNESSIBS_MSB29 := ibsqlKARTA_PROFILAKTIKA2017.Fields[31].AsString = 'Y';
-//  TempItem.IMMUNOSUPPRESSED15 := ibsqlKARTA_PROFILAKTIKA2017.Fields[32].AsString = 'Y';
-//  TempItem.ISFULL := ibsqlKARTA_PROFILAKTIKA2017.Fields[33].AsString = 'Y';
-//  TempItem.COLITIS64 := ibsqlKARTA_PROFILAKTIKA2017.Fields[34].AsString = 'Y';
-//
-//  TempItem.IS_PRINTED := ibsqlKARTA_PROFILAKTIKA2017.Fields[35].AsString = 'Y';
-//  TempItem.MENARCHE07 := ibsqlKARTA_PROFILAKTIKA2017.Fields[36].AsString = 'Y';
-//  TempItem.NEOCERVIX32 := ibsqlKARTA_PROFILAKTIKA2017.Fields[37].AsString = 'Y';
-//  TempItem.NEOREKTOSIGMOIDE35 := ibsqlKARTA_PROFILAKTIKA2017.Fields[38].AsString = 'Y';
-//  TempItem.POLYP62 := ibsqlKARTA_PROFILAKTIKA2017.Fields[39].AsString = 'Y';
-//  TempItem.PREDIABETIC10 := ibsqlKARTA_PROFILAKTIKA2017.Fields[40].AsString = 'Y';
-//  TempItem.PREGNANCY08 := ibsqlKARTA_PROFILAKTIKA2017.Fields[41].AsString = 'Y';
-//  TempItem.PREGNANCYCHILDBIRTH68 := ibsqlKARTA_PROFILAKTIKA2017.Fields[42].AsString = 'Y';
-//  TempItem.PROLONGEDHRT04 := ibsqlKARTA_PROFILAKTIKA2017.Fields[43].AsString = 'Y';
-//  TempItem.PROSTATECARCINOMA38 := ibsqlKARTA_PROFILAKTIKA2017.Fields[44].AsString = 'Y';
-//  TempItem.RELATIVESBREAST33 := ibsqlKARTA_PROFILAKTIKA2017.Fields[45].AsString = 'Y';
-//  TempItem.SEDENTARYLIFE02 := ibsqlKARTA_PROFILAKTIKA2017.Fields[46].AsString = 'Y';
-//  TempItem.TYPE1DIABETES65 := ibsqlKARTA_PROFILAKTIKA2017.Fields[47].AsString = 'Y';
-//  TempItem.TYPE2DIABETES09 := ibsqlKARTA_PROFILAKTIKA2017.Fields[48].AsString = 'Y';
-//  TempItem.WOMENCANCERS18 := ibsqlKARTA_PROFILAKTIKA2017.Fields[49].AsString = 'Y';
+  TempItem.PRecord.Logical := [];
+  if ibsqlBLANKA_MED_NAPR.Fields[18].AsString = 'Y' then
+    Include(TempItem.PRecord.Logical, IS_PRINTED);
+  if ibsqlBLANKA_MED_NAPR.Fields[19].AsString = 'Y' then
+    Include(TempItem.PRecord.Logical, EXAMED_BY_SPECIALIST);
+  case ibsqlBLANKA_MED_NAPR.Fields[20].Asinteger  of
+    0: Include(TempItem.PRecord.Logical, NZIS_STATUS_None);
+    3: Include(TempItem.PRecord.Logical, NZIS_STATUS_Sended);
+    5: Include(TempItem.PRecord.Logical, NZIS_STATUS_Cancel);
+  end;
+  case ibsqlBLANKA_MED_NAPR.Fields[21].Asinteger  of
+    1: Include(TempItem.PRecord.Logical, MED_NAPR_Ostro);
+    2: Include(TempItem.PRecord.Logical, MED_NAPR_Hron);
+    3: Include(TempItem.PRecord.Logical, MED_NAPR_Disp);
+    4: Include(TempItem.PRecord.Logical, MED_NAPR_Prof);
+    5: Include(TempItem.PRecord.Logical, MED_NAPR_Iskane_Telk);
+    6: Include(TempItem.PRecord.Logical, MED_NAPR_Mother);
+    7: Include(TempItem.PRecord.Logical, MED_NAPR_Child);
+    9: Include(TempItem.PRecord.Logical, MED_NAPR_Eksp);
+  end;
+
+
 
   if TempItem.PRecord.Logical <> [] then
     Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_Logical);

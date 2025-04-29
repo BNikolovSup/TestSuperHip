@@ -486,6 +486,8 @@ begin
     if not ibsqlMkb.Fields[0].IsNull then
     begin
       TempItem.PRecord.CODE := ibsqlMkb.Fields[0].AsString;
+      if TempItem.PRecord.CODE = '*' then
+        TempItem.PRecord.CODE := '*';
       Include(TempItem.PRecord.setProp, Mkb_CODE);
     end;
     if not ibsqlMkb.Fields[1].IsNull then
