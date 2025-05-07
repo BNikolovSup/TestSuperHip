@@ -1171,7 +1171,7 @@ begin
   NodeSended := TNodesSendedToNzis.create;
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
-  NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
+  NodeSended.XmlReq.LoadFromStream(XmlStream);//, TEncoding.UTF8);
   IndexInListSended := LstNodeSended.Add(NodeSended);
 end;
 
@@ -1327,12 +1327,12 @@ begin
   AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
   OpenDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
               preg.getDateMap(buf, posData, word(PregledNew_START_TIME));
-  OpenDate := Date;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  OpenDate := UserDate;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   dateLrn := FormatDateTime('_YYYY.MM.DD ', OpenDate);
   CollPreg.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN), dateLrn + lrn);
   OpenDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(OpenDate));
   AddTagToStream(XmlStream, 'nhis:openDate', Format('value="%s"',[OpenDateStr]), false);
-  CloseDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(Date));
+  CloseDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(UserDate));
   AddTagToStream(XmlStream, 'nhis:closeDate', Format('value="%s"',[CloseDateStr]), false);
   AddTagToStream(XmlStream, 'nhis:class', Format('value="%d"',[Integer(preg.clcClass)]));
   AddTagToStream(XmlStream, 'nhis:directedBy', Format('value="%d"',[8]), false);

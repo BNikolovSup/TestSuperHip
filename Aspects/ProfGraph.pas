@@ -91,7 +91,7 @@ begin
   FVisibleBudeshti := true;
   FVisibleMinali := true;
   FSexMale := True;
-  FCurrDate := Date;
+  FCurrDate := UserDate;
   
   lstValid := TStringList.Create;
   lstValid.Text :=
@@ -1060,7 +1060,7 @@ begin
       FreeAndNil(gr.Cl132.FListPr001[j].FExamAnal);
     //Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key));
     //SuperHipp.frmSuperHip.mmoTest.Lines.Add(DateToStr(gr.startDate) + '   ' + Cl132Key);
-    if Date > gr.endDate then
+    if UserDate > gr.endDate then
     begin
       if not FVisibleMinali then Continue;
       vCl132 := vtrGraph.AddChild(vMinali, nil);
@@ -1071,7 +1071,7 @@ begin
       data.index := i;
     end
     else
-    if (Date < gr.endDate) and (Date < gr.startDate) then
+    if (UserDate < gr.endDate) and (UserDate < gr.startDate) then
     begin
       if not FVisibleBudeshti then Continue;
       vCl132 := vtrGraph.AddChild(vBudeshti, nil);
@@ -1082,7 +1082,7 @@ begin
       data.index := i;
     end
     else
-    if (Date <= gr.endDate) and (Date >= gr.startDate) then  // текущи
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
     begin
       vCl132 := vtrGraph.AddChild(vNast, nil);
       data := vtrGraph.GetNodeData(vCl132);
@@ -1099,7 +1099,7 @@ begin
             if (prStartDate <= gr.endDate) and ((prStartDate >= gr.startDate)) then
             begin
 
-              if pat.FPregledi[j].Cl132 = gr.Cl132 then
+              //if pat.FPregledi[j].Cl132 = gr.Cl132 then
               begin
                 gr.Cl132.FPregled := pat.FPregledi[j];
                 pat.FPregledi[j].Cl132 := gr.Cl132;
@@ -1108,7 +1108,7 @@ begin
               end;
             end;
           end;
-          if True then//   gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
           begin
             if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
             begin

@@ -2,7 +2,7 @@ unit ProfForm;
 //TDateEdit 'err  f12
 interface
 uses
-   Winapi.Windows, JclDebug, Vcl.StdCtrls,
+   Winapi.Windows, JclDebug, Vcl.StdCtrls, System.DateUtils,
    Aspects.Types, Aspects.Collections, Table.PregledNew, Table.PatientNew, Table.CL132,
    Table.PR001, Table.CL088, Table.CL139, Table.CL134, Table.Diagnosis, Table.ExamAnalysis,
    Table.MDN, Table.CL022, Table.CL142, Table.CL144, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
@@ -760,6 +760,8 @@ type
       Shift: TShiftState);
     procedure BtnDropDownMN_MKBClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure dtdtStartDateChange(Sender: TObject);
+    procedure dtdtStartDateClosePicker(Sender: TObject);
     
 
     //procedure btn1Click(Sender: TObject);
@@ -969,6 +971,7 @@ type
     procedure AutoFillControl;
     procedure MarkSourceAnsw(TargetSourceAnsw: TSourceAnsw; TargetRect: TRectangle);
     procedure appEvntsMainException(Sender: TObject; E: Exception);
+    procedure ChangePositionScroll(x, y: single);
     procedure VibroControl(node: PVirtualNode);
 
 
@@ -1558,7 +1561,8 @@ begin
         vvNZIS_ANSWER_VALUE:
         begin
           nomenPos := AnswValuesColl.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
+                 CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
           TempComboLYT.Margins.Left := 25;
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right - 25;
           TempComboLabel.rctSourceAnsw.Visible := True;
@@ -1567,7 +1571,8 @@ begin
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
           nomenPos := ResDiagRepColl.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
+          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
+                 CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right;
           TempComboLYT.Margins.Left := 5;
           TempComboLabel.rctSourceAnsw.Visible := false;
@@ -1617,6 +1622,7 @@ begin
     TempComboLabel := TComboOneLabel(TempComboLYT.TagObject);
     TempComboLabel.node := RunNode;
     TempComboLabel.chk.IsChecked := true;
+    TempComboLabel.SourceAnsw := TSourceAnsw(RunNode.Dummy);
     //TempComboLabel.rctNull := WalkChildrenRect(TempComboLabel.chk);
     //TempComboLabel.cmb := WalkChildrenCombo(TempComboLYT);
     //TempComboLabel.txt := WalkChildrenText(TempComboLabel.cmb);
@@ -1629,14 +1635,17 @@ begin
         vvNZIS_ANSWER_VALUE:
         begin
           nomenPos := AnswValuesColl.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
+                 CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right - 25;
           TempComboLYT.Margins.Left := 25;
+          MarkSourceAnsw(TempComboLabel.SourceAnsw, TempComboLabel.rctSourceAnsw);
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT, vvNZIS_DIAGNOSTIC_REPORT:
         begin
           nomenPos := ResDiagRepColl.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
+          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
+                 CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right;
           TempComboLYT.Margins.Left := 5;
         end;
@@ -1651,6 +1660,7 @@ begin
           TempComboLYT.Margins.Left := 25;
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right - 25;
           TempComboLabel.rctSourceAnsw.Visible := true;
+          MarkSourceAnsw(TempComboLabel.SourceAnsw, TempComboLabel.rctSourceAnsw);
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
@@ -2780,7 +2790,7 @@ begin
   TempPlanedTypeLabel.PostDataLink := PosDataPlan;
   startDate := DateToStr(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_StartDate)));
   endDate := DateToStr(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate)));
-  Delta := Floor(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate))) - Floor(Date);
+  Delta := Floor(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate))) - Floor(UserDate);
   //12.12.2012 - 12.12.2025  (ќстават 23 дни до кра€ на плана)
 
   TempPlanedTypeLabel.txtKey.Text := PlanedTypeColl.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
@@ -2800,7 +2810,14 @@ begin
     end;
   end;
 
-  TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (ќстават %d дни до кра€ на плана)',[startDate, endDate, delta]);
+  if delta >= 0  then
+  begin
+    TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (ќстават %d дни до кра€ на плана)',[startDate, endDate, delta]);
+  end
+  else
+  begin
+    TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (ћинали са %d дни до кра€ на плана)',[startDate, endDate, -delta]);
+  end;
   case Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_CL136_Mapping))[1] of
     '1':
     begin//'|' + cl132Key + '|'
@@ -3336,6 +3353,14 @@ begin
   end;
 end;
 
+procedure TfrmProfFormFMX.ChangePositionScroll(x, y: single);
+var
+  vScrol: TScrollBar;
+begin
+   scrlbx1.FindStyleResource<TScrollBar>('vscrollbar', vScrol);
+   vScrol.Value := Y;// + scrlbx1.ViewportPosition.y;
+end;
+
 procedure TfrmProfFormFMX.cbb2Popup(Sender: TObject);
 begin
   //if not TCbb(Sender).Popup.IsOpen then
@@ -3581,7 +3606,7 @@ begin
     TDateEditLabel(LstDateEditsLyt[i].TagObject).canValidate := False;
     TDateEditLabel(LstDateEditsLyt[i].TagObject).edtDat.Text := '';
     TDateEditLabel(LstDateEditsLyt[i].TagObject).DatEdt.IsChecked := false;
-    TDateEditLabel(LstDateEditsLyt[i].TagObject).DatEdt.Date := Date;
+    TDateEditLabel(LstDateEditsLyt[i].TagObject).DatEdt.Date := UserDate;
     TDateEditLabel(LstDateEditsLyt[i].TagObject).canValidate := true;
   end;
   for i := 0 to LstMemos.Count - 1 do
@@ -4708,6 +4733,48 @@ begin
   end;
 end;
 
+procedure TfrmProfFormFMX.dtdtStartDateChange(Sender: TObject);
+var
+  dtdt: TDateEdit;
+  ambStartDate: TDate;
+  ambStartTime: TTime;
+  ambStartDateTime: TDateTime;
+  fs: TFormatSettings;
+begin
+  dtdt := TDateEdit(sender);
+  if not dtdt.IsFocused then Exit;
+  //DD.MM.YYYY hh:nn
+  fs := TFormatSettings.Create;
+  fs.DateSeparator := '.';
+  fs.ShortDateFormat := 'DD.MM.YYYY';
+  fs.TimeSeparator := ':';
+  fs.ShortTimeFormat := 'hh:mm';
+  ambStartDateTime := StrToDateTime(dtdtStartDate.Text);
+  ambStartDate := Floor(ambStartDateTime);
+  ambStartTime := ambStartDateTime - ambStartDate;
+  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
+  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_TIME), ambStartTime);
+end;
+
+procedure TfrmProfFormFMX.dtdtStartDateClosePicker(Sender: TObject);
+var
+  dtdt: TDateEdit;
+  ambStartDate: TDate;
+  ambStartTime: TTime;
+  ambStartDateTime: TDateTime;
+  fs: TFormatSettings;
+begin
+  dtdt := TDateEdit(sender);
+  fs := TFormatSettings.Create;
+  fs.DateSeparator := '.';
+  fs.ShortDateFormat := 'DD.MM.YYYY';
+  fs.TimeSeparator := ':';
+  fs.ShortTimeFormat := 'hh:mm';
+  ambStartDateTime := StrToDateTime(dtdtStartDate.Text);
+  ambStartDate := Floor(ambStartDateTime);
+  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
+end;
+
 procedure TfrmProfFormFMX.dtdtStartDatePainting(Sender: TObject;
   Canvas: TCanvas; const ARect: TRectF);
 var
@@ -4716,6 +4783,8 @@ var
   ambStartTime: TTime;
 begin
   dtdt := TDateEdit(sender);
+  if dtdt.IsFocused then Exit;
+
   ambStartDate := FPregled.getDateMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_START_DATE));
   ambStartTime := FPregled.getTimeMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_START_TIME));
 
@@ -4920,7 +4989,7 @@ begin
       PatientNew_BIRTH_DATE :
       begin
         BIRTH_DATE := TRealPatientNewItem(edt.TagObject).getDateMap(FAspAdbBuf, FAspAdbPosData, word(PatientNew_BIRTH_DATE));
-        PatAge := TRealPatientNewItem(edt.TagObject).CalcAge(date, BIRTH_DATE);
+        PatAge := TRealPatientNewItem(edt.TagObject).CalcAge(UserDate, BIRTH_DATE);
         edt.Text := Format('%d год.', [PatAge]);
       end;
     end;
@@ -7353,7 +7422,7 @@ begin
   //
 
   PlanedTypeColl.SortListByEndDate_posData_cl136(ListPlaneds);
-  PrevPregPos := patNodes.GetPrevProfPregled(date, PregledColl, FPregled); // намира последни€ проф преглед
+  PrevPregPos := patNodes.GetPrevProfPregled(UserDate, PregledColl, FPregled); // намира последни€ проф преглед
   if PrevPregPos > 0 then //има
   begin
     PrevPregDate := PregledColl.getDateMap(PrevPregPos, word(PregledNew_START_DATE)); // и датата му
@@ -7396,7 +7465,21 @@ begin
     else
     if RL090.Contains('|' + plan.CL132Key + '|') then  // има правило за 4 месеца м/у прегледите
     begin  // прегледа може да бъде главен ако са минали повече от 120 дни от предишни€
-      if (date - PrevPregDate) > 120 then  // и понеже са подредени по край на периода
+      if (UserDate - PrevPregDate) > 120 then  // и понеже са подредени по край на периода
+      begin
+        if AMainProf = nil then
+        begin
+          strNode := plan.CL132Key;
+          strNode :=  strNode + '  ' + Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
+          xpdrVisitFor.Text := strNode;
+          AMainProf := plan;
+        end
+        else
+        begin
+          plan.Node.CheckType := ctButton;
+        end;
+      end
+      else
       begin
         if AMainProf = nil then
         begin

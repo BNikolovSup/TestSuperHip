@@ -1,4 +1,4 @@
-unit SuperHipp;  //clone loopsearch  aspect 'WmAfterShow  discone  .rtt lnk  1200
+unit SuperHipp;  //clone .ini'  aspect 'WmAfterShow  discone  .rtt lnk  1200
 interface
 
 uses
@@ -315,7 +315,7 @@ type
     CheckBox2: TCheckBox;
     mniRols: TMenuItem;
     pnlTest: TPanel;
-    btn4: TButton;
+    btnNzisProf: TButton;
     btnRemont142: TButton;
     pnlGridTool: TPanel;
     btn6: TButton;
@@ -384,6 +384,7 @@ type
     btn12: TButton;
     mniAnals: TMenuItem;
     mniMkb10: TMenuItem;
+    dtp1: TDateTimePicker;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -590,7 +591,7 @@ type
     procedure btnRemont142Click(Sender: TObject);
     procedure vtrPregledPatCompareNodes(Sender: TBaseVirtualTree; Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
     procedure appEvntsMainException(Sender: TObject; E: Exception);
-    procedure btn4Click(Sender: TObject);
+    procedure btnNzisProfClick(Sender: TObject);
     procedure btn6Click(Sender: TObject);
     procedure btnUpdateNomenClick(Sender: TObject);
     procedure btnX006Click(Sender: TObject);
@@ -682,6 +683,7 @@ type
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
     procedure mniAnalsClick(Sender: TObject);
     procedure mniMkb10Click(Sender: TObject);
+    procedure dtp1Change(Sender: TObject);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -1040,6 +1042,7 @@ type
     function FindCertFromSerNumber(serNom: TArray<System.Byte>): TElX509Certificate;
     procedure GetPatProf(var pat: TRealPatientNewItem);
     procedure GetCurrentPatProf(pat: TRealPatientNewItem);
+    procedure GetCurrentPatProf1(pat: TRealPatientNewItem);
     function FindNode(DirectionFind: TDirectionFinder): boolean;
     procedure AddNewPregled;
     procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer);
@@ -1254,9 +1257,10 @@ procedure TfrmSuperHip.btn1Click(Sender: TObject);
 begin
   //Application.CreateForm(TFrmRTTIExplLite, FrmRTTIExplLite);
   //FrmRTTIExplLite.Show;
+  FmxProfForm.ChangePositionScroll(0, 2000);
 end;
 
-procedure TfrmSuperHip.btn4Click(Sender: TObject);
+procedure TfrmSuperHip.btnNzisProfClick(Sender: TObject);
 begin
   AddNewPregled;
 
@@ -2623,6 +2627,7 @@ begin
   vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
   Button2.Tag := 1;
   Exit;
+  Caption := DateToStr(UserDate);
   TCL000EntryCollection.ImportNomenList(AspectsNomFile);
   //vtrPregledPat.FullExpand();
  // for i := 1 to CL132Coll.Count - 1 do
@@ -3173,6 +3178,11 @@ end;
 procedure TfrmSuperHip.DoUSBRemove(sender: TObject);
 begin
   thrCert.IsFirst := True;
+end;
+
+procedure TfrmSuperHip.dtp1Change(Sender: TObject);
+begin
+  Option.UserDate := dtp1.Date;
 end;
 
 //procedure TfrmSuperHip.DynWinPanel1FilterButtonClick2(sender: TDynWinPanel; ctrl: TBaseControl; FltrList: TList<ComboBoxHip.TFilterValues>);
@@ -7816,7 +7826,7 @@ begin
     begin
       //Adb_DM.CollPrac := CollPractica;
 //      Adb_DM.CollDoc := CollDoctor;
-      XmlStream := TXmlStream.Create;
+      XMLStream := TXmlStream.Create('', TEncoding.UTF8);
       case rgNzisMessage.ItemIndex of
         0: //X001
         begin
@@ -7942,6 +7952,7 @@ begin
             mkb := diag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
             if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
             begin
+              //preg.ListNZIS_PLANNED_TYPEs.Count;
               pat.FPregledi.Add(preg);
               preg.FDiagnosis.Add(diag);
               //Break;
@@ -7976,10 +7987,105 @@ begin
     pat.FNode := runPat;
     profGR.LoadVtrGraph(pat, i);
     pnlTest.Caption := pat.NoteProf;
+    btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
     pnlTest.Repaint;
     runPat := runPat.NextSibling;
     Break;
   end;
+
+end;
+
+procedure TfrmSuperHip.GetCurrentPatProf1(pat: TRealPatientNewItem);
+var
+  preg: TRealPregledNewItem;
+  diag: TRealDiagnosisItem;
+  runPat, runPreg, runPregledNodes: PVirtualNode;
+  runDataPat, runDataPreg, runDataDiag, dataGraph: PAspRec;
+  egn, mkb: string;
+  //PregIsProf: Boolean;
+  i: Integer;
+  dat: TDate;
+  log: TlogicalPatientNewSet;
+begin
+  if profGR = nil then
+  begin
+
+    OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+    LoadVtrNomenNzis1();
+
+    profGR := TProfGraph.create;
+    profGR.CL006Coll := CL006Coll;
+    profGR.CL022Coll := CL022Coll;
+    profGR.CL037Coll := CL037Coll;
+    profGR.CL038Coll := CL038Coll;
+    profGR.CL050Coll := CL050Coll;
+    profGR.CL132Coll := CL132Coll;
+    profGR.CL134Coll := CL134Coll;
+    profGR.CL142Coll := CL142Coll;
+    profGR.CL144Coll := CL144Coll;
+    profGR.CL088Coll := CL088Coll;
+    profGR.PR001Coll := PR001Coll;
+    profGR.BufNomen := AspectsNomFile.Buf;
+    profGR.BufADB := AspectsHipFile.Buf;
+    profGR.posDataADB := AspectsHipFile.FPosData;
+    profGR.vtrGraph := vtrGraph;
+  end;
+  runPat := pat.FNode;
+
+  runPreg := runPat.FirstChild;
+  while runPreg <> nil do
+  begin
+    runDataPreg := pointer(PByte(runPreg) + lenNode);
+    preg := TRealPregledNewItem.Create(nil);
+    preg.DataPos := runDataPreg.DataPos;
+    //PregIsProf := False;
+    runPregledNodes := runPreg.FirstChild;
+    while runPregledNodes <> nil do // Тука на това ниво са и мдн-тата;
+    begin
+      runDataDiag := pointer(PByte(runPregledNodes) + lenNode);
+      case runDataDiag.vid of
+        vvDiag:
+        begin
+          diag := TRealDiagnosisItem.Create(nil);
+          diag.DataPos := runDataDiag.DataPos;
+          mkb := diag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
+          if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
+          begin
+            //preg.ListNZIS_PLANNED_TYPEs.Count;
+            pat.FPregledi.Add(preg);
+            preg.FDiagnosis.Add(diag);
+            //Break;
+          end;
+        end;
+        vvmdn:
+        begin
+
+        end;
+      end;
+
+      runPregledNodes := runPregledNodes.NextSibling;
+    end;
+    runPreg := runPreg.NextSibling;
+  end;
+
+
+  dat := pat.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_BIRTH_DATE));
+  log := TlogicalPatientNewSet(pat.getLogical32Map(CollPatient.Buf, CollPatient.posData, word(PatientNew_Logical)));
+  profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
+  profGR.CurrDate := dat;
+  profGR.Adb_DM := Adb_DM;
+  profGR.GeneratePeriod(pat);
+  vtrGraph.UpdateVerticalScrollBar(true);
+  vtrGraph.Clear;
+
+  vRootGraph := vtrGraph.AddChild(nil, nil);
+  dataGraph := vtrGraph.GetNodeData(vRootGraph);
+  dataGraph.vid := vvNone;
+  dataGraph.index := 0;
+  profGR.LoadVtrGraph(pat, i);
+  pnlTest.Caption := pat.NoteProf;
+  btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+  pnlTest.Repaint;
 
 end;
 
@@ -8804,7 +8910,7 @@ begin
         -2: //текущи
         begin
           GraphDay := StrToInt(edtGraphDay.Text);
-          vtrGraph.IsFiltered[node] := GraphDay  < DaysBetween(pat.lstGraph[Adata.index].endDate, date) ;
+          vtrGraph.IsFiltered[node] := GraphDay  < DaysBetween(pat.lstGraph[Adata.index].endDate, UserDate) ;
           if not vtrGraph.IsFiltered[node] then
           begin
             vtrGraph.IsFiltered[node.Parent] := False;
@@ -12376,6 +12482,7 @@ begin
   try
     gr := TempItem.Fpatient.lstGraph[TempItem.Fpatient.CurrentGraphIndex];
     TempItem.StartDate := Floor(gr.endDate);// Тука трябва да е последния ден от срока за профилактиката
+    TempItem.StartTime := 0;
   except
     Caption := 'd';
   end;
@@ -12429,7 +12536,14 @@ begin
       NZIS_PLANNED_TYPE.PRecord.PREGLED_ID := 0;
       NZIS_PLANNED_TYPE.PRecord.CL132_KEY := gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_Key));
       NZIS_PLANNED_TYPE.PRecord.StartDate := gr.startDate;
-      NZIS_PLANNED_TYPE.PRecord.EndDate := gr.endDate;
+      if RL090Prev.Contains('|' + NZIS_PLANNED_TYPE.PRecord.CL132_KEY + '|') then
+      begin
+        NZIS_PLANNED_TYPE.PRecord.EndDate := IncMonth(gr.startDate, 4 );
+      end
+      else
+      begin
+        NZIS_PLANNED_TYPE.PRecord.EndDate := gr.endDate;
+      end;
       NZIS_PLANNED_TYPE.PRecord.CL132_DataPos := gr.Cl132.DataPos;
       NZIS_PLANNED_TYPE.PRecord.NumberRep := gr.repNumber;
 
@@ -15384,7 +15498,7 @@ begin
           case dataPeriod.index of
             -1: //минали
             begin
-              CellText := '++' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, date));
+              CellText := '++' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
             end;
             -2: //текущи
             begin
@@ -15406,11 +15520,11 @@ begin
 ////                  end;
 ////                end;
 //              end;
-              CellText := '+' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, date));
+              CellText := '+' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
             end;
             -3: //бъдещи
             begin
-              CellText := '-' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].startDate, date));
+              CellText := '-' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].startDate, UserDate));
             end;
           end;
 
@@ -15550,13 +15664,13 @@ begin
   preg2.DataPos := data2.DataPos;
   date1 := preg1.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
   date2 := preg2.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
-  Result := Round(date1) - Round(date2);
+  Result := floor(date1) - floor(date2);
 end;
 
 procedure TfrmSuperHip.vtrMinaliPreglediDrawButton(sender: TVirtualStringTreeHipp; node: PVirtualNode; var ButonVisible: Boolean; const numButton: Integer;
   var imageIndex: Integer);
 begin
-  ButonVisible := True;
+  //ButonVisible := True;
 end;
 
 procedure TfrmSuperHip.vtrMinaliPreglediGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
@@ -16509,7 +16623,8 @@ begin
         FmxProfForm.Patient.DataPos := data.DataPos;
         FmxProfForm.Patient.lstGraph.Clear;
         FmxProfForm.Patient.FPregledi.Clear;
-        GetCurrentPatProf(FmxProfForm.Patient);
+        FmxProfForm.Patient.FNode := Node;
+        GetCurrentPatProf1(FmxProfForm.Patient);
       end;
 
       LoadVtrMinaliPregledi(node, FmxProfForm.Patient);
@@ -17433,11 +17548,11 @@ begin
         vvPatient:
         begin
           dateBrd := CollPatient.getDateMap(Data.DataPos, word(PatientNew_BIRTH_DATE));
-          PatAge := PatientTemp.CalcAge(date, dateBrd);
+          PatAge := PatientTemp.CalcAge(UserDate, dateBrd);
           case PatAge of
             0:
             begin
-              PatAgeDoub := PatientTemp.CalcAgeDouble(date, dateBrd);
+              PatAgeDoub := PatientTemp.CalcAgeDouble(UserDate, dateBrd);
               PatAgeStr := IntToStr(Floor(PatAgeDoub * 12)) + ' мес.';
             end;
           else

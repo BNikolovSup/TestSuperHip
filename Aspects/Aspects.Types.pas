@@ -2,7 +2,7 @@ unit Aspects.Types;
 
 interface
 uses
-  System.Generics.Collections, system.Classes; // VirtualTrees,
+  System.Generics.Collections, system.Classes, System.SysUtils; // VirtualTrees,
 type
   PTime = ^Double;
   Blob = TStream;
@@ -64,6 +64,8 @@ type
     CndType: TConditionType;
 
   end;
+
+
 
 
 
@@ -456,21 +458,35 @@ type
           );
    TPlanedStatus = (psNew, psInNzis, psMain, psNzisPending, psNzisPartiallyCompleted, psNzisCompleted);
    TPlanedStatusSet = set of TPlanedStatus;
-
+   Function UserDate: Tdate;
 
    const
 
     LenData = 64;
     lenNode = 52;
 
-    NzisPregNotPreg = '|A4|C22|C32|C42|C52|C62|';
+    NzisPregNotPreg = '|A4|C22|C32|C42|C5|C52|C62|';
     RL090 = '|A1|A30|A31|A32|A33|A34|A35|A36|A37|A38|A39|C21|C23|C31|C33|C41|C43|C51|C53|C61|C63|';
     NzisConsult = '|S1|S3|B12|A30|A31|A32|A33|A34|A35|A36|A37|A38|A39|A4|';
-
+    RL090Prev = '|C51|';
+  var
+    FUserDate: TDate = 0;
 
 
 
 implementation
+
+Function UserDate: Tdate;
+begin
+  if FUserDate = 0 then
+  begin
+    Result := Date;
+  end
+  else
+  begin
+    Result := FUserDate;
+  end;
+end;
 
   
 end.

@@ -806,19 +806,19 @@ begin
     if (not ibsqlPatientNew.Fields[36].IsNull) then
     begin
       tempitem.RZOK := ibsqlPatientNew.Fields[36].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, date, 0 ,0 , False, 0, RZOK));
+      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
       TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
     end;
     if (not ibsqlPatientNew.Fields[37].IsNull) then
     begin
       tempitem.RZOKR := ibsqlPatientNew.Fields[37].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, date, 0 ,0 , False, 0, RZOKR));
+      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
       TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
     end;
     if (not ibsqlPatientNew.Fields[48].IsNull) then
     begin
       tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, date, 0 ,0 , False, 0, NAS_MQSTO));
+      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
       TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
     end;
     tempitem.DoctorId := ibsqlPatientNew.Fields[47].AsInteger;

@@ -15,10 +15,12 @@ private
   FvtrOptions: TVirtualStringTreeHipp;
   FEnabledTableSearch: set of TTablesTypeHip;
     FLibTokenDll: string;
+    FUserDate: TDate;
   procedure InitVTR;
   procedure SetvtrOptions(const Value: TVirtualStringTreeHipp);
   procedure LogOption(idOptions: integer);
     procedure SetLibTokenDll(const Value: string);
+    procedure SetUserDate(const Value: TDate);
 public // за лог на опциите. Които са тука се следят и където се използват се слагат в лог-а на опциите.
   dblist: TStringList;
 public
@@ -36,6 +38,7 @@ public
 
   property  vtrOptions: TVirtualStringTreeHipp read  FvtrOptions write SetvtrOptions;
   property LibTokenDll: string read FLibTokenDll write SetLibTokenDll;
+  property UserDate: TDate read FUserDate write SetUserDate;
 end;
 
 const
@@ -90,6 +93,7 @@ begin
   dblistStream.Free;
 
   FLibTokenDll := FIni.ReadString('LibToken', 'LibTokenDll', '');
+  //UserDate := StrToDate(FIni.ReadString('Test', 'UserDate', '01.01.1900'), ;
 end;
 
 destructor TOptions.destroy;
@@ -183,6 +187,12 @@ procedure TOptions.SetLibTokenDll(const Value: string);
 begin
   FLibTokenDll := Value;
   FIni.WriteString('LibToken', 'LibTokenDll', FLibTokenDll);
+end;
+
+procedure TOptions.SetUserDate(const Value: TDate);
+begin
+  FUserDate := Value;
+  Aspects.Types.FUserDate := FUserDate;
 end;
 
 procedure TOptions.SetvtrOptions(const Value: TVirtualStringTreeHipp);

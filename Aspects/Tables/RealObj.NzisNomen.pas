@@ -37,7 +37,6 @@ TCollectionForSort = class(TPersistent)
     FStartDate: TDate;
     FEndDate: TDate;
     function GetJoinKey: string;
-    function GetStartDate: TDate;
     function GetCl136: string;
  public
    FListPr001: TList<TRealPR001Item>;
@@ -446,20 +445,6 @@ function TRealCl132Item.GetJoinKey: string;
 begin
  // Result := getAnsiStringMap(TRealCL132Coll(Collection).Buf, TRealCL132Coll(Collection).posData, word(CL132_Key)) +
 
-end;
-
-function TRealCl132Item.GetStartDate: TDate;
-var
-  key: string;
-begin
-  Result := 0;
-  Exit;
-  key := Self.getAnsiStringMap(TRealCL132Coll(Collection).Buf, TRealCL132Coll(Collection).posData, word(CL132_Key));
-  if key = 'C61' then
-  begin
-    key := 'C61';
-    Result := Date + 200*365 ;
-  end;
 end;
 
 { TRealPR001Item }

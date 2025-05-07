@@ -440,6 +440,7 @@ TCollectionForSort = class(TPersistent)
     procedure SetAnsiStringMap(dataPos: cardinal; propIndex: word; AString: AnsiString);// специално за неща като НРН-та стрингове с определена дължина
     procedure SetWordMap(dataPos: cardinal; propIndex: word; AWord: word);// специално за неща като ид-та
     procedure SetDateMap(dataPos: cardinal; propIndex: word; ADate: TDate);// специално за неща като ид-та
+    procedure SetTimeMap(dataPos: cardinal; propIndex: word; ATime: TTime);// специално за неща като ид-та
 
 
     function FieldCount: Integer; virtual;
@@ -3042,6 +3043,23 @@ end;
 procedure TBaseCollection.SetoffsetTop(const Value: Integer);
 begin
   FoffsetTop := Value;
+end;
+
+procedure TBaseCollection.SetTimeMap(dataPos: cardinal; propIndex: word;
+  ATime: TTime);
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TTime;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  pData^ := ATime;
 end;
 
 procedure TBaseCollection.SetWordMap(dataPos: cardinal; propIndex, AWord: word);

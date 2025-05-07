@@ -30,9 +30,9 @@
   TextHeight = 13
   object spl1: TSplitter
     Left = 580
-    Top = 1
+    Top = 100
     Width = 7
-    Height = 621
+    Height = 522
     Color = clHighlight
     ParentColor = False
     ResizeStyle = rsUpdate
@@ -44,14 +44,13 @@
     Left = 0
     Top = 0
     Width = 1573
-    Height = 1
+    Height = 100
     Align = alTop
     Caption = 'Panel1'
     DoubleBuffered = True
     ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
-    Visible = False
     object btn2: TSpeedButton
       Left = 344
       Top = 8
@@ -207,14 +206,14 @@
       ParentCtl3D = False
       ParentDoubleBuffered = False
       TabOrder = 15
-      object btn4: TButton
+      object btnNzisProf: TButton
         Left = 32
-        Top = 12
+        Top = 5
         Width = 121
         Height = 20
         Caption = #1065#1077' '#1087#1088#1072#1074#1103' '#1085#1091#1078#1085#1086#1090#1086
         TabOrder = 0
-        OnClick = btn4Click
+        OnClick = btnNzisProfClick
       end
     end
     object btnRemont142: TButton
@@ -229,9 +228,9 @@
   end
   object pnlTree: TPanel
     Left = 0
-    Top = 1
+    Top = 100
     Width = 580
-    Height = 621
+    Height = 522
     Align = alLeft
     Caption = 'pnlTree'
     ParentBackground = False
@@ -240,13 +239,13 @@
     OnResize = pnlTreeResize
     DesignSize = (
       580
-      621)
+      522)
     object pgcTree: TPageControl
       Left = 61
       Top = 49
       Width = 518
-      Height = 571
-      ActivePage = tsTempVTR
+      Height = 472
+      ActivePage = tsTreePat
       Align = alClient
       Style = tsFlatButtons
       TabOrder = 0
@@ -257,7 +256,7 @@
           Left = 0
           Top = 41
           Width = 473
-          Height = 499
+          Height = 400
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -433,7 +432,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Align = alClient
           AutoExpandDelay = 0
           ChangeDelay = 2
@@ -567,6 +566,8 @@
           ColumnAspect = 0
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
+          ExplicitLeft = 3
+          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -601,7 +602,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           ActivePage = tsRoleSelect
           Align = alClient
           DoubleBuffered = True
@@ -614,7 +615,7 @@
               Left = 0
               Top = 0
               Width = 502
-              Height = 514
+              Height = 415
               VertScrollBar.Smooth = True
               VertScrollBar.Tracking = True
               Align = alClient
@@ -7672,7 +7673,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 514
+              Height = 415
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7827,7 +7828,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 514
+              Height = 415
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7984,7 +7985,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 499
+          Height = 400
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8166,7 +8167,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 540
+          Height = 441
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -8324,7 +8325,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 499
+          Height = 400
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8451,8 +8452,6 @@
           TakeFocus = True
           OnDrawButton = vtrTempDrawButton
           OnButtonClick = vtrTempButtonClick
-          ExplicitLeft = -1
-          ExplicitTop = 42
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -8505,7 +8504,7 @@
           Left = 0
           Top = 41
           Width = 510
-          Height = 499
+          Height = 400
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8719,7 +8718,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Align = alClient
           Color = clInfoBk
           Colors.GridLineColor = 12189116
@@ -8880,7 +8879,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9039,7 +9038,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 540
+          Height = 441
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -9194,7 +9193,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9355,7 +9354,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9510,7 +9509,7 @@
           Left = 0
           Top = 0
           Width = 510
-          Height = 540
+          Height = 441
           Align = alClient
           AutoExpandDelay = 0
           ChangeDelay = 10
@@ -10059,9 +10058,9 @@
   end
   object pnlWork: TPanel
     Left = 587
-    Top = 1
+    Top = 100
     Width = 986
-    Height = 621
+    Height = 522
     Align = alClient
     Caption = 'pnlWork'
     DoubleBuffered = True
@@ -10070,10 +10069,10 @@
     TabOrder = 2
     DesignSize = (
       986
-      621)
+      522)
     object splSearchGrid: TSplitter
       Left = 1
-      Top = 442
+      Top = 343
       Width = 984
       Height = 7
       Cursor = crVSplit
@@ -10088,8 +10087,8 @@
       Left = 1
       Top = 42
       Width = 984
-      Height = 400
-      ActivePage = tsGrid
+      Height = 301
+      ActivePage = tsOptionsNotes
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -10106,7 +10105,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 372
+          Height = 273
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Margins.Top = 0
@@ -10280,7 +10279,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 372
+          Height = 273
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -10440,7 +10439,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 372
+          Height = 273
           Align = alClient
           Color = clInactiveCaption
           Font.Charset = DEFAULT_CHARSET
@@ -10467,7 +10466,7 @@
           Left = 0
           Top = 64
           Width = 976
-          Height = 308
+          Height = 209
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -10904,7 +10903,7 @@
           Left = 0
           Top = 41
           Width = 976
-          Height = 331
+          Height = 232
           Align = alClient
           TabOrder = 0
           ExplicitWidth = 245
@@ -10914,7 +10913,7 @@
             0000000008000200000000000300010000000B00FFFF0300000000000B00FFFF
             08000200000000000300320000000B00000008000A000000660075006C006C00
             00000B0000000B0000000B00FFFF0B00FFFF0B00000008000200000000000800
-            020000000000080002000000000008000200000000000B000000DF6400003622
+            020000000000080002000000000008000200000000000B000000DF640000FA17
             0000}
         end
         object pnlTopVideo: TPanel
@@ -11075,7 +11074,7 @@
           Left = 0
           Top = 241
           Width = 976
-          Height = 131
+          Height = 32
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -11279,7 +11278,7 @@
           Left = 3
           Top = 44
           Width = 970
-          Height = 325
+          Height = 226
           Columns = <>
           ReadOnly = False
           Selected.FullRow = True
@@ -11352,7 +11351,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 372
+          Height = 273
           Align = alClient
           EditDelay = 200
           Font.Charset = DEFAULT_CHARSET
@@ -11446,7 +11445,7 @@
           Left = 0
           Top = 22
           Width = 976
-          Height = 350
+          Height = 251
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -11496,8 +11495,8 @@
         Caption = 'tsOptionsNotes'
         ImageIndex = 13
         object imgOptionNote: TImage
-          Left = 56
-          Top = 104
+          Left = 640
+          Top = 11
           Width = 295
           Height = 134
           AutoSize = True
@@ -14886,6 +14885,16 @@
             FDF9C1FEF9BBFEF9C0FFFFFF00FF00080400FF0504003B}
           OnClick = imgOptionNoteClick
         end
+        object dtp1: TDateTimePicker
+          Left = 48
+          Top = 16
+          Width = 129
+          Height = 21
+          Date = 45505.896058900450000000
+          Time = 45505.896058900450000000
+          TabOrder = 0
+          OnChange = dtp1Change
+        end
       end
       object tsFMXForm: TTabSheet
         Caption = 'tsFMXForm'
@@ -14898,7 +14907,7 @@
           Left = 0
           Top = 0
           Width = 976
-          Height = 372
+          Height = 273
           OnCreateFMXForm = fmxCntrDynCreateFMXForm
           OnDestroyFMXForm = fmxCntrDynDestroyFMXForm
           Align = alClient
@@ -15149,7 +15158,7 @@
     end
     object btnPull: TButton
       Left = -1
-      Top = 13
+      Top = 3
       Width = 24
       Height = 26
       Anchors = [akLeft]
@@ -15162,7 +15171,7 @@
     end
     object pnlNzisMessages: TPanel
       Left = 1
-      Top = 449
+      Top = 350
       Width = 984
       Height = 125
       Align = alBottom
@@ -15293,7 +15302,7 @@
     end
     object pnlGridSearch: TPanel
       Left = 1
-      Top = 574
+      Top = 475
       Width = 984
       Height = 46
       Align = alBottom
@@ -15389,8 +15398,8 @@
   object hntLek: TBalloonHint
     Style = bhsStandard
     Delay = 300
-    Left = 1040
-    Top = 16
+    Left = 1112
+    Top = 176
   end
   object icn32lst1: TIcon32List
     Icons32 = <
@@ -39802,7 +39811,7 @@
     Left = 728
     Top = 248
     Bitmap = {
-      494C010167008804A81310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804C01310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43259,7 +43268,7 @@
     OnShowHint = appEvntsMainShowHint
     OnShortCut = appEvntsMainShortCut
     Left = 736
-    Top = 120
+    Top = 176
   end
   object dlgOpenXML_PL: TOpenDialog
     Filter = 'XML file|*.xml'
@@ -43384,7 +43393,7 @@
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C13AC1320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C13C41320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

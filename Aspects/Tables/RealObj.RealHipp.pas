@@ -441,6 +441,7 @@ TRealPregledNewItem = class(TPregledNewItem)
     FLRN: string;
     FAMB_LISTN: Integer;
     FPREVENTIVE_TYPE: Integer;
+    FStartTime: TTime;
 
     procedure SetMAIN_DIAG_MKB_ADD(const Value: string);
     procedure SetMAIN_DIAG_MKB_ADD1(const Value: string);
@@ -522,6 +523,7 @@ public
   property AMB_LISTN: Integer read FAMB_LISTN write FAMB_LISTN;
   property PregledID: Integer read FPregledID write FPregledID;
   property StartDate: TDate read FStartDate write FStartdate;
+  property StartTime: TTime read FStartTime write FStartTime;
   property DoctorID: Integer read FDoctorID write FDoctorID;
   property IS_NAET: Boolean read FIS_NAET write FIS_NAET;
   property IS_ZAMESTVASHT: Boolean read FIS_ZAMESTVASHT write FIS_ZAMESTVASHT;

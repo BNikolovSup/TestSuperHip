@@ -134,7 +134,7 @@ end;
 
 procedure TDbHelper.InsertAdbMdnField(TempItem: TRealMDNItem);
 begin
-  TempItem.PRecord.DATA := Date;
+  TempItem.PRecord.DATA := UserDate;
   Include(TempItem.PRecord.setProp, MDN_DATA);
   TempItem.PRecord.id := 0;
   Include(TempItem.PRecord.setProp, MDN_ID);
@@ -142,7 +142,7 @@ end;
 
 procedure TDbHelper.InsertAdbMnField(TempItem: TRealBLANKA_MED_NAPRItem);
 begin
-  TempItem.PRecord.ISSUE_DATE := Date;
+  TempItem.PRecord.ISSUE_DATE := UserDate;
   Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ISSUE_DATE);
   TempItem.PRecord.id := 0;
   Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_ID);
@@ -188,6 +188,9 @@ begin
 
   TempItem.PRecord.START_DATE := TempItem.StartDate;
   Include(TempItem.PRecord.setProp, PregledNew_START_DATE);
+
+  TempItem.PRecord.START_TIME := TempItem.StartTime;
+  Include(TempItem.PRecord.setProp, PregledNew_START_TIME);
 
   TempItem.PRecord.AMB_LISTN := 0;
   Include(TempItem.PRecord.setProp, PregledNew_AMB_LISTN);
