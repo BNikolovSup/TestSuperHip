@@ -1,19 +1,25 @@
-﻿object frmSuperHip: TfrmSuperHip
+object frmSuperHip: TfrmSuperHip
   Left = 0
   Top = 0
   Width = 1589
-  Height = 682
+  Height = 710
   HorzScrollBar.Range = 1033
   Anchors = []
   Caption = #1061#1080#1087#1086#1082#1088#1072#1090' 360'
   Color = clActiveCaption
-  DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  Menu = mmMain
+  GlassFrame.Enabled = True
+  GlassFrame.Left = 5
+  GlassFrame.Right = 5
+  Padding.Left = 8
+  Padding.Top = 3
+  Padding.Right = 8
+  Padding.Bottom = 3
+  Menu = MainMenu1
   OldCreateOrder = False
   Visible = True
   WindowState = wsMaximized
@@ -29,10 +35,10 @@
   PixelsPerInch = 96
   TextHeight = 13
   object spl1: TSplitter
-    Left = 580
-    Top = 100
+    Left = 588
+    Top = 161
     Width = 7
-    Height = 522
+    Height = 486
     Color = clHighlight
     ParentColor = False
     ResizeStyle = rsUpdate
@@ -41,9 +47,9 @@
     ExplicitHeight = 525
   end
   object Panel1: TPanel
-    Left = 0
-    Top = 0
-    Width = 1573
+    Left = 8
+    Top = 59
+    Width = 1557
     Height = 100
     Align = alTop
     Caption = 'Panel1'
@@ -51,6 +57,7 @@
     ParentBackground = False
     ParentDoubleBuffered = False
     TabOrder = 0
+    Visible = False
     object btn2: TSpeedButton
       Left = 344
       Top = 8
@@ -67,7 +74,7 @@
       OnClick = btn1Click
     end
     object Edit1: TEdit
-      Left = 176
+      Left = 182
       Top = 10
       Width = 121
       Height = 21
@@ -227,26 +234,31 @@
     end
   end
   object pnlTree: TPanel
-    Left = 0
-    Top = 100
+    Left = 8
+    Top = 161
     Width = 580
-    Height = 522
+    Height = 486
     Align = alLeft
     Caption = 'pnlTree'
+    DoubleBuffered = True
     ParentBackground = False
+    ParentDoubleBuffered = False
     ShowCaption = False
     TabOrder = 1
     OnResize = pnlTreeResize
     DesignSize = (
       580
-      522)
+      486)
     object pgcTree: TPageControl
       Left = 61
-      Top = 49
-      Width = 518
-      Height = 472
+      Top = 43
+      Width = 517
+      Height = 442
+      Margins.Left = 82
       ActivePage = tsTreePat
       Align = alClient
+      DoubleBuffered = True
+      ParentDoubleBuffered = False
       Style = tsFlatButtons
       TabOrder = 0
       OnChange = pgcTreeChange
@@ -256,7 +268,7 @@
           Left = 0
           Top = 41
           Width = 473
-          Height = 400
+          Height = 370
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -405,7 +417,7 @@
         object pnlPregImportTool: TPanel
           Left = 0
           Top = 0
-          Width = 510
+          Width = 509
           Height = 41
           Align = alTop
           Caption = 'pnlPregImportTool'
@@ -431,14 +443,18 @@
         object vtrPregledPat: TVirtualStringTreeAspect
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
+          HelpType = htKeyword
+          HelpContext = 1000
           Align = alClient
           AutoExpandDelay = 0
           ChangeDelay = 2
           Color = clInfoBk
           Colors.GridLineColor = 12189116
           DefaultNodeHeight = 27
+          DragOperations = []
+          DragType = dtVCL
           Header.AutoSizeIndex = 0
           Header.Height = 35
           Header.Images = imgList1
@@ -447,7 +463,7 @@
           Indent = 14
           StateImages = imgList1
           TabOrder = 0
-          TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
+          TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
@@ -566,8 +582,6 @@
           ColumnAspect = 0
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
-          ExplicitLeft = 3
-          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -601,11 +615,11 @@
         object pgcRole: TPageControl
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
-          ActivePage = tsRoleSelect
+          Width = 509
+          Height = 411
+          ActivePage = tsFmxRoleSelect
           Align = alClient
-          DoubleBuffered = True
+          DoubleBuffered = False
           ParentDoubleBuffered = False
           TabOrder = 0
           TabPosition = tpBottom
@@ -614,8 +628,8 @@
             object scrlbxRole: TScrollBox
               Left = 0
               Top = 0
-              Width = 502
-              Height = 415
+              Width = 501
+              Height = 385
               VertScrollBar.Smooth = True
               VertScrollBar.Tracking = True
               Align = alClient
@@ -7673,7 +7687,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 415
+              Height = 385
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7828,7 +7842,7 @@
               Left = 0
               Top = 0
               Width = 473
-              Height = 415
+              Height = 385
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7976,6 +7990,18 @@
               DefaultText = ''
             end
           end
+          object tsFmxRoleSelect: TTabSheet
+            Caption = 'tsFmxRoleSelect'
+            ImageIndex = 3
+            object fmxCntrRoleSelect: TFireMonkeyContainer
+              Left = 0
+              Top = 0
+              Width = 501
+              Height = 385
+              OnCreateFMXForm = fmxCntrRoleSelectCreateFMXForm
+              Align = alClient
+            end
+          end
         end
       end
       object tsNomenNzis: TTabSheet
@@ -7984,8 +8010,8 @@
         object vtrNomenNzis: TVirtualStringTreeHipp
           Left = 0
           Top = 41
-          Width = 510
-          Height = 400
+          Width = 509
+          Height = 370
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8144,7 +8170,7 @@
         object pnlNomenNzisTool: TPanel
           Left = 0
           Top = 0
-          Width = 510
+          Width = 509
           Height = 41
           Align = alTop
           Caption = 'pnlNomenNzisTool'
@@ -8167,7 +8193,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 441
+          Height = 411
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -8324,8 +8350,8 @@
         object vtrTemp: TVirtualStringTreeHipp
           Left = 0
           Top = 41
-          Width = 510
-          Height = 400
+          Width = 509
+          Height = 370
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8347,7 +8373,6 @@
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toAlwaysSelectNode]
           OnChange = vtrTempChange
-          OnGetText = vtrPreglediGetText
           OnInitNode = vtrTempInitNode
           OnLoadNode = vtrTempLoadNode
           OnMeasureItem = vtrTempMeasureItem
@@ -8480,7 +8505,7 @@
         object pnlFiltertemp: TPanel
           Left = 0
           Top = 0
-          Width = 510
+          Width = 509
           Height = 41
           Align = alTop
           Caption = 'pnlFiltertemp'
@@ -8503,8 +8528,8 @@
         object vtrGraph: TVirtualStringTreeHipp
           Left = 0
           Top = 41
-          Width = 510
-          Height = 400
+          Width = 509
+          Height = 370
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8643,7 +8668,7 @@
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coSmartResize, coAllowFocus, coWrapCaption, coUseCaptionAlignment, coEditable]
               Position = 0
               Text = #1050#1072#1083#1077#1085#1076#1072#1088' '#1085#1072' '#1087#1088#1086#1092#1080#1083#1072#1082#1090#1080#1095#1085#1080#1090#1077' '#13#10#1087#1088#1077#1075#1083#1077#1076#1080
-              Width = 228
+              Width = 227
             end
             item
               Alignment = taCenter
@@ -8665,7 +8690,7 @@
         object pnlGraph: TPanel
           Left = 0
           Top = 0
-          Width = 510
+          Width = 509
           Height = 41
           Align = alTop
           Caption = 'pnlGraph'
@@ -8676,10 +8701,10 @@
           TabOrder = 1
           OnClick = pnlGraphClick
           DesignSize = (
-            510
+            509
             41)
           object lbl1: TLabel
-            Left = 242
+            Left = 241
             Top = 11
             Width = 130
             Height = 14
@@ -8691,9 +8716,10 @@
             Font.Name = 'Tahoma'
             Font.Style = [fsBold]
             ParentFont = False
+            ExplicitLeft = 242
           end
           object edtGraphDay: TEdit
-            Left = 378
+            Left = 377
             Top = 8
             Width = 105
             Height = 24
@@ -8717,8 +8743,8 @@
         object vtrNewAnal: TVirtualStringTreeAspect
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
           Align = alClient
           Color = clInfoBk
           Colors.GridLineColor = 12189116
@@ -8852,7 +8878,7 @@
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 0
               Text = #1048#1079#1089#1083#1077#1076#1074#1072#1085#1080#1103
-              Width = 260
+              Width = 259
             end
             item
               Alignment = taRightJustify
@@ -8878,8 +8904,8 @@
         object vtrOptions: TVirtualStringTreeHipp
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9038,7 +9064,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 441
+          Height = 411
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -9192,8 +9218,8 @@
         object vtrDoctor: TVirtualStringTreeHipp
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9353,8 +9379,8 @@
         object vtrProfReg: TVirtualStringTreeHipp
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9508,8 +9534,8 @@
         object vtrLinkOptions: TVirtualStringTreeAspect
           Left = 0
           Top = 0
-          Width = 510
-          Height = 441
+          Width = 509
+          Height = 411
           Align = alClient
           AutoExpandDelay = 0
           ChangeDelay = 10
@@ -9526,6 +9552,10 @@
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
+          OnChange = vtrLinkOptionsChange
+          OnDragAllowed = vtrLinkOptionsDragAllowed
+          OnDragOver = vtrLinkOptionsDragOver
+          OnDragDrop = vtrLinkOptionsDragDrop
           OnGetText = vtrLinkOptionsGetText
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
@@ -9626,6 +9656,7 @@
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
+          OnDragDropFMX = vtrLinkOptionsDragDropFMX
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9655,15 +9686,15 @@
       end
     end
     object pnlRoleView: TPanelViewRoles
-      Left = -1
-      Top = 6
-      Width = 60
-      Height = 0
+      Left = 578
+      Top = 49
+      Width = 1
+      Height = 436
       Margins.Top = 0
       BevelOuter = bvRaised
       CloseStyle = svcCompact
       Color = 13816530
-      CompactWidth = 60
+      CompactWidth = 1
       DisplayMode = svmOverlay
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -9671,10 +9702,11 @@
       Font.Name = 'Tahoma'
       Font.Style = []
       Opened = False
-      OpenedWidth = 300
+      OpenedWidth = 1
       ParentFont = False
-      Placement = svpLeft
+      Placement = svpRight
       TabOrder = 1
+      Visible = False
       OnClick = pnlRoleViewClick
       OnMouseMove = pnlRoleViewMouseMove
       IconList = icn32lst1
@@ -9975,16 +10007,17 @@
       OnRoleButtonClick = pnlRoleViewRoleButtonClick
     end
     object tlbActions: TToolBar
-      AlignWithMargins = True
       Left = 1
-      Top = 4
-      Width = 575
+      Top = 1
+      Width = 578
       Height = 42
       Margins.Left = 0
       ButtonHeight = 38
       ButtonWidth = 40
       Caption = 'tlbActions'
+      DoubleBuffered = True
       Images = il40
+      ParentDoubleBuffered = False
       TabOrder = 3
       Transparent = False
       OnClick = tlbActionsClick
@@ -10054,13 +10087,40 @@
         ImageIndex = 101
         OnClick = btn11Click
       end
+      object edt1: TEdit
+        Left = 342
+        Top = 0
+        Width = 121
+        Height = 38
+        TabOrder = 0
+        Text = 'edt1'
+      end
+    end
+    object pnlRoleBar: TPanel
+      Left = 1
+      Top = 43
+      Width = 60
+      Height = 442
+      Align = alLeft
+      Caption = 'pnlRoleBar'
+      TabOrder = 4
+      OnResize = pnlRoleBarResize
+    end
+    object fmxCntrRoleBar: TFireMonkeyContainer
+      Left = 0
+      Top = 0
+      Width = 60
+      Height = 434
+      OnCreateFMXForm = fmxCntrRoleBarCreateFMXForm
     end
   end
   object pnlWork: TPanel
-    Left = 587
-    Top = 100
-    Width = 986
-    Height = 522
+    Left = 595
+    Top = 161
+    Width = 970
+    Height = 486
+    Margins.Right = 8
+    Margins.Bottom = 8
     Align = alClient
     Caption = 'pnlWork'
     DoubleBuffered = True
@@ -10068,12 +10128,12 @@
     ShowCaption = False
     TabOrder = 2
     DesignSize = (
-      986
-      522)
+      970
+      486)
     object splSearchGrid: TSplitter
       Left = 1
-      Top = 343
-      Width = 984
+      Top = 307
+      Width = 968
       Height = 7
       Cursor = crVSplit
       Align = alBottom
@@ -10082,13 +10142,14 @@
       ResizeStyle = rsUpdate
       OnMoved = splSearchGridMoved
       ExplicitTop = 293
+      ExplicitWidth = 984
     end
     object pgcWork: TPageControl
       Left = 1
       Top = 42
-      Width = 984
-      Height = 301
-      ActivePage = tsOptionsNotes
+      Width = 968
+      Height = 265
+      ActivePage = tsSpisaci
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -10104,8 +10165,8 @@
         object vtrMinaliPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 0
-          Width = 976
-          Height = 273
+          Width = 960
+          Height = 237
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Margins.Top = 0
@@ -10279,7 +10340,7 @@
           Left = 0
           Top = 0
           Width = 473
-          Height = 273
+          Height = 237
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -10438,8 +10499,8 @@
         object mmoTest: TMemo
           Left = 0
           Top = 0
-          Width = 976
-          Height = 273
+          Width = 960
+          Height = 237
           Align = alClient
           Color = clInactiveCaption
           Font.Charset = DEFAULT_CHARSET
@@ -10465,8 +10526,8 @@
         object vtrSpisyci: TVirtualStringTreeHipp
           Left = 0
           Top = 64
-          Width = 976
-          Height = 209
+          Width = 960
+          Height = 173
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -10615,7 +10676,7 @@
         object pnlSpisyciTop: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 64
           Align = alTop
           Caption = 'pnlSpisyciTop'
@@ -10623,10 +10684,10 @@
           ShowCaption = False
           TabOrder = 1
           DesignSize = (
-            976
+            960
             64)
           object btnNext: TSpeedButton
-            Left = 898
+            Left = 882
             Top = 5
             Width = 26
             Height = 34
@@ -10688,7 +10749,7 @@
             ExplicitLeft = 700
           end
           object btnPrevOtcetPeriod: TSpeedButton
-            Left = 779
+            Left = 763
             Top = 5
             Width = 26
             Height = 34
@@ -10750,7 +10811,7 @@
             ExplicitLeft = 581
           end
           object lblYear: TLabel
-            Left = 811
+            Left = 795
             Top = 10
             Width = 83
             Height = 23
@@ -10866,7 +10927,7 @@
         object pnlEditRtf: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 41
           Align = alTop
           Caption = 'pnlEditRtf'
@@ -10902,8 +10963,8 @@
         object MPHip: TWindowsMediaPlayer
           Left = 0
           Top = 41
-          Width = 976
-          Height = 232
+          Width = 960
+          Height = 196
           Align = alClient
           TabOrder = 0
           ExplicitWidth = 245
@@ -10913,13 +10974,13 @@
             0000000008000200000000000300010000000B00FFFF0300000000000B00FFFF
             08000200000000000300320000000B00000008000A000000660075006C006C00
             00000B0000000B0000000B00FFFF0B00FFFF0B00000008000200000000000800
-            020000000000080002000000000008000200000000000B000000DF640000FA17
+            020000000000080002000000000008000200000000000B000000386300004214
             0000}
         end
         object pnlTopVideo: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 41
           Align = alTop
           Caption = 'pnlTopVideo'
@@ -10942,7 +11003,7 @@
         object pnlStatusDB: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 65
           Align = alTop
           Caption = 'pnlStatusDB'
@@ -11007,8 +11068,8 @@
         object pnlStatusNomenNzis: TPanel
           Left = 0
           Top = 65
-          Width = 976
-          Height = 176
+          Width = 960
+          Height = 100
           Align = alTop
           Caption = 'pnlStatusDB'
           ParentBackground = False
@@ -11072,9 +11133,9 @@
         end
         object vtrRecentDB: TVirtualStringTreeHipp
           Left = 0
-          Top = 241
-          Width = 976
-          Height = 32
+          Top = 165
+          Width = 960
+          Height = 72
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -11240,18 +11301,18 @@
         object pnlTopExcel: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 49
           Align = alTop
           ParentBackground = False
           TabOrder = 0
           DesignSize = (
-            976
+            960
             49)
           object lblNeosigBremFile: TLabel
             Left = 21
             Top = 16
-            Width = 1780
+            Width = 1764
             Height = 13
             Anchors = [akLeft, akTop, akRight]
             AutoSize = False
@@ -11259,7 +11320,7 @@
             ExplicitWidth = 1058
           end
           object btnTop: TButton
-            Left = 1697
+            Left = 1681
             Top = 8
             Width = 75
             Height = 25
@@ -11277,8 +11338,8 @@
           AlignWithMargins = True
           Left = 3
           Top = 44
-          Width = 970
-          Height = 226
+          Width = 954
+          Height = 190
           Columns = <>
           ReadOnly = False
           Selected.FullRow = True
@@ -11301,7 +11362,7 @@
         object pnlGridTool: TPanel
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 41
           Align = alTop
           Caption = 'pnlGridTool'
@@ -11350,8 +11411,8 @@
         object treeview: TVirtualStringTree
           Left = 0
           Top = 0
-          Width = 976
-          Height = 273
+          Width = 960
+          Height = 237
           Align = alClient
           EditDelay = 200
           Font.Charset = DEFAULT_CHARSET
@@ -11397,7 +11458,7 @@
         object tlbXml: TToolBar
           Left = 0
           Top = 0
-          Width = 976
+          Width = 960
           Height = 22
           ButtonHeight = 21
           Caption = 'tlbXml'
@@ -11444,8 +11505,8 @@
         object syndtXML: TSynEdit
           Left = 0
           Top = 22
-          Width = 976
-          Height = 251
+          Width = 960
+          Height = 215
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -14885,16 +14946,6 @@
             FDF9C1FEF9BBFEF9C0FFFFFF00FF00080400FF0504003B}
           OnClick = imgOptionNoteClick
         end
-        object dtp1: TDateTimePicker
-          Left = 48
-          Top = 16
-          Width = 129
-          Height = 21
-          Date = 45505.896058900450000000
-          Time = 45505.896058900450000000
-          TabOrder = 0
-          OnChange = dtp1Change
-        end
       end
       object tsFMXForm: TTabSheet
         Caption = 'tsFMXForm'
@@ -14906,8 +14957,8 @@
         object fmxCntrDyn: TFireMonkeyContainer
           Left = 0
           Top = 0
-          Width = 976
-          Height = 273
+          Width = 960
+          Height = 237
           OnCreateFMXForm = fmxCntrDynCreateFMXForm
           OnDestroyFMXForm = fmxCntrDynDestroyFMXForm
           Align = alClient
@@ -15115,7 +15166,7 @@
     object pnlNav: TPanel
       Left = 1
       Top = 1
-      Width = 984
+      Width = 968
       Height = 41
       Align = alTop
       Caption = 'pnlNav'
@@ -15124,7 +15175,7 @@
       object fmxCntr1: TFireMonkeyContainer
         Left = 1
         Top = 1
-        Width = 982
+        Width = 966
         Height = 39
         OnCreateFMXForm = fmxCntr1CreateFMXForm
         Align = alClient
@@ -15158,7 +15209,7 @@
     end
     object btnPull: TButton
       Left = -1
-      Top = 3
+      Top = 1
       Width = 24
       Height = 26
       Anchors = [akLeft]
@@ -15171,8 +15222,8 @@
     end
     object pnlNzisMessages: TPanel
       Left = 1
-      Top = 350
-      Width = 984
+      Top = 314
+      Width = 968
       Height = 125
       Align = alBottom
       Caption = 'pnlNzisMessages'
@@ -15202,6 +15253,8 @@
         Font.Pitch = fpFixed
         Font.Style = []
         TabOrder = 0
+        OnMouseDown = syndtNzisReqMouseDown
+        OnMouseUp = syndtNzisReqMouseUp
         CodeFolding.GutterShapeSize = 11
         CodeFolding.CollapsedLineColor = clGrayText
         CodeFolding.FolderBarLinesColor = clGrayText
@@ -15241,7 +15294,7 @@
       object syndtNzisResp: TSynEdit
         Left = 881
         Top = 30
-        Width = 102
+        Width = 86
         Height = 94
         Align = alClient
         Font.Charset = DEFAULT_CHARSET
@@ -15290,7 +15343,7 @@
       object tlbNzisMess: TToolBar
         Left = 1
         Top = 1
-        Width = 982
+        Width = 966
         Height = 29
         ParentCustomHint = False
         Caption = 'tlbNzisMess'
@@ -15302,8 +15355,8 @@
     end
     object pnlGridSearch: TPanel
       Left = 1
-      Top = 475
-      Width = 984
+      Top = 439
+      Width = 968
       Height = 46
       Align = alBottom
       Caption = 'pnlGridSearch'
@@ -15315,7 +15368,7 @@
         AlignWithMargins = True
         Left = 4
         Top = 4
-        Width = 859
+        Width = 843
         Height = 38
         Columns = <
           item
@@ -15337,6 +15390,7 @@
         PopupMenu = pmGrdSearch
         TabOrder = 0
         OnMouseDown = grdSearchMouseDown
+        OnMouseUp = grdSearchMouseUp
         _Headers = (
           1
           'TColumnHeaderBand'
@@ -15346,7 +15400,7 @@
             end>)
       end
       object tlb1: TToolBar
-        Left = 866
+        Left = 850
         Top = 1
         Width = 117
         Height = 44
@@ -15386,14 +15440,44 @@
     end
   end
   object StatusBar1: TStatusBar
-    Left = 0
-    Top = 622
-    Width = 1573
+    Left = 8
+    Top = 647
+    Width = 1557
     Height = 1
     Panels = <
       item
         Width = 50
       end>
+  end
+  object actmmb1: TActionMainMenuBar
+    Left = 8
+    Top = 159
+    Width = 1557
+    Height = 2
+    UseSystemFont = False
+    Caption = 'actmmb1'
+    Color = clMenuBar
+    ColorMap.DisabledFontColor = 7171437
+    ColorMap.HighlightColor = clWhite
+    ColorMap.BtnSelectedFont = clBlack
+    ColorMap.UnusedColor = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Segoe UI'
+    Font.Style = []
+    Spacing = 0
+  end
+  object fmxCntrTitleBar: TFireMonkeyContainer
+    Left = 8
+    Top = 3
+    Width = 1557
+    Height = 56
+    Margins.Left = 8
+    Margins.Top = 8
+    Margins.Right = 8
+    OnCreateFMXForm = fmxCntrTitleBarCreateFMXForm
+    Align = alTop
   end
   object hntLek: TBalloonHint
     Style = bhsStandard
@@ -39811,7 +39895,7 @@
     Left = 728
     Top = 248
     Bitmap = {
-      494C010167008804C01310001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804001410001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43252,18 +43336,19 @@
   end
   object tmr1: TTimer
     Enabled = False
-    Interval = 500
+    Interval = 20
     OnTimer = tmr1Timer
     Left = 952
     Top = 88
   end
   object dlgOpenPL: TOpenDialog
     Filter = 'CSV file|*.csv'
-    Left = 449
-    Top = 5
+    Left = 473
+    Top = 109
   end
   object appEvntsMain: TApplicationEvents
     OnException = appEvntsMainException
+    OnHelp = appEvntsMainHelp
     OnMessage = appEvntsMainMessage
     OnShowHint = appEvntsMainShowHint
     OnShortCut = appEvntsMainShortCut
@@ -43276,8 +43361,8 @@
     Top = 245
   end
   object pmTempVtr: TPopupMenu
-    Left = 504
-    Top = 272
+    Left = 1128
+    Top = 520
     object mniExpandSelect: TMenuItem
       Caption = #1056#1072#1079#1075#1098#1085#1080' '#1089#1077#1083#1077#1082#1090#1080#1088#1072#1085#1080#1103#1090
       OnClick = mniExpandSelectClick
@@ -43303,44 +43388,12 @@
       OnClick = mniRemontPatClick
     end
   end
-  object mmMain: TMainMenu
-    Left = 488
-    Top = 336
-    object mniRols: TMenuItem
-      Caption = #1056#1086#1083#1080'-'#1076#1077#1081#1085#1086#1089#1090#1080
-    end
-    object mniНомен: TMenuItem
-      Caption = #1053#1086#1084#1077#1085#1082#1083#1072#1090#1091#1088#1080
-      object mniNomenNzis: TMenuItem
-        Caption = #1053#1079#1080#1089#13#10
-        OnClick = mniNomenNzisClick
-      end
-      object mniHip: TMenuItem
-        Caption = #1061#1080#1087#1086#1082#1088#1072#1090
-        object mniAnals: TMenuItem
-          Caption = #1048#1079#1089#1083#1077#1076#1074#1072#1085#1080#1103
-          OnClick = mniAnalsClick
-        end
-        object mniMkb10: TMenuItem
-          Caption = #1052#1050#1041'10'
-          OnClick = mniMkb10Click
-        end
-      end
-    end
-    object mniSpisaci: TMenuItem
-      Caption = #1057#1087#1080#1089#1098#1094#1080
-      object mniDataDoctors: TMenuItem
-        Caption = #1044#1072#1085#1085#1080' '#1079#1072' '#1083#1077#1082#1072#1088#1080#1090#1077
-        HelpContext = 222
-        OnClick = mniDataDoctorsClick
-      end
-    end
-  end
   object pmActionPat: TPopupMenu
-    Left = 352
-    Top = 280
+    Left = 800
+    Top = 488
     object MenuItem1: TMenuItem
       Caption = #1048#1079#1090#1077#1075#1083#1103#1085#1077' '#1085#1072' '#1087#1088#1077#1075#1083#1077#1076#1080' '#1079#1072' (12.11.24)'
+      HelpContext = 222
       OnClick = MenuItem1Click
     end
     object N2: TMenuItem
@@ -43364,8 +43417,8 @@
     end
   end
   object pmActionPreg: TPopupMenu
-    Left = 360
-    Top = 344
+    Left = 1016
+    Top = 512
     object mniDeletePerm: TMenuItem
       Caption = #1047#1072#1083#1080#1095#1072#1074#1072#1085#1077
       OnClick = mniDeletePermClick
@@ -43393,7 +43446,7 @@
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C13C41320002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C13041420002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -57129,24 +57182,24 @@
       000000000000}
   end
   object pmActionPregRev: TPopupMenu
-    Left = 368
-    Top = 424
+    Left = 1288
+    Top = 520
     object mniDeletePerm1: TMenuItem
       Caption = #1047#1072#1083#1080#1095#1072#1074#1072#1085#1077
       OnClick = mniDeletePerm1Click
     end
   end
   object pmGrdSearch: TPopupMenu
-    Left = 512
-    Top = 200
+    Left = 1200
+    Top = 520
     object mnimemotest1: TMenuItem
       Caption = 'memotest'
       OnClick = mnimemotest1Click
     end
   end
   object pmSearchTable: TPopupMenu
-    Left = 353
-    Top = 213
+    Left = 905
+    Top = 509
     object mniPregledSearchView: TMenuItem
       Caption = #1055#1088#1077#1075#1083#1077#1076
       OnClick = mniPregledSearchViewClick
@@ -57154,6 +57207,13 @@
     object mniPatientSearchView: TMenuItem
       Caption = #1055#1072#1094#1080#1077#1085#1090#1080
       OnClick = mniPatientSearchViewClick
+    end
+  end
+  object MainMenu1: TMainMenu
+    Left = 784
+    Top = 328
+    object mniwww1: TMenuItem
+      Caption = 'www'
     end
   end
 end

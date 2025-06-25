@@ -2,7 +2,7 @@ unit Aspects.Types;
 
 interface
 uses
-  System.Generics.Collections, system.Classes, System.SysUtils; // VirtualTrees,
+  System.Generics.Collections, system.Classes, System.SysUtils;
 type
   PTime = ^Double;
   Blob = TStream;

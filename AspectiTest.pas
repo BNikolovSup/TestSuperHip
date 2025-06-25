@@ -175,7 +175,7 @@ begin
   linkpos := 100;
   AspectsOptionsLinkFile.AddNewNode(vvRootOptions, 0, vtrLinkOptions.RootNode, amAddChildLast, TreeLink, linkPos);
   for i := 0 to 100000 do
-    AspectsOptionsLinkFile.AddNewNode(vvOptionSearchGrid, 0, TreeLink, amAddChildLast, TreeLink1, linkPos);
+    AspectsOptionsLinkFile.AddNewNode(vvNone, 0, TreeLink, amAddChildLast, TreeLink1, linkPos);
 
   pCardinalData := pointer(PByte(AspectsOptionsLinkFile.Buf) + 4);
   pCardinalData^ := Cardinal(AspectsOptionsLinkFile.Buf);

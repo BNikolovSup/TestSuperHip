@@ -30,12 +30,6 @@
         <Projects Include="..\ANALYSIS\ANALYSIS.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj">
-            <Dependencies/>
-        </Projects>
-        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj">
             <Dependencies/>
         </Projects>
@@ -55,6 +49,18 @@
             <Dependencies/>
         </Projects>
         <Projects Include="..\..\Components\Hipp\Source\VtrHip.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Downloads\FMXGif\Project4.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\Source\AspObject.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\--component\DynCtrl.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -146,24 +152,6 @@
     <Target Name="ANALYSIS:Make">
         <MSBuild Projects="..\ANALYSIS\ANALYSIS.dproj" Targets="Make"/>
     </Target>
-    <Target Name="PopView">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj"/>
-    </Target>
-    <Target Name="PopView:Clean">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="PopView:Make">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\PopypView\PopView.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="FmxPopView">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj"/>
-    </Target>
-    <Target Name="FmxPopView:Clean">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="FmxPopView:Make">
-        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\FmxPopView\FmxPopView.dproj" Targets="Make"/>
-    </Target>
     <Target Name="Rtti_Explorer_Seattle">
         <MSBuild Projects="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj"/>
     </Target>
@@ -227,14 +215,50 @@
     <Target Name="VtrHip:Make">
         <MSBuild Projects="..\..\Components\Hipp\Source\VtrHip.dproj" Targets="Make"/>
     </Target>
+    <Target Name="Project4">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\FMXGif\Project4.dproj"/>
+    </Target>
+    <Target Name="Project4:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\FMXGif\Project4.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Project4:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\FMXGif\Project4.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="AspObject">
+        <MSBuild Projects="..\..\Source\AspObject.dproj"/>
+    </Target>
+    <Target Name="AspObject:Clean">
+        <MSBuild Projects="..\..\Source\AspObject.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AspObject:Make">
+        <MSBuild Projects="..\..\Source\AspObject.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="DynCtrl">
+        <MSBuild Projects="..\--component\DynCtrl.dproj"/>
+    </Target>
+    <Target Name="DynCtrl:Clean">
+        <MSBuild Projects="..\--component\DynCtrl.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="DynCtrl:Make">
+        <MSBuild Projects="..\--component\DynCtrl.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Menuwww">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj"/>
+    </Target>
+    <Target Name="Menuwww:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Menuwww:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;PopView;FmxPopView;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;PopView:Clean;FmxPopView:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;PopView:Make;FmxPopView:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

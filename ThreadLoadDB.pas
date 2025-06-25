@@ -53,14 +53,7 @@ TLoadDBThread = class(TThread)
 
 
 
-    function AddEvents(
-       valAnsiString: AnsiString;
-       valTDate: TDate;
-       valInteger: Integer;
-       valTTime: TTime;
-       valboolean: Boolean;
-       valword: Word;
-       LogIndex: TLogicalEventsManyTimes): TRealEventsManyTimesItem;
+    
     procedure AddMedNapr;
     procedure AddMkb;
     procedure AddProcedures;
@@ -216,58 +209,7 @@ begin
   Sleep(1);
 end;
 
-function TLoadDBThread.AddEvents(
-     valAnsiString: AnsiString;
-     valTDate: TDate;
-     valInteger: Integer;
-     valTTime: TTime;
-     valboolean: Boolean;
-     valword: Word;
-     LogIndex: TLogicalEventsManyTimes): TRealEventsManyTimesItem;
-var
-  p: PInt;
-  TempItem: TRealEventsManyTimesItem;
-  i: Integer;
-  pCardinalData: ^Cardinal;
-  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
-begin
-    TempItem := TRealEventsManyTimesItem(EventsManyTimesColl.Add);
-    New(TempItem.PRecord);
-    case LogIndex of
-      HEALTH_INSURANCE_NAME, HEALTH_INSURANCE_NUMBER, DATA_HEALTH_INSURANCE, NAS_MQSTO:
-      begin
-        TempItem.PRecord.valAnsiString := valAnsiString;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valAnsiString, EventsManyTimes_Logical];
-      end;
-      DATE_HEALTH_INSURANCE_CHECK, DATE_ZAPISVANE, DATE_OTPISVANE:
-      begin
-        TempItem.PRecord.valTDate := valTDate;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valTDate, EventsManyTimes_Logical];
-      end;
-      RZOK, RZOKR:
-      begin
-        TempItem.PRecord.valTDate := valTDate;
-        TempItem.PRecord.valAnsiString := valAnsiString;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valTDate, EventsManyTimes_Logical, EventsManyTimes_valAnsiString];
-      end;
-    end;
 
-
-
-    TempItem.InsertEventsManyTimes;
-    EventsManyTimesColl.streamComm.Len := EventsManyTimesColl.streamComm.Size;
-    CmdFile.CopyFrom(EventsManyTimesColl.streamComm, 0);
-    Dispose(TempItem.PRecord);
-    TempItem.PRecord := nil;
-    Result := TempItem;
-
-  pCardinalData := pointer(PByte(FBuf));
-  FPosMetaData := pCardinalData^;
-  EventsManyTimesColl.CntInADB := EventsManyTimesColl.Count;
-end;
 
 procedure TLoadDBThread.AddExamAnal;
 var
@@ -627,20 +569,18 @@ procedure TLoadDBThread.AddPacient;
 var
   p: PInt;
   TempItem: TRealPatientNewItem;
-  evn: TRealEventsManyTimesItem;
   i, iEvn: Integer;
   pCardinalData: ^Cardinal;
   FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
   ibsqlPatientNew: TIBSQL;
-  BLOOD_TYPE: string;
-  PidType: string;
 begin
   if Fdm.IsGP then
     ibsqlPatientNew := Fdm.ibsqlPatNew_GP
   else
     ibsqlPatientNew := Fdm.ibsqlPatNew_S;
 
-
+  FDBHelper.EventsManyTimesColl := EventsManyTimesColl;
+  FDBHelper.cmdFile := cmdFile;
   Stopwatch := TStopwatch.StartNew;
   ibsqlPatientNew.ExecQuery;
   while not ibsqlPatientNew.Eof do
@@ -649,222 +589,7 @@ begin
     tempitem.FEventsPat.Clear;
     New(TempItem.PRecord);
     TempItem.PRecord.setProp := [];
-    if not ibsqlPatientNew.Fields[0].IsNull then
-    begin
-       TempItem.PRecord.BABY_NUMBER := ibsqlPatientNew.Fields[0].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_BABY_NUMBER);
-    end;
-    if not ibsqlPatientNew.Fields[1].IsNull then
-    begin
-      TempItem.PRecord.BIRTH_DATE := ibsqlPatientNew.Fields[1].AsDate;
-      Include(TempItem.PRecord.setProp, PatientNew_BIRTH_DATE);
-    end;
-    if not ibsqlPatientNew.Fields[2].IsNull then
-    begin
-      TempItem.PRecord.DIE_DATE := ibsqlPatientNew.Fields[2].AsDate;
-      Include(TempItem.PRecord.setProp, PatientNew_DIE_DATE);
-    end;
-    if not ibsqlPatientNew.Fields[3].IsNull then
-    begin
-      TempItem.PRecord.DIE_FROM := ibsqlPatientNew.Fields[3].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DIE_FROM);
-    end;
-    if not ibsqlPatientNew.Fields[4].IsNull then
-    begin
-      TempItem.PRecord.DOSIENOMER := ibsqlPatientNew.Fields[4].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DOSIENOMER);
-    end;
-    if not ibsqlPatientNew.Fields[5].IsNull then
-    begin
-      TempItem.PRecord.DZI_NUMBER := ibsqlPatientNew.Fields[5].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DZI_NUMBER);
-    end;
-    if not ibsqlPatientNew.Fields[6].IsNull then
-    begin
-      TempItem.PRecord.EGN := ibsqlPatientNew.Fields[6].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_EGN);
-    end;
-    if not ibsqlPatientNew.Fields[7].IsNull then
-    begin
-      TempItem.PRecord.EHIC_NO := ibsqlPatientNew.Fields[7].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_EHIC_NO);
-    end;
-    if not ibsqlPatientNew.Fields[8].IsNull then
-    begin
-      TempItem.PRecord.FNAME := ibsqlPatientNew.Fields[8].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_FNAME);
-    end;
-    if not ibsqlPatientNew.Fields[9].IsNull then
-    begin
-       TempItem.PRecord.ID := ibsqlPatientNew.Fields[9].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_ID);
-    end;
-    if not ibsqlPatientNew.Fields[10].IsNull then
-    begin
-       TempItem.PRecord.LAK_NUMBER := ibsqlPatientNew.Fields[10].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_LAK_NUMBER);
-    end;
-    if not ibsqlPatientNew.Fields[11].IsNull then
-    begin
-      TempItem.PRecord.LNAME := ibsqlPatientNew.Fields[11].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_LNAME);
-    end;
-    if not ibsqlPatientNew.Fields[12].IsNull then
-    begin
-      TempItem.PRecord.NZIS_BEBE := ibsqlPatientNew.Fields[12].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_NZIS_BEBE);
-    end;
-    if not ibsqlPatientNew.Fields[13].IsNull then
-    begin
-      TempItem.PRecord.NZIS_PID := ibsqlPatientNew.Fields[13].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_NZIS_PID);
-    end;
-    if not ibsqlPatientNew.Fields[14].IsNull then
-    begin
-      TempItem.PRecord.RACE := ibsqlPatientNew.Fields[14].AsDouble;
-      Include(TempItem.PRecord.setProp, PatientNew_RACE);
-    end;
-
-    if not ibsqlPatientNew.Fields[15].IsNull then
-    begin
-      TempItem.PRecord.SNAME := ibsqlPatientNew.Fields[15].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_SNAME);
-    end;
-
-
-
-    TempItem.PatID := ibsqlPatientNew.Fields[9].AsInteger;
-    TempItem.PatEGN := ibsqlPatientNew.Fields[6].AsString;
-
-    if not ibsqlPatientNew.Fields[16].IsNull then
-    begin
-      tempitem.HEALTH_INSURANCE_NAME := ibsqlPatientNew.Fields[16].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[17].IsNull) and (ibsqlPatientNew.Fields[17].AsString <> '') then
-    begin
-      tempitem.HEALTH_INSURANCE_NUMBER := ibsqlPatientNew.Fields[17].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[18].IsNull) and (ibsqlPatientNew.Fields[18].AsString <> '') then
-    begin
-      tempitem.DATA_HEALTH_INSURANCE := ibsqlPatientNew.Fields[18].AsString;
-      evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
-      evn.PatID := TempItem.PatID;
-      TempItem.FEventsPat.Add(evn);
-//      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE));
-       // TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsTime  <> 0) then
-    begin
-      tempitem.DATE_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[19].AsDate;
-      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) then
-    begin
-      tempitem.TIME_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[20].AsTime;
-      iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-
-    if (not ibsqlPatientNew.Fields[21].IsNull) and (ibsqlPatientNew.Fields[21].AsDate  <> 0) then
-    begin
-      tempitem.DATE_OTPISVANE := ibsqlPatientNew.Fields[21].AsDate;
-      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[22].IsNull) and (ibsqlPatientNew.Fields[22].AsDate  <> 0) then
-    begin
-      tempitem.DATE_ZAPISVANE := ibsqlPatientNew.Fields[22].AsDate;
-      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[23].IsNull) and (ibsqlPatientNew.Fields[23].AsDate  <> 0) then
-    begin
-      tempitem.DATEFROM := ibsqlPatientNew.Fields[23].AsDate;
-      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-
-
-
-    tempitem.DATEISSUE := ibsqlPatientNew.Fields[24].AsDate;
-    tempitem.DATETO := ibsqlPatientNew.Fields[25].AsDate;
-    tempitem.DATETO_TEXT := ibsqlPatientNew.Fields[26].AsString;
-    tempitem.GRAJD := ibsqlPatientNew.Fields[27].AsString;
-    tempitem.IS_NEBL_USL := ibsqlPatientNew.Fields[28].AsString = 'Y';
-    tempitem.OSIGNO := ibsqlPatientNew.Fields[29].AsString;
-    tempitem.OSIGUREN := ibsqlPatientNew.Fields[30].AsString = 'Y';
-    tempitem.PASS := ibsqlPatientNew.Fields[31].AsString;
-    tempitem.PREVIOUS_DOCTOR_ID := ibsqlPatientNew.Fields[32].AsInteger;
-    tempitem.TYPE_CERTIFICATE := ibsqlPatientNew.Fields[33].AsString;
-    tempitem.FUND_ID := ibsqlPatientNew.Fields[34].AsInteger;
-    tempitem.PAT_KIND := ibsqlPatientNew.Fields[35].AsInteger;
-    if (not ibsqlPatientNew.Fields[36].IsNull) then
-    begin
-      tempitem.RZOK := ibsqlPatientNew.Fields[36].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[37].IsNull) then
-    begin
-      tempitem.RZOKR := ibsqlPatientNew.Fields[37].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    if (not ibsqlPatientNew.Fields[48].IsNull) then
-    begin
-      tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString;
-      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
-    tempitem.DoctorId := ibsqlPatientNew.Fields[47].AsInteger;
-    // logical
-    TempItem.PRecord.Logical := [];
-    BLOOD_TYPE := Trim(ibsqlPatientNew.Fields[38].AsString);
-    if BLOOD_TYPE = '0' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_0);
-    if BLOOD_TYPE = 'A' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_A);
-    if BLOOD_TYPE = 'A1' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_A1);
-    if BLOOD_TYPE = 'A2' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_A2);
-    if BLOOD_TYPE = 'A1B' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_A1B);
-    if BLOOD_TYPE = 'A2B' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_A2B);
-    if BLOOD_TYPE = 'AB' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_AB);
-    if BLOOD_TYPE = 'B' then
-      Include(TempItem.PRecord.Logical, BLOOD_TYPE_B);
-
-
-
-    if ibsqlPatientNew.Fields[39].Asinteger = 1 then
-      Include(TempItem.PRecord.Logical, SEX_TYPE_M)
-    else
-      Include(TempItem.PRecord.Logical, SEX_TYPE_F);
-
-    PidType := Trim(ibsqlPatientNew.Fields[45].AsString);
-    if PidType = 'E' then
-      Include(TempItem.PRecord.Logical, PID_TYPE_E);
-    if PidType = 'B' then
-      Include(TempItem.PRecord.Logical, PID_TYPE_B);
-    if PidType = 'L' then
-      Include(TempItem.PRecord.Logical, PID_TYPE_L);
-    if PidType = 'S' then
-      Include(TempItem.PRecord.Logical, PID_TYPE_S);
-    if PidType = 'F' then
-      Include(TempItem.PRecord.Logical, PID_TYPE_F);
-
-
-
-    if TempItem.PRecord.Logical <> [] then
-      Include(TempItem.PRecord.setProp, PatientNew_Logical);
+    FDBHelper.InsertPatientField(ibsqlPatientNew, TempItem);//otdelno
 
     if (ibsqlPatientNew.RecordCount mod 1000) = 0 then
     begin
@@ -884,6 +609,8 @@ begin
   FPosMetaData := pCardinalData^;
   Elapsed := Stopwatch.Elapsed;
   PatientColl.CntInADB := ibsqlPatientNew.RecordCount;
+
+
   if Assigned(FOnProgres) then
     FOnProgres(Self, Integer(PACIENT), ibsqlPatientNew.RecordCount);
 end;

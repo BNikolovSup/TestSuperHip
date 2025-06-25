@@ -5,9 +5,36 @@ interface
     System.SysUtils, system.Types,
     FMX.Types, FMX.StdCtrls, FMX.Layouts, FMX.Objects, FMX.Memo, FMX.DateTimeCtrls,
     FMX.Edit, FMX.Ani, RealObj.RealHipp, Aspects.Types, VirtualTrees,
-    System.Generics.Collections, FMX.ListBox, FMX.Controls ;
+    System.Generics.Collections, FMX.ListBox, FMX.Controls, FMX.Menus
+     ;
 
  type
+
+ TValueType = (tvNone, tvInteger, tvBoolean, tvDate, tvDateTime, tvTime, tvFloat, tvstring, tvBinar);
+ TOptionObject = class(TFmxObject)
+  private
+    FDataPos: Cardinal;
+    FTagString: string;
+    FValueType: TValueType;
+    FNameInIni: string;
+    FSectionIni: string;
+  public
+
+    property DataPos: Cardinal read FDataPos write FDataPos;
+    property TagString: string read FTagString write FTagString;
+    property ValueType: TValueType read FValueType write FValueType;
+    property SectionIni: string read FSectionIni write FSectionIni;
+    property NameInIni: string read FNameInIni write FNameInIni;
+  end;
+
+  TOptionIntObject = class(TOptionObject)
+  private
+    FDefaultValue: integer;
+
+  public
+    property DefaultValue: integer read FDefaultValue write FDefaultValue;
+  end;
+
   TComboBox = class(FMX.ListBox.TComboBox)
   private
     FPopupCustom: TPopup;
@@ -27,6 +54,7 @@ interface
     node: PVirtualNode;
     edtMain: TEdit;
     edtAdd: TEdit;
+    DelDiag: TRectangle;
   end;
 
   TMdnAnals = class
@@ -112,9 +140,41 @@ interface
   function WalkChildrenExpander(Parent: TFmxObject): Texpander;
   function WalkChildrenLyt(Parent: TFmxObject): TLayout;
   function WalkChildrenLytStyle(Parent: TFmxObject; styleName: string): TLayout;
+
+  function WalkChildrenOptionObject(Parent: TFmxObject;var LstOfObject: TList<TOptionObject>; buf: pointer): TOptionObject;
+  //function WalkChildrenMenu(Parent: TFmxObject): TmenuItem;
+
   function InnerChildrenRect(control: TControl): TRectF;
 
 implementation
+
+
+function WalkChildrenOptionObject(Parent: TFmxObject;var LstOfObject: TList<TOptionObject>; buf: pointer): TOptionObject;
+var
+  i: Integer;
+  Child: TFmxObject;
+  data: PAspRec;
+  node: PVirtualNode;
+begin
+  Result := nil;
+  for i := 0 to Parent.ChildrenCount-1 do
+  begin
+    Child := Parent.Children[i];
+    if (Child is TOptionObject) then
+    begin
+      Result := TOptionObject(Child);
+      node := Pointer(PByte(buf) + Result.DataPos);
+      data := Pointer(PByte(node) + lenNode);
+      data.index := LstOfObject.Add(Result);
+    end
+    else
+    begin
+      Result := WalkChildrenOptionObject(Child, LstOfObject, buf);
+      //if Result <> nil then
+//        LstOfObject.Add(Result);
+    end;
+  end;
+end;
 
 function WalkChildrenAnim(Parent: TFmxObject): TFloatAnimation;
 var

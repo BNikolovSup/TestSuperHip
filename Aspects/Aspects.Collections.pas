@@ -400,6 +400,7 @@ TCollectionForSort = class(TPersistent)
     FSortAsc: Boolean;
     FColumnForSort: Integer;
     FOnSortCol: TNotifyEvent;
+    FOnKeyUpGridSearch: TKeyEvent;
     procedure SetCntUpdates(const Value: Integer);
     procedure SetfirstTop(const Value: Integer);
     procedure SetlastBottom(const Value: Integer);
@@ -485,7 +486,7 @@ TCollectionForSort = class(TPersistent)
     property ColumnForSort: Integer read FColumnForSort write FColumnForSort;
 
     property OnSortCol: TNotifyEvent read FOnSortCol write FOnSortCol;
-
+    property OnKeyUpGridSearch: TKeyEvent read FOnKeyUpGridSearch write FOnKeyUpGridSearch;
   end;
 
   //TRevisionItem = class(TBaseItem)
@@ -2887,6 +2888,9 @@ var
   WMKey: TWMKey;
 begin
   inherited;
+  if Assigned(FOnKeyUpGridSearch)  then
+    FOnKeyUpGridSearch(Sender, Key, Shift);
+
   //WMKey.Msg := WM_KEYUP;
 //  WMKey.CharCode := VK_DOWN;
 //  TGridForSrarch(Sender).DoKeyUp(WMKey);

@@ -104,7 +104,10 @@ uses
   MainRttiExpl in '..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas',
   PDFium.Frame in '..\PDFViewer\PDFium.Frame.pas',
   AspectiTest in 'AspectiTest.pas' {Form5},
-  New in 'FMX\NewFMX\New.pas';
+  New in 'FMX\NewFMX\New.pas',
+  RolePanels in '..\Popup\RolePanels.pas',
+  TitleBar in '..\Popup\TitleBar.pas',
+  RoleBar in '..\Popup\RoleBar.pas';
 
 {$R *.res}
 

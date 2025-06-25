@@ -31,6 +31,7 @@ type
   TActionEventMdnInPregled = procedure (sender: TObject; var PregledLink, MdnLink: PVirtualNode; var TempItem: TRealMDNItem) of object;
   TActionEventMnInPregled = procedure (sender: TObject; var PregledLink, MnLink: PVirtualNode; var TempItem: TRealBLANKA_MED_NAPRItem) of object;
   TActionEventImunInPregled = procedure (sender: TObject; var PregledLink, MnLink: PVirtualNode; var TempItem: TRealExamImmunizationItem) of object;
+  TActionEventDiagInPregled = procedure (sender: TObject; var PregledLink, DiagLink: PVirtualNode; var TempItem: TRealDiagnosisItem) of object;
 
   TActionEventAnalInMdn = procedure(sender: tobject; var MdnLink, AnalLink: PVirtualNode; var TempItem: TRealExamAnalysisItem) of object;
   TEventShowHint = procedure(seneder: TObject; hint: string; R: TRect) of object;
@@ -181,7 +182,6 @@ type
     stylbk1: TStyleBook;
     slctnpnt2: TSelectionPoint;
     lytbottom: TLayout;
-    lytRight: TFlowLayout;
     lytLeft: TLayout;
     slctnpnt3: TSelectionPoint;
     expndrCL132: TExpander;
@@ -197,16 +197,6 @@ type
     xpdrPatient: TExpander;
     lblAddres: TLabel;
     xpdrDoctor: TExpander;
-    xpdrDiagn: TExpander;
-    lytDiag: TFlowLayout;
-    rctAddDiaglabel: TRectangle;
-    txtAddDiagLabel: TText;
-    Button1: TButton;
-    Button2: TButton;
-    rctMainDiaglabel: TRectangle;
-    txtMainDiag: TText;
-    rctDiag: TRectangle;
-    lytMKB: TLayout;
     xpdrVisitFor: TExpander;
     flwlytVizitFor: TFlowLayout;
     txtAmbList: TText;
@@ -235,9 +225,6 @@ type
     dtdtCl132: TDateEdit;
     dtdtStartDate: TDateEdit;
     lyt2: TLayout;
-    edtMainDiag: TEdit;
-    edtAddDiag: TEdit;
-    Memo1: TMemo;
     txtDocuments: TText;
     lytMdn: TLayout;
     edtMdn: TEdit;
@@ -320,7 +307,6 @@ type
     rctIsNullDate: TRectangle;
     Rectangle7: TRectangle;
     FloatAnimation15: TFloatAnimation;
-    MemoDyns1: TMemo;
     edtDateRaw: TEdit;
     linSaver: TLine;
     lytEdit: TLayout;
@@ -356,7 +342,6 @@ type
     animNrnStatus: TFloatAnimation;
     lytVisitFor: TLayout;
     lytVisitForHeader: TLayout;
-    lytEndRight: TLayout;
     rctNzisBTN: TRectangle;
     txtNzisStatus: TText;
     rctBtnNzisErr: TRectangle;
@@ -511,6 +496,31 @@ type
     FloatAnimation38: TFloatAnimation;
     Rectangle31: TRectangle;
     FloatAnimation39: TFloatAnimation;
+    ActionList1: TActionList;
+    lytRight: TFlowLayout;
+    xpdrDiagn: TExpander;
+    Memo1: TMemo;
+    lytEndRight: TLayout;
+    lytDiagFrame: TLayout;
+    lytDiag: TFlowLayout;
+    rctMainDiaglabel: TRectangle;
+    txtMainDiag: TText;
+    rctDiag: TRectangle;
+    lytMKB: TLayout;
+    edtMainDiag: TEdit;
+    Rectangle33: TRectangle;
+    FloatAnimation41: TFloatAnimation;
+    edtAddDiag: TEdit;
+    Rectangle32: TRectangle;
+    FloatAnimation40: TFloatAnimation;
+    MemoDyns1: TMemo;
+    rctAddDiaglabel: TRectangle;
+    txtAddDiagLabel: TText;
+    Button1: TButton;
+    Button2: TButton;
+    Rectangle34: TRectangle;
+    FloatAnimation42: TFloatAnimation;
+    lytDelDiag: TLayout;
     procedure scrlbx1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure scrlbx1Resize(Sender: TObject);
     procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
@@ -613,7 +623,7 @@ type
       const ARect: TRectF);
     procedure mmoPregCl132PaintingSup(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
-    procedure xpdrDiagnResize(Sender: TObject);
+    procedure xpdrDiagnResize1(Sender: TObject);
     procedure mmoPregValidate(Sender: TObject; var Text: string);
     procedure mmoPregValidateSup(Sender: TObject; var Text: string);
     procedure mmoPregADBValidateSup(Sender: TObject; var Text: string);
@@ -762,6 +772,9 @@ type
     procedure Button2Click(Sender: TObject);
     procedure dtdtStartDateChange(Sender: TObject);
     procedure dtdtStartDateClosePicker(Sender: TObject);
+    procedure xpdrDiagnResize(Sender: TObject);
+    procedure Rectangle34MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
     
 
     //procedure btn1Click(Sender: TObject);
@@ -846,7 +859,7 @@ type
 
     idxListExpander, idxListMemo, idxListCombo, idxListCheck, idxListEdit, idxListitemsBox, idxListDateEdit: Integer;
     idxListMemoLyt, idxListCheckSup, idxListDateEditSup, idxListEditSup, idxListComboMultiSup,
-    idxListComboOneSup, idxPlanedType, idxMNs, idxImuns: Integer;
+    idxListComboOneSup, idxPlanedType, idxMNs, idxImuns, idxDiags: Integer;
 
     PatEgnSetProp: TParamSetProp;
     PatNameSetProp: TParamSetProp;
@@ -885,6 +898,8 @@ type
     FDoctorColl: TRealDoctorColl;
     FOtherPregleds: TList<PVirtualNode>;
     FOnChoicerMkb: TNotifyEvent;
+    FDiagColl: TRealDiagnosisColl;
+    FOnDeleteNewDiag: TActionEventDiagInPregled;
 
 
 
@@ -935,6 +950,7 @@ type
     procedure FillExpanderMNs1(Layout: TLayout; idxListMns: integer; mn: TRealBLANKA_MED_NAPRItem);
     procedure FillExpanderImmun(Layout: TLayout; idxListImun: integer; Imun: TRealExamImmunizationItem);
     procedure AddDiag(Layout: TFlowLayout; asp: PAspRec; idxListDiags: integer; field: word; diag: TRealDiagnosisItem);
+    procedure AddDiagInPregled(mkb: string);
     //procedure AddCombo(Expndr: TExpander; idxListCombo: Integer; RunNode: PVirtualNode; capt: string; IsMulti: boolean) overload;
     //procedure AddCombo(ExpndrLayout: TFlowLayout; idxListCombo: Integer; RunNode: PVirtualNode; capt: string; IsMulti: boolean);
     //procedure AddComboPreg(ExpndrLayout: TFlowLayout; idxListCombo: Integer; RunNode: PVirtualNode; capt: string; IsMulti: boolean);
@@ -973,6 +989,7 @@ type
     procedure appEvntsMainException(Sender: TObject; E: Exception);
     procedure ChangePositionScroll(x, y: single);
     procedure VibroControl(node: PVirtualNode);
+    procedure WmHelp(mousePos: TPoint);
 
 
   property scaleDyn: Single read FScaleDyn write SetScaleDyn;
@@ -1007,6 +1024,7 @@ type
   property AnswValuesColl: TRealNZIS_ANSWER_VALUEColl read FAnswValuesColl write FAnswValuesColl;
   property ResDiagRepColl: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl read FResDiagRepColl write FResDiagRepColl;
   property PlanedTypeColl: TRealNZIS_PLANNED_TYPEColl read FPlanedTypeColl write FPlanedTypeColl;
+  property DiagColl: TRealDiagnosisColl read FDiagColl write FDiagColl;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;
   property MaxRightLytHeight: Single read FMaxRightLytHeight write FMaxRightLytHeight;
   property IsVtrPregled: Boolean read FIsVtrPregled write FIsVtrPregled;
@@ -1019,6 +1037,7 @@ type
   property OnDeleteNewMn: TActionEventMnInPregled read FOnDeleteNewMn write FOnDeleteNewMn;
   property OnAddNewImun: TActionEventImunInPregled read FOnAddNewImun write FOnAddNewImun;
   property OnDeleteNewImun: TActionEventImunInPregled read FOnDeleteNewImun write FOnDeleteNewImun;
+  property OnDeleteNewDiag: TActionEventDiagInPregled read FOnDeleteNewDiag write FOnDeleteNewDiag;
 
 
 
@@ -2022,9 +2041,12 @@ begin
     TempDiagLabel := TDiagLabel.Create;
     TempDiagLabel.diag := diag;
     WalkChildrenEdtDiag(TempRect, TempDiagLabel);
-    TempDiagLabel.node := nil;
+    TempDiagLabel.node := diag.Node;
     TempDiagLabel.asp := asp;
     TempDiagLabel.field := field;
+    TempDiagLabel.DelDiag := WalkChildrenRectStyle(TempRect, 'DelDiag');
+    TempDiagLabel.DelDiag.OnMouseUp := Rectangle34MouseUp;
+
     TempRect.Visible := True;
     TempRect.Width := Layout.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
     TempRect.Tag := LstDiags.Add(TempRect);
@@ -2040,19 +2062,40 @@ begin
     TempRect := LstDiags[idxListDiags];
     TempDiagLabel:= TDiagLabel(LstDiags[idxListDiags].TagObject);
     TempDiagLabel.diag := diag;
-    TempDiagLabel.node := nil;
+    TempDiagLabel.node := diag.Node;
     TempDiagLabel.asp := asp;
     TempDiagLabel.field := field;
     TempRect.Position.Point := PointF(TempRect.Position.Point.X, 0);
     TempRect.Width := Layout.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
-    if idxListDiags > 0 then
+    //if idxListDiags > 0 then
     begin
       TempRect.Parent := Layout;
     end;
     //TempRect.OnApplyStyleLookup := mmoPregApplyStyleLookup;
     TempRect.OnPainting := rctDiagPainting;
   end;
-  
+  if idxListDiags = 0 then  //основната диагноза
+  begin
+    TempRect.SendToBack;
+    rctMainDiaglabel.SendToBack;
+  end;
+end;
+
+procedure TfrmProfFormFMX.AddDiagInPregled(mkb: string);
+var
+  diag: TRealDiagnosisItem;
+begin
+  diag := TRealDiagnosisItem(DiagColl.Add);
+  diag.MainMkb := mkb;
+  diag.Rank := FPregled.FDiagnosis.Add(diag);
+
+
+
+  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, Word(PregledNew_TERAPY), nil);
+  inc(idxDiags);
+  FPregled.FDiagnosis.Add(nil);
+  xpdrDiagn.RecalcSize;
+  lytDiagFrame.Height := xpdrDiagn.Height + 30;
 end;
 
 procedure TfrmProfFormFMX.AddEdit(ExpndrLayout: TFlowLayout;
@@ -2959,6 +3002,7 @@ var
   grdLyt: TGridLayout;
 begin
   lst1.Items[100000].Parse(1);
+  btn1.HelpContext := 222;
   //Rectangle13.Fill.Assign(brshbjct1.Brush);
   //lytRightResize(nil);
  // Self.Focused := TDateEditLabel(LstDateEditsLyt[0].TagObject).DatEdt;
@@ -3144,18 +3188,13 @@ begin
 end;
 
 procedure TfrmProfFormFMX.Button1Click(Sender: TObject);
-var
-  rct: TRectangle;
-  btn: TButton;
 begin
-  rct := TRectangle(rctDiag.Clone(lytDiag));
-  rct.Position.point := PointF(rct.Position.point.X, 1000);
-  rct.Parent := lytDiag;
+  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, Word(PregledNew_TERAPY), nil);
+  inc(idxDiags);
+  FPregled.FDiagnosis.Add(nil);
+  xpdrDiagn.RecalcSize;
+  lytDiagFrame.Height := xpdrDiagn.Height + 30;
 
-  xpdrDiagn.Height := rct.BoundsRect.Bottom + 55;
-  //lytRight.Height := xpdrDiagn.BoundsRect.Bottom +5;
-  //lytbottom.Height := lytRight.BoundsRect.Bottom +5;
-  //scldlyt1.Height :=  lytbottom.BoundsRect.Bottom + 55;
 end;
 
 procedure TfrmProfFormFMX.Button2Click(Sender: TObject);
@@ -3590,6 +3629,11 @@ begin
 
     //LstExpanders[i].ChildrenCount;
   end;
+  for i := 0 to LstDiags.Count - 1 do
+  begin
+    LstDiags[i].Parent := nil;
+  end;
+
   for i := 0 to LstMemosLYT.Count - 1 do
   begin
     LstMemosLYT[i].Parent := nil;
@@ -3684,6 +3728,7 @@ begin
   idxPlanedType := 0;
   idxMNs := 0;
   idxImuns := 0;
+  idxDiags := 0;
 end;
 
 procedure TfrmProfFormFMX.ClearListsPreg;
@@ -3695,6 +3740,7 @@ begin
   begin
     for i := 0 to FPregled.FDiagnosis.Count - 1 do
     begin
+      if FPregled.FDiagnosis[i] = nil then Continue;
       if FPregled.FDiagnosis[i].PRecord <> nil then Continue;
 
       FPregled.FDiagnosis[i].Destroy;
@@ -7442,7 +7488,7 @@ begin
         planStatus := TPlanedStatusSet(plan.Node.Dummy);
         if (TPlanedStatus.psNew in planStatus) then
         begin
-          if plan.EndDate > AMainProf.EndDate then //  ако крайната му дата е по-голяма, го отчеквам, за да си го избере доктора
+          if plan.EndDate > (AMainProf.EndDate + 5) then //  ако крайната му дата е по-голяма, го отчеквам, за да си го избере доктора
             plan.Node.CheckState := csUncheckedNormal;
         end;
       end;
@@ -7618,6 +7664,8 @@ begin
     for i := 0 to Pregled.FDiagnosis.Count - 1 do
     begin
       AddDiag(lytDiag, dataPreg, i, Word(PregledNew_TERAPY), Pregled.FDiagnosis[i]);
+
+      inc(idxDiags);
     end;
   end
   else
@@ -7691,6 +7739,7 @@ begin
   lytDiag.RecalcSize;
   lytDiag.Height := (InnerChildrenRect(lytDiag).Height )/FScaleDyn + 15;
   xpdrDiagn.Height := lytDiag.Height +50;
+  lytDiagFrame.Height := xpdrDiagn.Height + 30;
 
   AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_ANAMN), 'Анамнеза');
   inc(idxListMemoLyt);
@@ -8831,9 +8880,10 @@ begin
   p2 := txtEndOfLeft.LocalToAbsolute(PointF(0,txtEndOfLeft.Size.Height + scrlbx1.ViewportPosition.y/FScaleDyn));
   p3 := lytEndRight.LocalToAbsolute(PointF(0,lytEndRight.Size.Height + scrlbx1.ViewportPosition.y/FScaleDyn));
   TotalH := Max(p2.Y , p3.y)/ FScaleDyn;
+  lytLeft.Height := TotalH - lytLeft.Position.y;
   scldlyt1.OriginalHeight :=TotalH;
   scldlyt1.Height := scldlyt1.OriginalHeight * FScaleDyn;
-  
+
 
 
   //lytbottom.Height := TotalH; //- lytTop.Height - rct1.Height ;
@@ -10957,6 +11007,24 @@ begin
     btn1.Text := Single.ToString(LstChecksSup[23].LocalToAbsolute(Point(0,0)).Y);
 end;
 
+procedure TfrmProfFormFMX.Rectangle34MouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
+  nodePreg, nodeDiag: PVirtualNode;
+  diag: TRealDiagnosisItem;
+begin
+    TempRect := TRectangle(TRectangle(sender).Parent.Parent);
+    TempDiagLabel := TDiagLabel(TempRect.TagObject);
+    nodePreg := TempDiagLabel.node.Parent;
+    nodeDiag := TempDiagLabel.node;
+    diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
+    if Assigned(FOnDeleteNewDiag) then
+      FOnDeleteNewDiag(Self, nodePreg, nodeDiag, diag);
+    //FPregled.FDiagnosis.Delete(FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag));
+end;
+
 procedure TfrmProfFormFMX.Rectangle3MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 var
@@ -12340,6 +12408,20 @@ begin
   end;
 end;
 
+procedure TfrmProfFormFMX.WmHelp(mousePos: TPoint);
+var
+  p: TPointF;
+  Cntrl: IControl;
+  StyledCtrl: TStyledControl;
+begin
+  Cntrl := self.ObjectAtPoint(MousePos);
+  if Cntrl.GetObject is TStyledControl then
+  begin
+    StyledCtrl := TStyledControl(Cntrl.GetObject);
+    ShowMessage(IntToStr(TStyledControl(StyledCtrl.parent).HelpContext));
+  end;
+end;
+
 procedure TfrmProfFormFMX.xpdrDiagnApplyStyleLookup(Sender: TObject);
 var
   txt: TText;
@@ -12369,6 +12451,53 @@ end;
 
 procedure TfrmProfFormFMX.xpdrDiagnResize(Sender: TObject);
 var
+  h: Single;
+begin
+  if xpdrDiagn.IsExpanded then
+  begin
+    rctDiag.Width := lytDiag.Width;
+    rctAddDiaglabel.Width := lytDiag.Width;
+    lytDiag.RecalcSize;
+    h := InnerChildrenRect(lytDiag).Height/FScaleDyn ;
+    lytDiag.Height := h;
+    if idxDiags = 0 then
+    begin
+      xpdrDiagn.Height := h + 30+10+6 + 20 - 30; //lytDiag.Margins.Top+ lytDiag.Margins.Top;
+    end
+    else
+    begin
+      xpdrDiagn.Height := h + 30+10+6 + 20;
+    end;
+    //if h = 0 then
+//    begin
+//      xpdrDiagn.Height := 35;
+//    end
+//    else
+//    begin
+//      if rctBtnAddImun.Tag = 0 then
+//      begin
+//
+//
+//      end
+//      else
+//      begin
+//        xpdrDiagn.Height := h + lytDiag.Margins.Top+ lytDiag.Margins.Top;
+//      end;
+//    end;
+    lytDiagFrame.Height := xpdrDiagn.Height + 30;
+    RecalcBlankaRect1;
+  end
+  else
+  begin
+    xpdrDiagn.Height := 55;
+    lytDiagFrame.Height := xpdrDiagn.Height + 30;
+    RecalcBlankaRect1;
+
+  end;
+end;
+
+procedure TfrmProfFormFMX.xpdrDiagnResize1(Sender: TObject);
+var
   i: Integer;
 begin
   if xpdrDiagn.IsExpanded then
@@ -12386,6 +12515,7 @@ begin
   else
   begin
     xpdrDiagn.Height := 55;
+    lytDiagFrame.Height := xpdrDiagn.Height + 30;
     RecalcBlankaRect1;
   end;
 end;

@@ -114,7 +114,7 @@ object Form5: TForm5
     end
     object btn1: TButton
       Left = 696
-      Top = 8
+      Top = 10
       Width = 75
       Height = 25
       Caption = 'KeyBrd'
@@ -374,7 +374,7 @@ object Form5: TForm5
           ImageIndex = 2
           object cbbVtrVid: TComboBox
             Left = 32
-            Top = 24
+            Top = 18
             Width = 145
             Height = 21
             TabOrder = 0

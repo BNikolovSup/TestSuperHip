@@ -550,7 +550,14 @@ begin
         maxYear := DatStrToDays(CurrDate, datStr)- 1;
 
         gr.startDate := currentMin;
-        gr.endDate := currentMax;
+        if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        begin
+          gr.endDate := currentMax;
+        end
+        else
+        begin
+          gr.endDate := currentMax - 1;
+        end;
         gr.repNumber := 0;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData then
@@ -570,7 +577,14 @@ begin
           end;
 
           gr.startDate := currentMin;
-          gr.endDate := currentMax;
+          if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+          begin
+            gr.endDate := currentMax;
+          end
+          else
+          begin
+            gr.endDate := currentMax - 1;
+          end;
 
           gr.Cl132 := cl132i;
             if gr.startDate >= StartNzisData then
@@ -591,7 +605,14 @@ begin
         end;
 
         gr.startDate := currentMin;
-        gr.endDate := currentMax;
+        if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        begin
+          gr.endDate := currentMax;
+        end
+        else
+        begin
+          gr.endDate := currentMax - 1;
+        end;
         gr.repNumber := -1;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData  then
@@ -620,7 +641,14 @@ begin
           end;
         end;
         gr.startDate := currentMin;
-        gr.endDate := currentMax;
+        if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        begin
+          gr.endDate := currentMax;
+        end
+        else
+        begin
+          gr.endDate := currentMax - 1;
+        end;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData then
         begin
@@ -644,7 +672,14 @@ begin
           currentMin := IncYear(currentMin, rep);
           currentMax := IncYear(currentMax, rep);
           gr.startDate := currentMin;
-          gr.endDate := currentMax;
+          if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+          begin
+            gr.endDate := currentMax;
+          end
+          else
+          begin
+            gr.endDate := currentMax - 1;
+          end;
           gr.repNumber := gr.repNumber + 1;
           case cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] of
             '1': // преглед
@@ -680,7 +715,14 @@ begin
         end;
 
         gr.startDate := currentMin;
-        gr.endDate := currentMax;
+        if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        begin
+          gr.endDate := currentMax;
+        end
+        else
+        begin
+          gr.endDate := currentMax - 1;
+        end;
         gr.repNumber := -1;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData  then

@@ -36,6 +36,11 @@ THistoryThread = class(TThread)
     procedure UpdatePregled(id: Integer);
     procedure InsertPregled(id: Integer);
     procedure DeletePregled(id: Integer);
+
+    procedure UpdatePatient(id: Integer);
+    procedure InsertPatient(id: Integer);
+    procedure DeletePatient(id: Integer);
+
     function FindItemADB(Id: Integer; ABuf, ABufLink: Pointer; VV: TVtrVid): TBaseItem;
   protected
     Stopwatch: TStopwatch;
@@ -49,6 +54,7 @@ THistoryThread = class(TThread)
   public
     FCollUnfav: TRealUnfavColl;
     FCollPregled: TRealPregledNewColl;
+    FCollPatient: TRealPatientNewColl;
     FCollDiag: TRealDiagnosisColl;
     FDBHelper: TDbHelper;
 
@@ -99,6 +105,25 @@ begin
 
 end;
 
+procedure THistoryThread.DeletePatient(id: Integer);
+var
+  i: Integer;
+  TempItem: TRealPatientNewItem;
+  cnt: Integer;
+  pCardinalData: ^Cardinal;
+  PWordData: PWord;
+begin
+  TempItem := TRealPatientNewItem.Create(nil);
+  TempItem.PatID := id;
+  if assigned(FOnDeleteEvent) then
+    FOnDeleteEvent(TempItem);
+
+  FreeAndNil(TempItem);
+
+  pCardinalData := pointer(PByte(FBuf) + 32);
+  pCardinalData^  := NewID;
+end;
+
 procedure THistoryThread.DeletePregled(id: Integer);
 var
   i: Integer;
@@ -111,7 +136,7 @@ begin
   TempItem.PregledID := id;
   if assigned(FOnDeleteEvent) then
     FOnDeleteEvent(TempItem);
-  
+
   FreeAndNil(TempItem);
   //for i := 0 to FCollPregled.Count - 1 do
 //  begin
@@ -255,7 +280,7 @@ begin
           if TRealPatientNewItem(ATempItem).getIntMap(Buf, FDataPos, word(PatientNew_ID)) = id then
           begin
             FreeAndNil(ATempItem);
-            Result := TRealPatientNewItem(FCollPregled.Add);
+            Result := TRealPatientNewItem(FCollPatient.Add);
             Result.DataPos := data.DataPos;
             TRealPatientNewItem(Result).FNode := ANode;
             Exit;
@@ -312,10 +337,25 @@ begin
       end;
       'P':
       begin
-        case TableAction of
-          21: DeletePregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
-          22: UpdatePregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
-          23: InsertPregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
+        case TableName[2] of
+          'R': // pregled
+          begin
+            case TableAction of
+              21: DeletePregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
+              22: UpdatePregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
+              23: InsertPregled(Fdm.ibsqlCommand.Fields[3].AsInteger);
+            end;
+          end;
+        end;
+        case TableName[2] of
+          'A': //pacient
+          begin
+            case TableAction of
+              21: DeletePatient(Fdm.ibsqlCommand.Fields[3].AsInteger);
+              22: UpdatePatient(Fdm.ibsqlCommand.Fields[3].AsInteger);
+              23: InsertPatient(Fdm.ibsqlCommand.Fields[3].AsInteger);
+            end;
+          end;
         end;
       end;
     end;
@@ -324,6 +364,11 @@ begin
   end;
   if Assigned(FOnEventAlert) then
     FOnEventAlert(Self);
+end;
+
+procedure THistoryThread.InsertPatient(id: Integer);
+begin
+
 end;
 
 procedure THistoryThread.InsertPregled(id: Integer);
@@ -520,6 +565,73 @@ begin
   begin
     Ticker.Change(Acol, ARow,0);
   end;
+end;
+
+procedure THistoryThread.UpdatePatient(id: Integer);
+var
+  i: Integer;
+  TempItem: TRealPatientNewItem;
+  cnt: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData, dataPosition: Cardinal;
+  ibsqlPatientNew: TIBSQL;
+begin
+  TempItem := TRealPatientNewItem(FindItemADB(id, Buf, BufLink, vvPatient));
+  if TempItem <> nil then
+  begin
+    if Fdm.IsGP then
+    begin
+      ibsqlPatientNew := Fdm.ibsqlPatNew_GP;
+    end
+    else
+    begin
+      ibsqlPatientNew := Fdm.ibsqlPatNew_S;
+    end;
+    ibsqlPatientNew.Close;
+    if not Fdm.ibsqlPatNew_GP.SQL.Text.Contains('where') then
+    begin
+      if Fdm.IsGP then
+      begin
+        ibsqlPatientNew.SQL.Text := Fdm.ibsqlPatNew_GP.SQL.Text + #13#10 +
+        'where id = :id;';
+      end
+      else
+      begin
+        ibsqlPatientNew.SQL.Text := Fdm.ibsqlPatNew_S.SQL.Text + #13#10 +
+        'where id = :id;';
+      end;
+    end;
+
+    ibsqlPatientNew.Params[0].AsInteger := id;
+    ibsqlPatientNew.ExecQuery;
+
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+
+    FDBHelper.UpdatePatientField(ibsqlPatientNew, TempItem);
+  end;
+  cnt := 0;
+  for i := 0 to FCollPatient.Count - 1 do
+  begin
+    TempItem := FCollPatient.Items[i];
+    if TempItem.PRecord <> nil then
+    begin
+      TempItem.SavePatientNew(dataPosition);
+      FCollPatient.streamComm.Len := FCollPatient.streamComm.Size;
+      CmdFile.CopyFrom(FCollPatient.streamComm, 0);
+      inc(cnt);
+    end;
+
+  end;
+  if cnt > 0 then
+  begin
+    pCardinalData := pointer(PByte(FBuf) + 12);
+    pCardinalData^  := dataPosition - self.FDataPos;
+  end;
+  pCardinalData := pointer(PByte(FBuf) + 32);
+  pCardinalData^  := NewID;
+  FCollPatient.CntUpdates := 0;
+
 end;
 
 procedure THistoryThread.UpdatePregled(id: Integer);

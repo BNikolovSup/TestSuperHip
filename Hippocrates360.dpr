@@ -102,7 +102,13 @@ uses
   Aspects.Types in 'Aspects\Aspects.Types.pas',
   RealObj.RealNzis in 'Aspects\RealObj.RealNzis.pas',
   MainRttiExpl in '..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas',
-  PDFium.Frame in '..\PDFViewer\PDFium.Frame.pas';
+  PDFium.Frame in '..\PDFViewer\PDFium.Frame.pas',
+  TitleBar in '..\Popup\TitleBar.pas' {frmTitlebar},
+  RoleBar in '..\Popup\RoleBar.pas' {frmRolebar},
+  RolePanels in '..\Popup\RolePanels.pas' {frmRolePanels},
+  OptionsForm in '..\Popup\OptionsForm.pas' {frmOptionsForm},
+  FMX.GifUtils in 'C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas',
+  RegisterBrushObject in '..\--component\RegisterBrushObject.pas';
 
 {$R *.res}
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
@@ -118,6 +124,8 @@ begin
   LoadKeyBoardLayout('00040402',1);
 
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
+  //Application.CreateForm(TfrmRolePanels, frmRolePanels);
+  //Application.CreateForm(TfrmOptionsForm, frmOptionsForm);
   if ParamStr(1) <> '' then
   begin
     frmSuperHip.HipHandle := StrToInt(ParamStr(1));
@@ -127,7 +135,7 @@ begin
   end
   else
   begin
-    frmSuperHip.BorderStyle := bsSizeable;
+    //frmSuperHip.BorderStyle := bsSizeable;
   end;
 
   //Application.CreateForm(TfrmFilter, frmFilter);
