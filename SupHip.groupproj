@@ -63,6 +63,9 @@
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="WordBreak\WordBreak\WordBreak.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -251,14 +254,23 @@
     <Target Name="Menuwww:Make">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Menu\Menuwww.dproj" Targets="Make"/>
     </Target>
+    <Target Name="WordBreak">
+        <MSBuild Projects="WordBreak\WordBreak\WordBreak.dproj"/>
+    </Target>
+    <Target Name="WordBreak:Clean">
+        <MSBuild Projects="WordBreak\WordBreak\WordBreak.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="WordBreak:Make">
+        <MSBuild Projects="WordBreak\WordBreak\WordBreak.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
