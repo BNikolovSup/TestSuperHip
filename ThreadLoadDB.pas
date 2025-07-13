@@ -1164,6 +1164,7 @@ begin
       AddPacient;
       AddPregled; //  след добавянето на прегледите имам в тях списъци на процедурите им. В тях е и КодОпис-а
       FillProceduresInPregledProcs;
+      DiagColl.FillMkb(MkbColl);
       AddMdn;
       AddEBL;
       AddExamAnal;

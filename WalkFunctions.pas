@@ -54,7 +54,10 @@ interface
     node: PVirtualNode;
     edtMain: TEdit;
     edtAdd: TEdit;
+    mmoDiag: TMemo;
     DelDiag: TRectangle;
+    SelectMain: TRectangle;
+    SelectAdd: TRectangle;
   end;
 
   TMdnAnals = class

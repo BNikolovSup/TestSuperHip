@@ -13,7 +13,7 @@ uses
   Table.Procedures, Table.DiagnosticReport, Table.KARTA_PROFILAKTIKA2017,
   Table.BLANKA_MED_NAPR, table.NZIS_PLANNED_TYPE, table.NZIS_QUESTIONNAIRE_RESPONSE,
   Table.NZIS_QUESTIONNAIRE_ANSWER,Table.NZIS_ANSWER_VALUE, Table.NZIS_DIAGNOSTIC_REPORT,
-  Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.NzisToken,
+  Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.NzisToken, Table.Mkb,
 
 
   RealObj.NzisNomen,
@@ -103,9 +103,11 @@ private
     FMainMkb: string;
     FAddMkb: string;
     FRank: Word;
-    FPData: PAspRec;
+    FDataPosMkb: Cardinal;
     FIsDeleted: Boolean;
     FNode: PVirtualNode;
+    FMkbNode: PVirtualNode;
+
 
 public
   constructor Create(Collection: TCollection); override;
@@ -114,9 +116,10 @@ public
   property MainMkb: string read FMainMkb write FMainMkb;
   property AddMkb: string read FAddMkb write FAddMkb;
   property Rank: Word read FRank write FRank;
-  property PData: PAspRec read FPData write FPData;
+  property DataPosMkb: Cardinal read FDataPosMkb write FDataPosMkb;
   property IsDeleted: Boolean read FIsDeleted write FIsDeleted;
   property Node: PVirtualNode read FNode write FNode;
+  property MkbNode: PVirtualNode read FMkbNode write FMkbNode;
 end;
 
 TRealDiagnosisColl = class(TDiagnosisColl)
@@ -126,6 +129,8 @@ TRealDiagnosisColl = class(TDiagnosisColl)
 public
   cmdFile: TFileStream;
   procedure SortByPregledId;
+  procedure SortListNodesByMkb;
+  procedure FillMkb(mkbColl: TMkbColl);
   property Items[Index: Integer]: TRealDiagnosisItem read GetItem write SetItem;
 end;
 
@@ -442,6 +447,7 @@ TRealPregledNewItem = class(TPregledNewItem)
     FAMB_LISTN: Integer;
     FPREVENTIVE_TYPE: Integer;
     FStartTime: TTime;
+    FCanDeleteDiag: Boolean;
 
     procedure SetMAIN_DIAG_MKB_ADD(const Value: string);
     procedure SetMAIN_DIAG_MKB_ADD1(const Value: string);
@@ -515,6 +521,8 @@ public
   procedure CalcTypes(Abuf: Pointer; Aposdata: cardinal);
   procedure CalcPorpuse(Abuf: Pointer; Aposdata: cardinal);
   procedure RemoveDuplicateDiags;
+
+  property CanDeleteDiag: Boolean read FCanDeleteDiag write FCanDeleteDiag;
 
   property Cl132: TObject read FCl132 write SetCl132;
 
@@ -1691,6 +1699,7 @@ constructor TRealPregledNewItem.Create(Collection: TCollection);
 begin
   inherited;
   FCl132 := nil;
+  FCanDeleteDiag := True;
   FDiagnosis := TList<TRealDiagnosisItem>.Create;
   FProcedures := TList<TRealProceduresItem>.Create;
   FCodeOpis := TStringList.Create;
@@ -2096,6 +2105,12 @@ begin
   diag.PRecord.rank := diag.Rank;
   Include(diag.PRecord.setProp, Diagnosis_rank);
 
+  diag.PRecord.MkbPos := 100;
+  Include(diag.PRecord.setProp, Diagnosis_MkbPos);
+
+  diag.PRecord.MkbAddPos := 101;
+  Include(diag.PRecord.setProp, Diagnosis_MkbAddPos);
+
   diag.InsertDiagnosis;
   TRealPregledNewColl(Collection).FCollDiag.streamComm.Len := TRealPregledNewColl(Collection).FCollDiag.streamComm.Size;
   TRealPregledNewColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealPregledNewColl(Collection).FCollDiag.streamComm, 0);
@@ -2140,6 +2155,12 @@ begin
   end;
   diag.PRecord.rank := diag.Rank;
   Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.PRecord.MkbPos := 100;
+  Include(diag.PRecord.setProp, Diagnosis_MkbPos);
+
+  diag.PRecord.MkbAddPos := 101;
+  Include(diag.PRecord.setProp, Diagnosis_MkbAddPos);
 
   diag.InsertDiagnosis;
   TRealPregledNewColl(Collection).FCollDiag.streamComm.Len := TRealPregledNewColl(Collection).FCollDiag.streamComm.Size;
@@ -2186,6 +2207,12 @@ begin
   diag.PRecord.rank := diag.Rank;
   Include(diag.PRecord.setProp, Diagnosis_rank);
 
+  diag.PRecord.MkbPos := 100;
+  Include(diag.PRecord.setProp, Diagnosis_MkbPos);
+
+  diag.PRecord.MkbAddPos := 101;
+  Include(diag.PRecord.setProp, Diagnosis_MkbAddPos);
+
   diag.InsertDiagnosis;
   TRealPregledNewColl(Collection).FCollDiag.streamComm.Len := TRealPregledNewColl(Collection).FCollDiag.streamComm.Size;
   TRealPregledNewColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealPregledNewColl(Collection).FCollDiag.streamComm, 0);
@@ -2230,6 +2257,12 @@ begin
   end;
   diag.PRecord.rank := diag.Rank;
   Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.PRecord.MkbPos := 100;
+  Include(diag.PRecord.setProp, Diagnosis_MkbPos);
+
+  diag.PRecord.MkbAddPos := 101;
+  Include(diag.PRecord.setProp, Diagnosis_MkbAddPos);
 
   diag.InsertDiagnosis;
   TRealPregledNewColl(Collection).FCollDiag.streamComm.Len := TRealPregledNewColl(Collection).FCollDiag.streamComm.Size;
@@ -2276,6 +2309,12 @@ begin
   end;
   diag.PRecord.rank := diag.Rank;
   Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.PRecord.MkbPos := 100;
+  Include(diag.PRecord.setProp, Diagnosis_MkbPos);
+
+  diag.PRecord.MkbAddPos := 101;
+  Include(diag.PRecord.setProp, Diagnosis_MkbAddPos);
 
   diag.InsertDiagnosis;
   TRealPregledNewColl(Collection).FCollDiag.streamComm.Len := TRealPregledNewColl(Collection).FCollDiag.streamComm.Size;
@@ -2348,6 +2387,44 @@ end;
 
 { TRealDiagnosisColl }
 
+procedure TRealDiagnosisColl.FillMkb(mkbColl: TMkbColl);
+var
+  iMkb, iDiag: Integer;
+begin
+  mkbColl.IndexValue(Mkb_CODE);
+  mkbColl.SortByIndexValue(Mkb_CODE);
+  Self.IndexValue(Diagnosis_code_CL011);
+  Self.SortByIndexValue(Diagnosis_code_CL011);
+
+  //Stopwatch := TStopwatch.StartNew;
+  iDiag := 0;
+  iMkb := 0;
+  while (iDiag < self.Count) and (iMkb < mkbColl.Count) do
+  begin
+    if self.getAnsiStringMap(self.Items[iDiag].DataPos, Word(Diagnosis_code_CL011)) = mkbColl.getAnsiStringMap(mkbColl.Items[iMkb].DataPos, Word(Mkb_CODE))  then
+    begin
+      Self.SetCardMap(self.Items[iDiag].DataPos, word(Diagnosis_MkbPos), mkbColl.Items[iMkb].DataPos);
+      //self.Items[iDiag].FDataPosMkb := mkbColl.Items[iMkb].DataPos;
+      //pregledColl.Items[iamb].FPatient := PatientColl.Items[iPac];
+      inc(iDiag);
+    end
+    else if self.getAnsiStringMap(self.Items[iDiag].DataPos, Word(Diagnosis_code_CL011)) > mkbColl.getAnsiStringMap(mkbColl.Items[iMkb].DataPos, Word(Mkb_CODE)) then
+    begin
+      begin
+        inc(iMkb);
+
+      end;
+    end
+    else if self.getAnsiStringMap(self.Items[iDiag].DataPos, Word(Diagnosis_code_CL011)) < mkbColl.getAnsiStringMap(mkbColl.Items[iMkb].DataPos, Word(Mkb_CODE)) then
+    begin
+      inc(iDiag);
+    end;
+  end;
+  //Elapsed := Stopwatch.Elapsed;
+  //mmotest.Lines.Add( 'fillPat ' + FloatToStr(Elapsed.TotalMilliseconds));
+
+end;
+
 function TRealDiagnosisColl.GetItem(Index: Integer): TRealDiagnosisItem;
 begin
   Result := TRealDiagnosisItem(inherited GetItem(Index));
@@ -2396,6 +2473,11 @@ begin
     sc := TCollectionForSort(Self).FItems;
     QuickSort(0,count-1);
   end;
+end;
+
+procedure TRealDiagnosisColl.SortListNodesByMkb;
+begin
+ // Self.ListNodes
 end;
 
 { TRealMDNItem }

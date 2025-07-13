@@ -1,5 +1,6 @@
 unit ProfForm;
-//TDateEdit 'err  f12
+//TDateEdit 'err  f12  cursor resource font
+
 interface
 uses
    Winapi.Windows, JclDebug, Vcl.StdCtrls, System.DateUtils,
@@ -8,6 +9,7 @@ uses
    Table.MDN, Table.CL022, Table.CL142, Table.CL144, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
    Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT,
    Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.Doctor,
+   Table.Mkb,
    Table.BLANKA_MED_NAPR, Table.ExamImmunization, table.cl006,
 
    rtti, VirtualTrees, VirtualStringTreeHipp, VirtualStringTreeAspect,
@@ -36,6 +38,7 @@ type
   TActionEventAnalInMdn = procedure(sender: tobject; var MdnLink, AnalLink: PVirtualNode; var TempItem: TRealExamAnalysisItem) of object;
   TEventShowHint = procedure(seneder: TObject; hint: string; R: TRect) of object;
   TReShowPregledFMX = procedure(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode ) of object;
+  //TEventSelecMkb = procedure(
 
 
   TComboMultiLabel = class
@@ -513,7 +516,7 @@ type
     edtAddDiag: TEdit;
     Rectangle32: TRectangle;
     FloatAnimation40: TFloatAnimation;
-    MemoDyns1: TMemo;
+    mmoDiag: TMemo;
     rctAddDiaglabel: TRectangle;
     txtAddDiagLabel: TText;
     Button1: TButton;
@@ -521,6 +524,28 @@ type
     Rectangle34: TRectangle;
     FloatAnimation42: TFloatAnimation;
     lytDelDiag: TLayout;
+    lytNzisStatus: TLayout;
+    Layout3: TLayout;
+    CheckBox1: TCheckBox;
+    Rectangle35: TRectangle;
+    DateEdit3: TDateEdit;
+    Rectangle36: TRectangle;
+    FloatAnimation43: TFloatAnimation;
+    Edit10: TEdit;
+    Line4: TLine;
+    Layout10: TLayout;
+    CheckBox2: TCheckBox;
+    Rectangle37: TRectangle;
+    Line5: TLine;
+    ComboBox1: TComboBox;
+    Text8: TText;
+    Layout11: TLayout;
+    CheckBox3: TCheckBox;
+    Rectangle38: TRectangle;
+    Line6: TLine;
+    ComboBox2: TComboBox;
+    Text9: TText;
+    rctBkDiag: TRectangle;
     procedure scrlbx1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure scrlbx1Resize(Sender: TObject);
     procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
@@ -775,6 +800,10 @@ type
     procedure xpdrDiagnResize(Sender: TObject);
     procedure Rectangle34MouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
+    procedure SelectDiagMainMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure Rectangle32Click(Sender: TObject);
+
     
 
     //procedure btn1Click(Sender: TObject);
@@ -898,14 +927,18 @@ type
     FDoctorColl: TRealDoctorColl;
     FOtherPregleds: TList<PVirtualNode>;
     FOnChoicerMkb: TNotifyEvent;
+
     FDiagColl: TRealDiagnosisColl;
     FOnDeleteNewDiag: TActionEventDiagInPregled;
+    FMkbColl: TMkbColl;
+    FOnSelectMkb: TNotifyEvent;
 
 
 
 
     procedure CreateTempItem;
     procedure InitProps;
+    procedure InitHelpTags;
 
     procedure FreeTempItem;
     procedure SetScaleDyn(const Value: Single);
@@ -1025,6 +1058,7 @@ type
   property ResDiagRepColl: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl read FResDiagRepColl write FResDiagRepColl;
   property PlanedTypeColl: TRealNZIS_PLANNED_TYPEColl read FPlanedTypeColl write FPlanedTypeColl;
   property DiagColl: TRealDiagnosisColl read FDiagColl write FDiagColl;
+  property MKBColl: TMkbColl read FMkbColl write FMkbColl;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;
   property MaxRightLytHeight: Single read FMaxRightLytHeight write FMaxRightLytHeight;
   property IsVtrPregled: Boolean read FIsVtrPregled write FIsVtrPregled;
@@ -1044,6 +1078,7 @@ type
   property OnchangeColl: TNotifyEvent read FOnchangeColl write FOnchangeColl;
   property OnChoicerAnal: TNotifyEvent read FOnChoicerAnal write FOnChoicerAnal;
   property OnChoicerMkb: TNotifyEvent read FOnChoicerMkb write FOnChoicerMkb;
+  property OnSelectMkb: TNotifyEvent read FOnSelectMkb write FOnSelectMkb;
   property OnSowHint: TEventShowHint read FOnSowHint write FOnSowHint;
   property OnFillCertInDoctors: TNotifyEvent read FOnFillCertInDoctors write FOnFillCertInDoctors;
   property OnOpenPregled: TNotifyEvent read FOnOpenPregled write FOnOpenPregled;
@@ -2039,13 +2074,21 @@ begin
     TempRect := TRectangle(rctDiag.Clone(self));
     TempRect.Parent := nil;
     TempDiagLabel := TDiagLabel.Create;
-    TempDiagLabel.diag := diag;
+
     WalkChildrenEdtDiag(TempRect, TempDiagLabel);
-    TempDiagLabel.node := diag.Node;
+    TempDiagLabel.diag := diag;
+    if diag <> nil then
+    begin
+      TempDiagLabel.node := diag.Node;
+    end;
     TempDiagLabel.asp := asp;
     TempDiagLabel.field := field;
     TempDiagLabel.DelDiag := WalkChildrenRectStyle(TempRect, 'DelDiag');
+    TempDiagLabel.SelectMain := WalkChildrenRect(TempDiagLabel.edtMain);
+    TempDiagLabel.SelectAdd := WalkChildrenRect(TempDiagLabel.edtAdd);
+    TempDiagLabel.mmoDiag := WalkChildrenMemo(TempRect);
     TempDiagLabel.DelDiag.OnMouseUp := Rectangle34MouseUp;
+    TempDiagLabel.SelectMain.OnMouseUp := SelectDiagMainMouseUp;
 
     TempRect.Visible := True;
     TempRect.Width := Layout.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
@@ -2062,7 +2105,10 @@ begin
     TempRect := LstDiags[idxListDiags];
     TempDiagLabel:= TDiagLabel(LstDiags[idxListDiags].TagObject);
     TempDiagLabel.diag := diag;
-    TempDiagLabel.node := diag.Node;
+    if diag <> nil then
+    begin
+      TempDiagLabel.node := diag.Node;
+    end;
     TempDiagLabel.asp := asp;
     TempDiagLabel.field := field;
     TempRect.Position.Point := PointF(TempRect.Position.Point.X, 0);
@@ -2073,6 +2119,7 @@ begin
     end;
     //TempRect.OnApplyStyleLookup := mmoPregApplyStyleLookup;
     TempRect.OnPainting := rctDiagPainting;
+
   end;
   if idxListDiags = 0 then  //основната диагноза
   begin
@@ -3736,7 +3783,7 @@ var
   i, j: Integer;
   diag: TRealDiagnosisItem;
 begin
-  if FPregled.FDiagnosis <> nil then
+  if (FPregled.FDiagnosis <> nil) and (FPregled.CanDeleteDiag) then
   begin
     for i := 0 to FPregled.FDiagnosis.Count - 1 do
     begin
@@ -7659,6 +7706,7 @@ begin
       rctDiag.Tag := 0;
       tempDiagLabel.edtMain := edtMainDiag;
       tempDiagLabel.edtAdd := edtAddDiag;
+      tempDiagLabel.mmoDiag := mmoDiag;
     end;
 
     for i := 0 to Pregled.FDiagnosis.Count - 1 do
@@ -7911,6 +7959,7 @@ begin
   //FPregled := TRealPregledNewItem.Create(nil);
   CreateTempItem;
   InitProps;
+  InitHelpTags;
   FIssetings := False;
   FCheckKep := True;
   FSourceAnswerDefault := TSourceAnsw.saPatient;
@@ -7964,6 +8013,11 @@ begin
   FreeAndNil(answValTemp);
   FreeAndNil(RESULT_DIAGNOSTIC_REPTemp);
   FreeAndNil(DIAGNOSTIC_REPTemp);
+end;
+
+procedure TfrmProfFormFMX.InitHelpTags;
+begin
+  rctTokenPlug.TagString := 'Бутон за намиране на подпис';
 end;
 
 procedure TfrmProfFormFMX.InitProps;
@@ -11007,6 +11061,40 @@ begin
     btn1.Text := Single.ToString(LstChecksSup[23].LocalToAbsolute(Point(0,0)).Y);
 end;
 
+procedure TfrmProfFormFMX.SelectDiagMainMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
+  nodePreg, nodeDiag: PVirtualNode;
+  diag: TRealDiagnosisItem;
+begin
+    TempRect := TRectangle(TRectangle(sender).Parent.Parent.parent);
+    TempDiagLabel := TDiagLabel(TempRect.TagObject);
+    nodePreg := TempDiagLabel.node.Parent;
+    nodeDiag := TempDiagLabel.node;
+    diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
+
+    if Assigned(FOnSelectMkb) then
+      FOnSelectMkb(diag);
+end;
+
+procedure TfrmProfFormFMX.Rectangle32Click(Sender: TObject);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
+  nodePreg, nodeDiag: PVirtualNode;
+  diag: TRealDiagnosisItem;
+begin
+    //TempRect := TRectangle(TRectangle(sender).Parent.Parent);
+//    TempDiagLabel := TDiagLabel(TempRect.TagObject);
+//    nodePreg := TempDiagLabel.node.Parent;
+//    nodeDiag := TempDiagLabel.node;
+    //diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
+  FPregled.FDiagnosis.Exchange(1, 3);
+
+end;
+
 procedure TfrmProfFormFMX.Rectangle34MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 var
@@ -11778,6 +11866,7 @@ procedure TfrmProfFormFMX.rctDiagPainting(Sender: TObject; Canvas: TCanvas;
 var
   TempDiagLabel: TDiagLabel;
   tempDiagRect: TRectangle;
+  mkbPos: Cardinal;
 begin
   if LstDiags.Count = 0 then Exit;
 
@@ -11787,6 +11876,15 @@ begin
   begin
     TempDiagLabel.edtMain.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
     TempDiagLabel.edtAdd.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_additionalCode_CL011));
+   // TempDiagLabel.diag.PData.DataPos
+    if TempDiagLabel.diag <> nil then
+    begin
+      mkbPos := TempDiagLabel.diag.getCardMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_MkbPos));
+      if mkbPos > 100 then
+        TempDiagLabel.mmoDiag.Text := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME))
+      else
+        TempDiagLabel.mmoDiag.Text := '100';
+    end;
   end
   else
   begin
@@ -12419,6 +12517,10 @@ begin
   begin
     StyledCtrl := TStyledControl(Cntrl.GetObject);
     ShowMessage(IntToStr(TStyledControl(StyledCtrl.parent).HelpContext));
+  end
+  else
+  begin
+    ShowMessage(Cntrl.GetObject.TagString);
   end;
 end;
 

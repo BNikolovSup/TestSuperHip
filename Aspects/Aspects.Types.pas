@@ -140,7 +140,8 @@ type
              vvFieldSearchGridOption,
              vvOptionSearchCot,
              vvMKBGroup,
-             vvMKBSubGroup);
+             vvMKBSubGroup,
+             vvNomenMkb);
 
 
 

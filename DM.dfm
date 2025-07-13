@@ -1277,4 +1277,23 @@ object DUNzis: TDUNzis
     Left = 239
     Top = 440
   end
+  object ibsqlDiag: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      
+        'insert into DIAGNOSIS (ID, DOKUMENT_ID, DOKUMENT_TYPE, DIAGNOSIS' +
+        '_CODE_CL011, DIAGNOSIS_ADDITIONALCODE_CL011,'
+      
+        '                       DIAGNOSIS_RANK, DIAGNOSIS_ONSETDATETIME, ' +
+        'DIAGNOSIS_CL011POS, DIAGNOSIS_LOGICAL, DIAGNOSIS_MKBPOS)'
+      
+        'values (gen_id(gen_diag, 1), :DOKUMENT_ID, :DOKUMENT_TYPE, :DIAG' +
+        'NOSIS_CODE_CL011, :DIAGNOSIS_ADDITIONALCODE_CL011,'
+      
+        '                       :DIAGNOSIS_RANK, :DIAGNOSIS_ONSETDATETIME' +
+        ', :DIAGNOSIS_CL011POS, :DIAGNOSIS_LOGICAL, :DIAGNOSIS_MKBPOS);')
+    Transaction = traMain
+    Left = 959
+    Top = 200
+  end
 end

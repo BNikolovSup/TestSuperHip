@@ -36,9 +36,9 @@ object frmSuperHip: TfrmSuperHip
   TextHeight = 13
   object spl1: TSplitter
     Left = 588
-    Top = 161
+    Top = 165
     Width = 7
-    Height = 486
+    Height = 482
     Color = clHighlight
     ParentColor = False
     ResizeStyle = rsUpdate
@@ -48,7 +48,7 @@ object frmSuperHip: TfrmSuperHip
   end
   object Panel1: TPanel
     Left = 8
-    Top = 59
+    Top = 63
     Width = 1557
     Height = 100
     Align = alTop
@@ -235,9 +235,9 @@ object frmSuperHip: TfrmSuperHip
   end
   object pnlTree: TPanel
     Left = 8
-    Top = 161
+    Top = 165
     Width = 580
-    Height = 486
+    Height = 482
     Align = alLeft
     Caption = 'pnlTree'
     DoubleBuffered = True
@@ -248,14 +248,14 @@ object frmSuperHip: TfrmSuperHip
     OnResize = pnlTreeResize
     DesignSize = (
       580
-      486)
+      482)
     object pgcTree: TPageControl
       Left = 61
       Top = 43
       Width = 517
-      Height = 442
+      Height = 438
       Margins.Left = 82
-      ActivePage = tsTreePat
+      ActivePage = tsTempVTR
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -268,7 +268,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 41
           Width = 473
-          Height = 370
+          Height = 366
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -444,7 +444,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           HelpType = htKeyword
           HelpContext = 1000
           Align = alClient
@@ -477,6 +477,7 @@ object frmSuperHip: TfrmSuperHip
           OnGetText = vtrPregledPatGetText
           OnGetImageIndexEx = vtrPregledPatGetImageIndexEx
           OnGetPopupMenu = vtrPregledPatGetPopupMenu
+          OnHeaderDrawQueryElements = vtrPregledPatHeaderDrawQueryElements
           OnKeyAction = vtrPregledPatKeyAction
           OnKeyPress = vtrPregledPatKeyPress
           OnNodeCopied = vtrPregledPatNodeCopied
@@ -616,7 +617,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           ActivePage = tsFmxRoleSelect
           Align = alClient
           DoubleBuffered = False
@@ -629,7 +630,7 @@ object frmSuperHip: TfrmSuperHip
               Left = 0
               Top = 0
               Width = 501
-              Height = 385
+              Height = 381
               VertScrollBar.Smooth = True
               VertScrollBar.Tracking = True
               Align = alClient
@@ -7687,7 +7688,7 @@ object frmSuperHip: TfrmSuperHip
               Left = 0
               Top = 0
               Width = 473
-              Height = 385
+              Height = 381
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7842,7 +7843,7 @@ object frmSuperHip: TfrmSuperHip
               Left = 0
               Top = 0
               Width = 473
-              Height = 385
+              Height = 381
               Hint = '22'#13#10'55'
               Margins.Left = 10
               Align = alLeft
@@ -7997,7 +7998,7 @@ object frmSuperHip: TfrmSuperHip
               Left = 0
               Top = 0
               Width = 501
-              Height = 385
+              Height = 381
               OnCreateFMXForm = fmxCntrRoleSelectCreateFMXForm
               Align = alClient
             end
@@ -8011,7 +8012,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 41
           Width = 509
-          Height = 370
+          Height = 366
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8193,7 +8194,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 473
-          Height = 411
+          Height = 407
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -8351,7 +8352,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 41
           Width = 509
-          Height = 370
+          Height = 366
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8361,8 +8362,8 @@ object frmSuperHip: TfrmSuperHip
           Colors.GridLineColor = 12189116
           Ctl3D = False
           DefaultNodeHeight = 33
-          Header.AutoSizeIndex = 0
-          Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible, hoAutoSpring]
+          Header.AutoSizeIndex = 1
+          Header.Options = [hoAutoResize, hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible, hoAutoSpring]
           Header.Style = hsFlatButtons
           HintMode = hmTooltip
           Indent = 14
@@ -8371,11 +8372,18 @@ object frmSuperHip: TfrmSuperHip
           TabOrder = 0
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toEditable, toFullRepaintOnResize, toInitOnSave, toWheelPanning, toVariableNodeHeight, toEditOnDblClick]
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
-          TreeOptions.SelectionOptions = [toFullRowSelect, toAlwaysSelectNode]
+          TreeOptions.SelectionOptions = [toFullRowSelect, toCenterScrollIntoView, toAlwaysSelectNode]
           OnChange = vtrTempChange
+          OnChecked = vtrTempChecked
+          OnCollapsed = vtrTempCollapsed
+          OnColumnClick = vtrTempColumnClick
+          OnDrawText = vtrTempDrawText
+          OnExpanded = vtrTempExpanded
+          OnGetImageIndexEx = vtrTempGetImageIndexEx
           OnInitNode = vtrTempInitNode
           OnLoadNode = vtrTempLoadNode
           OnMeasureItem = vtrTempMeasureItem
+          OnMeasureTextWidth = vtrTempMeasureTextWidth
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -8492,7 +8500,7 @@ object frmSuperHip: TfrmSuperHip
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 1
               Text = #1044#1077#1090#1072#1081#1083#1080
-              Width = 144
+              Width = 168
             end
             item
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coShowDropMark, coVisible, coAllowFocus, coEditable]
@@ -8510,6 +8518,7 @@ object frmSuperHip: TfrmSuperHip
           Align = alTop
           Caption = 'pnlFiltertemp'
           PopupMenu = pmTempVtr
+          ShowCaption = False
           TabOrder = 1
           object btn12: TButton
             Left = 15
@@ -8518,6 +8527,7 @@ object frmSuperHip: TfrmSuperHip
             Height = 25
             Caption = 'btn12'
             TabOrder = 0
+            Visible = False
             OnClick = btn12Click
           end
         end
@@ -8529,7 +8539,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 41
           Width = 509
-          Height = 370
+          Height = 366
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -8744,7 +8754,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           Align = alClient
           Color = clInfoBk
           Colors.GridLineColor = 12189116
@@ -8905,7 +8915,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9064,7 +9074,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 473
-          Height = 411
+          Height = 407
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -9219,7 +9229,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9380,7 +9390,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -9535,7 +9545,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 509
-          Height = 411
+          Height = 407
           Align = alClient
           AutoExpandDelay = 0
           ChangeDelay = 10
@@ -9689,7 +9699,7 @@ object frmSuperHip: TfrmSuperHip
       Left = 578
       Top = 49
       Width = 1
-      Height = 436
+      Height = 352
       Margins.Top = 0
       BevelOuter = bvRaised
       CloseStyle = svcCompact
@@ -10100,7 +10110,7 @@ object frmSuperHip: TfrmSuperHip
       Left = 1
       Top = 43
       Width = 60
-      Height = 442
+      Height = 438
       Align = alLeft
       Caption = 'pnlRoleBar'
       TabOrder = 4
@@ -10116,9 +10126,9 @@ object frmSuperHip: TfrmSuperHip
   end
   object pnlWork: TPanel
     Left = 595
-    Top = 161
+    Top = 165
     Width = 970
-    Height = 486
+    Height = 482
     Margins.Right = 8
     Margins.Bottom = 8
     Align = alClient
@@ -10129,10 +10139,10 @@ object frmSuperHip: TfrmSuperHip
     TabOrder = 2
     DesignSize = (
       970
-      486)
+      482)
     object splSearchGrid: TSplitter
       Left = 1
-      Top = 307
+      Top = 303
       Width = 968
       Height = 7
       Cursor = crVSplit
@@ -10148,8 +10158,8 @@ object frmSuperHip: TfrmSuperHip
       Left = 1
       Top = 42
       Width = 968
-      Height = 265
-      ActivePage = tsSpisaci
+      Height = 261
+      ActivePage = tsTest
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -10166,7 +10176,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 960
-          Height = 237
+          Height = 233
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Margins.Top = 0
@@ -10340,7 +10350,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 473
-          Height = 237
+          Height = 233
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alLeft
@@ -10500,7 +10510,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 960
-          Height = 237
+          Height = 233
           Align = alClient
           Color = clInactiveCaption
           Font.Charset = DEFAULT_CHARSET
@@ -10527,7 +10537,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 64
           Width = 960
-          Height = 173
+          Height = 169
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -10964,7 +10974,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 41
           Width = 960
-          Height = 196
+          Height = 192
           Align = alClient
           TabOrder = 0
           ExplicitWidth = 245
@@ -10974,7 +10984,7 @@ object frmSuperHip: TfrmSuperHip
             0000000008000200000000000300010000000B00FFFF0300000000000B00FFFF
             08000200000000000300320000000B00000008000A000000660075006C006C00
             00000B0000000B0000000B00FFFF0B00FFFF0B00000008000200000000000800
-            020000000000080002000000000008000200000000000B000000386300004214
+            020000000000080002000000000008000200000000000B00000038630000D813
             0000}
         end
         object pnlTopVideo: TPanel
@@ -11135,7 +11145,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 165
           Width = 960
-          Height = 72
+          Height = 68
           Hint = '22'#13#10'55'
           Margins.Left = 10
           Align = alClient
@@ -11166,6 +11176,7 @@ object frmSuperHip: TfrmSuperHip
           OnChange = vtrRecentDBChange
           OnGetText = vtrRecentDBGetText
           OnKeyPress = vtrRecentDBKeyPress
+          OnMeasureTextHeight = vtrRecentDBMeasureTextHeight
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -11339,7 +11350,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 3
           Top = 44
           Width = 954
-          Height = 190
+          Height = 186
           Columns = <>
           ReadOnly = False
           Selected.FullRow = True
@@ -11412,7 +11423,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 960
-          Height = 237
+          Height = 233
           Align = alClient
           EditDelay = 200
           Font.Charset = DEFAULT_CHARSET
@@ -11506,7 +11517,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 22
           Width = 960
-          Height = 215
+          Height = 211
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -14958,7 +14969,7 @@ object frmSuperHip: TfrmSuperHip
           Left = 0
           Top = 0
           Width = 960
-          Height = 237
+          Height = 233
           OnCreateFMXForm = fmxCntrDynCreateFMXForm
           OnDestroyFMXForm = fmxCntrDynDestroyFMXForm
           Align = alClient
@@ -15171,7 +15182,6 @@ object frmSuperHip: TfrmSuperHip
       Align = alTop
       Caption = 'pnlNav'
       TabOrder = 1
-      Visible = False
       object fmxCntr1: TFireMonkeyContainer
         Left = 1
         Top = 1
@@ -15209,7 +15219,7 @@ object frmSuperHip: TfrmSuperHip
     end
     object btnPull: TButton
       Left = -1
-      Top = 1
+      Top = -1
       Width = 24
       Height = 26
       Anchors = [akLeft]
@@ -15222,7 +15232,7 @@ object frmSuperHip: TfrmSuperHip
     end
     object pnlNzisMessages: TPanel
       Left = 1
-      Top = 314
+      Top = 310
       Width = 968
       Height = 125
       Align = alBottom
@@ -15355,7 +15365,7 @@ object frmSuperHip: TfrmSuperHip
     end
     object pnlGridSearch: TPanel
       Left = 1
-      Top = 439
+      Top = 435
       Width = 968
       Height = 46
       Align = alBottom
@@ -15451,7 +15461,7 @@ object frmSuperHip: TfrmSuperHip
   end
   object actmmb1: TActionMainMenuBar
     Left = 8
-    Top = 159
+    Top = 163
     Width = 1557
     Height = 2
     UseSystemFont = False
@@ -15472,7 +15482,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 8
     Top = 3
     Width = 1557
-    Height = 56
+    Height = 60
     Margins.Left = 8
     Margins.Top = 8
     Margins.Right = 8
@@ -15482,8 +15492,8 @@ object frmSuperHip: TfrmSuperHip
   object hntLek: TBalloonHint
     Style = bhsStandard
     Delay = 300
-    Left = 1112
-    Top = 176
+    Left = 1328
+    Top = 88
   end
   object icn32lst1: TIcon32List
     Icons32 = <
@@ -39895,7 +39905,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C010167008804001410001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010167008804101410001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000A0010000010020000000000000A0
       010000000000000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFEBEBEBFF6F6F6FFF141414FF000000FF000000FF1A1A1AFF707070FFEBEB
@@ -43336,7 +43346,7 @@ object frmSuperHip: TfrmSuperHip
   end
   object tmr1: TTimer
     Enabled = False
-    Interval = 20
+    Interval = 200
     OnTimer = tmr1Timer
     Left = 952
     Top = 88
@@ -43352,8 +43362,8 @@ object frmSuperHip: TfrmSuperHip
     OnMessage = appEvntsMainMessage
     OnShowHint = appEvntsMainShowHint
     OnShortCut = appEvntsMainShortCut
-    Left = 736
-    Top = 176
+    Left = 1392
+    Top = 96
   end
   object dlgOpenXML_PL: TOpenDialog
     Filter = 'XML file|*.xml'
@@ -43446,7 +43456,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 1160
     Top = 64
     Bitmap = {
-      494C010164000C13041420002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164000C13141420002000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000800000004003000001002000000000000080
       0600000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

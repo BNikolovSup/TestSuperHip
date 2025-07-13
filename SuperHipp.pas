@@ -1,4 +1,4 @@
-unit SuperHipp;  //clone .ini'  SetParent  wel  .rtt lnk  1200  last  menu
+unit SuperHipp;  //clone .ini'  SetParent  wel  .rtt lnk  1200  last  mark   img32
 interface
 
   uses
@@ -122,6 +122,7 @@ type
     LastFindedStr: string;
     IsFinded: Boolean;
     node: PVirtualNode;
+    ACol: TColumnIndex;
   end;
 
   TPregledPlanedInfo = record  //  за стария Хипократ
@@ -715,6 +716,26 @@ type
       Node: PVirtualNode);
     procedure grdSearchMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure vtrTempColumnClick(Sender: TBaseVirtualTree; Column: TColumnIndex;
+      Shift: TShiftState);
+    procedure vtrTempGetImageIndexEx(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+      var Ghosted: Boolean; var ImageIndex: TImageIndex;
+      var ImageList: TCustomImageList);
+    procedure vtrTempMeasureTextWidth(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+      const Text: string; var Extent: Integer);
+    procedure vtrRecentDBMeasureTextHeight(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+      const Text: string; var Extent: Integer);
+    procedure vtrTempDrawText(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
+      Node: PVirtualNode; Column: TColumnIndex; const Text: string;
+      const CellRect: TRect; var DefaultDraw: Boolean);
+    procedure vtrPregledPatHeaderDrawQueryElements(Sender: TVTHeader;
+      var PaintInfo: THeaderPaintInfo; var Elements: THeaderPaintElements);
+    procedure vtrTempChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vtrTempExpanded(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vtrTempCollapsed(Sender: TBaseVirtualTree; Node: PVirtualNode);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -726,6 +747,9 @@ type
     vHipOtpisani, vHipZapisani, vHipNovi: PVirtualNode;
 
     vTablesRoot: PVirtualNode;
+    vNomenMKB: PVirtualNode;
+
+
     Ticker : TGridTicker;
     thrHistPerf: ThistoryThread;
     thrAspPerf: TAspectPerformerThread;
@@ -834,6 +858,7 @@ type
     procedure RemontCl142;
     procedure OnProcess(streamSize, streamPos: integer);
     procedure UpdateRoot(const root: ISuperObject; Cl000Coll: TCL000EntryCollection);
+    procedure GetTextToDraw(node: PVirtualNode; Column: TColumnIndex; var text: string; var strPred, strSled, filterText: string);
 
   protected // tempObjects
     PregledTemp: TPregledNewItem;
@@ -871,6 +896,10 @@ type
     procedure IterateRemoveFilter(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure IterateRemontPat(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
     procedure IterateTestEmpty(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+    procedure IterateTempExpand(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+    procedure IterateTempCollapsed(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+
+
   protected  //fill
     procedure FillPregledInPat;
     procedure FillEventsInPat;
@@ -1084,10 +1113,12 @@ type
     procedure GetCurrentPatProf(pat: TRealPatientNewItem);
     procedure GetCurrentPatProf1(pat: TRealPatientNewItem);
     procedure FillOldPlanesInCurrentPlan;
-    function FindNode(DirectionFind: TDirectionFinder): boolean;
+    function FindNodevtrPreg(DirectionFind: TDirectionFinder; ACol: TColumnIndex): boolean;
+    //function FindNodevtr(DirectionFind: TDirectionFinder; vtr: TVirtualStringTree): boolean;
     procedure AddNewPregled;
-    procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer);
-    procedure RemoveDiag(vPreg: PVirtualNode; diag: TRealDiagnosisItem);
+    procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer; DataPosMkb: cardinal);
+    procedure RemoveDiag(vPreg: PVirtualNode; diag: TRealDiagnosisItem); overload;
+    procedure RemoveDiag(vPreg: PVirtualNode; diagDataPos: cardinal); overload;
     procedure AddNewPlan(vPreg: PVirtualNode; var gr: TGraphPeriod132; var TreeLinkPlan: PVirtualNode);
     procedure AddNewPregledOld;
     procedure AddX005Pregled(preg: TRealPregledNewItem);
@@ -1107,6 +1138,7 @@ type
     procedure ChangeColl(sender: TObject);
     procedure ChoiceAnal(sender: TObject);
     procedure ChoiceMKB(sender: TObject);
+    procedure SelectMKB(sender: TObject);
     procedure OnApplicationHint(Sender: TObject);
     procedure OnFmxHint(Sender: TObject; Hint: string; r: TRect);
 
@@ -1139,6 +1171,7 @@ type
     procedure MenuTitleDBClick(Sender: TObject);
     procedure MenuTitleLoadDBClick(Sender: TObject);
     procedure TitleSetingsClick(Sender: TObject);
+    procedure HelpClick(Sender: TObject);
 
     procedure RoleBarOnProgres(Sender: TObject; var progres: integer);
     procedure RoleBarBtnRoleClick(Sender: TObject);
@@ -1693,7 +1726,18 @@ procedure TfrmSuperHip.btnHistNavClick(Sender: TObject);
 var
   i: Integer;
   histnav: THistoryNav;
+  vpreg: PVirtualNode;
+  datapreg, datapat: PAspRec;
+
 begin
+  FmxProfForm.Pregled.FDiagnosis.Exchange(1, 3);
+  vPreg := FmxProfForm.Pregled.FNode;
+  FmxProfForm.Pregled.CanDeleteDiag := False;
+  datapreg := Pointer(PByte(vPreg) + lenNode);
+  datapat := Pointer(PByte(vPreg.Parent) + lenNode);
+  ShowPregledFMX(datapat, datapreg, vpreg);
+  FmxProfForm.Pregled.CanDeleteDiag := True;
+  Exit;
   for i := 0 to ListHistoryNav.Count - 1 do
   begin
     histnav := ListHistoryNav[i];
@@ -2667,10 +2711,33 @@ end;
 procedure TfrmSuperHip.Button2Click(Sender: TObject);
 var
   i: Integer;
-  cl132_1, cl132_2: TRealCL132Item;
-  startDate1, startdate2, enddate1, enddate2: TDate;
-  v: PVirtualNode;
+  linkPos: cardinal;
+  pCardinalData: PCardinal;
+  FPosLinkData: Cardinal;
+  RunNode, vPreg: PVirtualNode;
+  buflink: Pointer;
+  data, dataPat, dataPreg: PAspRec;
 begin
+  buflink := AspectsLinkPatPregFile.Buf;
+  linkPos := 100;
+  i := 0;
+  pCardinalData := pointer(PByte(buflink));
+  FPosLinkData := pCardinalData^;
+  while linkpos < FPosLinkData do
+  begin
+    RunNode := pointer(PByte(bufLink) + linkpos);
+    data := pointer(PByte(RunNode) + lenNode);
+    dataPreg := pointer(PByte(RunNode.Parent) + lenNode);
+    if (data.vid = vvDiag) and (dataPreg.vid = vvPregled) then
+    begin
+      inc(i);
+      Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, CollDiag, CollPregled);
+    end;
+    Inc(linkPos, LenData);
+  end;
+  Fdm.ibsqlDiag.Transaction.CommitRetaining;
+  Button2.Caption := IntToStr(i);
+  Exit;
  // vtrPregledPat.FullCollapse();
  // Exit;
   vtrPregledPat.BeginUpdate;
@@ -2967,14 +3034,15 @@ end;
 procedure TfrmSuperHip.ChoiceMKB(sender: TObject);
 var
   LStream : TResourceStream;
-  i, j, k: integer;
+  i, j, k, m: integer;
   startMkbGroup, endMkbGroup, startMkbSubGroup, endMkbSubGroup: string;
-  vGroup, vSubGroup, vMkb: PVirtualNode;
-  data: PAspRec;
+  vGroup, vSubGroup, vMkb, vDiagPat, vDiagPreg: PVirtualNode;
+  data, dataMkb: PAspRec;
   preg: TRealPregledNewItem;
   patNode: PVirtualNode;
   PatNodes: TPatNodes;
   mkbCode: string;
+  diag: TRealDiagnosisItem;
 begin
   Stopwatch := TStopwatch.StartNew;
   if sender is TRealDiagnosisItem then // има избрано мкб
@@ -3053,12 +3121,27 @@ begin
   j := 0;
   endMkbSubGroup := '';
   k := 0;
+  vDiagPat := vtrTemp.AddChild(nil, nil);
+  data := vtrTemp.GetNodeData(vDiagPat);
+  data.vid := vvPatient;
+  data.index := -1;
+
+  vDiagPreg := vtrTemp.AddChild(nil, nil);
+  data := vtrTemp.GetNodeData(vDiagPreg);
+  data.vid := vvPregled;
+  data.index := -1;
+
+
+  vNomenMKB := vtrTemp.AddChild(nil, nil);
+  data := vtrTemp.GetNodeData(vNomenMKB);
+  data.vid := vvNomenMkb;
+  data.index := -1;
   for i := 0 to CollMkb.MkbGroups.Count - 1 do
   begin
     startMkbGroup := CollMkb.MkbGroups[i].Split([#9])[1];
     endMkbGroup := Copy(startMkbGroup, 6, 3) + '.99';
     startMkbGroup := Copy(startMkbGroup, 2, 3);
-    vGroup := vtrTemp.AddChild(nil, nil);
+    vGroup := vtrTemp.AddChild(vNomenMKB, nil);
     data := vtrTemp.GetNodeData(vGroup);
     data.vid := vvMKBGroup;
     data.index := i;
@@ -3077,8 +3160,7 @@ begin
       data.index := j;
       Inc(j);
 
-      while (k < CollMkb.Count) and
-          (CollMkb.getAnsiStringMap(CollMkb.Items[k].DataPos, Word(Mkb_CODE)) <= endMkbSubGroup) do
+      while (k < CollMkb.Count) and (CollMkb.getAnsiStringMap(CollMkb.Items[k].DataPos, Word(Mkb_CODE)) <= endMkbSubGroup) do
       begin
         vMkb := vtrTemp.AddChild(vSubGroup, nil);
         vMkb.CheckType := ctCheckBox;
@@ -3086,6 +3168,24 @@ begin
         data := vtrTemp.GetNodeData(vMkb);
         data.vid := vvMKB;
         data.DataPos := CollMkb.Items[k].DataPos;
+        for m := 0 to preg.FDiagnosis.Count - 1 do
+        begin
+          diag := preg.FDiagnosis[m];
+          if CollDiag.getCardMap(diag.DataPos, word(Diagnosis_MkbPos)) = data.DataPos then
+          begin
+            vMkb.CheckState := csCheckedNormal;
+            diag.MkbNode := vMkb;
+            dataMkb := vtrTemp.GetNodeData(vMkb);
+            data.index := diag.DataPos;
+
+            vMkb := vtrTemp.AddChild(vDiagPreg, nil);
+            vMkb.CheckType := ctCheckBox;
+            vMkb.CheckState := csUncheckedNormal;
+            data := vtrTemp.GetNodeData(vMkb);
+            data.vid := vvMKB;
+            data.DataPos := CollMkb.Items[k].DataPos;
+          end;
+        end;
         inc(k);
       end;
     end;
@@ -3094,7 +3194,7 @@ begin
 
   //CopyNodesFromAspectToTempVtr(vtrNewAnal, vtrNewAnal.RootNode.FirstChild);
   vtrTemp.OnGetText := vtrMkbGetText;
-
+  vtrTemp.Expanded[vNomenMKB] := True;
   vtrTemp.EndUpdate;
   Elapsed := Stopwatch.Elapsed;
   pgcTree.ActivePage := tsTempVTR;
@@ -4140,7 +4240,7 @@ begin
 
   FinderRec.strSearch := edtSearhTree.Text;
 
-  if not FindNode(dfnone) then // трябва да изтрие последно въведените
+  if not FindNodevtrPreg(dfnone, FinderRec.ACol) then // трябва да изтрие последно въведените
   begin
     edtSearhTree.Text := FinderRec.LastFindedStr;
     edtSearhTree.SelStart := Length(edtSearhTree.Text);
@@ -5760,31 +5860,192 @@ begin
 
 end;
 
-function TfrmSuperHip.FindNode(DirectionFind: TDirectionFinder): boolean;
+//function TfrmSuperHip.FindNodevtr(DirectionFind: TDirectionFinder;
+//  vtr: TVirtualStringTree): boolean;
+//var
+//  node: PVirtualNode;
+//  data: PAspRec;
+//
+//  function FindNodeRepeat(DirectionFind: TDirectionFinder; vtr: TVirtualStringTree): boolean;
+//  var
+//    SaveNode: PVirtualNode;
+//    prefix: string;
+//  begin
+//    SaveNode := node;
+//    Result := False;
+//    prefix := Copy(vtr.Header.Columns[0].Text, 1, vtr.Header.Columns[0].Tag);
+//
+//    while node <> nil do
+//    begin
+//      data := pointer(PByte(node) + lenNode);
+//      if data.vid = FinderRec.vid then
+//      begin
+//        if vtr.Text[node, 0].StartsWith(prefix + FinderRec.strSearch) then
+//        begin
+//          vtr.Selected[node] := True;
+//          vtr.RepaintNode(node);
+//          FinderRec.node := node;
+//          //vtrPregledPat.FocusedNode := node;
+//          Result  := True;
+//          Break;
+//        end;
+//      end;
+//      case DirectionFind of
+//        dfForward,dfNone:
+//        begin
+//          if node.NextSibling <> nil then
+//          begin
+//            node := node.NextSibling;
+//          end
+//          else
+//          begin
+//            node := node.Parent.FirstChild;
+//          end;
+//        end;
+//        dfBackward:
+//        begin
+//          if node.PrevSibling <> nil then
+//          begin
+//            node := node.PrevSibling;
+//          end
+//          else
+//          begin
+//            node := node.Parent.LastChild;
+//          end;
+//        end;
+//      end;
+//
+//      if node = SaveNode then Break;
+//    end;
+//  end;
+//begin
+//  if FinderRec.strSearch = '' then
+//  begin
+//    vtr.Repaint;
+//    FinderRec.IsFinded := False;
+//    FinderRec.node := nil;
+//    Exit;
+//  end;
+//  case DirectionFind of
+//    dfNone: node := FinderRec.node; //vtrPregledPat.GetFirstSelected();
+//    dfForward: node :=  FinderRec.node.NextSibling; //vtrPregledPat.GetFirstSelected().NextSibling;
+//    dfBackward:
+//    begin
+//      if  vtr.GetFirstSelected() = vtr.RootNode.FirstChild.FirstChild then
+//      begin
+//        node := vtr.RootNode.FirstChild.FirstChild.LastChild;
+//      end
+//      else
+//      begin
+//        node := FinderRec.node.PrevSibling; //vtrPregledPat.GetFirstSelected().PrevSibling;
+//      end;
+//    end;
+//
+//  end;
+//
+//  if node = nil then
+//  begin
+//    vtr.Repaint;
+//    FinderRec.IsFinded := False;
+//    FinderRec.node := nil;
+//    Exit;
+//  end;
+//
+//  Result := FindNodeRepeat(DirectionFind, ACol);
+//
+//  if (not Result) and (FinderRec.IsFinded) then // до сега е имало намерено, и вече няма.
+//  begin
+//    case DirectionFind of
+//      dfForward: // намирано е напред. Затова се връщам на първия възел и търся първия след него от съответния тип
+//      begin
+//        node := vtr.RootNode.FirstChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+//        if vtr is TVirtualStringTreeAspect then
+//        begin
+//          data := pointer(PByte(node) + lenNode);
+//        end
+//        else
+//        begin
+//          data := vtr.GetNodeData(node);
+//        end;
+//        while data.vid <> FinderRec.vid do
+//        begin
+//          node := pointer(PByte(node) + LenData);
+//          data := pointer(PByte(node) + lenNode);
+//        end;
+//        result := FindNodeRepeat(dfForward);
+//      end;
+//      dfBackward: // намирано е назад. Затова се отивам на последния възел и търся първия преди него от съответния тип
+//      begin
+//        node := vtr.RootNode.FirstChild.LastChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+//        data := pointer(PByte(node) + lenNode);
+//        while data.vid <> FinderRec.vid do
+//        begin
+//          node := pointer(PByte(node) - LenData);
+//          data := pointer(PByte(node) + lenNode);
+//        end;
+//        result := FindNodeRepeat(dfBackward);
+//      end;
+//    end;
+//  end;
+//
+//  FinderRec.IsFinded := Result;
+//end;
+
+function TfrmSuperHip.FindNodevtrPreg(DirectionFind: TDirectionFinder; ACol: TColumnIndex): boolean;
 var
   node: PVirtualNode;
   data: PAspRec;
 
-  function FindNodeRepeat(DirectionFind: TDirectionFinder): boolean;
+  function FindNodeRepeat(DirectionFind: TDirectionFinder; ACol: TColumnIndex): boolean;
   var
     SaveNode: PVirtualNode;
+    prefix: string;
+    ArrStr: TArray<string>;
+    StrNumber: Integer;
   begin
     SaveNode := node;
     Result := False;
+    prefix := Copy(vtrPregledPat.Header.Columns[ACol].Text, 1, vtrPregledPat.Header.Columns[ACol].Tag);
+
     while node <> nil do
     begin
       data := pointer(PByte(node) + lenNode);
       if data.vid = FinderRec.vid then
       begin
-        if vtrPregledPat.Text[node, 0].StartsWith(vtrPregledPat.Header.Columns[0].Text + FinderRec.strSearch) then
-        begin
-          vtrPregledPat.Selected[node] := True;
-          vtrPregledPat.RepaintNode(node);
-          FinderRec.node := node;
-          //vtrPregledPat.FocusedNode := node;
-          Result  := True;
-          Break;
+        case data.vid of
+          vvPatient:
+          begin
+            case ACol of
+              0:
+              begin
+                if AnsiUpperCase(vtrPregledPat.Text[node, ACol]).StartsWith(AnsiUpperCase(prefix + FinderRec.strSearch)) then
+                begin
+                  vtrPregledPat.Selected[node] := True;
+                  vtrPregledPat.RepaintNode(node);
+                  FinderRec.node := node;
+                  //vtrPregledPat.FocusedNode := node;
+                  Result  := True;
+                  Break;
+                end;
+              end;
+              1:
+              begin
+                ArrStr := vtrPregledPat.Text[node, ACol].Split([' ']);
+                StrNumber := vtrPregledPat.Header.Columns[ACol].Tag;
+                if AnsiUpperCase(ArrStr[StrNumber]).StartsWith(AnsiUpperCase(FinderRec.strSearch)) then
+                begin
+                  vtrPregledPat.Selected[node] := True;
+                  vtrPregledPat.RepaintNode(node);
+                  FinderRec.node := node;
+                  //vtrPregledPat.FocusedNode := node;
+                  Result  := True;
+                  Break;
+                end;
+              end;
+            end;
+          end;
         end;
+
       end;
       case DirectionFind of
         dfForward,dfNone:
@@ -5847,7 +6108,7 @@ begin
     Exit;
   end;
 
-  Result := FindNodeRepeat(DirectionFind);
+  Result := FindNodeRepeat(DirectionFind, ACol);
 
   if (not Result) and (FinderRec.IsFinded) then // до сега е имало намерено, и вече няма.
   begin
@@ -5861,7 +6122,7 @@ begin
           node := pointer(PByte(node) + LenData);
           data := pointer(PByte(node) + lenNode);
         end;
-        result := FindNodeRepeat(dfForward);
+        result := FindNodeRepeat(dfForward, ACol);
       end;
       dfBackward: // намирано е назад. Затова се отивам на последния възел и търся първия преди него от съответния тип
       begin
@@ -5872,7 +6133,7 @@ begin
           node := pointer(PByte(node) - LenData);
           data := pointer(PByte(node) + lenNode);
         end;
-        result := FindNodeRepeat(dfBackward);
+        result := FindNodeRepeat(dfBackward, ACol);
       end;
     end;
   end;
@@ -6043,6 +6304,7 @@ begin
     FmxTitleBar.OnDBClick := MenuTitleDBClick;
     FmxTitleBar.OnLoadDBClick := MenuTitleLoadDBClick;
     FmxTitleBar.OnSetingsClick := TitleSetingsClick;
+    FmxTitleBar.OnHelpClick := HelpClick;
     Form := FmxTitleBar;
 
   end;
@@ -6086,6 +6348,11 @@ begin
   //if thrAspPerf <> nil then
 //    thrAspPerf.stop := true;
   chkAutamatL009.Checked := False;
+end;
+
+procedure TfrmSuperHip.HelpClick(Sender: TObject);
+begin
+  SendMessage(Handle, WM_SYSCOMMAND, SC_CONTEXTHELP, 0);
 end;
 
 procedure TfrmSuperHip.HideTabs;
@@ -6816,6 +7083,8 @@ begin
   CollCertificates.posData := ADB.FPosData;
 
   
+
+
   mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
   mmoTest.Lines.endUpdate;
 
@@ -7222,6 +7491,7 @@ begin
     FmxProfForm.PatientColl := CollPatient;
     FmxProfForm.DoctorColl := CollDoctor;
     FmxProfForm.PregledColl := CollPregled;
+    FmxProfForm.MKBColl := CollMkb;
     FmxProfForm.MdnColl := CollMdn;
     FmxProfForm.ExamAnalColl := CollExamAnal;
     FmxProfForm.AnswValuesColl := CollNZIS_ANSWER_VALUE;
@@ -7657,6 +7927,7 @@ begin
   AspectsLinkPatPregFile.FStreamCmdFile := streamCmdFile;
   FDBHelper.AdbLink := AspectsLinkPatPregFile;
   FmxProfForm.AspLink := AspectsLinkPatPregFile;
+
   //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
 
   //vtrPregledPat.Selected[vtrPregledPat.GetLast()] := True;
@@ -8429,6 +8700,74 @@ begin
   nzisThr.Resume;
 end;
 
+procedure TfrmSuperHip.GetTextToDraw(node: PVirtualNode; Column: TColumnIndex; var text: string;
+  var strPred, strSled, FilterText: string);
+var
+  prefix: string;
+  p: integer;
+  data: PAspRec;
+  ArrStr: TArray<String>;
+  StrNumber, i: Integer;
+begin
+  data := pointer(PByte(node) + lenNode);
+  FilterText := FinderRec.strSearch;
+  case data.vid of
+    vvPatient:
+    begin
+      case Column of
+        0:
+        begin
+          prefix := AnsiUpperCase(Copy(vtrPregledPat.Header.Columns[Column].Text, 1, vtrPregledPat.Header.Columns[Column].Tag));
+          if AnsiUpperCase(Text).StartsWith(prefix + AnsiUpperCase(FinderRec.strSearch)) then
+          begin
+            p := AnsiUpperCase(Text).IndexOf((AnsiUpperCase(FilterText)));
+            FilterText := Copy(Text, p + 1, length(FinderRec.strSearch));
+            strPred := Copy(Text, 1, p);
+            strSled := copy(Text, p+length(FilterText) + 1, length(Text) + 1 -   (p+length(FilterText)));
+          end;
+        end;
+        1:
+        begin
+          if vtrPregledPat.Header.Columns[Column].Tag < 0 then
+          begin
+            text := '';
+            Exit;
+          end;
+          ArrStr := Text.Split([' ']);
+          StrNumber := vtrPregledPat.Header.Columns[Column].Tag;
+          if StrNumber >= Length(ArrStr) then
+          begin
+            text := '';
+            Exit;
+          end;
+          if AnsiUpperCase(ArrStr[StrNumber]).StartsWith(AnsiUpperCase(FinderRec.strSearch)) then
+          begin
+            p := 0;// AnsiUpperCase(Text).IndexOf((AnsiUpperCase(FilterText)));
+            for i := 0 to StrNumber - 1 do
+            begin
+              p := p + Length(ArrStr[i]) + 1;
+            end;
+            FilterText := Copy(Text, p + 1, length(FinderRec.strSearch));
+            strPred := Copy(Text, 1, p);
+            strSled := copy(Text, p+length(FilterText) + 1, length(Text) + 1 -   (p+length(FilterText)));
+          end
+          else
+            text := '';
+        end;
+      end;
+    end;
+  end;
+  //prefix := AnsiUpperCase(Copy(vtrPregledPat.Header.Columns[Column].Text, 1, vtrPregledPat.Header.Columns[Column].Tag));
+//  FilterText := FinderRec.strSearch;
+//  //if AnsiUpperCase(Text).StartsWith(prefix + AnsiUpperCase(FinderRec.strSearch)) then
+//  begin
+//    p := AnsiUpperCase(Text).IndexOf((AnsiUpperCase(FilterText)));
+//    FilterText := Copy(Text, p + 1, length(FinderRec.strSearch));
+//    strPred := Copy(Text, 1, p);
+//    strSled := copy(Text, p+length(FilterText) + 1, length(Text) + 1 -   (p+length(FilterText)));
+//  end;
+end;
+
 procedure TfrmSuperHip.GetTokenNzis(Sender: TObject);
 var
   preg: TRealPregledNewItem;
@@ -8944,6 +9283,7 @@ begin
    FmxProfForm.OnchangeColl := ChangeColl;
    FmxProfForm.OnChoicerAnal := ChoiceAnal;
    FmxProfForm.OnChoicerMkb := ChoiceMKB;
+   FmxProfForm.OnSelectMkb := SelectMKB;
    FmxProfForm.OnSowHint := OnFmxHint;
    FmxProfForm.OnOpenPregled := OnOpenPregled1;
    FmxProfForm.OnClosePregled := OnClosePregled1;
@@ -9299,6 +9639,30 @@ procedure TfrmSuperHip.IterateSendedNzisXmlToCL(Sender: TBaseVirtualTree; Node: 
 begin
   Application.ProcessMessages;
   BtnXMLtoCL000(node);
+end;
+
+procedure TfrmSuperHip.IterateTempCollapsed(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+var
+  AData: PAspRec;
+begin
+  AData := Sender.GetNodeData(node);
+  if (AData.vid = PAspRec(Data).vid) then
+  begin
+    Sender.Expanded[Node] := false;
+  end;
+end;
+
+procedure TfrmSuperHip.IterateTempExpand(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
+var
+  AData: PAspRec;
+begin
+  AData := Sender.GetNodeData(node);
+  if (AData.vid = PAspRec(Data).vid) then
+  begin
+    Sender.Expanded[Node] := True;
+  end;
 end;
 
 procedure TfrmSuperHip.IterateTestEmpty(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
@@ -11039,6 +11403,14 @@ begin
   Handled := True;
 end;
 
+procedure TfrmSuperHip.SelectMKB(sender: TObject);
+var
+  diag: TRealDiagnosisItem;
+begin
+  diag := TRealDiagnosisItem(sender);
+  vtrTemp.Selected[diag.MkbNode] := True;
+end;
+
 procedure TfrmSuperHip.SetPatientTemp(const Value: TRealPatientNewItem);
 begin
   FPatientTemp := Value;
@@ -11148,10 +11520,17 @@ begin
       end;
       vvDiag:
       begin
-        diag := TRealDiagnosisItem.Create(nil);
-        diag.DataPos := dataRun.DataPos;
-        diag.Node := run;
-        FmxProfForm.Pregled.FDiagnosis.Add(diag);
+        if FmxProfForm.Pregled.CanDeleteDiag = true then
+        begin
+          diag := TRealDiagnosisItem.Create(nil);
+          diag.DataPos := dataRun.DataPos;
+          diag.Node := run;
+          FmxProfForm.Pregled.FDiagnosis.Add(diag);
+        end
+        else
+        begin
+
+        end;
       end;
       vvMDN:
       begin
@@ -12251,6 +12630,34 @@ begin
  // vPat := vHipZapisani.FirstChild
 end;
 
+procedure TfrmSuperHip.RemoveDiag(vPreg: PVirtualNode; diagDataPos: cardinal);
+var
+  RunNode: PVirtualNode;
+  data, dataPat, dataPreg: PAspRec;
+  tempViewportPosition: TPointF;
+  i: integer;
+begin
+  RunNode := vPreg.FirstChild;
+  while RunNode <> nil do
+  begin
+    data := Pointer(PByte(RunNode) + lenNode);
+    if data.vid = vvDiag then
+    begin
+      if diagDataPos = Data.DataPos then
+      begin
+        AspectsLinkPatPregFile.MarkDeletedNode(RunNode);
+        dataPreg := Pointer(PByte(vPreg) + lenNode);
+        dataPat :=  Pointer(PByte(vPreg.Parent) + lenNode);
+        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+        ShowPregledFMX(dataPat, dataPreg, vPreg);
+        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+        Break;
+      end;
+    end;
+    RunNode := RunNode.NextSibling;
+  end;
+end;
+
 procedure TfrmSuperHip.RemoveDiag(vPreg: PVirtualNode;
   diag: TRealDiagnosisItem);
 var
@@ -12852,7 +13259,7 @@ begin
 end;
 
 procedure TfrmSuperHip.AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string;
-  rank: integer);
+  rank: integer; DataPosMkb: cardinal);
 var
   diag: TRealDiagnosisItem;
   vDiag: PVirtualNode;
@@ -12860,9 +13267,10 @@ var
 begin
   diag := TRealDiagnosisItem(CollDiag.Add);// добавяне на диагноза в колекцията
   New(diag.PRecord);
-  diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_rank];
+  diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_rank, Diagnosis_MkbPos];
   diag.PRecord.code_CL011 := cl011;
   diag.PRecord.rank := rank;
+  diag.PRecord.MkbPos := DataPosMkb;
   if cl011Add <> '' then
   begin
     Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
@@ -13013,7 +13421,7 @@ begin
         mkb := gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_CL011_Mapping));
         if not mkb_s.Contains(mkb) then
         begin
-          AddNewDiag(vPreg, mkb, '', 0);
+          AddNewDiag(vPreg, mkb, '', 0, 100);
           mkb_s := mkb_s + mkb;
         end;
       end;
@@ -15075,12 +15483,13 @@ var
   data, dataPreg, dataPat: PAspRec;
   tempViewportPosition: TPointF;
 begin
+  Exit;
   data := vtrTemp.GetNodeData(node);
   case data.vid of
     vvMKB:
     begin
       Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-      AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count);
+      AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
       dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
       dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
       tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -15088,6 +15497,82 @@ begin
       FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
     end;
   end;
+end;
+
+procedure TfrmSuperHip.vtrTempChecked(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  data, dataPreg, dataPat: PAspRec;
+  tempViewportPosition: TPointF;
+  i: integer;
+begin
+  data := vtrTemp.GetNodeData(node);
+  case data.vid of
+    vvMKB:
+    begin
+      if (csCheckedNormal = Node.CheckState) then
+      begin
+        Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+        AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
+        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
+        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+        data.index := FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].DataPos;
+      end
+      else
+      begin
+        Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+        FmxProfForm.Pregled.CanDeleteDiag := False;
+        for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
+        begin
+          if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
+          begin
+            FmxProfForm.Pregled.FDiagnosis.Delete(i);
+            Break;
+          end;
+        end;
+        RemoveDiag(FmxProfForm.Pregled.FNode, cardinal(Data.index));
+
+        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
+        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+        FmxProfForm.Pregled.CanDeleteDiag := true;
+      end;
+    end;
+  end;
+end;
+
+procedure TfrmSuperHip.vtrTempCollapsed(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  data, dataAction: PAspRec;
+  RunNode: PVirtualNode;
+begin
+  if (GetKeyState(VK_CONTROL) >= 0) then Exit;
+  dataAction := Sender.GetNodeData(node);
+  vtrTemp.OnCollapsed := nil;
+  vtrTemp.OnMeasureItem := nil;
+  Sender.BeginUpdate;
+  vtrTemp.IterateSubtree(vNomenMKB, IterateTempcollapsed, dataAction);
+  Sender.EndUpdate;
+  vtrTemp.OnCollapsed := vtrTempCollapsed;
+  vtrTemp.OnMeasureItem := vtrTempMeasureItem;
+end;
+
+procedure TfrmSuperHip.vtrTempColumnClick(Sender: TBaseVirtualTree;
+  Column: TColumnIndex; Shift: TShiftState);
+var
+  RText: TRect;
+  Nodetext: string;
+  node: PVirtualNode;
+begin
+  Node := Sender.GetFirstSelected();
+  if node = nil then Exit;
+  vtrTemp.GetTextInfo(node, Column, vtrTemp.Font, RText, Nodetext);
 end;
 
 procedure TfrmSuperHip.vtrTempDrawButton(sender: TVirtualStringTreeHipp; node: PVirtualNode; var ButonVisible: Boolean; const numButton: Integer;
@@ -15120,6 +15605,46 @@ begin
   end;
 end;
 
+procedure TfrmSuperHip.vtrTempDrawText(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
+var
+  r: TRect;
+begin
+  r := CellRect;
+  Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(Text), Length(Text), r, 43024);
+  DefaultDraw := False;
+end;
+
+procedure TfrmSuperHip.vtrTempExpanded(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  data, dataAction: PAspRec;
+  RunNode: PVirtualNode;
+begin
+  if (GetKeyState(VK_CONTROL) >= 0) then Exit;
+  dataAction := Sender.GetNodeData(node);
+  //if dataAction.vid = vvPatientRoot then  Exit;
+
+  vtrTemp.OnExpanded := nil;
+  vtrTemp.OnMeasureItem := nil;
+  Sender.BeginUpdate;
+  vtrTemp.IterateSubtree(vNomenMKB, IterateTempExpand, dataAction);
+  Sender.EndUpdate;
+  vtrTemp.OnExpanded := vtrTempExpanded;
+  vtrTemp.OnMeasureItem := vtrTempMeasureItem;
+end;
+
+procedure TfrmSuperHip.vtrTempGetImageIndexEx(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+  var Ghosted: Boolean; var ImageIndex: TImageIndex;
+  var ImageList: TCustomImageList);
+begin
+  if Kind <> TVTImageKind.ikState then
+    Exit;
+  ImageIndex := 78;
+end;
+
 procedure TfrmSuperHip.vtrTempInitNode(Sender: TBaseVirtualTree; ParentNode,
   Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
 begin
@@ -15137,12 +15662,25 @@ end;
 
 procedure TfrmSuperHip.vtrTempMeasureItem(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
+var
+  h0, h1: integer;
 begin
+  inherited;
+  //Exit;
   if Sender.MultiLine[Node] then
   begin
     TargetCanvas.Font := Sender.Font;
-    NodeHeight := vtrTemp.ComputeNodeHeight(TargetCanvas, Node, 0) + 10;
+    h0 := vtrTemp.ComputeNodeHeight(TargetCanvas, Node, 0);
+    h1 := vtrTemp.ComputeNodeHeight(TargetCanvas, Node, 1);
+    NodeHeight := System.Math.Max(h0, h1) + 10;
   end;
+end;
+
+procedure TfrmSuperHip.vtrTempMeasureTextWidth(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  const Text: string; var Extent: Integer);
+begin
+  //
 end;
 
 procedure TfrmSuperHip.vtrDoctorButtonClick(sender: TVirtualStringTreeHipp; node: PVirtualNode; const numButton: Integer);
@@ -16409,6 +16947,45 @@ var
 begin
   data := Sender.GetNodeData(node);
   case data.vid of
+    vvPatient:
+    begin
+      case Column of
+        0:
+        begin
+          CellText := 'Диагнози на пациента';
+        end;
+        1:
+        begin
+
+        end;
+      end;
+    end;
+    vvPregled:
+    begin
+      case Column of
+        0:
+        begin
+          CellText := 'Диагнози в текущия преглед';
+        end;
+        1:
+        begin
+
+        end;
+      end;
+    end;
+    vvNomenMkb:
+    begin
+      case Column of
+        0:
+        begin
+          CellText := 'МКБ - Номенклатура';
+        end;
+        1:
+        begin
+
+        end;
+      end;
+    end;
     vvMKBGroup:
     begin
       case Column of
@@ -16446,7 +17023,7 @@ begin
         end;
         1:
         begin
-
+          CellText := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_NAME));
         end;
       end;
     end;
@@ -17490,8 +18067,29 @@ end;
 
 procedure TfrmSuperHip.vtrPregledPatAdvancedHeaderDraw(Sender: TVTHeader;
     var PaintInfo: THeaderPaintInfo; const Elements: THeaderPaintElements);
+var
+  txt: string;
 begin
-  //
+  txt := PaintInfo.Column.Text;
+  case PaintInfo.Column.Index of
+    1, 2, 3:
+    begin
+      PaintInfo.TargetCanvas.Font.Color := clred;
+      PaintInfo.TargetCanvas.TextRect(PaintInfo.TextRectangle, txt);
+      PaintInfo.TargetCanvas.Font.Color := clblue;
+    end;
+    0:
+    begin
+      PaintInfo.TargetCanvas.Font.Color := clred;
+      PaintInfo.TargetCanvas.TextRect(PaintInfo.TextRectangle, txt);
+      PaintInfo.TargetCanvas.Font.Color := clblue;
+    end;
+  end;
+  //if PaintInfo.Column.Index >2 then
+//    Exit;
+//  PaintInfo.TargetCanvas.Font.Color := clred;
+//  txt := 'ddddd';
+//  PaintInfo.TargetCanvas.TextRect(PaintInfo.TextRectangle, txt);
 end;
 
 procedure TfrmSuperHip.vtrPregledPatCollapsed(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -17542,6 +18140,10 @@ var
   Node: PVirtualNode;
   data: PAspRec;
   i: Integer;
+  RText: TRect;
+  Nodetext: string;
+  p: TPoint;
+  ArrStr: TArray<string>;
 begin
   Node := Sender.GetFirstSelected();
   if node = nil then Exit;
@@ -17550,6 +18152,9 @@ begin
   begin
     vtrPregledPat.Header.Columns[i].ImageIndex := -1;
   end;
+  vtrPregledPat.GetTextInfo(node, Column, vtrPregledPat.Font, RText, Nodetext);
+  //vtrPregledPat.gette
+
   vtrPregledPat.Header.Columns[Column].ImageIndex := 29;
   edtSearhTree.Clear;
   FinderRec.vid := data.vid;
@@ -17557,13 +18162,75 @@ begin
   FinderRec.node := vtrPregledPat.GetFirstSelected;
   FinderRec.strSearch  := '';
   FinderRec.LastFindedStr  := '';
+  FinderRec.ACol  := Column;
+  vtrPregledPat.Header.Columns[0].Text := '....';
+  vtrPregledPat.Header.Columns[1].Text := 'Детайли';
   case Column of
     0:
     begin
       case data.vid of
-        vvPatient: vtrPregledPat.Header.Columns[Column].Text := 'ЕГН ';
+        vvPatient:
+        begin
+          vtrPregledPat.Header.Columns[Column].Text := 'ЕГН на пациент';
+          vtrPregledPat.Header.Columns[Column].Tag := 4;
+        end;
         vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+
+      else
+        vtrPregledPat.Header.Columns[Column].Text := '....';
       end;
+
+
+    end;
+    1:
+    begin
+      case data.vid of
+        vvPatient:
+        begin
+          ArrStr := Nodetext.Split([' ']);
+          Canvas.Font.Assign(vtrPregledPat.Font);
+
+          p := Sender.ScreenToClient(Mouse.CursorPos);
+          //vtrPregledPat.Header.Columns[Column].Text := Format('%d   %d', [p.X, p.y]);
+          vtrPregledPat.Header.Columns[Column].Text := Format('%d   %d', [-RText.Left + p.x, RText.Top- p.y]);
+          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0])) then
+          begin
+            vtrPregledPat.Header.Columns[Column].Text := 'Име на пациента';
+            vtrPregledPat.Header.Columns[Column].Tag := 0;
+          end
+          else
+          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1])) then
+          begin
+            vtrPregledPat.Header.Columns[Column].Text := 'Презиме на пациента';
+            vtrPregledPat.Header.Columns[Column].Tag := 1;
+          end
+          else
+          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2])) then
+          begin
+            vtrPregledPat.Header.Columns[Column].Text := 'Фамилия на пациента';
+            vtrPregledPat.Header.Columns[Column].Tag := 2;
+          end
+          else
+          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2]+ ' ' + ArrStr[3]+ ' ' + ArrStr[4])) then
+          begin
+            vtrPregledPat.Header.Columns[Column].Text := 'Възраст на пациента';
+            vtrPregledPat.Header.Columns[Column].Tag := 3;
+          end
+          else
+          begin
+            vtrPregledPat.Header.Columns[Column].Text := 'Детайли';
+            vtrPregledPat.Header.Columns[Column].Tag := -1;
+          end
+        end;
+        vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+
+      else
+        vtrPregledPat.Header.Columns[Column].Text := '....';
+      end;
+
+
     end;
   end;
 end;
@@ -17640,26 +18307,23 @@ procedure TfrmSuperHip.vtrPregledPatDrawText(Sender: TBaseVirtualTree; TargetCan
   const CellRect: TRect; var DefaultDraw: Boolean);
 var
   p: Integer;
-  strPred, strSled: string;
+  strPred, strSled, textForSearch, FilterText: string;
   r: TRect;
-  FilterText: string;
   DrawFormatPred: cardinal;
   DrawFormatSled: cardinal;
 begin
   if FinderRec.strSearch = '' then  exit;
   if not(vsSelected in Node.States) then Exit;
+  if FinderRec.ACol <> Column then  Exit;
 
 
   DrawFormatPred := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE or DT_LEFT ;
   DrawFormatSled := DT_NOPREFIX or DT_VCENTER or DT_SINGLELINE or DT_LEFT or DT_END_ELLIPSIS;
-  FilterText := FinderRec.strSearch;
-  if AnsiUpperCase(Text).StartsWith(AnsiUpperCase(Sender.Header.Columns[Column].Text + FinderRec.strSearch)) then
+  textForSearch := Text;
+  GetTextToDraw(Node, Column, textForSearch, strPred, strSled, FilterText);
+  if textForSearch <> '' then
   begin
-    p := AnsiUpperCase(Text).IndexOf((AnsiUpperCase(FilterText)));
-    FilterText := Copy(Text, p + 1, length(FinderRec.strSearch));
     SetBkMode(TargetCanvas.Handle,TRANSPARENT);
-    strPred := Copy(Text, 1, p);
-    strSled := copy(Text, p+length(FilterText) + 1, length(Text) + 1 -   (p+length(FilterText)));
     TargetCanvas.TextWidth(strPred);
     r := CellRect;
     SetTextColor(TargetCanvas.Handle, clBlack);
@@ -17674,19 +18338,16 @@ begin
     r.Width := TargetCanvas.TextWidth(FilterText);
     Winapi.Windows.DrawText(TargetCanvas.Handle, PWideChar(FilterText), Length(FilterText), r, DrawFormatPred);
 
-
-
     SetTextColor(TargetCanvas.Handle, clBlack);
     SetBkMode(TargetCanvas.Handle, TRANSPARENT);
     r.Offset(r.Width, 0);
     r.Width := TargetCanvas.TextWidth(strSled);
 
     Winapi.Windows.DrawText(TargetCanvas.Handle, PWideChar(strSled), Length(strSled), r, DrawFormatSled);
-
-
-
     DefaultDraw:= False;
-  end;
+  end
+  else
+    DefaultDraw:= True;
 end;
 
 procedure TfrmSuperHip.vtrPregledPatExpanded(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -17890,6 +18551,7 @@ var
   FieldText: string;
   PatAge: Integer;
   PatAgeDoub: Double;
+  patLogical: TlogicalPatientNewSet;
   PatAgeStr: string;
   evntNode: PVirtualNode;
   evntCnt: Integer;
@@ -17946,8 +18608,22 @@ begin
           begin
             //pat := TPatientItem(PatientColl.Add);
             //pat.DataPos := Data.DataPos;
-            CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
-            //data.index := PatientColl.Count - 1;
+            patLogical := TlogicalPatientNewSet(CollPatient.getLogical32Map(data.DataPos, word(PatientNew_Logical)));
+            if PID_TYPE_B in patLogical then
+              CellText := 'Бебе ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+            else
+            if PID_TYPE_E in patLogical then
+              CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+            else
+            if PID_TYPE_L in patLogical then
+              CellText := 'ЛНЧ ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+            else
+            if PID_TYPE_S in patLogical then
+              CellText := 'ССН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+            else
+            if PID_TYPE_F in patLogical then
+              CellText := 'Ч ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+            else
           end;
         end;
         vvPregled:
@@ -18193,13 +18869,13 @@ begin
           CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
           CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
           CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME))
-                      + #13#10 + '  ' + PatAgeStr;
+                      + #13#10 + ' ' + PatAgeStr;
         end;
         vvPregled:
         begin
-          p := pointer(PByte(CollPregled.buf) + (Data.DataPos  + 4*word(PregledNew_ID)));
-          ofset := p^ + CollPatient.posData;
-          CellText := IntToStr(ofset) + ' от ' + DateToStr(CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
+          //p := pointer(PByte(CollPregled.buf) + (Data.DataPos  + 4*word(PregledNew_ID)));
+          //ofset := p^ + CollPatient.posData;
+          CellText := 'НРН ' + CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN))  + ' от ' + DateToStr(CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
         end;
         vvNZIS_PLANNED_TYPE:
         begin
@@ -18486,6 +19162,12 @@ begin
 end;
 
 
+procedure TfrmSuperHip.vtrPregledPatHeaderDrawQueryElements(Sender: TVTHeader;
+  var PaintInfo: THeaderPaintInfo; var Elements: THeaderPaintElements);
+begin
+  Elements := [hpeText];
+end;
+
 procedure TfrmSuperHip.vtrPregledPatKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 var
   node: PVirtualNode;
@@ -18509,7 +19191,7 @@ begin
         if FinderRec.IsFinded then
         begin
           KeyCNT := False;
-          FindNode(dfForward);
+          FindNodevtrPreg(dfForward, FinderRec.ACol);
           KeyCNT := True;
         end;
       end;
@@ -18518,7 +19200,7 @@ begin
         if FinderRec.IsFinded then
         begin
           KeyCNT := False;
-          FindNode(dfBackward);
+          FindNodevtrPreg(dfBackward, FinderRec.ACol);
           KeyCNT := True;
         end;
       end;
@@ -18545,7 +19227,10 @@ begin
     Key := #0;
     Exit;
   end;
-
+  if vtrPregledPat.Header.Columns[FinderRec.acol].Tag < 0 then
+  begin
+    Exit;
+  end;
   edtSearhTree.Perform(WM_CHAR, Ord(key), 0);
 
   //vtrPregledPat.IncrementalSearch
@@ -18884,6 +19569,13 @@ begin
 
 end;
 
+procedure TfrmSuperHip.vtrRecentDBMeasureTextHeight(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  const Text: string; var Extent: Integer);
+begin
+  //
+end;
+
 procedure TfrmSuperHip.vtrRoleGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 var
   data: PAspRec;
@@ -19104,7 +19796,17 @@ begin
     begin
       FmxProfForm.WmHelp(msg.HelpInfo.MousePos);
     end;
-  end;
+  end
+  else
+  if fmxCntrTitleBar.FireMonkeyFormHandle = msg.HelpInfo.hItemHandle then
+  begin
+    FmxTitleBar.WmHelp(msg.HelpInfo.MousePos);
+  end
+  else
+  if FmxTitleBar.p1.IsOpen then
+  begin
+    FmxTitleBar.WmHelp(msg.HelpInfo.MousePos);
+  end
 end;
 
 procedure TfrmSuperHip.WMHipDeactivate(var Msg: TMessage);
@@ -19196,7 +19898,7 @@ begin
   inherited;
   //tmr1.Tag := Integer(M.Active);
 
-  //tmr1.Enabled := True;
+  tmr1.Enabled := True;
   //FmxTitleBar.ActivateTitleBar(M.Active);
 end;
 

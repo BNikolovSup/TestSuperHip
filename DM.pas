@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, IBX.IBSQL, IBX.IBDatabase, Data.DB,
-   Winapi.Windows, dialogs, System.Generics.Collections;
+   Winapi.Windows, dialogs, System.Generics.Collections, RealObj.RealHipp;
 
 type
   TDUNzis = class(TDataModule)
@@ -44,6 +44,7 @@ type
     ibsqlProceduresGP: TIBSQL;
     ibsqlProcedures_S: TIBSQL;
     ibsqlKardProf: TIBSQL;
+    ibsqlDiag: TIBSQL;
     procedure DataModuleDestroy(Sender: TObject);
     procedure ibsqlCommandSQLChanging(Sender: TObject);
     procedure DataModuleCreate(Sender: TObject);
@@ -55,6 +56,7 @@ type
     FGuidDB: TList<TGUID>;
     procedure InitDb(DBName: string);
     function GetDoctorNameFromDB(uin: string): string;
+    procedure InsertDiag(posData, posDataPreg: cardinal; collDiag: TRealDiagnosisColl; collPreg: TRealPregledNewColl);
     property IsGP: Boolean read FIsGP;
 
   end;
@@ -67,6 +69,9 @@ implementation
 {$R *.dfm}
 
 { TDU }
+
+uses
+  Table.PregledNew, Table.Diagnosis;
 
 procedure TDUNzis.DataModuleCreate(Sender: TObject);
 begin
@@ -151,6 +156,40 @@ begin
     FGuidDB.Add(StringToGUID(Trim(ibsqlCommand.Fields[0].AsString)));
     ibsqlCommand.Next;
   end;
+end;
+
+procedure TDUNzis.InsertDiag(posData, posDataPreg: cardinal; collDiag: TRealDiagnosisColl;
+      collPreg: TRealPregledNewColl);
+var
+  StatDiag: TlogicalDiagnosisSet;
+  statDiagInt: Integer;
+begin
+
+
+  ibsqlDiag.Close;
+  ibsqlDiag.ParamByName('DOKUMENT_ID').AsInteger := collPreg.getIntMap(posDataPreg, word(PregledNew_ID));
+  ibsqlDiag.ParamByName('DOKUMENT_TYPE').AsInteger := 0;
+  ibsqlDiag.ParamByName('DIAGNOSIS_CODE_CL011').AsString := collDiag.getAnsiStringMap(posData, word(Diagnosis_code_CL011));
+  ibsqlDiag.ParamByName('DIAGNOSIS_ADDITIONALCODE_CL011').AsString := collDiag.getAnsiStringMap(posData, word(DIAGNOSIS_ADDITIONALCODE_CL011));
+  ibsqlDiag.ParamByName('DIAGNOSIS_RANK').AsInteger := collDiag.getWordMap(posData, word(DIAGNOSIS_RANK));
+  ibsqlDiag.ParamByName('DIAGNOSIS_ONSETDATETIME').AsDateTime := collPreg.getDateMap(posDataPreg, word(PregledNew_START_DATE)) +
+     collPreg.getDateMap(posDataPreg, word(PregledNew_START_TIME));
+  ibsqlDiag.ParamByName('DIAGNOSIS_MKBPOS').AsInteger := collDiag.getIntMap(posData, word(DIAGNOSIS_MKBPOS));
+
+  StatDiag := [];
+  if ibsqlDiag.ParamByName('DIAGNOSIS_RANK').AsInteger = 0 then
+    Include(StatDiag, TlogicalDiagnosis.use_CL076_Chief_Complaint)
+  else
+    Include(StatDiag, TlogicalDiagnosis.use_CL076_Comorbidity);
+
+  Include(StatDiag, TlogicalDiagnosis.ClinicalStatus_Relapse);
+  Include(StatDiag, TlogicalDiagnosis.VerificationStatusDifferential);
+  statDiagInt := Integer(word(StatDiag));
+  ibsqlDiag.ParamByName('DIAGNOSIS_LOGICAL').AsInteger := statDiagInt;
+
+
+  ibsqlDiag.ExecQuery;
+
 end;
 
 end.

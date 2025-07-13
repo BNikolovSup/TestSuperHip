@@ -436,8 +436,10 @@ TCollectionForSort = class(TPersistent)
     function getCardMap(dataPos: cardinal; propIndex: word): cardinal;
     function getDoubleMap(dataPos: cardinal; propIndex: word): Double;
     function getLogical40Map(dataPos: cardinal; propIndex: word): TLogicalData40;
+    function getLogical32Map(dataPos: cardinal; propIndex: word): TLogicalData32;
 
     procedure SetIntMap(dataPos: cardinal; propIndex: word; Aint: integer);// специално за неща като ид-та
+    procedure SetCardMap(dataPos: cardinal; propIndex: word; ACard: Cardinal);// специално за неща като ид-та
     procedure SetAnsiStringMap(dataPos: cardinal; propIndex: word; AString: AnsiString);// специално за неща като НРН-та стрингове с определена дължина
     procedure SetWordMap(dataPos: cardinal; propIndex: word; AWord: word);// специално за неща като ид-та
     procedure SetDateMap(dataPos: cardinal; propIndex: word; ADate: TDate);// специално за неща като ид-та
@@ -2765,6 +2767,24 @@ begin
 end;
 
 
+function TBaseCollection.getLogical32Map(dataPos: cardinal;
+  propIndex: word): TLogicalData32;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData32;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
 function TBaseCollection.getLogical40Map(dataPos: cardinal;
   propIndex: word): TLogicalData40;
 var
@@ -2985,6 +3005,23 @@ begin
   //SetLength(Result, PLen^);
   System.SysUtils.StrCopy(pData, PAnsiChar(AString));
   //PAnsiChar(pData) := AString;
+end;
+
+procedure TBaseCollection.SetCardMap(dataPos: cardinal; propIndex: word;
+  ACard: Cardinal);
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^Cardinal;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  pData^ := ACard;
 end;
 
 procedure TBaseCollection.SetCntUpdates(const Value: Integer);

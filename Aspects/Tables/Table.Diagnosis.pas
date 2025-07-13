@@ -49,6 +49,8 @@ TDiagnosisItem = class(TBaseItem)
       , Diagnosis_onsetDateTime
       , Diagnosis_CL011Pos
       , Diagnosis_Logical
+      , Diagnosis_MkbPos
+      , Diagnosis_MkbAddPos
       );
       TSetProp = set of TPropertyIndex;
       PRecDiagnosis = ^TRecDiagnosis;
@@ -59,6 +61,8 @@ TDiagnosisItem = class(TBaseItem)
         onsetDateTime: TDate;
         CL011Pos: Cardinal;
         Logical: TlogicalDiagnosisSet;
+        MkbPos: Cardinal;
+        MkbAddPos: Cardinal;
         setProp: TSetProp;
       end;
 
@@ -179,6 +183,8 @@ begin
             Diagnosis_rank: SaveData(PRecord.rank, PropPosition, metaPosition, dataPosition);
             Diagnosis_onsetDateTime: SaveData(PRecord.onsetDateTime, PropPosition, metaPosition, dataPosition);
             Diagnosis_CL011Pos: SaveData(PRecord.CL011Pos, PropPosition, metaPosition, dataPosition);
+            Diagnosis_MkbPos: SaveData(PRecord.MkbPos, PropPosition, metaPosition, dataPosition);
+            Diagnosis_MkbAddPos: SaveData(PRecord.MkbAddPos, PropPosition, metaPosition, dataPosition);
             Diagnosis_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -245,6 +251,8 @@ begin
             Diagnosis_rank: SaveData(PRecord.rank, PropPosition, metaPosition, dataPosition);
             Diagnosis_onsetDateTime: SaveData(PRecord.onsetDateTime, PropPosition, metaPosition, dataPosition);
             Diagnosis_CL011Pos: SaveData(PRecord.CL011Pos, PropPosition, metaPosition, dataPosition);
+            Diagnosis_MkbPos: SaveData(PRecord.MkbPos, PropPosition, metaPosition, dataPosition);
+            Diagnosis_MkbAddPos: SaveData(PRecord.MkbAddPos, PropPosition, metaPosition, dataPosition);
             Diagnosis_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -331,6 +339,8 @@ begin
     Diagnosis_rank: Result := 'rank';
     Diagnosis_onsetDateTime: Result := 'onsetDateTime';
     Diagnosis_CL011Pos: Result := 'CL011Pos';
+    Diagnosis_MkbPos: Result := 'MkbPos';
+    Diagnosis_MkbAddPos: Result := 'MkbAddPos';
     Diagnosis_Logical: Result := 'Logical';
   end;
 end;
@@ -344,7 +354,7 @@ end;
 
 function TDiagnosisColl.FieldCount: Integer;
 begin
-  Result := 6;
+  Result := 8;
 end;
 
 procedure TDiagnosisColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -378,6 +388,8 @@ begin
     Diagnosis_rank: str := inttostr(Diagnosis.PRecord.rank);
     Diagnosis_onsetDateTime: str := DateToStr(Diagnosis.PRecord.onsetDateTime);
     Diagnosis_CL011Pos: str := inttostr(Diagnosis.PRecord.CL011Pos);
+    Diagnosis_MkbPos: str := inttostr(Diagnosis.PRecord.MkbPos);
+    Diagnosis_MkbAddPos: str := inttostr(Diagnosis.PRecord.MkbAddPos);
     Diagnosis_Logical: str := Diagnosis.Logical16ToStr(TLogicalData16(Diagnosis.PRecord.Logical));
   else
     begin
@@ -459,6 +471,8 @@ begin
     Diagnosis_rank: str :=  inttostr(Diagnosis.getWordMap(Self.Buf, Self.posData, propIndex));
     Diagnosis_onsetDateTime: str :=  DateToStr(Diagnosis.getDateMap(Self.Buf, Self.posData, propIndex));
     Diagnosis_CL011Pos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
+    Diagnosis_MkbPos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
+    Diagnosis_MkbAddPos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
     Diagnosis_Logical: str :=  Diagnosis.Logical32ToStr(Diagnosis.getLogical32Map(Self.Buf, Self.posData, propIndex));
   else
     begin
@@ -506,6 +520,8 @@ begin
       end;
       Diagnosis_rank: TempItem.IndexWord :=  TempItem.getPWordMap(Self.Buf, self.posData, word(propIndex))^;
       Diagnosis_CL011Pos: TempItem.IndexInt :=  TempItem.getPCardMap(Self.Buf, self.posData, word(propIndex))^;
+      Diagnosis_MkbPos: TempItem.IndexInt :=  TempItem.getPCardMap(Self.Buf, self.posData, word(propIndex))^;
+      Diagnosis_MkbAddPos: TempItem.IndexInt :=  TempItem.getPCardMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -524,7 +540,7 @@ begin
   begin
     New(Diagnosis.PRecord);
     Diagnosis.PRecord.setProp := [];
-	CntUpdates := CntUpdates + 1;
+	  CntUpdates := CntUpdates + 1;
   end
   else
   begin
@@ -535,6 +551,8 @@ begin
       Diagnosis_rank: isOld :=  Diagnosis.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
       Diagnosis_onsetDateTime: isOld :=  Diagnosis.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
       Diagnosis_CL011Pos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      Diagnosis_MkbPos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      Diagnosis_MkbAddPos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -555,6 +573,8 @@ begin
     Diagnosis_rank: Diagnosis.PRecord.rank := StrToInt(AValue);
     Diagnosis_onsetDateTime: Diagnosis.PRecord.onsetDateTime := StrToDate(AValue);
     Diagnosis_CL011Pos: Diagnosis.PRecord.CL011Pos := StrToInt(AValue);
+    Diagnosis_MkbPos: Diagnosis.PRecord.MkbPos := StrToInt(AValue);
+    Diagnosis_MkbAddPos: Diagnosis.PRecord.MkbAddPos := StrToInt(AValue);
     Diagnosis_Logical: Diagnosis.PRecord.Logical := tlogicalDiagnosisSet(Diagnosis.StrToLogical16(AValue));
   end;
 end;
@@ -582,6 +602,8 @@ begin
       Diagnosis_rank: isOld :=  Diagnosis.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
       Diagnosis_onsetDateTime: isOld :=  Diagnosis.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
       Diagnosis_CL011Pos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      Diagnosis_MkbPos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      Diagnosis_MkbAddPos: isOld :=  Diagnosis.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -602,6 +624,8 @@ begin
     Diagnosis_rank: Diagnosis.PRecord.rank := StrToInt(AFieldText);
     Diagnosis_onsetDateTime: Diagnosis.PRecord.onsetDateTime := StrToDate(AFieldText);
     Diagnosis_CL011Pos: Diagnosis.PRecord.CL011Pos := StrToInt(AFieldText);
+    Diagnosis_MkbPos: Diagnosis.PRecord.MkbPos := StrToInt(AFieldText);
+    Diagnosis_MkbAddPos: Diagnosis.PRecord.MkbAddPos := StrToInt(AFieldText);
     Diagnosis_Logical: Diagnosis.PRecord.Logical := tlogicalDiagnosisSet(Diagnosis.StrToLogical16(AFieldText));
   end;
 end;
@@ -642,6 +666,20 @@ begin
         end;
       end;
       Diagnosis_CL011Pos:
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListDiagnosisSearch.Add(self.Items[i]);
+        end;
+      end;
+      Diagnosis_MkbPos:
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListDiagnosisSearch.Add(self.Items[i]);
+        end;
+      end;
+      Diagnosis_MkbAddPos:
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -831,7 +869,28 @@ begin
     Diagnosis_additionalCode_CL011: SortByIndexAnsiString;
     Diagnosis_rank: SortByIndexWord;
     Diagnosis_CL011Pos: SortByIndexInt;
+    Diagnosis_MkbPos: SortByIndexInt;
+    Diagnosis_MkbAddPos: SortByIndexInt;
   end;
 end;
+
+
+
+//CREATE TABLE DIAGNOSIS (
+//    ID                              TID /* TID = INTEGER NOT NULL */,
+//    DOKUMENT_ID                     INTEGER,
+//    DOKUMENT_TYPE                   SMALLINT,
+//    DIAGNOSIS_CODE_CL011            TICD /* TICD = VARCHAR(6) */,
+//    DIAGNOSIS_ADDITIONALCODE_CL011  TICD /* TICD = VARCHAR(6) */,
+//    DIAGNOSIS_RANK                  SMALLINT,
+//    DIAGNOSIS_ONSETDATETIME         TIMESTAMP,
+//    DIAGNOSIS_CL011POS              INTEGER,
+//    DIAGNOSIS_LOGICAL               INTEGER,
+//    DIAGNOSIS_MKBPOS                INTEGER
+//);
+//
+//
+//
+//ALTER TABLE DIAGNOSIS ADD CONSTRAINT PK_DIAGNOSIS PRIMARY KEY (ID);
 
 end.

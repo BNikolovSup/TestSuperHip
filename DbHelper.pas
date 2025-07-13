@@ -1173,7 +1173,7 @@ begin
   end;
   if not ibsqlPatientNew.Fields[8].IsNull then
   begin
-    TempItem.PRecord.FNAME := ibsqlPatientNew.Fields[8].AsString;
+    TempItem.PRecord.FNAME := Trim(ibsqlPatientNew.Fields[8].AsString);
     Include(TempItem.PRecord.setProp, PatientNew_FNAME);
   end;
   if not ibsqlPatientNew.Fields[9].IsNull then
@@ -1188,7 +1188,7 @@ begin
   end;
   if not ibsqlPatientNew.Fields[11].IsNull then
   begin
-    TempItem.PRecord.LNAME := ibsqlPatientNew.Fields[11].AsString;
+    TempItem.PRecord.LNAME := Trim(ibsqlPatientNew.Fields[11].AsString);
     Include(TempItem.PRecord.setProp, PatientNew_LNAME);
   end;
   if not ibsqlPatientNew.Fields[12].IsNull then
@@ -1209,7 +1209,7 @@ begin
 
   if not ibsqlPatientNew.Fields[15].IsNull then
   begin
-    TempItem.PRecord.SNAME := ibsqlPatientNew.Fields[15].AsString;
+    TempItem.PRecord.SNAME := Trim(ibsqlPatientNew.Fields[15].AsString);
     Include(TempItem.PRecord.setProp, PatientNew_SNAME);
   end;
 
