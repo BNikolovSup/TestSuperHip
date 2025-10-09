@@ -93,7 +93,7 @@ begin
   dblistStream.Free;
 
   FLibTokenDll := FIni.ReadString('LibToken', 'LibTokenDll', '');
-  //UserDate := StrToDate(FIni.ReadString('Test', 'UserDate', '01.01.1900'), ;
+  //UserDate := StrToDate(FIni.ReadString('Test', 'UserDate', '01.01.1900')) ;
 end;
 
 destructor TOptions.destroy;

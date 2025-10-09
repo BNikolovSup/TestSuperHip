@@ -44,6 +44,7 @@ type
     ListInt: TList<Integer>;
     ListDate: TList<TDate>;
     ListTime: TList<TTime>;
+    ListLog40: TList<TLogicalData40>;
     FIsSorting: Boolean;
 
     procedure SetNodeADB(const Value: PVirtualNode);
@@ -55,6 +56,8 @@ type
     procedure SortIntListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
     procedure SortDateListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
     procedure SortTimeListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+    procedure SortLogical40ListPropIndexCollNew(Coll: TBaseCollection; propIndex: word; SortIsAsc: Boolean);
+
     procedure SortCollByPropertyAnsiStr(coll: TBaseCollection; SortAsc: boolean = true);
     procedure SetcollPreg(const Value: TPregledNewColl);
     procedure DoCollPregSort(senedr: TObject);
@@ -167,6 +170,7 @@ begin
   ListInt := TList<Integer>.Create;
   ListDate := TList<Tdate>.Create;
   ListTime := TList<Ttime>.Create;
+  ListLog40 := TList<TLogicalData40>.Create;
 
 
 end;
@@ -186,7 +190,7 @@ end;
 
 procedure TSearchThread.DoSearchVTR2;
 var
-  i, iVid: Integer;
+  i, iVid, testCnt: Integer;
   linkPos: Cardinal;
   pCardinalData: ^Cardinal;
   FPosLinkData: Cardinal;
@@ -196,7 +200,7 @@ var
   node, patNode, pregNode, mkbNode: PVirtualNode;
   FindedPregNode: PVirtualNode;
   dataPat, dataRunPreg, dataDiag: PAspRec;
-  dataPreg: PAspRec;
+  dataPreg, dataTest: PAspRec;
   tempPat: TPatientNewItem;
   temppreg: TRealPregledNewItem;
   tempDoctor: TDoctorItem;
@@ -208,6 +212,7 @@ begin
   FStop := False;
 
   linkPos := 100;
+  testCnt := 0;
 
   pCardinalData := pointer(PByte(bufLink));
   FPosLinkData := pCardinalData^;
@@ -257,6 +262,7 @@ begin
         case dataRunPreg.vid of
           vvPregled:   // ако е преглед
           begin
+            FindedPregNode := pregNode;
             if FCollPat.Tag < 0 then
             begin
               FCollPat.Tag := 0;
@@ -267,47 +273,51 @@ begin
             begin
               AcntImunInPreg := 0;
               mkbNode := pregNode.FirstChild;
-              while mkbNode <> nil do // loop diag
-              begin
-                dataDiag := pointer(PByte(mkbNode) + lenNode);
-                case dataDiag.vid of
-                  vvDiag:
-                  begin
-                    //if FindedPregNode = nil then Break;
-
-                    tempDiag.DataPos := dataDiag.DataPos;
-                    if not tempDiag.IsFullFinded(Self.BufADB, FPosDataADB, nil) then
-                    begin
-                      FindedPregNode := nil;
-                    end
-                    else
-                    begin
-                      //inc(AcntPregInPat);
-                    end;
-                    //if tempDiag.IsFullFinded(Self.BufADB, FPosDataADB, nil) then
+              //while mkbNode <> nil do // loop diag
+//              begin
+//                dataDiag := pointer(PByte(mkbNode) + lenNode);
+//                case dataDiag.vid of
+//                  vvDiag:
+//                  begin
+//                    //if FindedPregNode = nil then Break;
+//
+//                    tempDiag.DataPos := dataDiag.DataPos;
+//                    if not tempDiag.IsFullFinded(Self.BufADB, FPosDataADB, nil) then
 //                    begin
-//                      collPreg.ListDataPos.Add(dataPreg);
-//                      inc(AcntPregInPat);
-//                      CollPat.Tag := CollPat.Tag + 1;
-//                      Break;
+//                      FindedPregNode := nil;
+//                    end
+//                    else
+//                    begin
+//                      //inc(AcntPregInPat);
 //                    end;
-                  end;
-                  vvExamImun:
-                  begin
-                    //if FindedPregNode = nil then Break;
-                    tempImun.DataPos := dataDiag.DataPos;
-                    if not tempImun.IsFullFinded(Self.BufADB, FPosDataADB, CollExamImun) then
-                    begin
-                      FindedPregNode := nil;
-                    end
-                    else
-                    begin
-                      Inc(AcntImunInPreg)
-                    end;
-                  end;
-                end;
-                mkbNode := mkbNode.NextSibling;
-              end;
+//                    //if tempDiag.IsFullFinded(Self.BufADB, FPosDataADB, nil) then
+////                    begin
+////                      collPreg.ListDataPos.Add(dataPreg);
+////                      inc(AcntPregInPat);
+////                      CollPat.Tag := CollPat.Tag + 1;
+////                      Break;
+////                    end;
+//                  end;
+//                  vvExamImun:
+//                  begin
+//                    //if FindedPregNode = nil then Break;
+//                    tempImun.DataPos := dataDiag.DataPos;
+//                    if not tempImun.IsFullFinded(Self.BufADB, FPosDataADB, CollExamImun) then
+//                    begin
+//                      FindedPregNode := nil;
+//                    end
+//                    else
+//                    begin
+//                      Inc(AcntImunInPreg)
+//                    end;
+//                  end;
+//                end;
+//                mkbNode := mkbNode.NextSibling;
+//              end;
+            end
+            else
+            begin
+              FindedPregNode := nil;
             end;
           end;
           vvDoctor:
@@ -318,15 +328,21 @@ begin
         end;
         if FindedPregNode <> nil then
         begin
-          if (AcntImunInPreg > -1) and (dataPreg <> nil) then
+          //if (AcntImunInPreg > -1) and (dataPreg <> nil) then
+          if (dataPreg <> nil) then
           begin
+
             FcollPreg.ListDataPos.Add(FindedPregNode);
+            inc(testCnt);
+            dataTest := Pointer(pbyte(FindedPregNode) + lenNode);
+            if dataTest.vid <> vvPregled then
+              uin := 'ddd';
             inc(AcntPregInPat);
           end;
-          //CollPat.Tag := CollPat.Tag + 1;
+          CollPat.Tag := CollPat.Tag + 1;
         end;
         pregNode := pregNode.NextSibling;
-        FindedPregNode := pregNode;
+        FindedPregNode := nil;;
       end;
     end
     else
@@ -346,7 +362,7 @@ begin
       0: // има прегледи, но не е изпълнено условието за прегледите или по нататък
       begin
         FCollPat.Tag := 0;
-        FCollPat.ListDataPos.Add(patNode);
+        //FCollPat.ListDataPos.Add(patNode);
 
       end;
     else
@@ -457,10 +473,23 @@ begin
                     actInteger: SortIntListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
                     actTDate: SortDateListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
                     actTime: SortTimeListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+                    actLogical: SortLogical40ListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
                   end;
 
                 end;
-                //vvPatient: SortAnsiListPropIndexCollNew(collPat, collPat.ColumnForSort);
+                vvPatient:
+                begin
+                  propIndex := collPat.ArrayPropOrderSearchOptions[collPat.ColumnForSort];
+                  propType := collPat.PropType(propIndex);
+                  case propType of
+                    actAnsiString: SortAnsiListPropIndexCollNew(collPat, propIndex, collPat.SortAsc);
+                    actInteger: SortIntListPropIndexCollNew(collPat, propIndex, collPat.SortAsc);
+                    actTDate: SortDateListPropIndexCollNew(collPat, propIndex, collPat.SortAsc);
+                    actTime: SortTimeListPropIndexCollNew(collPat, propIndex, collPat.SortAsc);
+                    actLogical: SortLogical40ListPropIndexCollNew(collPat, propIndex, collPreg.SortAsc);
+                  end;
+
+                end;
               end;
 
               grdSearch.Repaint;
@@ -719,10 +748,10 @@ procedure QuickSort(L, R: Integer);
       J := R;
       P := (L + R) shr 1;
       repeat
-        while FcollPreg.getAnsiStringMap(ListDataPos[I].DataPos, Word(PregledNew_NRN)) <
-              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Inc(I);
-        while FcollPreg.getAnsiStringMap(ListDataPos[J].DataPos, Word(PregledNew_NRN))  >
-              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN)) do Dec(J);
+        while FcollPreg.getAnsiStringMap(ListDataPos[I].DataPos, Word(PregledNew_NRN_LRN)) <
+              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN_LRN)) do Inc(I);
+        while FcollPreg.getAnsiStringMap(ListDataPos[J].DataPos, Word(PregledNew_NRN_LRN))  >
+              FcollPreg.getAnsiStringMap(ListDataPos[P].DataPos, Word(PregledNew_NRN_LRN)) do Dec(J);
         if I <= J then begin
           Save := ListDataPos[I];
           ListDataPos[I] := ListDataPos[J];
@@ -793,7 +822,7 @@ procedure TSearchThread.SortListPropIndexColl(ListDataPos: TList<PVirtualNode>);
   begin
     datPosI := PAspRec(Pointer(PByte(ListDataPos[I]) + lenNode)).DataPos;
     datPosP := PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos;
-    Result := FcollPreg.getAnsiStringMap(datPosI, Word(PregledNew_NRN)) < FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN));
+    Result := FcollPreg.getAnsiStringMap(datPosI, Word(PregledNew_NRN_LRN)) < FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN_LRN));
   end;
 
   function conditionJ(j, p: integer): Boolean;
@@ -802,7 +831,7 @@ procedure TSearchThread.SortListPropIndexColl(ListDataPos: TList<PVirtualNode>);
   begin
     datPosJ := PAspRec(Pointer(PByte(ListDataPos[J]) + lenNode)).DataPos;
     datPosP := PAspRec(Pointer(PByte(ListDataPos[P]) + lenNode)).DataPos;
-    Result := FcollPreg.getAnsiStringMap(datPosJ, Word(PregledNew_NRN)) > FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN));
+    Result := FcollPreg.getAnsiStringMap(datPosJ, Word(PregledNew_NRN_LRN)) > FcollPreg.getAnsiStringMap(datPosP, Word(PregledNew_NRN_LRN));
   end;
 procedure QuickSort(L, R: Integer);
 var
@@ -843,6 +872,71 @@ begin
   if (ListDataPos.count >1 ) then
   begin
     QuickSort(0,ListDataPos.count-1);
+  end;
+end;
+
+procedure TSearchThread.SortLogical40ListPropIndexCollNew(Coll: TBaseCollection;
+  propIndex: word; SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : TLogicalData40;
+    saveList: PVirtualNode;
+  begin
+    repeat
+      //Sleep(1);//  за тесттване на бавно сортиране
+      if FStop then
+      begin
+        ListLog40.Clear;
+        FStoped := True;
+        Exit;
+      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while ((ListLog40[I] <= ListLog40[P]) and (ListLog40[I] <> ListLog40[P])) do Inc(I);
+          while ((ListLog40[J] >= ListLog40[P]) and (ListLog40[J] <> ListLog40[P])) do Dec(J);
+        end
+        else
+        begin
+          while ((ListLog40[i] >= ListLog40[P]) and (ListLog40[I] <> ListLog40[P])) do Inc(I);
+          while ((ListLog40[J] <= ListLog40[P]) and (ListLog40[J] <> ListLog40[P]))  do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListLog40[I];
+          saveList := ListDataPos[I];
+          ListLog40[I] := ListLog40[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListLog40[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := Coll.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListLog40.Add(Coll.getLogical40Map(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListLog40.count-1);
+    ListLog40.Clear;
+    FStoped := True;
   end;
 end;
 

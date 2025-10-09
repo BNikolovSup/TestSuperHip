@@ -18,7 +18,7 @@ type
 
   TAsectTypeKind = (actNone, actAnsiString, actString,actAnsiString_L, actString_L, actInteger,
                     actTDate, actTime, actDouble, actWord, actBool, actLogical, actCardinal,
-                    actINT64, actTIMESTAMP);
+                    actINT64, actTIMESTAMP, actTTime, actTArrInt);
 
   TServerResponse = (srNone, srWhoAreYou, srCmdSizes, srCmdUpload, srYouAre);
   TAspectRole = (arNone, arNomenNzis, arDoctorOPL, arNomenNzisUpload);
@@ -36,7 +36,8 @@ type
                       ctDiagnosticReport, ctCL139, ctKARTA_PROFILAKTIKA2017, ctBLANKA_MED_NAPR,
                       ctNZIS_PLANNED_TYPE, ctNZIS_QUESTIONNAIRE_RESPONSE, ctNZIS_QUESTIONNAIRE_ANSWER,
                       ctNZIS_ANSWER_VALUE, ctNZIS_RESULT_DIAGNOSTIC_REPORT, ctNZIS_DIAGNOSTIC_REPORT,
-                      ctCL144, ctCL037, ctCL006, ctNzisToken, ctCertificates );
+                      ctCL144, ctCL037, ctCL006, ctNzisToken, ctCertificates, ctNzisReqResp, ctBLANKA_MED_NAPR_3A,
+                      ctINC_MDN, ctAnalResult, ctHOSPITALIZATION, ctEXAM_LKK, ctINC_NAPR, ctOtherDoctor);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -141,7 +142,20 @@ type
              vvOptionSearchCot,
              vvMKBGroup,
              vvMKBSubGroup,
-             vvNomenMkb);
+             vvNomenMkb,
+             vvPractica,
+             vvKARTA_PROFILAKTIKA2017,
+             vvMKBAdd,
+             vvNzisMessages,
+             vvRecepta,
+             vvHosp,
+             vvObshti,
+             vvMedNapr3A,
+             vvIncMdn,
+             vvMedNaprHosp,
+             vvMedNaprLkk,
+             vvIncMN
+             );
 
 
 
@@ -155,6 +169,7 @@ type
       AdbItem: TObject;
       OpType: TOperationType;
       collType: TCollectionsType;
+      datapos: Cardinal;
     end;
 
   PAspRec = ^TAspRec;
@@ -455,7 +470,9 @@ type
                 NZIS_ANSWER_VALUE,
                 NZIS_DIAGNOSTIC_REPORT,
                 NZIS_RESULT_DIAGNOSTIC_REPORT,
-                NzisToken
+                NzisToken,
+                INC_MDN,
+                INC_NAPR
           );
    TPlanedStatus = (psNew, psInNzis, psMain, psNzisPending, psNzisPartiallyCompleted, psNzisCompleted);
    TPlanedStatusSet = set of TPlanedStatus;

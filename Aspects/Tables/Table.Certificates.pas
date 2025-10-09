@@ -5,7 +5,7 @@ uses
   Aspects.Collections, Aspects.Types,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
+  VirtualTrees, VCLTee.Control, sbxtypes;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -45,6 +45,8 @@ Certificates_CERT_ID
         Pin: AnsiString;
         setProp: TSetProp;
       end;
+  private
+    FCertPlug: TsbxCertificate;
 
   public
     PRecord: ^TRecCertificates;
@@ -60,6 +62,7 @@ Certificates_CERT_ID
     procedure UpdateCertificates;
     procedure SaveCertificates(var dataPosition: Cardinal);
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+  property CertPlug: TsbxCertificate read FCertPlug write FCertPlug;
   end;
 
 

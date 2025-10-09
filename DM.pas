@@ -4,7 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Classes, IBX.IBSQL, IBX.IBDatabase, Data.DB,
-   Winapi.Windows, dialogs, System.Generics.Collections, RealObj.RealHipp;
+   Winapi.Windows, dialogs, System.Generics.Collections, RealObj.RealHipp,
+  IBX.IBScript;
 
 type
   TDUNzis = class(TDataModule)
@@ -45,9 +46,16 @@ type
     ibsqlProcedures_S: TIBSQL;
     ibsqlKardProf: TIBSQL;
     ibsqlDiag: TIBSQL;
+    ibscrpt1: TIBScript;
+    ibsqlMedNapr3A: TIBSQL;
+    ibsqlIncMDN: TIBSQL;
+    ibsqlMedNaprHosp: TIBSQL;
+    ibsqlMedNaprLKK: TIBSQL;
+    ibsqlIncMN: TIBSQL;
     procedure DataModuleDestroy(Sender: TObject);
     procedure ibsqlCommandSQLChanging(Sender: TObject);
     procedure DataModuleCreate(Sender: TObject);
+    procedure DBMainAfterConnect(Sender: TObject);
   private
     FIsGP: Boolean;
 
@@ -83,6 +91,11 @@ procedure TDUNzis.DataModuleDestroy(Sender: TObject);
 begin
   self.DBMain.Connected := False;
   FreeAndNil(FGuidDB);
+end;
+
+procedure TDUNzis.DBMainAfterConnect(Sender: TObject);
+begin
+  ibscrpt1.ExecuteScript;
 end;
 
 function TDUNzis.GetComputerNam: string;

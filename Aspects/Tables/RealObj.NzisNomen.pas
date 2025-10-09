@@ -17,6 +17,7 @@ type
   TCL028 = (CL028_QN = 1, CL028_NOM = 2, CL028_NAR = 3, CL028_DATE = 4, CL028_BOOL = 5);
 
   TCL137 = (CL137_Pending = 1, CL137_PartiallyCompleted = 2, CL137_Completed = 3);
+  //TCL087 = ()
 
 
 TRealPR001Item = class;
@@ -83,6 +84,7 @@ TRealCl006Item = class(TCL006Item)
 
  public
    function GetDataPosFromKey(key: string): Cardinal;
+   procedure UpdateCL022;
    property Items[Index: Integer]: TRealCL022Item read GetItem write SetItem;
 
  end;
@@ -412,7 +414,13 @@ end;
 
 destructor TRealCl132Item.destroy;
 begin
+  if Assigned (FListPr001) then
+  begin
+    FListPr001.Clear;
+  end;
   FreeAndNil(FListPr001);
+  FreeAndNil(FExamAnal);
+  CL047.Free;
   inherited;
 end;
 
@@ -461,7 +469,9 @@ end;
 
 destructor TRealPR001Item.destroy;
 begin
+  LstCl134.Clear;
   FreeAndNil(LstCl134);
+  FreeAndNil(FExamAnal);
   inherited;
 end;
 
@@ -1177,6 +1187,35 @@ end;
 procedure TRealCL022Coll.SetItem(Index: Integer; const Value: TRealCL022Item);
 begin
   inherited SetItem(Index, Value);
+end;
+
+procedure TRealCL022Coll.UpdateCL022;
+var
+  dataPosition: Cardinal;
+  pCardinalData: PCardinal;
+  cnt, i: Integer;
+  Cl022: TRealCl022Item;
+
+begin
+  cnt := 0;
+  pCardinalData := pointer(PByte(Buf) + 12);
+  dataPosition := pCardinalData^ + self.posData;
+  for i := 0 to Count - 1 do
+  begin
+    Cl022 := Items[i];
+    if Cl022.PRecord <> nil then
+    begin
+      Cl022.SaveCL022(dataPosition);
+      self.streamComm.Len := self.streamComm.Size;
+      Self.CmdFile.CopyFrom(self.streamComm, 0);
+      inc(cnt);
+    end;
+  end;
+  if cnt > 0 then
+  begin
+    pCardinalData := pointer(PByte(Buf) + 12);
+    pCardinalData^  := dataPosition - self.PosData;
+  end;
 end;
 
 { TRealCL006Coll }

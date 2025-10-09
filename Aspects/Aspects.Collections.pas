@@ -1,5 +1,5 @@
 unit Aspects.Collections;
-      //60
+      //arrcond
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
@@ -54,6 +54,7 @@ TCollectionForSort = class(TPersistent)
 
   TLog08 = 0..7;
   TLogicalData08 = set of TLog08;
+  PLogicalData08 = ^TLogicalData08;
   TLog16 = 0..15;
   TLogicalData16 = set of TLog16;
   PLogicalData16 = ^TLogicalData16;
@@ -159,6 +160,8 @@ TCollectionForSort = class(TPersistent)
   TFileCMDStream = class(TFileStream)
   private
     FAspectDataPos: Cardinal;
+    FGuid: TGUID;
+    procedure SetGuid(const Value: TGUID);
   protected
     ClientServerStream: TMemoryStream;
     procedure scktClientRead(Sender: TObject; Socket: TCustomWinSocket);
@@ -167,10 +170,12 @@ TCollectionForSort = class(TPersistent)
     procedure EndOfRead;
   public
     scktClient: TClientSocket;
+    constructor Create(const AFileName: string; Mode: Word);
     destructor Destroy; override;
     procedure InitAspectConnection;
     Procedure CopyFromCmdStream(cmdStream: TCommandStream; SendToAspect: Boolean = false);
     property AspectDataPos: Cardinal read FAspectDataPos write FAspectDataPos;
+    property Guid: TGUID read FGuid write SetGuid;
   end;
 
   TBaseItem = class(TCollectionItem)
@@ -233,6 +238,9 @@ TCollectionForSort = class(TPersistent)
     function getBooleanMap(buf: pointer; posData: cardinal; propIndex: word): boolean;
     function getPBooleanMap(buf: pointer; posData: cardinal; propIndex: word): PBoolean;
 
+    function getLogical08Map(buf: pointer; posData: cardinal; propIndex: word): TLogicalData08;
+    function getPLogical08Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData08;
+
     function getLogical16Map(buf: pointer; posData: cardinal; propIndex: word): TLogicalData16;
     function getPLogical16Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData16;
 
@@ -244,6 +252,10 @@ TCollectionForSort = class(TPersistent)
 
     function getLogical40Map(buf: pointer; posData: cardinal; propIndex: word): TLogicalData40;
     function getPLogical40Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData40;
+
+
+    function getLogical48Map(buf: pointer; posData: cardinal; propIndex: word): TLogicalData48;
+    function getPLogical48Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData48;
 
     function getBlobMap(buf: pointer; posData: cardinal; propIndex: word): TStream;
     function getPBlobMap(buf: pointer; posData: cardinal; propIndex: word): Pointer;
@@ -319,6 +331,50 @@ TCollectionForSort = class(TPersistent)
                           var metaPosition, dataPosition: Cardinal; vtrData: TAspRec;
                           Vtr: TVirtualStringTreeAspect = nil; parentNode: PVirtualNode = nil); overload;
 
+    procedure SaveDataTemp(const intData: Integer; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const CardData: Cardinal; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const wordData: word; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const byteData: byte; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const strData: String; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const strData: AnsiString; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const BoolData: boolean; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const DoubleData: Double; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const ArrWordData: TArrWord; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(const ArrIntData: TArrInt; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var TreeLink: PVirtualNode; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData08; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData16; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData24; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData32; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData40; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData48; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var LogicalData: TLogicalData64; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+    procedure SaveDataTemp(var stream: TStream; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal); overload;
+
+    procedure SaveDataTemp(var TreeLink: PVirtualNode; PropPosition: cardinal;
+                          var metaPosition, dataPosition: Cardinal; vtrData: TAspRec;
+                          Vtr: TVirtualStringTreeAspect = nil; parentNode: PVirtualNode = nil); overload;
+
+
     procedure UpdateData(const intData: Integer; PropPosition: cardinal;
                           var metaPosition, dataPosition: Cardinal); overload;
     procedure UpdateData(const CardData: Cardinal; PropPosition: cardinal;
@@ -339,22 +395,29 @@ TCollectionForSort = class(TPersistent)
                           var metaPosition, dataPosition: Cardinal); overload;
     procedure UpdateData(const TreeLink: PVirtualNode; parentIsRoot: boolean; isUpdate: boolean; PropPosition: cardinal;
                           var metaPosition, dataPosition: Cardinal); overload;
+
+    procedure SetPosCMDTemp(posCmd: Cardinal); virtual;
   public
     ArrCondition: TArray<TConditionSet>;
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
     function GetPRecord: Pointer; virtual;
+    function GetTableName: string; virtual;
     procedure NewPRecord; virtual;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); virtual;
     function GetCollType: TCollectionsType; virtual;
     function Logical32ToStr(log: TLogicalData32): string;
     function Logical24ToStr(log: TLogicalData24): string;
     function Logical40ToStr(log: TLogicalData40): string;
+    function Logical48ToStr(log: TLogicalData48): string;
     function Logical16ToStr(log: TLogicalData16): string;
+    function Logical08ToStr(log: TLogicalData08): string;
     function StrToLogical32(str: string):  TLogicalData32;
+    function StrToLogical24(str: string):  TLogicalData24;
     function StrToLogical16(str: string):  TLogicalData16;
     function StrToLogical08(str: string):  TLogicalData08;
     function StrToLogical40(str: string):  TLogicalData40;
+    function StrToLogical48(str: string):  TLogicalData48;
     function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; virtual;
     function IsFinded(PAnsFind: AnsiString; buf: Pointer; FPosDataADB: Cardinal; FieldForFind: word; cot: TConditionSet): Boolean; overload; virtual;
     function IsFinded(PBoolFind: Boolean; buf: Pointer; FPosDataADB: Cardinal; FieldForFind: word; cot: TConditionSet): Boolean; overload; virtual;
@@ -368,12 +431,22 @@ TCollectionForSort = class(TPersistent)
 
     function SaveAnyStreamCommand(Props: Pointer; PropsSize: word; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal): TCommandStream;
 
-    function SaveStreamCommand(Props: TLogicalData128; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
-    function SaveStreamCommand(Props: TLogicalData48; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
-    function SaveStreamCommand(Props: TLogicalData32; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
     function SaveStreamCommand(Props: TLogicalData08; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
-    function SaveStreamCommand(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
     function SaveStreamCommand(Props: TLogicalData16; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommand(Props: TLogicalData24; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommand(Props: TLogicalData32; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommand(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommand(Props: TLogicalData48; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommand(Props: TLogicalData128; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+
+    function SaveStreamCommandTemp(Props: TLogicalData128; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommandTemp(Props: TLogicalData48; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommandTemp(Props: TLogicalData32; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommandTemp(Props: TLogicalData08; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommandTemp(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+    function SaveStreamCommandTemp(Props: TLogicalData16; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+
+
 
     procedure AddTagToStream(stream:TStringStream; NameTag, ValueTag :string; amp: Boolean = true);
 
@@ -414,7 +487,9 @@ TCollectionForSort = class(TPersistent)
     procedure grdSearchClickedHeader(Sender: TObject);
   public
     streamComm: TCommandStream;
+    StreamCommTemp: TCommandStream;
     cmdFile: TFileCMDStream;
+    cmdFileTemp: TFileCMDStream;
     ListDataPos: TList<Pvirtualnode>; // за търсене
     ListNodes: TList<PAspRec>;
 
@@ -426,6 +501,7 @@ TCollectionForSort = class(TPersistent)
 
     destructor Destroy; override;
     procedure SortListDataPos;
+    procedure SortListNodes;
     function getAnsiStringMap(dataPos: cardinal; propIndex: word): AnsiString;
     function getAnsiStringMapOfset(Ofset: cardinal; propIndex: word): AnsiString;
     function getDateMap(dataPos: cardinal; propIndex: word): Tdate;
@@ -437,11 +513,13 @@ TCollectionForSort = class(TPersistent)
     function getDoubleMap(dataPos: cardinal; propIndex: word): Double;
     function getLogical40Map(dataPos: cardinal; propIndex: word): TLogicalData40;
     function getLogical32Map(dataPos: cardinal; propIndex: word): TLogicalData32;
+    function getLogical16Map(dataPos: cardinal; propIndex: word): TLogicalData16;
 
     procedure SetIntMap(dataPos: cardinal; propIndex: word; Aint: integer);// специално за неща като ид-та
     procedure SetCardMap(dataPos: cardinal; propIndex: word; ACard: Cardinal);// специално за неща като ид-та
     procedure SetAnsiStringMap(dataPos: cardinal; propIndex: word; AString: AnsiString);// специално за неща като НРН-та стрингове с определена дължина
     procedure SetWordMap(dataPos: cardinal; propIndex: word; AWord: word);// специално за неща като ид-та
+    procedure SetLogical16Map(dataPos: cardinal; propIndex: word; ALog16: TLogicalData16);// специално за неща като ид-та
     procedure SetDateMap(dataPos: cardinal; propIndex: word; ADate: TDate);// специално за неща като ид-та
     procedure SetTimeMap(dataPos: cardinal; propIndex: word; ATime: TTime);// специално за неща като ид-та
 
@@ -462,6 +540,7 @@ TCollectionForSort = class(TPersistent)
     procedure OrderFieldsSearch1(Grid: TTeeGrid);virtual;
     procedure ShowListNodesGrid (Grid: TTeeGrid);virtual;
     procedure FillListNodes(Link: TMappedFile; vv: TVtrVid);
+    procedure FillListLinks(Link: TMappedFile; vv: TVtrVid);
     function GetNodeFromDataPos(Link: TMappedFile; vv: TVtrVid; dataPos: cardinal): PVirtualNode;
     function FindItemFromDataPos(dataPos: cardinal): Integer;
     function GetNodeFromID(linkBuf: pointer; vv: TVtrVid; propIndex: Word; id: integer): PVirtualNode;
@@ -470,6 +549,9 @@ TCollectionForSort = class(TPersistent)
     procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);virtual;
     procedure GrdSearhKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+
+    procedure DoCollSort(senedr: TObject);
+    procedure SortAnsiListPropIndexCollNew(propIndex: word; SortIsAsc: Boolean);
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -552,10 +634,10 @@ begin
   inherited;
   FDataPos := 0;
   FVersion := 0;
-  if Assigned(self.Collection) then
-  begin
-    SetLength(ArrCondition, TBaseCollection(self.Collection).FieldCount);
-  end;
+  //if Assigned(self.Collection) then
+//  begin
+//    SetLength(ArrCondition, TBaseCollection(self.Collection).FieldCount);
+//  end;
 end;
 
 destructor TBaseItem.Destroy;
@@ -803,6 +885,24 @@ begin
   Result := pData^;
 end;
 
+function TBaseItem.getLogical08Map(buf: pointer; posData: cardinal;
+  propIndex: word): TLogicalData08;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData08;
+begin
+  p := pointer(PByte(buf) + FDataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
 function TBaseItem.getLogical16Map(buf: pointer; posData: cardinal; propIndex: word): TLogicalData16;
 var
   P: ^Cardinal;
@@ -859,6 +959,24 @@ var
   P: ^Cardinal;
   ofset: Cardinal;
   pData: ^TLogicalData40;
+begin
+  p := pointer(PByte(buf) + FDataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
+function TBaseItem.getLogical48Map(buf: pointer; posData: cardinal;
+  propIndex: word): TLogicalData48;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData48;
 begin
   p := pointer(PByte(buf) + FDataPos + 4*propIndex);
   if p^ = 0 then
@@ -1096,6 +1214,12 @@ begin
   Result := pointer(PByte(buf) + ofset);
 end;
 
+function TBaseItem.getPLogical08Map(buf: pointer; posData: cardinal;
+  propIndex: word): PLogicalData08;
+begin
+
+end;
+
 function TBaseItem.getPLogical16Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData16;
 begin
 
@@ -1112,6 +1236,12 @@ begin
 end;
 
 function TBaseItem.getPLogical40Map(buf: pointer; posData: cardinal; propIndex: word): PLogicalData40;
+begin
+
+end;
+
+function TBaseItem.getPLogical48Map(buf: pointer; posData: cardinal;
+  propIndex: word): PLogicalData48;
 begin
 
 end;
@@ -1237,6 +1367,11 @@ begin
   ofset := p^ + PosData;
   PLen := pointer(PByte(buf) + ofset);
   Result := PChar(pointer(PByte(buf) + ofset + 2));
+end;
+
+function TBaseItem.GetTableName: string;
+begin
+
 end;
 
 function TBaseItem.GetCollType: TCollectionsType;
@@ -1380,6 +1515,16 @@ begin
         if str =  PAnsFind then
           Exclude(ACot, cotEqual);
       end;
+      cotSmaller:
+      begin
+        if str <  PAnsFind then
+          Exclude(ACot, cotSmaller);
+      end;
+      cotBigger:
+      begin
+        if str <  PAnsFind then
+          Exclude(ACot, cotBigger);
+      end;
     end;
   end;
   Result := ACot = [];
@@ -1398,12 +1543,26 @@ var
   PDateBuf: PDate;
 begin
   PDateBuf := getPDateMap(Buf, FPosDataADB, FieldForFind);
-  Result := PDateFind <= PDateBuf^;
+  Result := PDateFind = PDateBuf^;
 end;
 
 function TBaseItem.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
 begin
 
+end;
+
+function TBaseItem.Logical08ToStr(log: TLogicalData08): string;
+var
+  i: Integer;
+begin
+  SetLength(Result, 8);
+  for i := 1 to 8 do
+  begin
+    if TLog08(i - 1) in log then
+      Result[i] := '1'
+    else
+      Result[i] := '0';
+  end;
 end;
 
 function TBaseItem.Logical16ToStr(log: TLogicalData16): string;
@@ -1454,6 +1613,20 @@ var
 begin
   SetLength(Result, 40);
   for i := 1 to 40 do
+  begin
+    if TLog40(i - 1) in log then
+      Result[i] := '1'
+    else
+      Result[i] := '0';
+  end;
+end;
+
+function TBaseItem.Logical48ToStr(log: TLogicalData48): string;
+var
+  i: Integer;
+begin
+  SetLength(Result, 48);
+  for i := 1 to 48 do
   begin
     if TLog40(i - 1) in log then
       Result[i] := '1'
@@ -1638,6 +1811,17 @@ begin
   Result.Propertys := props;
 end;
 
+//function TBaseItem.SaveStreamCommand(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal): TCommandStream;
+//begin
+//  result := TBaseCollection(Collection).streamComm;
+//  result.OpType := OpType;
+//  result.Size := 10 + 5;
+//  Result.Ver := ver;
+//  Result.Vid := vid;
+//  Result.DataPos := AdataPos;
+//  Result.Propertys := props;
+//end;
+
 function TBaseItem.SaveStreamCommand(Props: TLogicalData48; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal): TCommandStream;
 begin
   result := TBaseCollection(Collection).streamComm;
@@ -1654,6 +1838,19 @@ begin
   result := TBaseCollection(Collection).streamComm;
   result.OpType := OpType;
   result.Size := 10 + 16;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommand(Props: TLogicalData24;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).streamComm;
+  result.OpType := OpType;
+  result.Size := 10 + 4;
   Result.Ver := ver;
   Result.Vid := vid;
   Result.DataPos := AdataPos;
@@ -1684,6 +1881,18 @@ begin
   end;
 end;
 
+function TBaseItem.StrToLogical24(str: string): TLogicalData24;
+var
+  i: Integer;
+begin
+  Result := [];
+  for i := 0 to 23 do
+  begin
+    if str[i + 1] = '1' then
+      Include(Result, TLog24(i));
+  end;
+end;
+
 function TBaseItem.StrToLogical32(str: string): TLogicalData32;
 var
   i: Integer;
@@ -1705,6 +1914,18 @@ begin
   begin
     if str[i + 1] = '1' then
       Include(Result, TLog40(i));
+  end;
+end;
+
+function TBaseItem.StrToLogical48(str: string): TLogicalData48;
+var
+  i: Integer;
+begin
+  Result := [];
+  for i := 0 to 47 do
+  begin
+    if str[i + 1] = '1' then
+      Include(Result, TLog48(i));
   end;
 end;
 
@@ -2088,8 +2309,57 @@ end;
 
 procedure TBaseItem.SaveData(const ArrIntData: TArrInt; PropPosition: cardinal; var metaPosition,
   dataPosition: Cardinal);
+var
+  Len: Word;
+  ADataPos, datPos: cardinal;
+  pCardinalData, pCardinalHistData: ^Cardinal;
+  pWordData: ^Word;
+  pbyteData: ^Byte;
+  pArr: Pointer;
+  streamComm: TCommandStream;
 begin
 
+  pCardinalData := pointer(PByte(buf) + 8);
+  DatPos := pCardinalData^;
+  len :=  Length(ArrIntData) ;
+  //намирам адреса на който ще бъдат поставени данните
+  ADataPos := dataPosition + 4 - datPos;
+  //записвам в мета-та адреса
+  pCardinalData := pointer(PByte(buf) + metaPosition); // тука е адреса на старата сойност
+  //записвам историята
+  pCardinalHistData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
+  pCardinalHistData^  := (pCardinalData^); // при инсъртване понеже е първо e  нула
+  pCardinalData^  := ADataPos;
+  //увеличавам metaPosition с 4
+  Inc(metaPosition, 4);
+  //записвам дължината на масива на адреса
+  pWordData := pointer(PByte(buf) + ADataPos + DatPos);
+  pWordData^  := Len;
+
+  //записвам самата данна на адреса
+  pArr := pointer(PByte(buf) + ADataPos + DatPos + 2);
+  MoveMemory(pArr, @ArrIntData[0], len * 4);
+  //System.SysUtils.arr(pArr, PAnsiChar(strData));
+  //увеличавам dataPosition със 2+ 4 + len*SizeOf(char) ; 2 за дължината на стринга; колкото толкова за стринга; и 4 байта за историята.
+  Inc(dataPosition, 6 + len*4);
+
+
+  //if (dataPosition mod 2) = 0 then
+//  begin
+//    pWordData := pointer(PByte(buf) + dataPosition); // записвам 00 за край
+//    pWordData^  := 0;
+//    Inc(dataPosition, 2);
+//  end
+//  else
+//  begin
+//    pWordData := pointer(PByte(buf) + dataPosition); // записвам 0 за край
+//    pWordData^  := 0;
+//    Inc(dataPosition, 1); //само единия байт, за да е четен адреса
+//  end;
+
+  streamComm := TBaseCollection(Collection).streamComm;
+  streamComm.Write(len, 2);
+  streamComm.Write(ArrIntData[0], len * 4);
 end;
 
 procedure TBaseItem.SaveData(const CardData: Cardinal; PropPosition: cardinal; var metaPosition,
@@ -2156,6 +2426,7 @@ begin
   case PropsSize of
     1: SaveStreamCommand(TLogicalData08(Props^), vid, OpType, ver, AdataPos);
     2: SaveStreamCommand(TLogicalData16(Props^), vid, OpType, ver, AdataPos);
+    3: SaveStreamCommand(TLogicalData24(Props^), vid, OpType, ver, AdataPos);
     4: SaveStreamCommand(TLogicalData32(Props^), vid, OpType, ver, AdataPos);
     5: SaveStreamCommand(TLogicalData40(Props^), vid, OpType, ver, AdataPos);
     6: SaveStreamCommand(TLogicalData48(Props^), vid, OpType, ver, AdataPos);
@@ -2237,6 +2508,132 @@ end;
 
 
 
+procedure TBaseItem.SaveDataTemp(const BoolData: boolean;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const strData: AnsiString;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const DoubleData: Double;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const ArrIntData: TArrInt;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const ArrWordData: TArrWord;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const CardData: Cardinal;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(const intData: Integer; PropPosition: cardinal;
+  var metaPosition, dataPosition: Cardinal);
+begin
+  SetPosCMDTemp(TBaseCollection(Collection).StreamCommTemp.Position);
+  TBaseCollection(Collection).StreamCommTemp.Write(IntData, 4);
+end;
+
+procedure TBaseItem.SaveDataTemp(const wordData: word; PropPosition: cardinal;
+  var metaPosition, dataPosition: Cardinal);
+begin
+  TBaseCollection(Collection).StreamCommTemp.Write(wordData, 2);
+end;
+
+procedure TBaseItem.SaveDataTemp(const strData: String; PropPosition: cardinal;
+  var metaPosition, dataPosition: Cardinal);
+var
+  len: Word;
+begin
+  len := Length(strData);
+  TBaseCollection(Collection).StreamCommTemp.Write(len, 2);
+  TBaseCollection(Collection).StreamCommTemp.Write(strData[1], len);
+end;
+
+procedure TBaseItem.SaveDataTemp(const byteData: byte; PropPosition: cardinal;
+  var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData48;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData40;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData64;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var TreeLink: PVirtualNode;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal;
+  vtrData: TAspRec; Vtr: TVirtualStringTreeAspect; parentNode: PVirtualNode);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var stream: TStream; PropPosition: cardinal;
+  var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData08;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var TreeLink: PVirtualNode;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData16;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData32;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
+procedure TBaseItem.SaveDataTemp(var LogicalData: TLogicalData24;
+  PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
+begin
+
+end;
+
 procedure TBaseItem.SaveData(var LogicalData: TLogicalData24;
   PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
 var
@@ -2264,7 +2661,7 @@ begin
   //записвам историята
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
   pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
-  TBaseCollection(Collection).streamComm.Write(LogicalData, 3);
+  TBaseCollection(Collection).streamComm.Write(LogicalData, 4);
 end;
 
 procedure TBaseItem.SaveData(var LogicalData: TLogicalData40; PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);
@@ -2563,6 +2960,7 @@ constructor TBaseCollection.Create(ItemClass: TCollectionItemClass);
 begin
   inherited Create(ItemClass);
   streamComm := TCommandStream.Create;
+  StreamCommTemp := TCommandStream.Create;
   FForLaterSave := TList<TForLaterSave>.Create;
   FCntUpdates := 0;
   FCntInADB := 0;
@@ -2583,6 +2981,7 @@ begin
   FreeAndNil(ListNodes);
   FreeAndNil(ListAnsi);
   streamComm.Free;
+  StreamCommTemp.Free;
   inherited;
 end;
 
@@ -2594,6 +2993,29 @@ end;
 function TBaseCollection.FieldCount: Integer;
 begin
   Result := 0;
+end;
+
+procedure TBaseCollection.FillListLinks(Link: TMappedFile; vv: TVtrVid);
+var
+  linkPos, maxLinkPos: Cardinal;
+  pCardinalData: PCardinal;
+  node: PVirtualNode;
+  data: PAspRec;
+begin
+  self.ListDataPos.Clear;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(Link.Buf));
+  maxLinkPos := pCardinalData^;
+  node := pointer(PByte(link.Buf) + linkPos);
+
+  while linkPos < maxLinkPos  do
+  begin
+    node := pointer(PByte(link.Buf) + linkPos);
+    data := pointer(PByte(node) + lenNode);
+    if data.vid = vv then
+      self.ListDataPos.Add(node);
+    Inc(linkPos, LenData);
+  end;
 end;
 
 procedure TBaseCollection.FillListNodes(Link: TMappedFile; vv: TVtrVid);
@@ -2617,6 +3039,8 @@ begin
       self.ListNodes.Add(data);
     Inc(linkPos, LenData);
   end;
+
+  SortListNodes;
 end;
 
 function TBaseCollection.FindItemFromDataPos(dataPos: cardinal): Integer;
@@ -2766,6 +3190,24 @@ begin
   Result := pData^;
 end;
 
+
+function TBaseCollection.getLogical16Map(dataPos: cardinal;
+  propIndex: word): TLogicalData16;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData16;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
 
 function TBaseCollection.getLogical32Map(dataPos: cardinal;
   propIndex: word): TLogicalData32;
@@ -2945,6 +3387,21 @@ end;
 
 
 
+procedure TBaseCollection.DoCollSort(senedr: TObject);
+var
+  propIndex: Word;
+begin
+  //propIndex := self.ArrayPropOrderSearchOptions[collPreg.ColumnForSort];
+//  propType := collPreg.PropType(propIndex);
+//  case propType of
+//    actAnsiString: SortAnsiListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+//    actInteger: SortIntListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+//    actTDate: SortDateListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+//    actTime: SortTimeListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+//    actLogical: SortLogical40ListPropIndexCollNew(collPreg, propIndex, collPreg.SortAsc);
+//  end;
+end;
+
 procedure TBaseCollection.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 begin
 
@@ -3119,6 +3576,22 @@ begin
   pData^ := AWord;
 end;
 
+procedure TBaseCollection.SetLogical16Map(dataPos: cardinal; propIndex: word; ALog16: TLogicalData16);
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: PLogicalData16;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  pData^ := ALog16;
+end;
+
 procedure TBaseCollection.ShowGrid(Grid: TTeeGrid);
 begin
 
@@ -3129,6 +3602,7 @@ var
   i: word;
   asss: Boolean;
 begin
+  grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Hide;
   if FlastBottom = - 1 then
   begin
     Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListDataPos.Count - FoffsetTop - FoffsetBottom);
@@ -3176,8 +3650,8 @@ begin
 //  Grid.Columns[2].Locked := TColumnLocked.Left;
 
   //Grid.Columns[9].ta
-
-  grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Show;
+  grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Automatic;
+  //grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Show;
 end;
 
 procedure TBaseCollection.ShowListNodesGrid(Grid: TTeeGrid);
@@ -3186,6 +3660,17 @@ var
 begin
   Grid.Tag := Integer(Self);
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListNodes.Count);
+
+  Grid.OnClickedHeader := grdSearchClickedHeader;
+  Grid.Columns.OnMoved := DoColMoved;
+  TGridForSrarch(Grid).OnKeyUp := GrdSearhKeyUp;
+  Grid.Header.SortRender:= TSortableHeader.Create(Grid.Header.Changed);
+  Grid.Header.Sortable := True;
+  // Set custom events
+  TSortableHeader(Grid.Header.SortRender).OnCanSort:=HeaderCanSortBy;
+  TSortableHeader(Grid.Header.SortRender).OnSortBy:=HeaderSortBy;
+  TSortableHeader(Grid.Header.SortRender).OnSortState:=HeaderSortState;
+
   for i := 0 to self.FieldCount - 1 do
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
@@ -3241,6 +3726,109 @@ begin
   if (ListDataPos.count >1 ) then
   begin
     QuickSort(0,ListDataPos.count-1);
+  end;
+end;
+
+procedure TBaseCollection.SortListNodes;
+procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : PAspRec;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while ListNodes[I].DataPos > ListNodes[P].DataPos do Inc(I);
+        while ListNodes[J].DataPos < ListNodes[P].DataPos do Dec(J);
+        if I <= J then begin
+          Save := ListNodes[I];
+          ListNodes[I] := ListNodes[J];
+          ListNodes[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (ListNodes.count >1 ) then
+  begin
+    QuickSort(0,ListNodes.count-1);
+  end;
+end;
+
+procedure TBaseCollection.SortAnsiListPropIndexCollNew(propIndex: word;
+  SortIsAsc: Boolean);
+var
+ ListDataPos: TList<PVirtualNode>;
+ i: Integer;
+
+procedure QuickSort(L, R: Integer);
+var
+    I, J, P : Integer;
+    Save : AnsiString;
+    saveList: PVirtualNode;
+  begin
+    repeat
+     // Sleep(1);//  за тесттване на бавно сортиране
+      //if FStop then
+//      begin
+//        ListAnsi.Clear;
+//        //ListAnsi.Free;
+//        FStoped := True;
+//        Exit;
+//      end;
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        if SortIsAsc then
+        begin
+          while (ListAnsi[I])< (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) > (ListAnsi[P]) do Dec(J);
+        end
+        else
+        begin
+          while (ListAnsi[I])> (ListAnsi[P]) do Inc(I);
+          while (ListAnsi[J]) < (ListAnsi[P]) do Dec(J);
+        end;
+        if I <= J then begin
+          Save := ListAnsi[I];
+          saveList := ListDataPos[I];
+          ListAnsi[I] := ListAnsi[J];
+          ListDataPos[I] := ListDataPos[J];
+          ListAnsi[J] := Save;
+          ListDataPos[J] := saveList;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  ListDataPos := self.ListDataPos;
+  if (ListDataPos.count >1 ) then
+  begin
+    for i := 0 to ListDataPos.Count - 1 do
+      ListAnsi.Add(self.getAnsiStringMap(PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos, propIndex));
+    QuickSort(0,ListAnsi.count-1);
+    ListAnsi.Clear;
+    //ListAnsi.Free;
+   // FStoped := True;
   end;
 end;
 
@@ -3331,7 +3919,7 @@ constructor TMappedFile.Create(const AFileName: WideString; IsNew: Boolean; AGui
 begin
   inherited Create;
   FGUID := AGuid;
-  if FileExists(AFileName) then
+  if FileExists(AFileName) or IsNew then
   begin
     MapFileBuf(AFileName, IsNew);
     FFileName  := AFileName;
@@ -3381,7 +3969,7 @@ function TMappedFile.GetSizeCMD: LONG64;
 var
   pLONG64Data: PLONG64;
 begin
-  pLONG64Data := pointer(PByte(FBuf) + 36);
+  pLONG64Data := pointer(PByte(FBuf) + 32);
   result := pLONG64Data^;
 end;
 
@@ -3500,6 +4088,10 @@ procedure TCommandStream.SetVid(const Value: TCollectionsType);
 begin
   position := 6;
   FVid := Value;
+  if FVid = ctLink then
+  begin
+    FVid := Value;
+  end;
   //if not(FVid in [ctDoctor, ctMkb]) then  // за тестове е
 //  begin
 //    FVid := Value;
@@ -3529,7 +4121,7 @@ function TBaseItem.SaveStreamCommand(Props: TLogicalData08; vid: TCollectionsTyp
 begin
   result := TBaseCollection(Collection).streamComm;
   result.OpType := OpType;
-  result.Size := 10 + 1;
+  result.Size := 10 + 2;
   Result.Ver := ver;
   Result.Vid := vid;
   Result.DataPos := AdataPos;
@@ -3540,7 +4132,7 @@ function TBaseItem.SaveStreamCommand(Props: TLogicalData40; vid: TCollectionsTyp
 begin
   result := TBaseCollection(Collection).streamComm;
   result.OpType := OpType;
-  result.Size := 10 + 5;
+  result.Size := 10 + 6;
   Result.Ver := ver;
   Result.Vid := vid;
   Result.DataPos := AdataPos;
@@ -3552,6 +4144,84 @@ begin
   result := TBaseCollection(Collection).streamComm;
   result.OpType := OpType;
   result.Size := 10 + 2;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData32;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 4;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData48;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 6;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData128;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 16;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData16;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 2;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData40;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 5;
+  Result.Ver := ver;
+  Result.Vid := vid;
+  Result.DataPos := AdataPos;
+  Result.Propertys := props;
+end;
+
+function TBaseItem.SaveStreamCommandTemp(Props: TLogicalData08;
+  vid: TCollectionsType; OpType: TOperationType; ver: word;
+  AdataPos: cardinal): TCommandStream;
+begin
+  result := TBaseCollection(Collection).StreamCommTemp;
+  result.OpType := OpType;
+  result.Size := 10 + 1;
   Result.Ver := ver;
   Result.Vid := vid;
   Result.DataPos := AdataPos;
@@ -3576,6 +4246,11 @@ begin
 end;
 
 
+
+procedure TBaseItem.SetPosCMDTemp(posCmd: Cardinal);
+begin
+
+end;
 
 { TNumerEdit }
 
@@ -3856,6 +4531,11 @@ begin
   end;
 end;
 
+constructor TFileCMDStream.Create(const AFileName: string; Mode: Word);
+begin
+  inherited  Create(AFileName, Mode);
+end;
+
 destructor TFileCMDStream.destroy;
 begin
   if scktClient <> nil then
@@ -3943,6 +4623,18 @@ procedure TFileCMDStream.scktDisconect(Sender: TObject;
   Socket: TCustomWinSocket);
 begin
   //
+end;
+
+procedure TFileCMDStream.SetGuid(const Value: TGUID);
+var
+  SavePos: Cardinal;
+begin
+  FGuid := Value;
+  SavePos := Self.Position;
+  Self.Position := 16;
+  self.write(FGuid,16);
+
+  Self.Position := SavePos;
 end;
 
 end.

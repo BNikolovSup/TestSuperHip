@@ -3,6 +3,7 @@ program Hippocrates360;
 {$R *.dres}
 
 uses
+  Vcl.Controls,
   Parnassus.FMXContainer in 'FMX\Parnassus.FMXContainer.pas',
   Parnassus.FMXContainerReg in 'FMX\Parnassus.FMXContainerReg.pas',
   Vcl.Forms,
@@ -84,7 +85,6 @@ uses
   Table.NZIS_RESULT_DIAGNOSTIC_REPORT in 'Aspects\Tables\Table.NZIS_RESULT_DIAGNOSTIC_REPORT.pas',
   Table.NZIS_DIAGNOSTIC_REPORT in 'Aspects\Tables\Table.NZIS_DIAGNOSTIC_REPORT.pas',
   Table.CL144 in 'Aspects\Tables\Table.CL144.pas',
-  X002 in 'X002.pas',
   L010 in 'L010.pas',
   CertHelper in 'CertHelper.pas',
   X004 in 'X004.pas',
@@ -102,18 +102,40 @@ uses
   Aspects.Types in 'Aspects\Aspects.Types.pas',
   RealObj.RealNzis in 'Aspects\RealObj.RealNzis.pas',
   MainRttiExpl in '..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas',
-  PDFium.Frame in '..\PDFViewer\PDFium.Frame.pas',
   TitleBar in '..\Popup\TitleBar.pas' {frmTitlebar},
   RoleBar in '..\Popup\RoleBar.pas' {frmRolebar},
   RolePanels in '..\Popup\RolePanels.pas' {frmRolePanels},
   OptionsForm in '..\Popup\OptionsForm.pas' {frmOptionsForm},
   FMX.GifUtils in 'C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas',
-  RegisterBrushObject in '..\--component\RegisterBrushObject.pas';
+  RegisterBrushObject in '..\--component\RegisterBrushObject.pas',
+  WordBreakF in 'WordBreakF.pas',
+  Aspects.Functions in 'Aspects\Aspects.Functions.pas',
+  TempVtrHelper in 'TempVtrHelper.pas',
+  DynamicButtons in 'DynamicButtons.pas',
+  Execute.libPDFium in 'Execute.libPDFium.pas',
+  PDFium.Frame in 'PDFium.Frame.pas',
+  FmxControls in '..\Popup\FmxControls.pas' {frmFmxControls},
+  msgX001 in 'XML\msgX001.pas',
+  msgX002 in 'XML\msgX002.pas',
+  msgX003 in 'XML\msgX003.pas',
+  msgX013 in 'msgX013.pas',
+  msgR001 in 'msgR001.pas',
+  msgR002 in 'msgR002.pas',
+  Table.BLANKA_MED_NAPR_3A in 'Aspects\Tables\Table.BLANKA_MED_NAPR_3A.pas',
+  Table.INC_MDN in 'Aspects\Tables\Table.INC_MDN.pas',
+  Table.AnalResult in 'Aspects\Tables\Table.AnalResult.pas',
+  Table.HOSPITALIZATION in 'Aspects\Tables\Table.HOSPITALIZATION.pas',
+  msgR016 in 'msgR016.pas',
+  Table.EXAM_LKK in 'Aspects\Tables\Table.EXAM_LKK.pas',
+  Table.INC_NAPR in 'Aspects\Tables\Table.INC_NAPR.pas',
+  Table.OtherDoctor in 'Aspects\Tables\Table.OtherDoctor.pas';
 
 {$R *.res}
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 begin
   Application.Initialize;
+  Screen.HintFont.Size := 20;
+  //HintWindowClass := THintWindowClass(TBalloonHint);
   Application.ShowMainForm := False;
 
   //Application.MainFormOnTaskbar := true;
@@ -121,9 +143,10 @@ begin
   FormatSettings.DecimalSeparator := '.';
   FormatSettings.ShortDateFormat := 'DD.MM.YYYY';
   Application.UpdateFormatSettings := False;
-  LoadKeyBoardLayout('00040402',1);
+  LoadKeyBoardLayout('00040402',1);//https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-language-pack-default-values?view=windows-11
 
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
+  Application.CreateForm(TfrmFmxControls, frmFmxControls);
   //Application.CreateForm(TfrmRolePanels, frmRolePanels);
   //Application.CreateForm(TfrmOptionsForm, frmOptionsForm);
   if ParamStr(1) <> '' then

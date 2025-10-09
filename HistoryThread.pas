@@ -10,7 +10,7 @@ uses
   DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr,
   VCLTee.Grid, Tee.Grid.Ticker, Aspects.Collections,
   RealObj.RealHipp, VirtualStringTreeAspect, Table.Unfav, Table.PregledNew, Table.PatientNew,
-
+  Table.Doctor,
   DbHelper
   ;
 
@@ -29,6 +29,11 @@ THistoryThread = class(TThread)
     FBufLink: Pointer;
     FOnDeleteEvent: TNotifyEvent;
     function GetComputerNam: string;
+
+    procedure UpdateDoctor(id: Integer);
+    procedure InsertDoctor(id: Integer);
+    procedure DeleteDoctor(id: Integer);
+
     procedure UpdateUnfav(id: Integer);
     procedure InsertUnfav(id: Integer);
     procedure DeleteUnfav(id: Integer);
@@ -42,6 +47,8 @@ THistoryThread = class(TThread)
     procedure DeletePatient(id: Integer);
 
     function FindItemADB(Id: Integer; ABuf, ABufLink: Pointer; VV: TVtrVid): TBaseItem;
+    procedure SetBuf(const Value: Pointer);
+    procedure SetDataPos(const Value: Cardinal);
   protected
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
@@ -54,6 +61,7 @@ THistoryThread = class(TThread)
   public
     FCollUnfav: TRealUnfavColl;
     FCollPregled: TRealPregledNewColl;
+    FCollDoctor: TRealDoctorColl;
     FCollPatient: TRealPatientNewColl;
     FCollDiag: TRealDiagnosisColl;
     FDBHelper: TDbHelper;
@@ -67,9 +75,9 @@ THistoryThread = class(TThread)
     destructor Destroy; override;
     procedure TickerChange(Acol, ARow: Integer);
     property GUID: TGUID read FGuid write FGuid;
-    property Buf: Pointer read FBuf write FBuf;
+    property Buf: Pointer read FBuf write SetBuf;
     property BufLink: Pointer read FBufLink write FBufLink;
-    property DataPos: Cardinal read FDataPos write FDataPos;
+    property DataPos: Cardinal read FDataPos write SetDataPos;
     property Stop: Boolean read FStop write FStop;
     property OnEventAlert :TNotifyEvent read FOnEventAlert write FOnEventAlert;
     property OnDeleteEvent: TNotifyEvent read FOnDeleteEvent write FOnDeleteEvent;
@@ -83,6 +91,8 @@ implementation
 constructor THistoryThread.Create(CreateSuspended: Boolean; DbName: string);
 begin
   inherited Create(CreateSuspended);
+
+  FCollPatient := TRealPatientNewColl.Create(TRealPatientNewItem);
   FStop := False;
   Fdm := TDUNzis.Create(nil);
   Fdm.InitDb(DbName);
@@ -102,6 +112,11 @@ begin
 
   Fdm.traMain.Active := True;
   NewID := 0;
+
+end;
+
+procedure THistoryThread.DeleteDoctor(id: Integer);
+begin
 
 end;
 
@@ -184,7 +199,7 @@ begin
   FreeAndNil(ibvnts1);
   FreeAndNil(ib);
   FreeAndNil(fdm);
-
+  FreeAndNil(FCollPatient);
 
   inherited;
 end;
@@ -245,11 +260,12 @@ function THistoryThread.FindItemADB(Id: Integer; ABuf, ABufLink: Pointer; VV: TV
 var
   linkPos, maxLinkPos: Cardinal;
   pCardinalData: PCardinal;
-  ANode: PVirtualNode;
-  data: PAspRec;
-  ATempItem: TBaseItem;
+  ANode, runNode: PVirtualNode;
+  data, runData: PAspRec;
+  evnt: TRealEventsManyTimesItem;
+  //ATempItem: TBaseItem;
 begin
-  ATempItem := TBaseItem.Create(nil);
+  //ATempItem := TBaseItem.Create(nil);
   Result := nil;
   linkPos := 100;
   pCardinalData := pointer(PByte(ABufLink));
@@ -262,13 +278,13 @@ begin
     data := pointer(PByte(ANode) + lenNode);
     if data.vid = VV then
     begin
-      ATempItem.DataPos := data.DataPos;
+      //ATempItem.DataPos := data.DataPos;
       case VV of
         vvPregled:
         begin
-          if TPregledNewItem(ATempItem).getIntMap(Buf, FDataPos, word(PregledNew_ID)) = id then
+          if FCollPregled.getIntMap(Data.DataPos, word(PregledNew_ID)) = id then
           begin
-            FreeAndNil(ATempItem);
+            //FreeAndNil(ATempItem);
             Result := TRealPregledNewItem(FCollPregled.Add);
             Result.DataPos := data.DataPos;
             TRealPregledNewItem(Result).FNode := ANode;
@@ -277,12 +293,35 @@ begin
         end;
         vvPatient:
         begin
-          if TRealPatientNewItem(ATempItem).getIntMap(Buf, FDataPos, word(PatientNew_ID)) = id then
+          if FCollPatient.getIntMap(Data.DataPos, word(PatientNew_ID)) = id then
           begin
-            FreeAndNil(ATempItem);
+            //FreeAndNil(ATempItem);
             Result := TRealPatientNewItem(FCollPatient.Add);
             Result.DataPos := data.DataPos;
             TRealPatientNewItem(Result).FNode := ANode;
+            runNode := ANode.FirstChild;
+            while runNode <> nil do
+            begin
+              runData := pointer(PByte(runNode) + lenNode);
+              if runData.vid = vvEvnt then
+              begin
+                evnt := TRealEventsManyTimesItem.Create(nil);
+                evnt.DataPos := runData.DataPos;
+                TRealPatientNewItem(Result).FEventsPat.Add(evnt);
+              end;
+              runNode := runNode.NextSibling;
+            end;
+            Exit;
+          end;
+        end;
+        vvDoctor:
+        begin
+          if FCollDoctor.getIntMap(Data.DataPos, word(Doctor_ID)) = id then
+          begin
+            //FreeAndNil(ATempItem);
+            Result := TRealDoctorItem(FCollDoctor.Add);
+            Result.DataPos := data.DataPos;
+            TRealDoctorItem(Result).node := ANode;
             Exit;
           end;
         end;
@@ -327,6 +366,14 @@ begin
     TableAction := Fdm.ibsqlCommand.Fields[2].AsInteger;
     NewID := Fdm.ibsqlCommand.Fields[0].AsInteger;
     case TableName[1] of
+      'D':
+      begin
+        case TableAction of
+          21: DeleteDoctor(Fdm.ibsqlCommand.Fields[3].AsInteger);
+          22: UpdateDoctor(Fdm.ibsqlCommand.Fields[3].AsInteger);
+          23: InsertDoctor(Fdm.ibsqlCommand.Fields[3].AsInteger);
+        end;
+      end;
       'U':
       begin
         case TableAction of
@@ -364,6 +411,11 @@ begin
   end;
   if Assigned(FOnEventAlert) then
     FOnEventAlert(Self);
+end;
+
+procedure THistoryThread.InsertDoctor(id: Integer);
+begin
+
 end;
 
 procedure THistoryThread.InsertPatient(id: Integer);
@@ -559,12 +611,77 @@ begin
   pCardinalData^  := NewID;
 end;
 
+procedure THistoryThread.SetBuf(const Value: Pointer);
+begin
+  FBuf := Value;
+  FCollPatient.Buf := FBuf;
+
+end;
+
+procedure THistoryThread.SetDataPos(const Value: Cardinal);
+begin
+  FDataPos := Value;
+  FCollPatient.posData := FDataPos;
+end;
+
 procedure THistoryThread.TickerChange(Acol, ARow: Integer);
 begin
   if Assigned(Ticker) then
   begin
     Ticker.Change(Acol, ARow,0);
   end;
+end;
+
+procedure THistoryThread.UpdateDoctor(id: Integer);
+var
+  i: Integer;
+  TempItem: TRealDoctorItem;
+  cnt: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData, dataPosition: Cardinal;
+  ibsqlDoctor: TIBSQL;
+begin
+  TempItem := TRealDoctorItem(FindItemADB(id, Buf, BufLink, vvDoctor));
+  if TempItem <> nil then
+  begin
+    ibsqlDoctor := Fdm.ibsqlDoctorNew;
+    ibsqlDoctor.Close;
+    if not ibsqlDoctor.SQL.Text.Contains('where') then
+    begin
+      ibsqlDoctor.SQL.Text := ibsqlDoctor.SQL.Text + #13#10 +
+        'where id = :id;';
+    end;
+
+    ibsqlDoctor.Params[0].AsInteger := id;
+    ibsqlDoctor.ExecQuery;
+
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+
+    FDBHelper.UpdateDoctorField(ibsqlDoctor, TempItem);
+  end;
+  cnt := 0;
+  for i := 0 to FCollDoctor.Count - 1 do
+  begin
+    TempItem := FCollDoctor.Items[i];
+    if TempItem.PRecord <> nil then
+    begin
+      TempItem.SaveDoctor(FBuf, dataPosition);
+      FCollDoctor.streamComm.Len := FCollDoctor.streamComm.Size;
+      CmdFile.CopyFrom(FCollDoctor.streamComm, 0);
+      inc(cnt);
+    end;
+
+  end;
+  if cnt > 0 then
+  begin
+    pCardinalData := pointer(PByte(FBuf) + 12);
+    pCardinalData^  := dataPosition - self.FDataPos;
+  end;
+  pCardinalData := pointer(PByte(FBuf) + 32);
+  pCardinalData^  := NewID;
+  FCollDoctor.CntUpdates := 0;
+
 end;
 
 procedure THistoryThread.UpdatePatient(id: Integer);
@@ -611,17 +728,20 @@ begin
     FDBHelper.UpdatePatientField(ibsqlPatientNew, TempItem);
   end;
   cnt := 0;
-  for i := 0 to FCollPatient.Count - 1 do
+  for i := FCollPatient.Count - 1 downto 0 do
   begin
     TempItem := FCollPatient.Items[i];
-    if TempItem.PRecord <> nil then
+    if (TempItem.PRecord <> nil) and (TempItem.PRecord.setProp <> []) then
     begin
       TempItem.SavePatientNew(dataPosition);
       FCollPatient.streamComm.Len := FCollPatient.streamComm.Size;
       CmdFile.CopyFrom(FCollPatient.streamComm, 0);
       inc(cnt);
+    end
+    else
+    begin
+      FCollPatient.Delete(i);
     end;
-
   end;
   if cnt > 0 then
   begin

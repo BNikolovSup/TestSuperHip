@@ -213,7 +213,7 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
+  SaveAnyStreamCommand(@PRecord.setProp, 3, CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -222,7 +222,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -1213,3 +1213,26 @@ begin
 end;
 
 end.
+
+{
+ BDDIASTOLNO43=integer
+BDGIRTWAIST44=integer
+BDHEIGHT39=integer
+BDITM41=double
+BDSYSTOLNO42=integer
+BDWEIGHT40=integer
+CIGARETESCOUNT71=integer
+FINDRISK=integer
+ISSUE_DATE=TDate
+MDIGLUCOSE48=double
+MDIHDL50=double
+MDILDL45=double
+MDINONHDL73=double
+MDIPSA49=double
+MDITG47=double
+MDITH46=double
+NOMER=integer
+PREGLED_ID=integer
+SCORE=integer
+Logical=tLogicalSet:ADENOMA61,ANTIHIPERTENZIVNI67,BENIGNMAMMARY19,CELIACDISEASE25,COLORECTALCARCINOMA21,CROHN63,DIABETESRELATIVES31,DIABETESRELATIVESSECOND70,DYNAMISMPSA28,DYSLIPIDAEMIA11,FRUITSVEGETABLES66,HPVVAKSINA69,ILLNESSIBS_MSB29,IMMUNOSUPPRESSED15,ISFULL,COLITIS64,IS_PRINTED,MENARCHE07,NEOCERVIX32,NEOREKTOSIGMOIDE35,POLYP62,PREDIABETIC10,PREGNANCY08,PREGNANCYCHILDBIRTH68,PROLONGEDHRT04,PROSTATECARCINOMA38,RELATIVESBREAST33,SEDENTARYLIFE02,TYPE1DIABETES65,TYPE2DIABETES09,WOMENCANCERS18
+}

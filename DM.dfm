@@ -13,6 +13,7 @@ object DUNzis: TDUNzis
     LoginPrompt = False
     DefaultTransaction = traMain
     ServerType = 'IBServer'
+    AfterConnect = DBMainAfterConnect
     Left = 63
     Top = 32
   end
@@ -744,12 +745,6 @@ object DUNzis: TDUNzis
   object ibsqlDoctorNew: TIBSQL
     Database = DBMain
     SQL.Strings = (
-      
-        '--select d.fname, d.sname, d.lname, d.uin, sp.specnziscode, d.id' +
-        ', sp.name  from doctor d'
-      '--inner join speciality sp on sp.id = d.speciality_id'
-      '--where d.dog_rzok = '#39'Y'#39' and sp.code between 1 and 90'
-      ''
       'select'
       'EGN,'
       'FNAME,'
@@ -1105,7 +1100,8 @@ object DUNzis: TDUNzis
       'pr.procedure2_mkb || pr.procedure2_opis,'
       'pr.procedure3_mkb || pr.procedure2_opis,'
       'pr.procedure4_mkb || pr.procedure2_opis,'
-      'pr.RECKNNO'
+      'pr.RECKNNO,'
+      'pr.simp_napr_n'
       ''
       'from pregled pr'
       '')
@@ -1295,5 +1291,264 @@ object DUNzis: TDUNzis
     Transaction = traMain
     Left = 959
     Top = 200
+  end
+  object ibscrpt1: TIBScript
+    Database = DBMain
+    Transaction = traMain
+    Terminator = ';'
+    Script.Strings = (
+      'SET TERM ^ ;'
+      ''
+      'CREATE OR ALTER TRIGGER HISTORY_USERS_AU_HIST FOR HISTORY_USERS'
+      'ACTIVE AFTER UPDATE POSITION 0'
+      'AS'
+      'begin'
+      ' POST_EVENT '#39'Hist'#39'|| new.guid_adb;'
+      'end'
+      '^'
+      ''
+      'SET TERM ; ^'
+      ''
+      'SET TERM ^ ;'
+      ''
+      ''
+      ''
+      'CREATE OR ALTER TRIGGER HISTORY_AI0 FOR HISTORY'
+      'ACTIVE AFTER INSERT POSITION 0'
+      'AS'
+      'begin'
+      ' update history_users hu'
+      '  set hu.comp_name = hu.comp_name;'
+      'end'
+      '^'
+      ''
+      'SET TERM ; ^')
+    Left = 704
+    Top = 112
+  end
+  object ibsqlMedNapr3A: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      'select'
+      'VSD.ATTACHED_DOCS,'
+      'VSD.ID,'
+      'VSD.ISSUE_DATE,'
+      'VSD.NRN,'
+      'VSD.NUMBER,'
+      'VSD.REASON,'
+      'VSD.SPECIALITY_ID,'
+      'VSD.VSD_CODE,'
+      'VSD.DIAGNOSES,'
+      'VSD.ICD_CODE,'
+      'VSD.ICD_CODE2,'
+      'VSD.ICD_CODE2_ADD,'
+      'VSD.ICD_CODE3,'
+      'VSD.ICD_CODE3_ADD,'
+      'VSD.ICD_CODE_ADD,'
+      'VSD.IS_BOLNICHNA,'
+      'VSD.MED_NAPR_TYPE_ID,'
+      'VSD.NZIS_STATUS,'
+      'VSD.PREGLED_ID,'
+      'sp.code,'
+      'sp.specnziscode'
+      ' from BLANKA_MED_NAPR_3A  vsd'
+      ' inner join speciality sp on sp.id = vsd.speciality_id')
+    Transaction = traMain
+    Left = 1031
+    Top = 424
+  end
+  object ibsqlIncMDN: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      'select'
+      'ACCOUNT_ID,'
+      'AMBJOURNALN,'
+      'AMBJOURNALN_PAYED,'
+      'AMBLISTN,'
+      'AMB_NRN,'
+      'ASSIGMENT_TIME,'
+      'DATA,'
+      'DATE_EXECUTION,'
+      'DATE_PROBOVZEMANE,'
+      'DESCRIPTION,'
+      'EXECUTION_TIME,'
+      'FUND_ID,'
+      'ID,'
+      'NOMERBELEGKA,'
+      'NOMERKASHAPARAT,'
+      'NRN,'
+      'NUMBER,'
+      'NZOK_NOMER,'
+      'PACKAGE,'
+      'PASS,'
+      'SEND_MAIL_DATE,'
+      'THREAD_IDS,'
+      'TIME_PROBOVZEMANE,'
+      'TOKEN_RESULT,'
+      'VISIT_ID,'
+      ''
+      ''
+      ''
+      ''
+      'ARENAL_ID,'
+      'BLANKA_MDN_ID,'
+      'DOCTOR_DEPUTY_UIN,'
+      'DOCTOR_EGN,'
+      'DOCTOR_FNAME,'
+      'DOCTOR_LNAME,'
+      'DOCTOR_REG_NUMBER,'
+      'DOCTOR_SNAME,'
+      'DOCTOR_SPECIALITY_ID,'
+      'DOCTOR_UIN,'
+      'FINANCING_SOURCE,'
+      'ICD_CODE,'
+      'ICD_CODE_ADD,'
+      'INC_DOCTOR_ID,'
+      'INTEGRATED_ORDER_ID,'
+      'IS_BONUS,'
+      'IS_FORM_VALID,'
+      'IS_INSIDE,'
+      'IS_LKK,'
+      'IS_NAET,'
+      'IS_NZOK,'
+      'IS_PODVIZHNO_LZ,'
+      'IS_REJECTED_BY_RZOK,'
+      'IS_STACIONAR,'
+      'IS_ZAMESTVASHT,'
+      'MED_DIAG_NAPR_TYPE_ID,'
+      'NZIS_STATUS,'
+      'PACIENT_ID,'
+      'PARTNER_ID,'
+      'TARIFF_ID'
+      ''
+      ' from inc_mdn'
+      '--where id = 32')
+    Transaction = traMain
+    Left = 320
+    Top = 440
+  end
+  object ibsqlMedNaprHosp: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      '    select distinct'
+      '    hosp.AMB_PROCEDURE,'
+      '    hosp.CLINICAL_PATH,'
+      '    hosp.DIRECT_DATE,'
+      '    hosp.ID,'
+      '    hosp.NOTES,'
+      '    hosp.NRN,'
+      '    hosp.NUMBER,'
+      ''
+      '    hosp.DIRECTED_BY,'
+      '    hosp.DIRECT_DIAGNOSIS_1,'
+      '    hosp.DIRECT_DIAGNOSIS_2,'
+      '    hosp.DIRECT_MKB_1,'
+      '    hosp.DIRECT_MKB_1_ADD,'
+      '    hosp.DIRECT_MKB_2,'
+      '    hosp.DIRECT_MKB_2_ADD,'
+      '    hosp.GRAJDANSTVO,'
+      '    hosp.HAS_NHIF_CONTRACT,'
+      '    hosp.ICD_AREA,'
+      '    hosp.IS_MZ,'
+      '    hosp.IS_PLANNED,'
+      '    hosp.IS_PRINTED,'
+      '    hosp.IS_REJECTED,'
+      '    hosp.IS_URGENT,'
+      '    hosp.NZIS_STATUS,'
+      '    hosp.PREGLED_ID,'
+      '    clinP.code,'
+      '    ambpr.code,'
+      '    hosp.SEM_POLOJ'
+      ''
+      '     from hospitalization hosp'
+      
+        '     left join amb_procedures ambpr on ambpr.code = hosp.AMB_PRO' +
+        'CEDURE'
+      
+        '     left join clinic_paths clinP on clinP.code = hosp.CLINICAL_' +
+        'PATH')
+    Transaction = traMain
+    Left = 415
+    Top = 432
+  end
+  object ibsqlMedNaprLKK: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      'select'
+      'lkk.DATA,'
+      'lkk.ID,'
+      'lkk.NRN,'
+      'lkk.NUMBER,'
+      'lkk.ICD_CODE,'
+      'lkk.ICD_CODE2,'
+      'lkk.ICD_CODE2_ADD,'
+      'lkk.ICD_CODE_ADD,'
+      'lkk.ICD_CODE_OPIS,'
+      'lkk.IS_PRINTED,'
+      'lkk.LKK_TYPE_ID,'
+      'lkk.NZIS_STATUS,'
+      'lkk.PREGLED_ID'
+      ''
+      'from exam_lkk lkk')
+    Transaction = traMain
+    Left = 519
+    Top = 432
+  end
+  object ibsqlIncMN: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      'select'
+      'incMN.amb_listn,'
+      'incMN.AMB_LIST_NRN,'
+      'incMN.ID,'
+      'incMN.ISSUE_DATE,'
+      'incMN.ISSUE_TIME,'
+      'incMN.NOMERBELEGKA,'
+      'incMN.NOMERKASHAPARAT,'
+      'incMN.NRN,'
+      'incMN.NUMBER,'
+      'incMN.REASON,'
+      ''
+      ''
+      ''
+      'incMN.ATTACHED_DOCS,'
+      'incMN.CH_BOLNICHNA,'
+      'incMN.DIAGNOSES,'
+      'incMN.ICD_CODE,'
+      'incMN.ICD_CODE2,'
+      'incMN.ICD_CODE2_ADD,'
+      'incMN.ICD_CODE3,'
+      'incMN.ICD_CODE3_ADD,'
+      'incMN.ICD_CODE_ADD,'
+      'incMN.INC_DOCTOR_ID,'
+      'incMN.IS_ZAMESTNIK,'
+      'incMN.NAPR_TYPE_ID,'
+      'incMN.NZIS_STATUS,'
+      'incMN.PACIENT_ID,'
+      'incMN.PAYMENT_ID,'
+      'incMN.SPECIALITY_ID,'
+      'incMN.SPECIALITY_ID_2,'
+      'incMN.SPECIALITY_ID_3,'
+      'incMN.SPECIALITY_ID_4,'
+      'incMN.SPECIALITY_ID_5,'
+      'incMN.UIN_ZAMESTNIK,'
+      'incMN.VISIT_TYPE_ID,'
+      'incMN.VSD1,'
+      'incMN.VSD2,'
+      'sp.specnziscode,'
+      'sp2.specnziscode,'
+      'sp3.specnziscode,'
+      'sp4.specnziscode,'
+      'sp5.specnziscode'
+      ''
+      'from inc_napr incMN'
+      'left join speciality sp on sp.id = incMN.SPECIALITY_ID'
+      'left join speciality sp2 on sp.id = incMN.SPECIALITY_ID_2'
+      'left join speciality sp3 on sp.id = incMN.SPECIALITY_ID_3'
+      'left join speciality sp4 on sp.id = incMN.SPECIALITY_ID_4'
+      'left join speciality sp5 on sp.id = incMN.SPECIALITY_ID_5')
+    Transaction = traMain
+    Left = 623
+    Top = 432
   end
 end

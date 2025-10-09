@@ -71,7 +71,9 @@ TDoctorItem = class(TBaseItem)
     destructor Destroy; override;
     procedure InsertDoctor;
     procedure UpdateDoctor;
-    procedure SaveDoctor(var dataPosition: Cardinal);
+    procedure SaveDoctor(var dataPosition: Cardinal); overload;
+    procedure SaveDoctor(Abuf: Pointer; var dataPosition: Cardinal); overload;
+    procedure SaveDoctorTemp(var dataPosition: Cardinal);
   end;
 
 
@@ -158,7 +160,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -187,6 +189,53 @@ begin
   end;
 end;
 
+procedure TDoctorItem.SaveDoctor(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveDoctor(dataPosition);
+end;
+
+procedure TDoctorItem.SaveDoctorTemp(var dataPosition: Cardinal);
+var
+  CollType: TCollectionsType;
+  metaPosition, PropPosition: cardinal;
+  propIndx: TPropertyIndex;
+begin
+  CollType := ctDoctor;
+  SaveStreamCommandTemp(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion, dataPosition);
+  case FVersion of
+    0:
+    begin
+      for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+      begin
+        if propIndx in PRecord.setProp then
+        begin
+          case propIndx of
+            Doctor_EGN: SaveDataTemp(PRecord.EGN, PropPosition, metaPosition, dataPosition);
+            Doctor_FNAME: SaveDataTemp(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
+            Doctor_ID: SaveDataTemp(PRecord.ID, PropPosition, metaPosition, dataPosition);
+            Doctor_LNAME: SaveDataTemp(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
+            Doctor_SNAME: SaveDataTemp(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
+            Doctor_UIN: SaveDataTemp(PRecord.UIN, PropPosition, metaPosition, dataPosition);
+            Doctor_Logical: SaveDataTemp(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+          end;
+        end
+        else
+        begin
+          //SaveNull(metaPosition);
+        end;
+      end;
+    end;
+  end;
+end;
+
 procedure TDoctorItem.SaveDoctor(var dataPosition: Cardinal);
 var
   CollType: TCollectionsType;
@@ -194,7 +243,7 @@ var
   propIndx: TPropertyIndex;
 begin
   CollType := ctDoctor;
-  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion, dataPosition);
   case FVersion of
     0:
     begin
@@ -498,6 +547,7 @@ var
   isOld: Boolean;
   Doctor: TDoctorItem;
   ACol: Integer;
+  dataPosition: Cardinal;
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
@@ -541,6 +591,14 @@ begin
     Doctor_SNAME: Doctor.PRecord.SNAME := AValue;
     Doctor_UIN: Doctor.PRecord.UIN := AValue;
     Doctor_Logical: Doctor.PRecord.Logical := tlogicalDoctorSet(Doctor.StrToLogical16(AValue));
+  end;
+
+  if Doctor.PRecord <> nil then
+  begin
+    dataPosition := Doctor.DataPos;
+    Doctor.SaveDoctorTemp(dataPosition);
+    self.StreamCommTemp.Len := self.StreamCommTemp.Size;
+    Self.cmdFileTemp.CopyFrom(self.StreamCommTemp, 0);
   end;
 end;
 
@@ -803,3 +861,14 @@ begin
 end;
 
 end.
+
+
+{
+EGN: AnsiString;
+FNAME: AnsiString;
+ID: integer;
+LNAME: AnsiString;
+SNAME: AnsiString;
+UIN: AnsiString;
+Logical=tLogicalSet:DOC_ACTIVE,DOG_RZOK,IS_DOGOVOR_NEOTLOGNA,IS_EGN,IS_EMERGENCY_CENTER,IS_NAET,IS_PODVIZHNO_LZ,IS_ZAMESTVASHT,IS_
+}

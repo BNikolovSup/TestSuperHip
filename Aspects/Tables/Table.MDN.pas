@@ -159,7 +159,7 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
+  SaveAnyStreamCommand(@PRecord.setProp, 1, CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -168,7 +168,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -179,7 +179,7 @@ begin
             MDN_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             MDN_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             MDN_NUMBER: SaveData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
-            MDN_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            MDN_Logical: SaveData(TLogicalData24(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -216,7 +216,7 @@ begin
             MDN_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             MDN_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             MDN_NUMBER: SaveData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
-            MDN_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            MDN_Logical: SaveData(TLogicalData24(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -347,7 +347,7 @@ begin
     MDN_ID: str := inttostr(MDN.PRecord.ID);
     MDN_NRN: str := (MDN.PRecord.NRN);
     MDN_NUMBER: str := inttostr(MDN.PRecord.NUMBER);
-    MDN_Logical: str := MDN.Logical32ToStr(TLogicalData32(MDN.PRecord.Logical));
+    MDN_Logical: str := MDN.Logical24ToStr(TLogicalData24(MDN.PRecord.Logical));
   else
     begin
       str := '';
@@ -427,7 +427,7 @@ begin
     MDN_ID: str :=  inttostr(MDN.getIntMap(Self.Buf, Self.posData, propIndex));
     MDN_NRN: str :=  MDN.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     MDN_NUMBER: str :=  inttostr(MDN.getIntMap(Self.Buf, Self.posData, propIndex));
-    MDN_Logical: str :=  MDN.Logical32ToStr(MDN.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    MDN_Logical: str :=  MDN.Logical24ToStr(MDN.getLogical24Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);

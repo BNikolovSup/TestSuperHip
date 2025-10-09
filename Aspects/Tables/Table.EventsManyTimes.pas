@@ -1,4 +1,4 @@
-unit Table.EventsManyTimes;
+unit Table.EventsManyTimes;    //32
 
 interface
 uses
@@ -164,7 +164,7 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -186,7 +186,7 @@ begin
             EventsManyTimes_valTTime: SaveData(PRecord.valTTime, PropPosition, metaPosition, dataPosition);
             EventsManyTimes_valboolean: SaveData(PRecord.valboolean, PropPosition, metaPosition, dataPosition);
             EventsManyTimes_valword: SaveData(PRecord.valword, PropPosition, metaPosition, dataPosition);
-            EventsManyTimes_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_Logical: SaveData(TLogicalData24(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -226,7 +226,7 @@ begin
             EventsManyTimes_valTTime: SaveData(PRecord.valTTime, PropPosition, metaPosition, dataPosition);
             EventsManyTimes_valboolean: SaveData(PRecord.valboolean, PropPosition, metaPosition, dataPosition);
             EventsManyTimes_valword: SaveData(PRecord.valword, PropPosition, metaPosition, dataPosition);
-            EventsManyTimes_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            EventsManyTimes_Logical: SaveData(TLogicalData24(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -364,7 +364,7 @@ begin
     EventsManyTimes_valTTime: str := TimeToStr(EventsManyTimes.PRecord.valTTime);
     EventsManyTimes_valboolean: str := BoolToStr(EventsManyTimes.PRecord.valboolean, True);
     EventsManyTimes_valword: str := inttostr(EventsManyTimes.PRecord.valword);
-    EventsManyTimes_Logical: str := EventsManyTimes.Logical32ToStr(TLogicalData32(EventsManyTimes.PRecord.Logical));
+    EventsManyTimes_Logical: str := EventsManyTimes.Logical24ToStr(TLogicalData24(EventsManyTimes.PRecord.Logical));
   else
     begin
       str := '';
@@ -446,7 +446,7 @@ begin
     EventsManyTimes_valTTime: str :=  TimeToStr(EventsManyTimes.getTimeMap(Self.Buf, Self.posData, propIndex));
     EventsManyTimes_valboolean: str :=  BoolToStr(EventsManyTimes.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
     EventsManyTimes_valword: str :=  inttostr(EventsManyTimes.getWordMap(Self.Buf, Self.posData, propIndex));
-    EventsManyTimes_Logical: str :=  EventsManyTimes.Logical32ToStr(EventsManyTimes.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    EventsManyTimes_Logical: str :=  EventsManyTimes.Logical24ToStr(EventsManyTimes.getLogical24Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -534,7 +534,7 @@ begin
     EventsManyTimes_valTTime: EventsManyTimes.PRecord.valTTime := StrToTime(AValue);
     EventsManyTimes_valboolean: EventsManyTimes.PRecord.valboolean := StrToBool(AValue);
     EventsManyTimes_valword: EventsManyTimes.PRecord.valword := StrToInt(AValue);
-    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical32(AValue));
+    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical24(AValue));
   end;
 end;
 
@@ -583,7 +583,7 @@ begin
     EventsManyTimes_valTTime: EventsManyTimes.PRecord.valTTime := StrToTime(AFieldText);
     EventsManyTimes_valboolean: EventsManyTimes.PRecord.valboolean := StrToBool(AFieldText);
     EventsManyTimes_valword: EventsManyTimes.PRecord.valword := StrToInt(AFieldText);
-    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical32(AFieldText));
+    EventsManyTimes_Logical: EventsManyTimes.PRecord.Logical := tlogicalEventsManyTimesSet(EventsManyTimes.StrToLogical24(AFieldText));
   end;
 end;
 

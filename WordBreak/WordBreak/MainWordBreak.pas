@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, WordBreakF;
 
 const
   gl: set of AnsiChar = ['А', 'Е', 'Ё', 'И', 'О', 'У', 'Ы', 'Э', 'Ю', 'Я'];
@@ -14,7 +14,9 @@ const
   TWordBreaks = AnsiString;
   TForm1 = class(TForm)
     Button1: TButton;
+    Button2: TButton;
     procedure Button1Click(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -74,6 +76,36 @@ begin
   r := rect(0,0, 400, 400);
   Canvas.Rectangle(r);
   DrawText(Canvas.Handle, SMemo.Text, Length(SMemo.Text),r, TA_LEFT);
+
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+var
+  rText: TRect;
+  i: Integer;
+  w, h: Integer;
+  text: string;
+begin
+  memo1 := TStringList.Create;
+  SMemo := TStringList.Create;
+  rText := Rect(0, 0, 180 + Random(120), 100);
+  w:= rText.Width;
+  h:= rText.Height;
+  memo1.Text := 'Функция Wordwrap сканира текстов буфер, който съдържа текст за изпращане на екрана, като търси първата дума, която не се побира в текущия ред на екрана. Функцията Wordwrap поставя тази дума в началото на следващия ред на екрана.' ;
+  WordBreakF.WrapMemo(Canvas, memo1, SMemo, w, h);
+  rText.Width:= w ;
+  rText.Height:= 13;
+  Repaint;
+  //Canvas.Rectangle(rtext);
+  rText.Offset(2, 2);
+  for i := 0 to SMemo.Count - 1 do
+  begin
+    //Canvas.Rectangle(rtext);
+    text := SMemo[i];
+    DrawText(Canvas.Handle, SMemo[i], Length(SMemo[i]),rtext, TA_LEFT);
+    rText.Offset(0, 13);
+  end;
+  //DrawText(Canvas.Handle, SMemo.Text, Length(SMemo.Text),rtext, TA_LEFT);
 
 end;
 

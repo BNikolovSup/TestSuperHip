@@ -7,7 +7,8 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
   FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit, System.Math,
   Options, CertThread, System.Generics.Collections, WalkFunctions, RealObj.RealHipp,
-  Table.Doctor;
+  Table.Doctor, FMX.ScrollBox, FMX.Memo, sbxcertificatestorage, sbxtypes, CertHelper,
+  SBX509, SBxMessageEncryptor, sbxmessagedecryptor;
 
 type
   TTokensLabel = class
@@ -15,6 +16,8 @@ type
     RctColorToken: TRectangle;
     txtKey, txtCapt, txtPeriod: TText;
     btnIcon: TRectangle;
+    MemoPasword: TMemo;
+    cert: TsbxCertificate;
 
     public
     //constructor create;
@@ -40,12 +43,19 @@ type
     txtTokensCapt: TText;
     txtTokensDates: TText;
     lytLeft: TLayout;
-    stylbk1: TStyleBook;
     edtLibFileName: TEdit;
     scrlbxToken: TScrollBox;
     scldlytTokens: TScaledLayout;
     rctBlanka: TRectangle;
     dlgOpenLib: TOpenDialog;
+    stylbk1: TStyleBook;
+    mmoPaswordAspecti: TMemo;
+    Rectangle1: TRectangle;
+    FloatAnimation1: TFloatAnimation;
+    brshEncrypt: TBrushObject;
+    brshDecrypt: TBrushObject;
+    Rectangle2: TRectangle;
+    FloatAnimation2: TFloatAnimation;
     procedure scrlbxTokenCalcContentBounds(Sender: TObject;
       var ContentBounds: TRectF);
     procedure scrlbxTokenMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -58,6 +68,12 @@ type
     procedure edtLibFileNameValidating(Sender: TObject; var Text: string);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure expndrTokensResize(Sender: TObject);
+    procedure mmoPaswordAspectiChangeTracking(Sender: TObject);
+    procedure rctIconTokensMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure Rectangle1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
 
   private
     FScaleDyn: Single;
@@ -66,7 +82,7 @@ type
     procedure SetScaleDyn(const Value: Single);
     procedure AddTokenRect(idxTokenRect: Integer; docDataPos: Cardinal);
     procedure  RecalcBlanka;
-
+    procedure DoPasswordNeeded(Sender: TObject; const NeededFor: String; var Password: String; var Cancel: Boolean);
 
   public
     Option: TOptions;
@@ -93,8 +109,14 @@ var
   Delta: Integer;
   arrStr: TArray<string>;
   repNumber: Integer;
-  i: Integer;
+  i, j: Integer;
   doctor: TRealDoctorItem;
+
+
+  CertStorage: TsbxCertificateStorage;
+  SlotCount, m: Integer;
+  TokenPresent: Boolean;
+  fs: TFormatSettings;
 begin
   if (LstTokens.Count - 1) < idxTokens then
   begin
@@ -108,7 +130,10 @@ begin
     TempTokenLabel.txtCapt := WalkChildrenTextStyle(TempTokenRect, 'txtCapt');
     TempTokenLabel.txtPeriod := WalkChildrenTextStyle(TempTokenRect, 'txtPeriod');
     TempTokenLabel.btnIcon := WalkChildrenRectStyle(TempTokenRect, 'btnIcon');
+    TempTokenLabel.btnIcon.OnMouseUp := rctIconTokensMouseUp;
     TempTokenLabel.RctColorToken := WalkChildrenRectStyle(TempTokenRect, 'ColorToken');
+    TempTokenLabel.MemoPasword := WalkChildrenMemo(TempTokenRect);
+    TempTokenLabel.MemoPasword.OnChangeTracking := mmoPaswordAspectiChangeTracking;
   end
   else
   begin
@@ -132,6 +157,7 @@ begin
       endDate := DateToStr(doctor.Cert.ValidTo);
       Delta := Floor(doctor.Cert.ValidTo - Floor(Date));
       TempTokenLabel.txtPeriod.Text := Format('%s - %s (Остават %d дни до края ...)',[startDate, endDate, delta]);
+      TempTokenLabel.cert := doctor.CertPlug;
       Break;
     end;
   end;
@@ -146,6 +172,13 @@ begin
     LstTokens[i].RctToken.Parent := nil;
   end;
   idxTokens := 0;
+end;
+
+procedure TfrmFmxTokens.DoPasswordNeeded(Sender: TObject;
+  const NeededFor: String; var Password: String; var Cancel: Boolean);
+begin
+  ShowMessage('daj parola');
+  Password := '1604';
 end;
 
 procedure TfrmFmxTokens.edtLibFileNameChangeTracking(Sender: TObject);
@@ -175,6 +208,25 @@ begin
   end;
 end;
 
+procedure TfrmFmxTokens.expndrTokensResize(Sender: TObject);
+begin
+  if expndrTokens.IsUpdating then  Exit;
+  RecalcBlanka;
+  //if expndrTokens.IsExpanded then
+//  begin
+//    lytTokens.Height := expndrTokens.Height + expndrTokens.Margins.Top;
+//    RecalcBlanka;
+//  end
+//  else
+//  begin
+//    expndrTokens.Height := lytTokens.Height + 5 + 5;
+//    //xpdrVisitFor.Height := 75;
+//    lytTokens.Height := expndrTokens.Height + expndrTokens.Margins.Top;
+//    RecalcBlanka;
+//
+//  end;
+end;
+
 procedure TfrmFmxTokens.FillTokens;
 var
   i: integer;
@@ -200,6 +252,16 @@ begin
   FreeAndNil(LstTokens);
 end;
 
+procedure TfrmFmxTokens.mmoPaswordAspectiChangeTracking(Sender: TObject);
+var
+  tempRct: TRectangle;
+begin
+  TMemo(sender).Height := TMemo(sender).ContentBounds.Height + 5;
+  tempRct := TRectangle(TMemo(sender).Parent);
+  tempRct.Height := TMemo(sender).Position.Y + TMemo(sender).Height + 5;
+  RecalcBlanka;
+end;
+
 procedure TfrmFmxTokens.rctBtnLibMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Single);
 begin
@@ -210,13 +272,69 @@ begin
   end;
 end;
 
+procedure TfrmFmxTokens.rctIconTokensMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  TempTokenRect: TRectangle;
+  TempTokenLabel: TTokensLabel;
+  InputStream, OutputStream: TStringStream;
+  FMessageEncryptor: TsbxMessageEncryptor;
+  FMessageDecryptor: TsbxMessageDecryptor;
+  CertStorage: TsbxCertificateStorage;
+begin
+  CertStorage := TsbxCertificateStorage.Create(nil);
+  CertStorage.OnPasswordNeeded := DoPasswordNeeded;
+  CertStorage.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
+  CertStorage.Open ( 'pkcs11://@/C:\Windows\System32\eTPKCS11.dll?slot=1&readonly=0');
+  TempTokenRect := TRectangle(TRectangle(Sender).parent.Parent);
+  TempTokenLabel := TTokensLabel(TempTokenRect.TagObject);
+
+  FMessageEncryptor := TsbxMessageEncryptor.Create(self);
+  FMessageEncryptor.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
+  FMessageDecryptor := TsbxMessageDecryptor.Create(self);
+  FMessageDecryptor.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
+
+  //InputStream := TStringStream.Create('Parola');
+//  InputStream.Position := 0;
+//  OutputStream := TStringStream.Create;
+//  FMessageEncryptor.EncryptionCertificate := TempTokenLabel.cert;
+//  FMessageEncryptor.EncryptionAlgorithm := 'AES128';
+//  FMessageEncryptor.InputStream := InputStream;
+//  FMessageEncryptor.OutputStream := OutputStream;
+//  FMessageEncryptor.Encrypt;
+//  OutputStream.Position := 0;
+//  OutputStream.SaveToFile('d:\Parola');
+
+
+    InputStream := TStringStream.Create;//(TempTokenLabel.MemoPasword.Text);
+    InputStream.LoadFromFile('d:\Parola');
+    InputStream.Position := 0;
+    OutputStream := TStringStream.Create;
+    FMessageDecryptor.Certificates := CertStorage.Certificates;
+    FMessageDecryptor.InputStream := InputStream;
+    FMessageDecryptor.OutputStream := OutputStream;
+    FMessageDecryptor.Decrypt;
+    OutputStream.Position := 0;
+    OutputStream.SaveToFile('d:\ParolaDecrypt');
+
+  FreeAndNil(FMessageEncryptor);
+  FreeAndNil(FMessageDecryptor);
+end;
+
 procedure TfrmFmxTokens.RecalcBlanka;
 var
   p2, p3: TPointF;
   lytLeftHeight, TotalH: Single;
 begin
   lytToken.RecalcSize;
-  expndrTokens.Height := InnerChildrenRect(lytToken).Height/FScaleDyn + 40 ;
+  if expndrTokens.IsExpanded then
+  begin
+    expndrTokens.Height := InnerChildrenRect(lytToken).Height/FScaleDyn + 40 ;
+  end
+  else
+  begin
+    expndrTokens.Height := 40;
+  end;
   lytToken.Height := expndrTokens.Height;
 
   p2 := expndrTokens.LocalToAbsolute(PointF(0,expndrTokens.Size.Height + scrlbxToken.ViewportPosition.y/FScaleDyn));
@@ -227,6 +345,12 @@ begin
   scldlytTokens.Height := scldlytTokens.OriginalHeight * FScaleDyn;
 
 
+end;
+
+procedure TfrmFmxTokens.Rectangle1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Single);
+begin
+  TRectangle(Sender).Fill.Assign(brshDecrypt.Brush);
 end;
 
 procedure TfrmFmxTokens.scrlbxTokenCalcContentBounds(Sender: TObject;

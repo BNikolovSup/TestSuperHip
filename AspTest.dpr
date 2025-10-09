@@ -15,7 +15,6 @@ uses
   Vcl.Styles,
   NzisThreadFull in 'NzisThreadFull.pas',
   ThreadLoadDB in 'ThreadLoadDB.pas',
-  Options in 'Options.pas',
   DbHelper in 'DbHelper.pas',
   VTREditors in 'VTREditors.pas',
   HistoryNav in 'HistoryNav.pas',
@@ -85,7 +84,7 @@ uses
   Table.NZIS_RESULT_DIAGNOSTIC_REPORT in 'Aspects\Tables\Table.NZIS_RESULT_DIAGNOSTIC_REPORT.pas',
   Table.NZIS_DIAGNOSTIC_REPORT in 'Aspects\Tables\Table.NZIS_DIAGNOSTIC_REPORT.pas',
   Table.CL144 in 'Aspects\Tables\Table.CL144.pas',
-  X002 in 'X002.pas',
+  msgX002 in 'XML\msgX002.pas',
   L010 in 'L010.pas',
   CertHelper in 'CertHelper.pas',
   X004 in 'X004.pas',
@@ -107,7 +106,9 @@ uses
   New in 'FMX\NewFMX\New.pas',
   RolePanels in '..\Popup\RolePanels.pas',
   TitleBar in '..\Popup\TitleBar.pas',
-  RoleBar in '..\Popup\RoleBar.pas';
+  RoleBar in '..\Popup\RoleBar.pas',
+  OptionsForm in '..\Popup\OptionsForm.pas',
+  FMX.GifUtils in 'C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas';
 
 {$R *.res}
 

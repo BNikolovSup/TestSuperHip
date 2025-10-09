@@ -12,7 +12,8 @@ uses
   RealObj.NzisNomen,
   RealObj.RealHipp, Aspects.Collections, Table.Diagnosis, Table.ExamAnalysis,
   table.ExamImmunization, Table.CL132, Table.CL022, Table.KARTA_PROFILAKTIKA2017,
-  table.BLANKA_MED_NAPR;
+  table.BLANKA_MED_NAPR, Table.BLANKA_MED_NAPR_3A, Table.Practica, Table.INC_MDN,
+  Table.HOSPITALIZATION, Table.EXAM_LKK, Table.INC_NAPR;
 
   type
   TDbHelper = class (TObject)
@@ -27,6 +28,7 @@ uses
        LogIndex: TLogicalEventsManyTimes): TRealEventsManyTimesItem;
   public
     CollPreg: TRealPregledNewColl;
+    CollDoctor: TRealDoctorColl;
     EventsManyTimesColl: TRealEventsManyTimesColl;
     CollEbl: TRealExam_boln_listColl;
     CollDiag: TRealDiagnosisColl;
@@ -36,9 +38,15 @@ uses
     AdbLink: TMappedFile;
     cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
+    Fdm: TDUNzis;
 
+
+    procedure InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
+    procedure UpdatePracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
     procedure InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewItem);
     procedure UpdatePregledField(ibsql: TIBSQL; TempItem: TRealPregledNewItem);
+    procedure InsertDoctorField(ibsql: TIBSQL; TempItem: TRealDoctorItem);
+    procedure UpdateDoctorField(ibsql: TIBSQL; TempItem: TRealDoctorItem);
     procedure InsertPatientField(ibsql: TIBSQL; TempItem: TRealPatientNewItem);
     procedure UpdatePatientField(ibsql: TIBSQL; TempItem: TRealPatientNewItem);
     procedure InsertExamAnalField(ibsql: TIBSQL; TempItem: TRealExamAnalysisItem);
@@ -46,7 +54,13 @@ uses
     procedure InsertExamImunField(ibsql: TIBSQL; TempItem: TRealExamImmunizationItem);
     procedure UpdateExamImunField(ibsql: TIBSQL; TempItem: TRealExamImmunizationItem);
     procedure InsertKardProfField(ibsql: TIBSQL; TempItem: TRealKARTA_PROFILAKTIKA2017Item);
+    procedure UpdateKardProfField(ibsql: TIBSQL; TempItem: TRealKARTA_PROFILAKTIKA2017Item);
     procedure InsertMedNaprField(ibsql: TIBSQL; TempItem: TRealBLANKA_MED_NAPRItem);
+    procedure InsertMedNapr3AField(ibsql: TIBSQL; TempItem: TRealBLANKA_MED_NAPR_3AItem);
+    procedure InsertMedNaprHospField(ibsql: TIBSQL; TempItem: TRealHOSPITALIZATIONItem);
+    procedure InsertMedNaprLkkField(ibsql: TIBSQL; TempItem: TRealEXAM_LKKItem);
+    procedure InsertIncMdnField(ibsql: TIBSQL; TempItem: TRealINC_MDNItem);
+    procedure InsertIncMNField(ibsql: TIBSQL; TempItem: TRealINC_NAPRItem);
 
 
 
@@ -259,10 +273,69 @@ begin
   LRN := LrnGuId.ToString;
   LRN := Copy(LRN, 2, 36);
   TempItem.PRecord.NRN_LRN := '            ' + LRN;
-  Include(TempItem.PRecord.setProp, PregledNew_NRN);
+  Include(TempItem.PRecord.setProp, PregledNew_NRN_LRN);
 
   TempItem.PRecord.NZIS_STATUS := 0;
   Include(TempItem.PRecord.setProp, PregledNew_NZIS_STATUS);
+
+end;
+
+procedure TDbHelper.InsertDoctorField(ibsql: TIBSQL; TempItem: TRealDoctorItem);
+var
+  ibsqlDoctor: TIBSQL;
+  data: PAspRec;
+  dataPosition: Cardinal;
+  iEvn: Integer;
+begin
+  ibsqlDoctor := ibsql;
+    TempItem := TRealDoctorItem(CollDoctor.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    if not ibsqlDoctor.Fields[0].IsNull then
+    begin
+      TempItem.PRecord.EGN := ibsqlDoctor.Fields[0].AsString;
+      Include(TempItem.PRecord.setProp, Doctor_EGN);
+    end;
+    if not ibsqlDoctor.Fields[1].IsNull then
+    begin
+      TempItem.PRecord.FNAME := ibsqlDoctor.Fields[1].AsString;
+      Include(TempItem.PRecord.setProp, Doctor_FNAME);
+    end;
+    if not ibsqlDoctor.Fields[2].IsNull then
+    begin
+       TempItem.PRecord.ID := ibsqlDoctor.Fields[2].AsInteger;
+       Include(TempItem.PRecord.setProp, Doctor_ID);
+    end;
+    if not ibsqlDoctor.Fields[3].IsNull then
+    begin
+      TempItem.PRecord.LNAME := ibsqlDoctor.Fields[3].AsString;
+      Include(TempItem.PRecord.setProp, Doctor_LNAME);
+    end;
+    if not ibsqlDoctor.Fields[4].IsNull then
+    begin
+      TempItem.PRecord.SNAME := ibsqlDoctor.Fields[4].AsString;
+      Include(TempItem.PRecord.setProp, Doctor_SNAME);
+    end;
+    if not ibsqlDoctor.Fields[5].IsNull then
+    begin
+      TempItem.PRecord.UIN := ibsqlDoctor.Fields[5].AsString;
+      Include(TempItem.PRecord.setProp, Doctor_UIN);
+    end;
+
+    TempItem.DoctorID := ibsqlDoctor.Fields[2].AsInteger;
+
+
+    TempItem.InsertDoctor;
+    CollDoctor.streamComm.Len := CollDoctor.streamComm.Size;
+    CmdFile.CopyFrom(CollDoctor.streamComm, 0);
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqlDoctor.Next;
+
+
+
+  if TempItem.PRecord.Logical <> [] then
+    Include(TempItem.PRecord.setProp, Doctor_Logical);
 
 end;
 
@@ -536,6 +609,9 @@ var
       TempItem.PRecord.RESULT := ibsqlExamAnalysis.Fields[8].AsString;
       Include(TempItem.PRecord.setProp, ExamAnalysis_RESULT);
     end;
+
+    TempItem.PRecord.PosDataNomen := 0;
+    Include(TempItem.PRecord.setProp, ExamAnalysis_PosDataNomen);
 
      TempItem.MdnId := ibsqlExamAnalysis.Fields[1].AsInteger;
      TempItem.ExamAnalID := ibsqlExamAnalysis.Fields[4].AsInteger;
@@ -833,6 +909,228 @@ var
     TempItem.PregledID := TempItem.PRecord.PREGLED_ID;
   end;
 
+procedure TDbHelper.InsertIncMdnField(ibsql: TIBSQL; TempItem: TRealINC_MDNItem);
+var
+  ibsqlInc_MDN: TIBSQL;
+  diagNode: PVirtualNode;
+  data: PAspRec;
+  diag: TRealDiagnosisItem;
+  dataPosition: Cardinal;
+begin
+  ibsqlInc_MDN := ibsql;
+  if not ibsqlINC_MDN.Fields[0].IsNull then
+  begin
+     TempItem.PRecord.ACCOUNT_ID := ibsqlINC_MDN.Fields[0].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_ACCOUNT_ID);
+  end;
+  if not ibsqlINC_MDN.Fields[1].IsNull then
+  begin
+     TempItem.PRecord.AMBJOURNALN := ibsqlINC_MDN.Fields[1].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_AMBJOURNALN);
+  end;
+  if not ibsqlINC_MDN.Fields[2].IsNull then
+  begin
+     TempItem.PRecord.AMBJOURNALN_PAYED := ibsqlINC_MDN.Fields[2].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_AMBJOURNALN_PAYED);
+  end;
+  if not ibsqlINC_MDN.Fields[3].IsNull then
+  begin
+     TempItem.PRecord.AMBLISTN := ibsqlINC_MDN.Fields[3].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_AMBLISTN);
+  end;
+  if not ibsqlINC_MDN.Fields[4].IsNull then
+  begin
+    TempItem.PRecord.AMB_NRN := ibsqlINC_MDN.Fields[4].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_AMB_NRN);
+  end;
+  if not ibsqlINC_MDN.Fields[5].IsNull then
+  begin
+    TempItem.PRecord.ASSIGMENT_TIME := ibsqlINC_MDN.Fields[5].AsTime;
+    Include(TempItem.PRecord.setProp, INC_MDN_ASSIGMENT_TIME);
+  end;
+  if not ibsqlINC_MDN.Fields[6].IsNull then
+  begin
+    TempItem.PRecord.DATA := ibsqlINC_MDN.Fields[6].AsDate;
+    Include(TempItem.PRecord.setProp, INC_MDN_DATA);
+  end;
+  if not ibsqlINC_MDN.Fields[7].IsNull then
+  begin
+    TempItem.PRecord.DATE_EXECUTION := ibsqlINC_MDN.Fields[7].AsDate;
+    Include(TempItem.PRecord.setProp, INC_MDN_DATE_EXECUTION);
+  end;
+  if not ibsqlINC_MDN.Fields[8].IsNull then
+  begin
+    TempItem.PRecord.DATE_PROBOVZEMANE := ibsqlINC_MDN.Fields[8].AsDate;
+    Include(TempItem.PRecord.setProp, INC_MDN_DATE_PROBOVZEMANE);
+  end;
+  if not ibsqlINC_MDN.Fields[9].IsNull then
+  begin
+    TempItem.PRecord.DESCRIPTION := ibsqlINC_MDN.Fields[9].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_DESCRIPTION);
+  end;
+  if not ibsqlINC_MDN.Fields[10].IsNull then
+  begin
+    TempItem.PRecord.EXECUTION_TIME := ibsqlINC_MDN.Fields[10].AsTime;
+    Include(TempItem.PRecord.setProp, INC_MDN_EXECUTION_TIME);
+  end;
+  if not ibsqlINC_MDN.Fields[11].IsNull then
+  begin
+     TempItem.PRecord.FUND_ID := ibsqlINC_MDN.Fields[11].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_FUND_ID);
+  end;
+  if not ibsqlINC_MDN.Fields[12].IsNull then
+  begin
+     TempItem.PRecord.ID := ibsqlINC_MDN.Fields[12].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_ID);
+  end;
+  if not ibsqlINC_MDN.Fields[13].IsNull then
+  begin
+    TempItem.PRecord.NOMERBELEGKA := ibsqlINC_MDN.Fields[13].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_NOMERBELEGKA);
+  end;
+  if not ibsqlINC_MDN.Fields[14].IsNull then
+  begin
+    TempItem.PRecord.NOMERKASHAPARAT := ibsqlINC_MDN.Fields[14].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_NOMERKASHAPARAT);
+  end;
+  if not ibsqlINC_MDN.Fields[15].IsNull then
+  begin
+    TempItem.PRecord.NRN := ibsqlINC_MDN.Fields[15].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_NRN);
+  end;
+  if not ibsqlINC_MDN.Fields[16].IsNull then
+  begin
+     TempItem.PRecord.NUMBER := ibsqlINC_MDN.Fields[16].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_NUMBER);
+  end;
+  if not ibsqlINC_MDN.Fields[17].IsNull then
+  begin
+    TempItem.PRecord.NZOK_NOMER := ibsqlINC_MDN.Fields[17].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_NZOK_NOMER);
+  end;
+  if not ibsqlINC_MDN.Fields[18].IsNull then
+  begin
+    TempItem.PRecord.PACKAGE := ibsqlINC_MDN.Fields[18].AsInteger;
+    Include(TempItem.PRecord.setProp, INC_MDN_PACKAGE);
+  end;
+  if not ibsqlINC_MDN.Fields[19].IsNull then
+  begin
+    TempItem.PRecord.PASS := ibsqlINC_MDN.Fields[19].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_PASS);
+  end;
+  if not ibsqlINC_MDN.Fields[20].IsNull then
+  begin
+    TempItem.PRecord.SEND_MAIL_DATE := ibsqlINC_MDN.Fields[20].AsDate;
+    Include(TempItem.PRecord.setProp, INC_MDN_SEND_MAIL_DATE);
+  end;
+  if not ibsqlINC_MDN.Fields[21].IsNull then
+  begin
+    TempItem.PRecord.THREAD_IDS := ibsqlINC_MDN.Fields[21].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_THREAD_IDS);
+  end;
+  if not ibsqlINC_MDN.Fields[22].IsNull then
+  begin
+    TempItem.PRecord.TIME_PROBOVZEMANE := ibsqlINC_MDN.Fields[22].AsTime;
+    Include(TempItem.PRecord.setProp, INC_MDN_TIME_PROBOVZEMANE);
+  end;
+  if not ibsqlINC_MDN.Fields[23].IsNull then
+  begin
+    TempItem.PRecord.TOKEN_RESULT := ibsqlINC_MDN.Fields[23].AsString;
+    Include(TempItem.PRecord.setProp, INC_MDN_TOKEN_RESULT);
+  end;
+  if not ibsqlINC_MDN.Fields[24].IsNull then
+  begin
+     TempItem.PRecord.VISIT_ID := ibsqlINC_MDN.Fields[24].AsInteger;
+     Include(TempItem.PRecord.setProp, INC_MDN_VISIT_ID);
+  end;
+
+  TempItem.ICD_CODE := ibsqlINC_MDN.Fields[36].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlINC_MDN.Fields[37].AsString;
+  TempItem.PatientID := ibsqlINC_MDN.Fields[52].AsInteger;
+end;
+
+procedure TDbHelper.InsertIncMNField(ibsql: TIBSQL;
+  TempItem: TRealINC_NAPRItem);
+var
+  ibsqlINC_NAPR: TIBSQL;
+  diagNode: PVirtualNode;
+  data: PAspRec;
+  diag: TRealDiagnosisItem;
+  dataPosition: Cardinal;
+begin
+    ibsqlINC_NAPR := ibsql;
+    if (not ibsqlINC_NAPR.Fields[0].IsNull)
+    then
+    begin
+       TempItem.PRecord.AMB_LISTN := ibsqlINC_NAPR.Fields[0].AsInteger;
+       Include(TempItem.PRecord.setProp, INC_NAPR_AMB_LISTN);
+    end;
+    if (not ibsqlINC_NAPR.Fields[1].IsNull)
+    then
+    begin
+      TempItem.PRecord.AMB_LIST_NRN := ibsqlINC_NAPR.Fields[1].AsString;
+      Include(TempItem.PRecord.setProp, INC_NAPR_AMB_LIST_NRN);
+    end;
+    if (not ibsqlINC_NAPR.Fields[2].IsNull)
+    then
+    begin
+       TempItem.PRecord.ID := ibsqlINC_NAPR.Fields[2].AsInteger;
+       Include(TempItem.PRecord.setProp, INC_NAPR_ID);
+    end;
+    if (not ibsqlINC_NAPR.Fields[3].IsNull)
+    then
+    begin
+      TempItem.PRecord.ISSUE_DATE := ibsqlINC_NAPR.Fields[3].AsDate;
+      Include(TempItem.PRecord.setProp, INC_NAPR_ISSUE_DATE);
+    end;
+    if (not ibsqlINC_NAPR.Fields[4].IsNull)
+    then
+    begin
+      TempItem.PRecord.ISSUE_TIME := ibsqlINC_NAPR.Fields[4].AsTime;
+      Include(TempItem.PRecord.setProp, INC_NAPR_ISSUE_TIME);
+    end;
+    if (not ibsqlINC_NAPR.Fields[5].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOMERBELEGKA := ibsqlINC_NAPR.Fields[5].AsString;
+      Include(TempItem.PRecord.setProp, INC_NAPR_NOMERBELEGKA);
+    end;
+    if (not ibsqlINC_NAPR.Fields[6].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOMERKASHAPARAT := ibsqlINC_NAPR.Fields[6].AsString;
+      Include(TempItem.PRecord.setProp, INC_NAPR_NOMERKASHAPARAT);
+    end;
+    if (not ibsqlINC_NAPR.Fields[7].IsNull)
+    then
+    begin
+      TempItem.PRecord.NRN := ibsqlINC_NAPR.Fields[7].AsString;
+      Include(TempItem.PRecord.setProp, INC_NAPR_NRN);
+    end;
+    if (not ibsqlINC_NAPR.Fields[8].IsNull)
+    then
+    begin
+       TempItem.PRecord.NUMBER := ibsqlINC_NAPR.Fields[8].AsInteger;
+       Include(TempItem.PRecord.setProp, INC_NAPR_NUMBER);
+    end;
+    if (not ibsqlINC_NAPR.Fields[9].IsNull)
+    then
+    begin
+      TempItem.PRecord.REASON := ibsqlINC_NAPR.Fields[9].AsString;
+      Include(TempItem.PRecord.setProp, INC_NAPR_REASON);
+    end;
+
+  TempItem.ICD_CODE := ibsqlINC_NAPR.Fields[13].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlINC_NAPR.Fields[18].AsString;
+  TempItem.ICD_CODE2 := ibsqlINC_NAPR.Fields[14].AsString;
+  TempItem.ICD_CODE2_ADD := ibsqlINC_NAPR.Fields[15].AsString;
+  TempItem.ICD_CODE3 := ibsqlINC_NAPR.Fields[16].AsString;
+  TempItem.ICD_CODE3_ADD := ibsqlINC_NAPR.Fields[17].AsString;
+  TempItem.PatientID := ibsqlINC_NAPR.Fields[23].AsInteger;
+  TempItem.NRN := ibsqlINC_NAPR.Fields[7].AsString;
+  TempItem.Nomer := ibsqlINC_NAPR.Fields[8].AsInteger;
+end;
+
 procedure TDbHelper.InsertKardProfField(ibsql: TIBSQL;
   TempItem: TRealKARTA_PROFILAKTIKA2017Item);
 var
@@ -997,6 +1295,98 @@ begin
 
 end;
 
+procedure TDbHelper.InsertMedNapr3AField(ibsql: TIBSQL;
+  TempItem: TRealBLANKA_MED_NAPR_3AItem);
+var
+  ibsqlBLANKA_MED_NAPR_3A: TIBSQL;
+  diagNode: PVirtualNode;
+  data: PAspRec;
+  diag: TRealDiagnosisItem;
+  dataPosition: Cardinal;
+begin
+  ibsqlBLANKA_MED_NAPR_3A := ibsql;
+
+
+  TempItem.ICD_CODE := ibsqlBLANKA_MED_NAPR_3A.Fields[9].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlBLANKA_MED_NAPR_3A.Fields[14].AsString;
+  TempItem.ICD_CODE2 := ibsqlBLANKA_MED_NAPR_3A.Fields[10].AsString;
+  TempItem.ICD_CODE2_ADD := ibsqlBLANKA_MED_NAPR_3A.Fields[11].AsString;
+  TempItem.ICD_CODE3 := ibsqlBLANKA_MED_NAPR_3A.Fields[12].AsString;
+  TempItem.ICD_CODE3_ADD := ibsqlBLANKA_MED_NAPR_3A.Fields[13].AsString;
+
+
+  if not ibsqlBLANKA_MED_NAPR_3A.Fields[0].IsNull then
+    begin
+      TempItem.PRecord.ATTACHED_DOCS := ibsqlBLANKA_MED_NAPR_3A.Fields[0].AsString;
+      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_ATTACHED_DOCS);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[1].IsNull then
+    begin
+       TempItem.PRecord.ID := ibsqlBLANKA_MED_NAPR_3A.Fields[1].AsInteger;
+       Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_ID);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[2].IsNull then
+    begin
+      TempItem.PRecord.ISSUE_DATE := ibsqlBLANKA_MED_NAPR_3A.Fields[2].AsDate;
+      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_ISSUE_DATE);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[3].IsNull then
+    begin
+      TempItem.PRecord.NRN := ibsqlBLANKA_MED_NAPR_3A.Fields[3].AsString;
+      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_NRN);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[4].IsNull then
+    begin
+       TempItem.PRecord.NUMBER := ibsqlBLANKA_MED_NAPR_3A.Fields[4].AsInteger;
+       Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_NUMBER);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[5].IsNull then
+    begin
+      TempItem.PRecord.REASON := ibsqlBLANKA_MED_NAPR_3A.Fields[5].AsString;
+      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_REASON);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[6].IsNull then
+    begin
+       TempItem.PRecord.SPECIALITY_ID := ibsqlBLANKA_MED_NAPR_3A.Fields[6].AsInteger;
+       Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_SPECIALITY_ID);
+    end;
+    if not ibsqlBLANKA_MED_NAPR_3A.Fields[7].IsNull then
+    begin
+      TempItem.PRecord.VSD_CODE := ibsqlBLANKA_MED_NAPR_3A.Fields[7].AsString;
+      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_VSD_CODE);
+    end;
+
+  TempItem.SpecNzis := ibsqlBLANKA_MED_NAPR_3A.Fields[20].AsString;
+  TempItem.PregledID := ibsqlBLANKA_MED_NAPR_3A.Fields[18].AsInteger;
+
+
+  TempItem.PRecord.Logical := [];
+  //if ibsqlBLANKA_MED_NAPR_3A.Fields[18].AsString = 'Y' then
+//    Include(TempItem.PRecord.Logical, IS_PRINTED);
+//  if ibsqlBLANKA_MED_NAPR_3A.Fields[19].AsString = 'Y' then
+//    Include(TempItem.PRecord.Logical, EXAMED_BY_SPECIALIST);
+  case ibsqlBLANKA_MED_NAPR_3A.Fields[17].Asinteger  of
+    0: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.NZIS_STATUS_None);
+    3: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.NZIS_STATUS_Sended);
+    5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.NZIS_STATUS_Cancel);
+  end;
+  case ibsqlBLANKA_MED_NAPR_3A.Fields[19].Asinteger  of
+    1: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Ostro);
+    2: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Hron);
+    3: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Disp);
+    4: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Prof);
+    5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Iskane_Telk);
+    6: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Choice_Mother);
+    7: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Choice_Child);
+    9: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Eksp);
+  end;
+
+
+
+  if TempItem.PRecord.Logical <> [] then
+    Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_3A_Logical);
+end;
+
 procedure TDbHelper.InsertMedNaprField(ibsql: TIBSQL;
   TempItem: TRealBLANKA_MED_NAPRItem);
 var
@@ -1088,19 +1478,26 @@ begin
      TempItem.PRecord.SPECIALITY_ID := ibsqlBLANKA_MED_NAPR.Fields[17].AsInteger;
      Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_SPECIALITY_ID);
   end;
+  if (not ibsqlBLANKA_MED_NAPR.Fields[22].IsNull)
+  then
+  begin
+     TempItem.PRecord.SpecDataPos := ibsqlBLANKA_MED_NAPR.Fields[22].AsInteger;
+     Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_SpecDataPos);
+  end;
+
   TempItem.SpecNzis := ibsqlBLANKA_MED_NAPR.Fields[22].AsString;
   TempItem.PregledID := ibsqlBLANKA_MED_NAPR.Fields[12].AsInteger;
 
 
   TempItem.PRecord.Logical := [];
   if ibsqlBLANKA_MED_NAPR.Fields[18].AsString = 'Y' then
-    Include(TempItem.PRecord.Logical, IS_PRINTED);
+    Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR.IS_PRINTED);
   if ibsqlBLANKA_MED_NAPR.Fields[19].AsString = 'Y' then
     Include(TempItem.PRecord.Logical, EXAMED_BY_SPECIALIST);
   case ibsqlBLANKA_MED_NAPR.Fields[20].Asinteger  of
-    0: Include(TempItem.PRecord.Logical, NZIS_STATUS_None);
-    3: Include(TempItem.PRecord.Logical, NZIS_STATUS_Sended);
-    5: Include(TempItem.PRecord.Logical, NZIS_STATUS_Cancel);
+    0: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR.NZIS_STATUS_None);
+    3: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR.NZIS_STATUS_Sended);
+    5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR.NZIS_STATUS_Cancel);
   end;
   case ibsqlBLANKA_MED_NAPR.Fields[21].Asinteger  of
     1: Include(TempItem.PRecord.Logical, MED_NAPR_Ostro);
@@ -1117,6 +1514,110 @@ begin
 
   if TempItem.PRecord.Logical <> [] then
     Include(TempItem.PRecord.setProp, BLANKA_MED_NAPR_Logical);
+end;
+
+procedure TDbHelper.InsertMedNaprHospField(ibsql: TIBSQL;
+  TempItem: TRealHOSPITALIZATIONItem);
+var
+  ibsqlHospitalization: TIBSQL;
+  diagNode: PVirtualNode;
+  data: PAspRec;
+  diag: TRealDiagnosisItem;
+  dataPosition: Cardinal;
+begin
+    ibsqlHospitalization := ibsql;
+    if (not ibsqlHOSPITALIZATION.Fields[0].IsNull)
+    then
+    begin
+      TempItem.PRecord.AMB_PROCEDURE := ibsqlHOSPITALIZATION.Fields[0].AsString;
+      Include(TempItem.PRecord.setProp, HOSPITALIZATION_AMB_PROCEDURE);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[1].IsNull)
+    then
+    begin
+      TempItem.PRecord.CLINICAL_PATH := ibsqlHOSPITALIZATION.Fields[1].AsString;
+      Include(TempItem.PRecord.setProp, HOSPITALIZATION_CLINICAL_PATH);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[2].IsNull)
+    then
+    begin
+      TempItem.PRecord.DIRECT_DATE := ibsqlHOSPITALIZATION.Fields[2].AsDate;
+      Include(TempItem.PRecord.setProp, HOSPITALIZATION_DIRECT_DATE);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[3].IsNull)
+    then
+    begin
+       TempItem.PRecord.ID := ibsqlHOSPITALIZATION.Fields[3].AsInteger;
+       Include(TempItem.PRecord.setProp, HOSPITALIZATION_ID);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[4].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOTES := ibsqlHOSPITALIZATION.Fields[4].AsString;
+      Include(TempItem.PRecord.setProp, HOSPITALIZATION_NOTES);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[5].IsNull)
+    then
+    begin
+      TempItem.PRecord.NRN := ibsqlHOSPITALIZATION.Fields[5].AsString;
+      Include(TempItem.PRecord.setProp, HOSPITALIZATION_NRN);
+    end;
+    if (not ibsqlHOSPITALIZATION.Fields[6].IsNull)
+    then
+    begin
+       TempItem.PRecord.NUMBER := ibsqlHOSPITALIZATION.Fields[6].AsInteger;
+       Include(TempItem.PRecord.setProp, HOSPITALIZATION_NUMBER);
+    end;
+
+  TempItem.ICD_CODE := ibsqlHOSPITALIZATION.Fields[10].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlHOSPITALIZATION.Fields[11].AsString;
+  TempItem.ICD_CODE2 := ibsqlHOSPITALIZATION.Fields[12].AsString;
+  TempItem.ICD_CODE2_ADD := ibsqlHOSPITALIZATION.Fields[13].AsString;
+  TempItem.PregledID := ibsqlHOSPITALIZATION.Fields[23].AsInteger;
+
+end;
+
+procedure TDbHelper.InsertMedNaprLkkField(ibsql: TIBSQL;
+  TempItem: TRealEXAM_LKKItem);
+var
+  ibsqlEXAM_LKK: TIBSQL;
+  diagNode: PVirtualNode;
+  data: PAspRec;
+  diag: TRealDiagnosisItem;
+  dataPosition: Cardinal;
+begin
+    ibsqlEXAM_LKK := ibsql;
+    if (not ibsqlEXAM_LKK.Fields[0].IsNull)
+    then
+    begin
+      TempItem.PRecord.DATA := ibsqlEXAM_LKK.Fields[0].AsDate;
+      Include(TempItem.PRecord.setProp, EXAM_LKK_DATA);
+    end;
+    if (not ibsqlEXAM_LKK.Fields[1].IsNull)
+    then
+    begin
+       TempItem.PRecord.ID := ibsqlEXAM_LKK.Fields[1].AsInteger;
+       Include(TempItem.PRecord.setProp, EXAM_LKK_ID);
+    end;
+    if (not ibsqlEXAM_LKK.Fields[2].IsNull)
+    then
+    begin
+      TempItem.PRecord.NRN := ibsqlEXAM_LKK.Fields[2].AsString;
+      Include(TempItem.PRecord.setProp, EXAM_LKK_NRN);
+    end;
+    if (not ibsqlEXAM_LKK.Fields[3].IsNull)
+    then
+    begin
+       TempItem.PRecord.NUMBER := ibsqlEXAM_LKK.Fields[3].AsInteger;
+       Include(TempItem.PRecord.setProp, EXAM_LKK_NUMBER);
+    end;
+
+  TempItem.ICD_CODE := ibsqlEXAM_LKK.Fields[4].AsString;
+  TempItem.ICD_CODE_ADD := ibsqlEXAM_LKK.Fields[6].AsString;
+  TempItem.ICD_CODE2 := ibsqlEXAM_LKK.Fields[5].AsString;
+  TempItem.ICD_CODE2_ADD := ibsqlEXAM_LKK.Fields[7].AsString;
+  TempItem.PregledID := ibsqlEXAM_LKK.Fields[12].AsInteger;
+
 end;
 
 procedure TDbHelper.InsertPatientField(ibsql: TIBSQL;
@@ -1239,13 +1740,13 @@ begin
 //      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE));
      // TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
-  if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsTime  <> 0) then
+  if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.DATE_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[19].AsDate;
     iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
     TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
-  if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) then
+  if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.TIME_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[20].AsTime;
     iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
@@ -1350,6 +1851,229 @@ begin
 
 end;
 
+procedure TDbHelper.InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
+ var
+    ibsqlPractica: TIBSQL;
+    diagNode: PVirtualNode;
+    data: PAspRec;
+    diag: TRealDiagnosisItem;
+    dataPosition: Cardinal;
+begin
+  ibsqlPractica := ibsql;
+      if (not ibsqlPractica.Fields[0].IsNull)
+    then
+    begin
+      TempItem.PRecord.ADDRESS_ACT := ibsqlPractica.Fields[0].AsString;
+      Include(TempItem.PRecord.setProp, Practica_ADDRESS_ACT);
+    end;
+    if (not ibsqlPractica.Fields[1].IsNull)
+    then
+    begin
+      TempItem.PRecord.ADDRESS_DOGNZOK := ibsqlPractica.Fields[1].AsString;
+      Include(TempItem.PRecord.setProp, Practica_ADDRESS_DOGNZOK);
+    end;
+    if (not ibsqlPractica.Fields[2].IsNull)
+    then
+    begin
+      TempItem.PRecord.ADRES := ibsqlPractica.Fields[2].AsString;
+      Include(TempItem.PRecord.setProp, Practica_ADRES);
+    end;
+    if (not ibsqlPractica.Fields[3].IsNull)
+    then
+    begin
+      TempItem.PRecord.BANKA := ibsqlPractica.Fields[3].AsString;
+      Include(TempItem.PRecord.setProp, Practica_BANKA);
+    end;
+    if (not ibsqlPractica.Fields[4].IsNull)
+    then
+    begin
+      TempItem.PRecord.BANKOW_KOD := ibsqlPractica.Fields[4].AsString;
+      Include(TempItem.PRecord.setProp, Practica_BANKOW_KOD);
+    end;
+    if (not ibsqlPractica.Fields[5].IsNull)
+    then
+    begin
+      TempItem.PRecord.BULSTAT := ibsqlPractica.Fields[5].AsString;
+      Include(TempItem.PRecord.setProp, Practica_BULSTAT);
+    end;
+    if (not ibsqlPractica.Fields[6].IsNull)
+    then
+    begin
+      TempItem.PRecord.COMPANYNAME := ibsqlPractica.Fields[6].AsString;
+      Include(TempItem.PRecord.setProp, Practica_COMPANYNAME);
+    end;
+    if (not ibsqlPractica.Fields[7].IsNull)
+    then
+    begin
+      TempItem.PRecord.CONTRACT_DATE := ibsqlPractica.Fields[7].AsDate;
+      Include(TempItem.PRecord.setProp, Practica_CONTRACT_DATE);
+    end;
+    if (not ibsqlPractica.Fields[8].IsNull)
+    then
+    begin
+      TempItem.PRecord.CONTRACT_RZOK := ibsqlPractica.Fields[8].AsString;
+      Include(TempItem.PRecord.setProp, Practica_CONTRACT_RZOK);
+    end;
+    if (not ibsqlPractica.Fields[9].IsNull)
+    then
+    begin
+      TempItem.PRecord.CONTRACT_TYPE := ibsqlPractica.Fields[9].AsInteger;
+      Include(TempItem.PRecord.setProp, Practica_CONTRACT_TYPE);
+    end;
+    if (not ibsqlPractica.Fields[10].IsNull)
+    then
+    begin
+      TempItem.PRecord.DAN_NOMER := ibsqlPractica.Fields[10].AsString;
+      Include(TempItem.PRecord.setProp, Practica_DAN_NOMER);
+    end;
+    if (not ibsqlPractica.Fields[11].IsNull)
+    then
+    begin
+      TempItem.PRecord.EGN := ibsqlPractica.Fields[11].AsString;
+      Include(TempItem.PRecord.setProp, Practica_EGN);
+    end;
+    if (not ibsqlPractica.Fields[12].IsNull)
+    then
+    begin
+      TempItem.PRecord.FNAME := ibsqlPractica.Fields[12].AsString;
+      Include(TempItem.PRecord.setProp, Practica_FNAME);
+    end;
+    if (not ibsqlPractica.Fields[13].IsNull)
+    then
+    begin
+      TempItem.PRecord.FULLNAME := ibsqlPractica.Fields[13].AsString;
+      Include(TempItem.PRecord.setProp, Practica_FULLNAME);
+    end;
+    if (not ibsqlPractica.Fields[14].IsNull)
+    then
+    begin
+      TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
+      Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
+    end;
+    if (not ibsqlPractica.Fields[15].IsNull)
+    then
+    begin
+      TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
+      Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
+    end;
+    if (not ibsqlPractica.Fields[16].IsNull)
+    then
+    begin
+      TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
+      Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
+    end;
+    if (not ibsqlPractica.Fields[17].IsNull)
+    then
+    begin
+      TempItem.PRecord.KOD_RAJON := ibsqlPractica.Fields[17].AsString;
+      Include(TempItem.PRecord.setProp, Practica_KOD_RAJON);
+    end;
+    if (not ibsqlPractica.Fields[18].IsNull)
+    then
+    begin
+      TempItem.PRecord.KOD_RZOK := ibsqlPractica.Fields[18].AsString;
+      Include(TempItem.PRecord.setProp, Practica_KOD_RZOK);
+    end;
+    if (not ibsqlPractica.Fields[19].IsNull)
+    then
+    begin
+      TempItem.PRecord.LNAME := ibsqlPractica.Fields[19].AsString;
+      Include(TempItem.PRecord.setProp, Practica_LNAME);
+    end;
+    if (not ibsqlPractica.Fields[20].IsNull)
+    then
+    begin
+      TempItem.PRecord.LNCH := ibsqlPractica.Fields[20].AsString;
+      Include(TempItem.PRecord.setProp, Practica_LNCH);
+    end;
+    if (not ibsqlPractica.Fields[21].IsNull)
+    then
+    begin
+      TempItem.PRecord.NAME := ibsqlPractica.Fields[21].AsString;
+      Include(TempItem.PRecord.setProp, Practica_NAME);
+    end;
+    if (not ibsqlPractica.Fields[22].IsNull)
+    then
+    begin
+      TempItem.PRecord.NAS_MQSTO := ibsqlPractica.Fields[22].AsString;
+      Include(TempItem.PRecord.setProp, Practica_NAS_MQSTO);
+    end;
+    if (not ibsqlPractica.Fields[24].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOMER_LZ := ibsqlPractica.Fields[24].AsString;
+      Include(TempItem.PRecord.setProp, Practica_NOMER_LZ);
+    end;
+    if (not ibsqlPractica.Fields[25].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOM_NAP := ibsqlPractica.Fields[25].AsString;
+      Include(TempItem.PRecord.setProp, Practica_NOM_NAP);
+    end;
+    if (not ibsqlPractica.Fields[26].IsNull)
+    then
+    begin
+      TempItem.PRecord.NZOK_NOMER := ibsqlPractica.Fields[26].AsString;
+      Include(TempItem.PRecord.setProp, Practica_NZOK_NOMER);
+    end;
+    if (not ibsqlPractica.Fields[27].IsNull)
+    then
+    begin
+      TempItem.PRecord.OBLAST := ibsqlPractica.Fields[27].AsString;
+      Include(TempItem.PRecord.setProp, Practica_OBLAST);
+    end;
+    if (not ibsqlPractica.Fields[28].IsNull)
+    then
+    begin
+      TempItem.PRecord.OBSHTINA := ibsqlPractica.Fields[28].AsString;
+      Include(TempItem.PRecord.setProp, Practica_OBSHTINA);
+    end;
+    if (not ibsqlPractica.Fields[29].IsNull)
+    then
+    begin
+      TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
+      Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
+    end;
+    if (not ibsqlPractica.Fields[30].IsNull)
+    then
+    begin
+      TempItem.PRecord.SMETKA := ibsqlPractica.Fields[30].AsString;
+      Include(TempItem.PRecord.setProp, Practica_SMETKA);
+    end;
+    if (not ibsqlPractica.Fields[31].IsNull)
+    then
+    begin
+      TempItem.PRecord.SNAME := ibsqlPractica.Fields[31].AsString;
+      Include(TempItem.PRecord.setProp, Practica_SNAME);
+    end;
+    if (not ibsqlPractica.Fields[32].IsNull)
+    then
+    begin
+      TempItem.PRecord.UPRAVITEL := ibsqlPractica.Fields[32].AsString;
+      Include(TempItem.PRecord.setProp, Practica_UPRAVITEL);
+    end;
+    if (not ibsqlPractica.Fields[33].IsNull)
+    then
+    begin
+      TempItem.PRecord.VIDFIRMA := ibsqlPractica.Fields[33].AsString;
+      Include(TempItem.PRecord.setProp, Practica_VIDFIRMA);
+    end;
+    if (not ibsqlPractica.Fields[34].IsNull)
+    then
+    begin
+      TempItem.PRecord.VID_IDENT := ibsqlPractica.Fields[34].AsString;
+      Include(TempItem.PRecord.setProp, Practica_VID_IDENT);
+    end;
+    if (not ibsqlPractica.Fields[35].IsNull)
+    then
+    begin
+      TempItem.PRecord.VID_PRAKTIKA := ibsqlPractica.Fields[35].AsString;
+      Include(TempItem.PRecord.setProp, Practica_VID_PRAKTIKA);
+    end;
+
+
+end;
+
 procedure TDbHelper.InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewItem);
   var
     ibsqlPregledNew: TIBSQL;
@@ -1439,7 +2163,7 @@ procedure TDbHelper.InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewI
     then
     begin
       TempItem.PRecord.NRN_LRN := ibsqlPregledNew.Fields[12].AsString;
-      Include(TempItem.PRecord.setProp, PregledNew_NRN);
+      Include(TempItem.PRecord.setProp, PregledNew_NRN_LRN);
     end;
     if (not ibsqlPregledNew.Fields[13].IsNull)
     then
@@ -1613,7 +2337,11 @@ procedure TDbHelper.InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewI
     TempItem.PROCEDURE4_MKB := ibsqlPregledNew.Fields[77].AsString;
     TempItem.RECKNNO := ibsqlPregledNew.Fields[78].AsString;
     TempItem.PREVENTIVE_TYPE := ibsqlPregledNew.Fields[17].AsInteger;//1-детско, 2-над 18, 3-майчино
-
+    TempItem.COPIED_FROM_NRN := ibsqlPregledNew.Fields[2].AsString;
+    if not Fdm.IsGP then
+    begin
+      TempItem.IncNaprNom := ibsqlPregledNew.Fields[79].AsInteger;
+    end;
     //TempItem.CalcPorpuse(AdbHip.Buf, AdbHip.FPosData);
 
 
@@ -1818,7 +2546,7 @@ begin
 
 
   ibsql.ParamByName('AMB_LISTN').AsInteger := preg.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_AMB_LISTN));
-  ibsql.ParamByName('NRN').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NRN));
+  ibsql.ParamByName('NRN').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NRN_LRN));
   ibsql.ParamByName('NZIS_STATUS').AsInteger := preg.getWordMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NZIS_STATUS));
   ibsql.ParamByName('START_DATE').AsDate := preg.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_DATE));
   ibsql.ParamByName('START_TIME').AsTime := preg.getTimeMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_TIME));
@@ -1913,15 +2641,15 @@ begin
     ibsql.ParamByName('IS_VSD').AsString := 'Y'
   else
     ibsql.ParamByName('IS_VSD').AsString := 'N';
-  if IS_NAET in logPreg then
+  if TLogicalPregledNew.IS_NAET in logPreg then
     ibsql.ParamByName('IS_NAET').AsString := 'Y'
   else
     ibsql.ParamByName('IS_NAET').AsString := 'N';
-  if IS_ZAMESTVASHT in logPreg then
+  if TLogicalPregledNew.IS_ZAMESTVASHT in logPreg then
     ibsql.ParamByName('IS_ZAMESTVASHT').AsString := 'Y'
   else
     ibsql.ParamByName('IS_ZAMESTVASHT').AsString := 'N';
-  if IS_PODVIZHNO_LZ in logPreg then
+  if TLogicalPregledNew.IS_PODVIZHNO_LZ in logPreg then
     ibsql.ParamByName('IS_PODVIZHNO_LZ').AsString := 'Y'
   else
     ibsql.ParamByName('IS_PODVIZHNO_LZ').AsString := 'N';
@@ -1937,7 +2665,7 @@ begin
     ibsql.ParamByName('IS_NEW').AsString := 'Y'
   else
     ibsql.ParamByName('IS_NEW').AsString := 'N';
-  if IS_FORM_VALID in logPreg then
+  if TLogicalPregledNew.IS_FORM_VALID in logPreg then
     ibsql.ParamByName('IS_FORM_VALID').AsString := 'Y'
   else
     ibsql.ParamByName('IS_FORM_VALID').AsString := 'N';
@@ -2106,18 +2834,75 @@ begin
       vtr.InternalDisconnectNode(diag.Node, true);
       cmdStream := TCommandStream.Create;
       cmdStream.OpType := toDeleteNode;
-      cmdStream.Size := 10 + LenData ; //  delNode
+      cmdStream.Size := 12 + LenData ; //  delNode
       cmdStream.Ver := 0;
       cmdStream.Vid := ctLink;
       cmdStream.DataPos := cardinal(AdbLink.Buf);// тука това е буфера на настящето дърво
       cmdStream.Propertys := [];
-      cmdStream.Position := 10;
+      cmdStream.Position := 12;
       cmdStream.Write(bt, LenData);
 
       cmdStream.Len := cmdStream.Size;
       CmdFile.CopyFrom(cmdStream, 0);
       cmdStream.Free;
     end;
+  end;
+end;
+
+procedure TDbHelper.UpdateDoctorField(ibsql: TIBSQL; TempItem: TRealDoctorItem);
+var
+  ibsqlDoctor: TIBSQL;
+  data: PAspRec;
+  dataPosition: Cardinal;
+  buf: Pointer;
+  datPos, linkPos: Cardinal;
+  pCardinalData: PCardinal;
+begin
+  ibsqlDoctor := ibsql;
+  buf := AdbHip.Buf;
+  datPos := AdbHip.FPosData;
+
+  if (not ibsqlDoctor.Fields[0].IsNull)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(Doctor_EGN))<>ibsqlDoctor.Fields[0].AsString)
+  then
+  begin
+     TempItem.PRecord.EGN := ibsqlDoctor.Fields[0].AsString;
+     Include(TempItem.PRecord.setProp, Doctor_EGN);
+  end;
+  if (not ibsqlDoctor.Fields[1].IsNull)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(Doctor_FNAME))<>ibsqlDoctor.Fields[1].AsString)
+  then
+  begin
+     TempItem.PRecord.FNAME := ibsqlDoctor.Fields[1].AsString;
+     Include(TempItem.PRecord.setProp, Doctor_FNAME);
+  end;
+  if (not ibsqlDoctor.Fields[2].IsNull)
+      and (TempItem.getIntMap(buf, datPos, word(Doctor_ID))<>ibsqlDoctor.Fields[2].AsInteger)
+  then
+  begin
+     TempItem.PRecord.ID := ibsqlDoctor.Fields[2].AsInteger;
+     Include(TempItem.PRecord.setProp, Doctor_ID);
+  end;
+  if (not ibsqlDoctor.Fields[3].IsNull)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(Doctor_LNAME))<>ibsqlDoctor.Fields[3].AsString)
+  then
+  begin
+     TempItem.PRecord.LNAME := ibsqlDoctor.Fields[3].AsString;
+     Include(TempItem.PRecord.setProp, Doctor_LNAME);
+  end;
+  if (not ibsqlDoctor.Fields[4].IsNull)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(Doctor_SNAME))<>ibsqlDoctor.Fields[4].AsString)
+  then
+  begin
+     TempItem.PRecord.SNAME := ibsqlDoctor.Fields[4].AsString;
+     Include(TempItem.PRecord.setProp, Doctor_SNAME);
+  end;
+  if (not ibsqlDoctor.Fields[5].IsNull)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(Doctor_UIN))<>ibsqlDoctor.Fields[5].AsString)
+  then
+  begin
+     TempItem.PRecord.UIN := ibsqlDoctor.Fields[5].AsString;
+     Include(TempItem.PRecord.setProp, Doctor_UIN);
   end;
 end;
 
@@ -2536,9 +3321,103 @@ var
     end;
   end;
 
+procedure TDbHelper.UpdateKardProfField(ibsql: TIBSQL;
+  TempItem: TRealKARTA_PROFILAKTIKA2017Item);
+var
+  ibsqlKARTA_PROFILAKTIKA2017: TIBSQL;
+  diagNode, TreeLink: PVirtualNode;
+  data: PAspRec;
+  dataPosition: Cardinal;
+  buf: Pointer;
+  datPos, linkPos: Cardinal;
+  pCardinalData: PCardinal;
+begin
+  ibsqlKARTA_PROFILAKTIKA2017 := ibsql;
+  buf := AdbHip.Buf;
+  datPos := AdbHip.FPosData;
+      if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[0].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_BDDIASTOLNO43))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[0].AsInteger)
+    then
+    begin
+       TempItem.PRecord.BDDIASTOLNO43 := ibsqlKARTA_PROFILAKTIKA2017.Fields[0].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_BDDIASTOLNO43);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[1].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_BDGIRTWAIST44))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[1].AsInteger)
+    then
+    begin
+       TempItem.PRecord.BDGIRTWAIST44 := ibsqlKARTA_PROFILAKTIKA2017.Fields[1].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_BDGIRTWAIST44);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[2].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_BDHEIGHT39))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[2].AsInteger)
+    then
+    begin
+       TempItem.PRecord.BDHEIGHT39 := ibsqlKARTA_PROFILAKTIKA2017.Fields[2].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_BDHEIGHT39);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[4].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_BDSYSTOLNO42))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[4].AsInteger)
+    then
+    begin
+       TempItem.PRecord.BDSYSTOLNO42 := ibsqlKARTA_PROFILAKTIKA2017.Fields[4].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_BDSYSTOLNO42);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[5].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_BDWEIGHT40))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[5].AsInteger)
+    then
+    begin
+       TempItem.PRecord.BDWEIGHT40 := ibsqlKARTA_PROFILAKTIKA2017.Fields[5].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_BDWEIGHT40);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[6].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_CIGARETESCOUNT71))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[6].AsInteger)
+    then
+    begin
+       TempItem.PRecord.CIGARETESCOUNT71 := ibsqlKARTA_PROFILAKTIKA2017.Fields[6].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_CIGARETESCOUNT71);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[7].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_FINDRISK))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[7].AsInteger)
+    then
+    begin
+       TempItem.PRecord.FINDRISK := ibsqlKARTA_PROFILAKTIKA2017.Fields[7].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_FINDRISK);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[8].IsNull)
+        and (TempItem.getDateMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_ISSUE_DATE))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[8].AsDate)
+    then
+    begin
+      TempItem.PRecord.ISSUE_DATE := ibsqlKARTA_PROFILAKTIKA2017.Fields[8].AsDate;
+      Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_ISSUE_DATE);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[16].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_NOMER))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[16].AsInteger)
+    then
+    begin
+       TempItem.PRecord.NOMER := ibsqlKARTA_PROFILAKTIKA2017.Fields[16].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_NOMER);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[17].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_PREGLED_ID))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[17].AsInteger)
+    then
+    begin
+       TempItem.PRecord.PREGLED_ID := ibsqlKARTA_PROFILAKTIKA2017.Fields[17].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_PREGLED_ID);
+    end;
+    if (not ibsqlKARTA_PROFILAKTIKA2017.Fields[18].IsNull)
+        and (TempItem.getIntMap(buf, datPos, word(KARTA_PROFILAKTIKA2017_SCORE))<>ibsqlKARTA_PROFILAKTIKA2017.Fields[18].AsInteger)
+    then
+    begin
+       TempItem.PRecord.SCORE := ibsqlKARTA_PROFILAKTIKA2017.Fields[18].AsInteger;
+       Include(TempItem.PRecord.setProp, KARTA_PROFILAKTIKA2017_SCORE);
+    end;
+end;
+
 procedure TDbHelper.UpdatePatientField(ibsql: TIBSQL;
   TempItem: TRealPatientNewItem);
 var
+  i: Integer;
   ibsqlPatientNew: TIBSQL;
   diagNode, TreeLink: PVirtualNode;
   data: PAspRec;
@@ -2547,115 +3426,529 @@ var
   buf: Pointer;
   datPos, linkPos: Cardinal;
   pCardinalData: PCardinal;
+  iEvn: Integer;
+  evn: TRealEventsManyTimesItem;
+  BLOOD_TYPE: string;
+  PidType: string;
+  Is_change: Boolean;
 begin
   ibsqlPatientNew := ibsql;
   buf := AdbHip.Buf;
   datPos := AdbHip.FPosData;
   if (not ibsqlPatientNew.Fields[0].IsNull)
         and (TempItem.getIntMap(buf, datPos, word(PatientNew_BABY_NUMBER))<>ibsqlPatientNew.Fields[0].AsInteger)
-    then
+  then
+  begin
+     TempItem.PRecord.BABY_NUMBER := ibsqlPatientNew.Fields[0].AsInteger;
+     Include(TempItem.PRecord.setProp, PatientNew_BABY_NUMBER);
+  end;
+  if (not ibsqlPatientNew.Fields[1].IsNull)
+      and (TempItem.getDateMap(buf, datPos, word(PatientNew_BIRTH_DATE))<>ibsqlPatientNew.Fields[1].AsDate)
+  then
+  begin
+    TempItem.PRecord.BIRTH_DATE := ibsqlPatientNew.Fields[1].AsDate;
+    Include(TempItem.PRecord.setProp, PatientNew_BIRTH_DATE);
+  end;
+  if (not ibsqlPatientNew.Fields[2].IsNull)
+      and (TempItem.getDateMap(buf, datPos, word(PatientNew_DIE_DATE))<>ibsqlPatientNew.Fields[2].AsDate)
+  then
+  begin
+    TempItem.PRecord.DIE_DATE := ibsqlPatientNew.Fields[2].AsDate;
+    Include(TempItem.PRecord.setProp, PatientNew_DIE_DATE);
+  end;
+  if (not ibsqlPatientNew.Fields[3].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DIE_FROM))<>ibsqlPatientNew.Fields[3].AsString)
+  then
+  begin
+    TempItem.PRecord.DIE_FROM := ibsqlPatientNew.Fields[3].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_DIE_FROM);
+  end;
+  if (not ibsqlPatientNew.Fields[4].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DOSIENOMER))<>ibsqlPatientNew.Fields[4].AsString)
+  then
+  begin
+    TempItem.PRecord.DOSIENOMER := ibsqlPatientNew.Fields[4].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_DOSIENOMER);
+  end;
+  if (not ibsqlPatientNew.Fields[5].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DZI_NUMBER))<>ibsqlPatientNew.Fields[5].AsString)
+  then
+  begin
+    TempItem.PRecord.DZI_NUMBER := ibsqlPatientNew.Fields[5].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_DZI_NUMBER);
+  end;
+  if (not ibsqlPatientNew.Fields[6].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_EGN))<>ibsqlPatientNew.Fields[6].AsString)
+  then
+  begin
+    TempItem.PRecord.EGN := ibsqlPatientNew.Fields[6].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_EGN);
+  end;
+  if (not ibsqlPatientNew.Fields[7].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_EHIC_NO))<>ibsqlPatientNew.Fields[7].AsString)
+  then
+  begin
+    TempItem.PRecord.EHIC_NO := ibsqlPatientNew.Fields[7].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_EHIC_NO);
+  end;
+  if (not ibsqlPatientNew.Fields[8].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_FNAME))<>ibsqlPatientNew.Fields[8].AsString)
+  then
+  begin
+    TempItem.PRecord.FNAME := ibsqlPatientNew.Fields[8].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_FNAME);
+  end;
+  if (not ibsqlPatientNew.Fields[9].IsNull)
+      and (TempItem.getIntMap(buf, datPos, word(PatientNew_ID))<>ibsqlPatientNew.Fields[9].AsInteger)
+  then
+  begin
+     TempItem.PRecord.ID := ibsqlPatientNew.Fields[9].AsInteger;
+     Include(TempItem.PRecord.setProp, PatientNew_ID);
+  end;
+  if (not ibsqlPatientNew.Fields[10].IsNull)
+      and (TempItem.getIntMap(buf, datPos, word(PatientNew_LAK_NUMBER))<>ibsqlPatientNew.Fields[10].AsInteger)
+  then
+  begin
+     TempItem.PRecord.LAK_NUMBER := ibsqlPatientNew.Fields[10].AsInteger;
+     Include(TempItem.PRecord.setProp, PatientNew_LAK_NUMBER);
+  end;
+  if (not ibsqlPatientNew.Fields[11].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_LNAME))<>ibsqlPatientNew.Fields[11].AsString)
+  then
+  begin
+    TempItem.PRecord.LNAME := ibsqlPatientNew.Fields[11].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_LNAME);
+  end;
+  if (not ibsqlPatientNew.Fields[12].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_NZIS_BEBE))<>ibsqlPatientNew.Fields[12].AsString)
+  then
+  begin
+    TempItem.PRecord.NZIS_BEBE := ibsqlPatientNew.Fields[12].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_NZIS_BEBE);
+  end;
+  if (not ibsqlPatientNew.Fields[13].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_NZIS_PID))<>ibsqlPatientNew.Fields[13].AsString)
+  then
+  begin
+    TempItem.PRecord.NZIS_PID := ibsqlPatientNew.Fields[13].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_NZIS_PID);
+  end;
+  if (not ibsqlPatientNew.Fields[15].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_SNAME))<>ibsqlPatientNew.Fields[15].AsString)
+  then
+  begin
+    TempItem.PRecord.SNAME := ibsqlPatientNew.Fields[15].AsString;
+    Include(TempItem.PRecord.setProp, PatientNew_SNAME);
+  end;
+
+  TempItem.PatID := ibsqlPatientNew.Fields[9].AsInteger;
+  TempItem.PatEGN := ibsqlPatientNew.Fields[6].AsString;
+
+  if not ibsqlPatientNew.Fields[16].IsNull then
+  begin
+    tempitem.HEALTH_INSURANCE_NAME := ibsqlPatientNew.Fields[16].AsString;
+    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[17].IsNull) and (ibsqlPatientNew.Fields[17].AsString <> '') then
+  begin
+    tempitem.HEALTH_INSURANCE_NUMBER := ibsqlPatientNew.Fields[17].AsString;
+    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[18].IsNull) and (ibsqlPatientNew.Fields[18].AsString <> '') then
+  begin
+    tempitem.DATA_HEALTH_INSURANCE := ibsqlPatientNew.Fields[18].AsString;
+    evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
+    evn.PatID := TempItem.PatID;
+    TempItem.FEventsPat.Add(evn);
+//      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE));
+     // TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
+  begin
+    tempitem.DATE_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[19].AsDate;
+    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
+  begin
+    tempitem.TIME_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[20].AsTime;
+    iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+
+  if (not ibsqlPatientNew.Fields[21].IsNull) and (ibsqlPatientNew.Fields[21].AsDate  <> 0) then
+  begin
+    tempitem.DATE_OTPISVANE := ibsqlPatientNew.Fields[21].AsDate;
+    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[22].IsNull) and (ibsqlPatientNew.Fields[22].AsDate  <> 0) then
+  begin
+    tempitem.DATE_ZAPISVANE := ibsqlPatientNew.Fields[22].AsDate;
+    Is_change := True;
+    for i := 0 to TempItem.FEventsPat.Count - 1 do
     begin
-       TempItem.PRecord.BABY_NUMBER := ibsqlPatientNew.Fields[0].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_BABY_NUMBER);
+      if (TlogicalEventsManyTimesSet(TempItem.FEventsPat[i].getLogical24Map(buf, AdbHip.FPosData, word(EventsManyTimes_Logical))) = [DATE_ZAPISVANE])
+          and (TempItem.FEventsPat[i].getDateMap(buf, AdbHip.FPosData, word(EventsManyTimes_valTDate)) = tempitem.DATE_ZAPISVANE) then
+      begin
+        Is_change := False;
+        Break;
+      end;
     end;
-    if (not ibsqlPatientNew.Fields[1].IsNull)
-        and (TempItem.getDateMap(buf, datPos, word(PatientNew_BIRTH_DATE))<>ibsqlPatientNew.Fields[1].AsDate)
-    then
+    if Is_change then
     begin
-      TempItem.PRecord.BIRTH_DATE := ibsqlPatientNew.Fields[1].AsDate;
-      Include(TempItem.PRecord.setProp, PatientNew_BIRTH_DATE);
+      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
+      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
     end;
-    if (not ibsqlPatientNew.Fields[2].IsNull)
-        and (TempItem.getDateMap(buf, datPos, word(PatientNew_DIE_DATE))<>ibsqlPatientNew.Fields[2].AsDate)
-    then
-    begin
-      TempItem.PRecord.DIE_DATE := ibsqlPatientNew.Fields[2].AsDate;
-      Include(TempItem.PRecord.setProp, PatientNew_DIE_DATE);
-    end;
-    if (not ibsqlPatientNew.Fields[3].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DIE_FROM))<>ibsqlPatientNew.Fields[3].AsString)
-    then
-    begin
-      TempItem.PRecord.DIE_FROM := ibsqlPatientNew.Fields[3].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DIE_FROM);
-    end;
-    if (not ibsqlPatientNew.Fields[4].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DOSIENOMER))<>ibsqlPatientNew.Fields[4].AsString)
-    then
-    begin
-      TempItem.PRecord.DOSIENOMER := ibsqlPatientNew.Fields[4].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DOSIENOMER);
-    end;
-    if (not ibsqlPatientNew.Fields[5].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_DZI_NUMBER))<>ibsqlPatientNew.Fields[5].AsString)
-    then
-    begin
-      TempItem.PRecord.DZI_NUMBER := ibsqlPatientNew.Fields[5].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_DZI_NUMBER);
-    end;
-    if (not ibsqlPatientNew.Fields[6].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_EGN))<>ibsqlPatientNew.Fields[6].AsString)
-    then
-    begin
-      TempItem.PRecord.EGN := ibsqlPatientNew.Fields[6].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_EGN);
-    end;
-    if (not ibsqlPatientNew.Fields[7].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_EHIC_NO))<>ibsqlPatientNew.Fields[7].AsString)
-    then
-    begin
-      TempItem.PRecord.EHIC_NO := ibsqlPatientNew.Fields[7].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_EHIC_NO);
-    end;
-    if (not ibsqlPatientNew.Fields[8].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_FNAME))<>ibsqlPatientNew.Fields[8].AsString)
-    then
-    begin
-      TempItem.PRecord.FNAME := ibsqlPatientNew.Fields[8].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_FNAME);
-    end;
-    if (not ibsqlPatientNew.Fields[9].IsNull)
-        and (TempItem.getIntMap(buf, datPos, word(PatientNew_ID))<>ibsqlPatientNew.Fields[9].AsInteger)
-    then
-    begin
-       TempItem.PRecord.ID := ibsqlPatientNew.Fields[9].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_ID);
-    end;
-    if (not ibsqlPatientNew.Fields[10].IsNull)
-        and (TempItem.getIntMap(buf, datPos, word(PatientNew_LAK_NUMBER))<>ibsqlPatientNew.Fields[10].AsInteger)
-    then
-    begin
-       TempItem.PRecord.LAK_NUMBER := ibsqlPatientNew.Fields[10].AsInteger;
-       Include(TempItem.PRecord.setProp, PatientNew_LAK_NUMBER);
-    end;
-    if (not ibsqlPatientNew.Fields[11].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_LNAME))<>ibsqlPatientNew.Fields[11].AsString)
-    then
-    begin
-      TempItem.PRecord.LNAME := ibsqlPatientNew.Fields[11].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_LNAME);
-    end;
-    if (not ibsqlPatientNew.Fields[12].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_NZIS_BEBE))<>ibsqlPatientNew.Fields[12].AsString)
-    then
-    begin
-      TempItem.PRecord.NZIS_BEBE := ibsqlPatientNew.Fields[12].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_NZIS_BEBE);
-    end;
-    if (not ibsqlPatientNew.Fields[13].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_NZIS_PID))<>ibsqlPatientNew.Fields[13].AsString)
-    then
-    begin
-      TempItem.PRecord.NZIS_PID := ibsqlPatientNew.Fields[13].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_NZIS_PID);
-    end;
-    if (not ibsqlPatientNew.Fields[15].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PatientNew_SNAME))<>ibsqlPatientNew.Fields[15].AsString)
-    then
-    begin
-      TempItem.PRecord.SNAME := ibsqlPatientNew.Fields[15].AsString;
-      Include(TempItem.PRecord.setProp, PatientNew_SNAME);
-    end;
+  end;
+  if (not ibsqlPatientNew.Fields[23].IsNull) and (ibsqlPatientNew.Fields[23].AsDate  <> 0) then
+  begin
+    tempitem.DATEFROM := ibsqlPatientNew.Fields[23].AsDate;
+    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+
+
+
+  tempitem.DATEISSUE := ibsqlPatientNew.Fields[24].AsDate;
+  tempitem.DATETO := ibsqlPatientNew.Fields[25].AsDate;
+  tempitem.DATETO_TEXT := ibsqlPatientNew.Fields[26].AsString;
+  tempitem.GRAJD := ibsqlPatientNew.Fields[27].AsString;
+  tempitem.IS_NEBL_USL := ibsqlPatientNew.Fields[28].AsString = 'Y';
+  tempitem.OSIGNO := ibsqlPatientNew.Fields[29].AsString;
+  tempitem.OSIGUREN := ibsqlPatientNew.Fields[30].AsString = 'Y';
+  tempitem.PASS := ibsqlPatientNew.Fields[31].AsString;
+  tempitem.PREVIOUS_DOCTOR_ID := ibsqlPatientNew.Fields[32].AsInteger;
+  tempitem.TYPE_CERTIFICATE := ibsqlPatientNew.Fields[33].AsString;
+  tempitem.FUND_ID := ibsqlPatientNew.Fields[34].AsInteger;
+  tempitem.PAT_KIND := ibsqlPatientNew.Fields[35].AsInteger;
+  if (not ibsqlPatientNew.Fields[36].IsNull) then
+  begin
+    tempitem.RZOK := ibsqlPatientNew.Fields[36].AsString;
+    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[37].IsNull) then
+  begin
+    tempitem.RZOKR := ibsqlPatientNew.Fields[37].AsString;
+    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  if (not ibsqlPatientNew.Fields[48].IsNull) then
+  begin
+    tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString;
+    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
+    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+  end;
+  tempitem.DoctorId := ibsqlPatientNew.Fields[47].AsInteger;
+  // logical
+  TempItem.PRecord.Logical := [];
+  BLOOD_TYPE := Trim(ibsqlPatientNew.Fields[38].AsString);
+  if BLOOD_TYPE = '0' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_0);
+  if BLOOD_TYPE = 'A' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_A);
+  if BLOOD_TYPE = 'A1' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_A1);
+  if BLOOD_TYPE = 'A2' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_A2);
+  if BLOOD_TYPE = 'A1B' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_A1B);
+  if BLOOD_TYPE = 'A2B' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_A2B);
+  if BLOOD_TYPE = 'AB' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_AB);
+  if BLOOD_TYPE = 'B' then
+    Include(TempItem.PRecord.Logical, BLOOD_TYPE_B);
+
+
+
+  if ibsqlPatientNew.Fields[39].Asinteger = 1 then
+    Include(TempItem.PRecord.Logical, SEX_TYPE_M)
+  else
+    Include(TempItem.PRecord.Logical, SEX_TYPE_F);
+
+  PidType := Trim(ibsqlPatientNew.Fields[45].AsString);
+  if PidType = 'E' then
+    Include(TempItem.PRecord.Logical, PID_TYPE_E);
+  if PidType = 'B' then
+    Include(TempItem.PRecord.Logical, PID_TYPE_B);
+  if PidType = 'L' then
+    Include(TempItem.PRecord.Logical, PID_TYPE_L);
+  if PidType = 'S' then
+    Include(TempItem.PRecord.Logical, PID_TYPE_S);
+  if PidType = 'F' then
+    Include(TempItem.PRecord.Logical, PID_TYPE_F);
+
+
+
+  if (TempItem.PRecord.Logical <> [])
+  and (TempItem.getLogical32map(buf, datPos, word(PatientNew_Logical))<> tlogicaldata32(TempItem.PRecord.Logical)) then
+    Include(TempItem.PRecord.setProp, PatientNew_Logical);
+end;
+
+procedure TDbHelper.UpdatePracticaField(ibsql: TIBSQL;
+  TempItem: TPracticaItem);
+var
+    ibsqlPractica: TIBSQL;
+    diagNode, TreeLink: PVirtualNode;
+    data: PAspRec;
+    diag, diag0, diag1, diag2, diag3, diag4: TRealDiagnosisItem;
+    dataPosition: Cardinal;
+    buf: Pointer;
+    datPos, linkPos: Cardinal;
+    pCardinalData: PCardinal;
+begin
+  ibsqlPractica := ibsql;
+  buf := AdbHip.Buf;
+  datPos := AdbHip.FPosData;
+  if (not ibsqlPractica.Fields[0].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_ADDRESS_ACT))<>ibsqlPractica.Fields[0].AsString)
+  then
+  begin
+    TempItem.PRecord.ADDRESS_ACT := ibsqlPractica.Fields[0].AsString;
+    Include(TempItem.PRecord.setProp, Practica_ADDRESS_ACT);
+  end;
+  if (not ibsqlPractica.Fields[1].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_ADDRESS_DOGNZOK))<>ibsqlPractica.Fields[1].AsString)
+  then
+  begin
+    TempItem.PRecord.ADDRESS_DOGNZOK := ibsqlPractica.Fields[1].AsString;
+    Include(TempItem.PRecord.setProp, Practica_ADDRESS_DOGNZOK);
+  end;
+  if (not ibsqlPractica.Fields[2].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_ADRES))<>ibsqlPractica.Fields[2].AsString)
+  then
+  begin
+    TempItem.PRecord.ADRES := ibsqlPractica.Fields[2].AsString;
+    Include(TempItem.PRecord.setProp, Practica_ADRES);
+  end;
+  if (not ibsqlPractica.Fields[3].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_BANKA))<>ibsqlPractica.Fields[3].AsString)
+  then
+  begin
+    TempItem.PRecord.BANKA := ibsqlPractica.Fields[3].AsString;
+    Include(TempItem.PRecord.setProp, Practica_BANKA);
+  end;
+  if (not ibsqlPractica.Fields[4].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_BANKOW_KOD))<>ibsqlPractica.Fields[4].AsString)
+  then
+  begin
+    TempItem.PRecord.BANKOW_KOD := ibsqlPractica.Fields[4].AsString;
+    Include(TempItem.PRecord.setProp, Practica_BANKOW_KOD);
+  end;
+  if (not ibsqlPractica.Fields[5].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_BULSTAT))<>ibsqlPractica.Fields[5].AsString)
+  then
+  begin
+    TempItem.PRecord.BULSTAT := ibsqlPractica.Fields[5].AsString;
+    Include(TempItem.PRecord.setProp, Practica_BULSTAT);
+  end;
+  if (not ibsqlPractica.Fields[6].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_COMPANYNAME))<>ibsqlPractica.Fields[6].AsString)
+  then
+  begin
+    TempItem.PRecord.COMPANYNAME := ibsqlPractica.Fields[6].AsString;
+    Include(TempItem.PRecord.setProp, Practica_COMPANYNAME);
+  end;
+  if (not ibsqlPractica.Fields[7].IsNull)
+      and (TempItem.getDateMap(buf, datPos, word(Practica_CONTRACT_DATE))<>ibsqlPractica.Fields[7].AsDate)
+  then
+  begin
+    TempItem.PRecord.CONTRACT_DATE := ibsqlPractica.Fields[7].AsDate;
+    Include(TempItem.PRecord.setProp, Practica_CONTRACT_DATE);
+  end;
+  if (not ibsqlPractica.Fields[8].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_CONTRACT_RZOK))<>ibsqlPractica.Fields[8].AsString)
+  then
+  begin
+    TempItem.PRecord.CONTRACT_RZOK := ibsqlPractica.Fields[8].AsString;
+    Include(TempItem.PRecord.setProp, Practica_CONTRACT_RZOK);
+  end;
+  if (not ibsqlPractica.Fields[9].IsNull)
+      and (TempItem.getWordMap(buf, datPos, word(Practica_CONTRACT_TYPE))<>ibsqlPractica.Fields[9].AsInteger)
+  then
+  begin
+    TempItem.PRecord.CONTRACT_TYPE := ibsqlPractica.Fields[9].AsInteger;
+    Include(TempItem.PRecord.setProp, Practica_CONTRACT_TYPE);
+  end;
+  if (not ibsqlPractica.Fields[10].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_DAN_NOMER))<>ibsqlPractica.Fields[10].AsString)
+  then
+  begin
+    TempItem.PRecord.DAN_NOMER := ibsqlPractica.Fields[10].AsString;
+    Include(TempItem.PRecord.setProp, Practica_DAN_NOMER);
+  end;
+  if (not ibsqlPractica.Fields[11].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_EGN))<>ibsqlPractica.Fields[11].AsString)
+  then
+  begin
+    TempItem.PRecord.EGN := ibsqlPractica.Fields[11].AsString;
+    Include(TempItem.PRecord.setProp, Practica_EGN);
+  end;
+  if (not ibsqlPractica.Fields[12].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_FNAME))<>ibsqlPractica.Fields[12].AsString)
+  then
+  begin
+    TempItem.PRecord.FNAME := ibsqlPractica.Fields[12].AsString;
+    Include(TempItem.PRecord.setProp, Practica_FNAME);
+  end;
+  if (not ibsqlPractica.Fields[13].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_FULLNAME))<>ibsqlPractica.Fields[13].AsString)
+  then
+  begin
+    TempItem.PRecord.FULLNAME := ibsqlPractica.Fields[13].AsString;
+    Include(TempItem.PRecord.setProp, Practica_FULLNAME);
+  end;
+  if (not ibsqlPractica.Fields[14].IsNull)
+      and (TempItem.getBooleanMap(buf, datPos, word(Practica_INVOICECOMPANY))<>(ibsqlPractica.Fields[14].Asstring = 'Y'))
+  then
+  begin
+    TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
+    Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
+  end;
+  if (not ibsqlPractica.Fields[15].IsNull)
+      and (TempItem.getBooleanMap(buf, datPos, word(Practica_ISSUER_TYPE))<>(ibsqlPractica.Fields[15].Asstring = 'Y'))
+  then
+  begin
+    TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
+    Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
+  end;
+  if (not ibsqlPractica.Fields[16].IsNull)
+      and (TempItem.getBooleanMap(buf, datPos, word(Practica_IS_SAMOOSIG))<>(ibsqlPractica.Fields[16].Asstring = 'Y'))
+  then
+  begin
+    TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
+    Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
+  end;
+  if (not ibsqlPractica.Fields[17].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_KOD_RAJON))<>ibsqlPractica.Fields[17].AsString)
+  then
+  begin
+    TempItem.PRecord.KOD_RAJON := ibsqlPractica.Fields[17].AsString;
+    Include(TempItem.PRecord.setProp, Practica_KOD_RAJON);
+  end;
+  if (not ibsqlPractica.Fields[18].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_KOD_RZOK))<>ibsqlPractica.Fields[18].AsString)
+  then
+  begin
+    TempItem.PRecord.KOD_RZOK := ibsqlPractica.Fields[18].AsString;
+    Include(TempItem.PRecord.setProp, Practica_KOD_RZOK);
+  end;
+  if (not ibsqlPractica.Fields[19].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_LNAME))<>ibsqlPractica.Fields[19].AsString)
+  then
+  begin
+    TempItem.PRecord.LNAME := ibsqlPractica.Fields[19].AsString;
+    Include(TempItem.PRecord.setProp, Practica_LNAME);
+  end;
+  if (not ibsqlPractica.Fields[20].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_LNCH))<>ibsqlPractica.Fields[20].AsString)
+  then
+  begin
+    TempItem.PRecord.LNCH := ibsqlPractica.Fields[20].AsString;
+    Include(TempItem.PRecord.setProp, Practica_LNCH);
+  end;
+  if (not ibsqlPractica.Fields[21].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_NAME))<>ibsqlPractica.Fields[21].AsString)
+  then
+  begin
+    TempItem.PRecord.NAME := ibsqlPractica.Fields[21].AsString;
+    Include(TempItem.PRecord.setProp, Practica_NAME);
+  end;
+  if (not ibsqlPractica.Fields[22].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_NAS_MQSTO))<>ibsqlPractica.Fields[22].AsString)
+  then
+  begin
+    TempItem.PRecord.NAS_MQSTO := ibsqlPractica.Fields[22].AsString;
+    Include(TempItem.PRecord.setProp, Practica_NAS_MQSTO);
+  end;
+  if (not ibsqlPractica.Fields[24].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_NOMER_LZ))<>ibsqlPractica.Fields[24].AsString)
+  then
+  begin
+    TempItem.PRecord.NOMER_LZ := ibsqlPractica.Fields[24].AsString;
+    Include(TempItem.PRecord.setProp, Practica_NOMER_LZ);
+  end;
+  if (not ibsqlPractica.Fields[25].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_NOM_NAP))<>ibsqlPractica.Fields[25].AsString)
+  then
+  begin
+    TempItem.PRecord.NOM_NAP := ibsqlPractica.Fields[25].AsString;
+    Include(TempItem.PRecord.setProp, Practica_NOM_NAP);
+  end;
+  if (not ibsqlPractica.Fields[26].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_NZOK_NOMER))<>ibsqlPractica.Fields[26].AsString)
+  then
+  begin
+    TempItem.PRecord.NZOK_NOMER := ibsqlPractica.Fields[26].AsString;
+    Include(TempItem.PRecord.setProp, Practica_NZOK_NOMER);
+  end;
+  if (not ibsqlPractica.Fields[27].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_OBLAST))<>ibsqlPractica.Fields[27].AsString)
+  then
+  begin
+    TempItem.PRecord.OBLAST := ibsqlPractica.Fields[27].AsString;
+    Include(TempItem.PRecord.setProp, Practica_OBLAST);
+  end;
+  if (not ibsqlPractica.Fields[28].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_OBSHTINA))<>ibsqlPractica.Fields[28].AsString)
+  then
+  begin
+    TempItem.PRecord.OBSHTINA := ibsqlPractica.Fields[28].AsString;
+    Include(TempItem.PRecord.setProp, Practica_OBSHTINA);
+  end;
+  if (not ibsqlPractica.Fields[29].IsNull)
+      and (TempItem.getBooleanMap(buf, datPos, word(Practica_SELF_INSURED_DECLARATION))<>(ibsqlPractica.Fields[29].Asstring = 'Y'))
+  then
+  begin
+    TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
+    Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
+  end;
+  if (not ibsqlPractica.Fields[30].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_SMETKA))<>ibsqlPractica.Fields[30].AsString)
+  then
+  begin
+    TempItem.PRecord.SMETKA := ibsqlPractica.Fields[30].AsString;
+    Include(TempItem.PRecord.setProp, Practica_SMETKA);
+  end;
+  if (not ibsqlPractica.Fields[31].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_SNAME))<>ibsqlPractica.Fields[31].AsString)
+  then
+  begin
+    TempItem.PRecord.SNAME := ibsqlPractica.Fields[31].AsString;
+    Include(TempItem.PRecord.setProp, Practica_SNAME);
+  end;
+  if (not ibsqlPractica.Fields[32].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_UPRAVITEL))<>ibsqlPractica.Fields[32].AsString)
+  then
+  begin
+    TempItem.PRecord.UPRAVITEL := ibsqlPractica.Fields[32].AsString;
+    Include(TempItem.PRecord.setProp, Practica_UPRAVITEL);
+  end;
+  if (not ibsqlPractica.Fields[33].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_VIDFIRMA))<>ibsqlPractica.Fields[33].AsString)
+  then
+  begin
+    TempItem.PRecord.VIDFIRMA := ibsqlPractica.Fields[33].AsString;
+    Include(TempItem.PRecord.setProp, Practica_VIDFIRMA);
+  end;
+  if (not ibsqlPractica.Fields[34].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_VID_IDENT))<>ibsqlPractica.Fields[34].AsString)
+  then
+  begin
+    TempItem.PRecord.VID_IDENT := ibsqlPractica.Fields[34].AsString;
+    Include(TempItem.PRecord.setProp, Practica_VID_IDENT);
+  end;
+  if (not ibsqlPractica.Fields[35].IsNull)
+      and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_VID_PRAKTIKA))<>ibsqlPractica.Fields[35].AsString)
+  then
+  begin
+    TempItem.PRecord.VID_PRAKTIKA := ibsqlPractica.Fields[35].AsString;
+    Include(TempItem.PRecord.setProp, Practica_VID_PRAKTIKA);
+  end;
 end;
 
 procedure TDbHelper.UpdatePregledField(ibsql: TIBSQL; TempItem: TRealPregledNewItem);
@@ -2758,11 +4051,11 @@ var
       Include(TempItem.PRecord.setProp, PregledNew_NRD);
     end;
     if (not ibsqlPregledNew.Fields[12].IsNull)
-        and (TempItem.getAnsiStringMap(buf, datPos, word(PregledNew_NRN))<>ibsqlPregledNew.Fields[12].AsString)
+        and (TempItem.getAnsiStringMap(buf, datPos, word(PregledNew_NRN_LRN))<>ibsqlPregledNew.Fields[12].AsString)
     then
     begin
       TempItem.PRecord.NRN_LRN := ibsqlPregledNew.Fields[12].AsString;
-      Include(TempItem.PRecord.setProp, PregledNew_NRN);
+      Include(TempItem.PRecord.setProp, PregledNew_NRN_LRN);
     end;
     if (not ibsqlPregledNew.Fields[13].IsNull)
         and (TempItem.getWordMap(buf, datPos, word(PregledNew_NZIS_STATUS))<>ibsqlPregledNew.Fields[13].AsInteger)

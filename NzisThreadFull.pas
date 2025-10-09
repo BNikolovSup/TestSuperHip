@@ -10,7 +10,7 @@ uses
   Table.PregledNew, Table.NzisToken, Table.Doctor,
   //Nzis
   Xml.XMLDoc,
-  X002, X004, X006, X010, X014,
+  msgX002, X004, X006, X010, X014,
   //sbx
   SBXMLSec, SBXMLSig, SBXMLEnc,
   SBXMLCore, SBTypes, SBXMLDefs, SBX509,   SBXMLUtils, SBWinCertStorage, SBUtils,
@@ -76,6 +76,7 @@ TNzisThread = class(TThread)
   procedure PostOfLineStatusToPreg(streamX014: TStream);
   procedure FillCertInDoctors;
   procedure InitCertToken;
+  procedure CheckStreamDataType;
 public
     PregColl: TPregledNewColl;
     CollNzisToken: TNzisTokenColl;
@@ -177,6 +178,17 @@ begin
   end;
 end;
 
+procedure TNzisThread.CheckStreamDataType;
+var
+  ls: TStringList;
+begin
+  FStreamData.Position := 0;
+  ls := TStringList.Create;
+  ls.LoadFromStream(FStreamData);
+  ls.Free;
+
+end;
+
 constructor TNzisThread.Create(CreateSuspended: Boolean; dm: TADBDataModule);
 begin
   inherited Create(CreateSuspended);
@@ -268,6 +280,7 @@ begin
       //httpNZIS.DNS.Servers.Add('8.8.8.8');
 
       httpNZIS.OnData := OnDataNzis;
+      //httpNZIS.onre
       httpNZIS.RuntimeLicense  := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
       FGuId := TGuid.NewGuid;
       case FMsgType of
@@ -360,6 +373,7 @@ begin
 
           SignNzis;
           httpNZIS.Post(url, InXmlStream, false);
+          CheckStreamDataType;
           FStreamData.Position := 0;
           //Sleep(10000);
           PostEditStatusToPreg(FStreamData);
@@ -557,7 +571,7 @@ begin
   end;
 
   httpNZIS.Close();
-  httpNZIS.Get('https://auth.his.bg/token');
+  httpNZIS.Get('https://auth.his.bg/token'); // zzzzzzzzzzzzzz трябва да направя тука нещо да гръмне и да прекрати действието
   CurrentCert := TelX509Certificate.Create(nil);
   TRealDoctorItem(Self.XmlStream.performer).Cert.Clone(CurrentCert);
   ReadToken();
@@ -642,7 +656,7 @@ var
   data: PAspRec;
   NRN, lrn: AnsiString;
   NzisStatus: word;
-  AX002: X002.IXMLMessageType;
+  AX002: msgX002.IXMLMessageType;
   xmlDoc: TXMLDocument;
   str, url: string;
 begin
@@ -650,7 +664,7 @@ begin
 
   streamX002.Position := 0;
   xmlDoc.XML.LoadFromStream(streamX002, tencoding.UTF8);
-  AX002 := X002.Getmessage(xmlDoc);
+  AX002 := msgX002.Getmessage(xmlDoc);
   if AX002.Header.MessageType.Value = 'X002' then
   begin
     NRN := AX002.Contents.NrnExamination.Value;
@@ -658,8 +672,8 @@ begin
 
     data := Pointer(PByte(FNode) + lenNode);
     PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 5); //otworen
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
+    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
@@ -714,8 +728,8 @@ begin
 
     data := Pointer(PByte(FNode) + lenNode);
     PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), NzisStatus);
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
+    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
@@ -750,8 +764,8 @@ begin
 
     data := Pointer(PByte(FNode) + lenNode);
     PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 14); //затворен  с готов преглед
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
+    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
@@ -760,8 +774,8 @@ begin
     data := Pointer(PByte(FNode) + lenNode);
     PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 15); //грешка при готов преглед
     ShowMessage((AX014.Contents.XML));
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
+    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 2);//  1 - грешка при затваряне
   end;
 

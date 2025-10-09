@@ -10,7 +10,7 @@ uses
   Table.Practica, Table.CL132, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
   Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.CL139,
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
-  Table.Certificates,
+  Table.Certificates, Table.Mkb, Table.AnalsNew,
   ProfGraph, RealObj.NzisNomen
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
   , SBxCertificateStorage;
@@ -96,8 +96,13 @@ uses
     node: PVirtualNode;
     XmlResp: TStringList;
     XmlReq: TStringList;
-    constructor create;
+    AdbLink: TMappedLinkFile;
+    constructor create(AAdbLink: TMappedLinkFile);
     destructor destroy; override;
+    procedure SaveToFile(filename: string);
+    procedure LoadFromFile(filename: string);
+    function GetLinkPos: cardinal;
+    function SetNode(linkPos: cardinal): PVirtualNode;
   end;
 
 
@@ -123,11 +128,19 @@ uses
   public
     listLog: TStringList;
     CollPrac: TPracticaColl;
+    CollPatient: TRealPatientNewColl;
     CollDoc: TRealDoctorColl;
     CollCert: TCertificatesColl;
-    CollPreg: TRealPregledNewColl;
+    CollPregled: TRealPregledNewColl;
+    CollMDN: TRealMDNColl;
+    CollMedNapr: TRealBLANKA_MED_NAPRColl;
+    CollExamAnal: TRealExamAnalysisColl;
+    CollExamImun: TRealExamImmunizationColl;
     CollEbl: TRealExam_boln_listColl;
     CollDiag: TRealDiagnosisColl;
+    CollMkb: TMkbColl;
+    CollAnalsNew: TAnalsNewColl;
+
     CollNZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEColl;
     CollNZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEColl;
     CollNZIS_QUESTIONNAIRE_ANSWER: TRealNZIS_QUESTIONNAIRE_ANSWERColl;
@@ -136,15 +149,20 @@ uses
     collNZIS_DIAGNOSTIC_REPORT:  TRealNZIS_DIAGNOSTIC_REPORTColl;
     collNZIS_RESULT_DIAGNOSTIC_REPORT:  TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
 
+    CollCL022: TRealCL022Coll;
     collCl139: TRealCL139Coll;
+    collCl132: TRealCL132Coll;
     collCl144: TRealCL144Coll;
 
     AdbHip: TMappedFile;
-    AdbLink: TMappedFile;
+    AdbLink: TMappedLinkFile;
     cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
     strGuid: string;
     LstNodeSended: TList<TNodesSendedToNzis>;
+    ListPrimDocuments: TList<TBaseCollection>;
+
+    procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer; DataPosMkb: cardinal);
 
     //XmlStream: TXmlStream;
     constructor Create();
@@ -201,6 +219,76 @@ end;
 
 { TADBDataModule }
 
+procedure TADBDataModule.AddNewDiag(vPreg: PVirtualNode; cl011,
+  cl011Add: string; rank: integer; DataPosMkb: cardinal);
+var
+  diag: TRealDiagnosisItem;
+  vDiag, vPrevDiag, run: PVirtualNode;
+  linkpos: Cardinal;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vPrevDiag := nil;
+  if rank > 0 then
+  begin
+    run := vPreg.FirstChild;
+    while run <> nil do
+    begin
+      dataRun := Pointer(PByte(run) + lenNode);
+      case dataRun.vid of
+        vvDiag:
+        begin
+          if CollDiag.getWordMap(dataRun.DataPos, word(Diagnosis_rank)) = (rank - 1) then
+          begin
+            vPrevDiag := run;
+            Break;
+          end;
+        end;
+      end;
+      run := run.NextSibling;
+    end;
+  end;
+  diag := TRealDiagnosisItem(CollDiag.Add);// добавяне на диагноза в колекцията
+  New(diag.PRecord);
+  diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_rank, Diagnosis_MkbPos];
+  diag.PRecord.code_CL011 := cl011;
+  diag.PRecord.rank := rank;
+  diag.PRecord.MkbPos := DataPosMkb;
+  if DataPosMkb = 100 then
+  begin
+    for i := 0 to CollMkb.Count - 1 do
+    begin
+      if CollMkb.getAnsiStringMap( CollMkb.Items[i].DataPos, word(Diagnosis_code_CL011)) = cl011 then
+      begin
+        diag.PRecord.MkbPos := CollMkb.Items[i].DataPos;
+        Break;
+      end;
+    end;
+  end;
+
+  if cl011Add <> '' then
+  begin
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+    diag.PRecord.additionalCode_CL011 := cl011Add;
+  end;
+
+  diag.InsertDiagnosis;
+  CollDiag.streamComm.Len := CollDiag.streamComm.Size;
+  cmdFile.CopyFrom(CollDiag.streamComm, 0);
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+
+  if vPrevDiag = nil then
+  begin
+    AdbLink.AddNewNode(vvDiag, diag.DataPos, vPreg, amAddChildLast, vDiag, linkpos);
+  end
+  else
+  begin
+    AdbLink.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
+  end;
+  diag.Node := vDiag;
+end;
+
 procedure TADBDataModule.AddTagToStream(XmlStream: TXmlStream; NameTag, ValueTag: string; amp: Boolean; Node: PVirtualNode);
 var
   buf, val: String;
@@ -243,6 +331,7 @@ begin
   //XMLStream := TXmlStream.Create('', TEncoding.UTF8);
   LstNodeSended := TList<TNodesSendedToNzis>.Create;
   listLog := TStringList.Create;
+  ListPrimDocuments := TList<TBaseCollection>.create;
 end;
 
 destructor TADBDataModule.Destroy;
@@ -250,6 +339,7 @@ begin
   //FreeAndNil(XMLStream);
   FreeAndNil(LstNodeSended);
   FreeAndNil(listLog);
+  FreeAndNil(ListPrimDocuments);
   inherited;
 end;
 
@@ -268,7 +358,7 @@ procedure TADBDataModule.FillXmlStreamDiag(XmlStream: TXmlStream; PregNodes: TPr
 var
   i: Integer;
   dataDiag: PAspRec;
-  diagCode, diagCodeAdd: string;
+  diagCode, diagCodeAdd, DiagDateStr: string;
   DiagRank, diagUs: word;
 begin
   for i := 0 to PregNodes.diags.Count - 1 do
@@ -288,12 +378,19 @@ begin
     end;
     AddTagToStream(XmlStream, 'nhis:diagnosis', '');
     AddTagToStream(XmlStream, 'nhis:code', Format('value="%s"',[diagCode.Split([';'])[0]]), false);// zzzzzzzzzzzzzzzzzzzzzzz
+
+
     if diagCodeAdd <> '' then
     begin
       AddTagToStream(XmlStream, 'nhis:additionalCode', Format('value="%s"',[diagCodeAdd]), false);
     end;
     AddTagToStream(XmlStream, 'nhis:use',  Format('value="%d"',[diagUs]));
     AddTagToStream(XmlStream, 'nhis:rank',  Format('value="%d"',[DiagRank]));
+    AddTagToStream(XmlStream, 'nhis:clinicalStatus',  Format('value="%d"',[22]));
+    AddTagToStream(XmlStream, 'nhis:verificationStatus',  Format('value="%d"',[20]));
+    DiagDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(Date));
+    AddTagToStream(XmlStream, 'nhis:onsetDateTime', Format('value="%s"',[DiagDateStr]), false);
+
 
     AddTagToStream(XmlStream, '/nhis:diagnosis', '');
   end;
@@ -386,8 +483,8 @@ begin
   FillXmlStreamHeader(XmlStream, I001, SenderId);
   addTagToStream(XmlStream, 'nhis:contents', '');
   AddTagToStream(XmlStream, 'nhis:immunization', '');
-  lrn := Copy(CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN)), 13, 36);
-  pregNrn := Copy(CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN)), 1, 12);
+  lrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+  pregNrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 1, 12);
   AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
   ОccurrenceDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
               preg.getDateMap(buf, posData, word(PregledNew_START_TIME));
@@ -472,7 +569,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create;
+  NodeSended := TNodesSendedToNzis.create(AdbLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -593,7 +690,7 @@ begin
 
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
-  NodeSended := TNodesSendedToNzis.create;
+  NodeSended := TNodesSendedToNzis.create(AdbLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -603,7 +700,7 @@ end;
 procedure TADBDataModule.FillXmlStreamMedicalHistory(XmlStream: TXmlStream; PregNodes: TPregledNodes);
 var
   i, j, k: Integer;
-  dataQuest, dataAnsw, dataAnswVal, dataTest: PAspRec;
+  dataQuest, dataAnsw, dataAnswVal, dataTest, dataPreg: PAspRec;
   quest133, answ134, valueQuant, valNomen, cl138Code, cl139Key, valueStr, valueDate: string;
   ques: TQuests;
   answ: TAnsws;
@@ -611,8 +708,10 @@ var
   NomenPos139: Cardinal;
   Cl028Code: Word;
   valDate: TDate;
+  anamn: string;
 begin
-   AddTagToStream(XmlStream, 'nhis:medicalHistory', '');
+  AddTagToStream(XmlStream, 'nhis:medicalHistory', '');
+  dataPreg := pointer(PByte(PregNodes.pregNode) + lenNode);
   for i := 0 to PregNodes.Quests.Count - 1 do
   begin
     AddTagToStream(XmlStream, 'nhis:questionnaire', '');
@@ -747,8 +846,8 @@ begin
     end;
     AddTagToStream(XmlStream, '/nhis:questionnaire', '');
   end;
-
-  AddTagToStream(XmlStream, 'nhis:note', Format('value="%s"',['Anamneza']), false); //zzzzzzzzzzzzzzzzz
+  anamn := CollPregled.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_ANAMN));
+  AddTagToStream(XmlStream, 'nhis:note', Format('value="%s"',[anamn]), true);
   AddTagToStream(XmlStream, '/nhis:medicalHistory', '');
 end;
 
@@ -950,13 +1049,13 @@ begin
   FillXmlStreamHeader(XmlStream ,X001, SenderId);
   addTagToStream(XmlStream, 'nhis:contents', '');
   AddTagToStream(XmlStream, 'nhis:examination', '');
-  lrn := Copy(CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN)), 13, 36);
+  lrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
   AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
   OpenDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
               preg.getDateMap(buf, posData, word(PregledNew_START_TIME));
   OpenDate := now;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   dateLrn := FormatDateTime('_YYYY.MM.DD ', OpenDate);
-  CollPreg.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN), dateLrn + lrn);
+  CollPregled.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN), dateLrn + lrn);
   OpenDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(OpenDate));
   AddTagToStream(XmlStream, 'nhis:openDate', Format('value="%s"',[OpenDateStr]), false);
   AddTagToStream(XmlStream, 'nhis:class', Format('value="%d"',[Integer(preg.clcClass)]));
@@ -1031,7 +1130,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create;
+  NodeSended := TNodesSendedToNzis.create(AdbLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -1113,7 +1212,7 @@ begin
   pat := TRealPatientNewItem.Create(nil);
   dataPat := pointer(PByte(PregNodes.patNode) + lenNode);
   pat.DataPos := dataPat.DataPos;
-  nrn := Copy(CollPreg.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_NRN)), 1, 12);
+  nrn := Copy(CollPregled.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_NRN_LRN)), 1, 12);
 
   logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posData, word(PatientNew_Logical)));
 
@@ -1132,7 +1231,7 @@ begin
 
   if correctionReason <> '' then
   begin
-    lrn := Copy(CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN)), 13, 36);
+    lrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
     AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
   end;
 
@@ -1168,7 +1267,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create;
+  NodeSended := TNodesSendedToNzis.create(AdbLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream);//, TEncoding.UTF8);
@@ -1232,7 +1331,7 @@ begin
   FillXmlStreamHeader(XmlStream, X005, SenderId);
   addTagToStream(XmlStream, 'nhis:contents', '');
 
-  NrnLrn := CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN));
+  NrnLrn := CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN));
 
   if NrnLrn.StartsWith('_') then
   begin
@@ -1252,7 +1351,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create;
+  NodeSended := TNodesSendedToNzis.create(AdbLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -1323,13 +1422,13 @@ begin
   FillXmlStreamHeader(XmlStream, X013, SenderId);
   addTagToStream(XmlStream, 'nhis:contents', '');
   AddTagToStream(XmlStream, 'nhis:examination', '');
-  lrn := Copy(CollPreg.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN)), 13, 36);
+  lrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
   AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
   OpenDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
               preg.getDateMap(buf, posData, word(PregledNew_START_TIME));
   OpenDate := UserDate;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   dateLrn := FormatDateTime('_YYYY.MM.DD ', OpenDate);
-  CollPreg.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN), dateLrn + lrn);
+  CollPregled.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN), dateLrn + lrn);
   OpenDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(OpenDate));
   AddTagToStream(XmlStream, 'nhis:openDate', Format('value="%s"',[OpenDateStr]), false);
   CloseDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(UserDate));
@@ -1564,7 +1663,7 @@ var
 begin
   Stopwatch := TStopwatch.StartNew;
   Result := TPregledNodes.Create;
-
+  Result.pregNode := PregNode;
   run := PregNode.FirstChild;// обикалям нещата в прегледа
   while run <> nil do
   begin
@@ -2357,10 +2456,11 @@ end;
 
 { TNodesSendedToNzis }
 
-constructor TNodesSendedToNzis.create;
+constructor TNodesSendedToNzis.create(AAdbLink: TMappedLinkFile);
 begin
   XmlResp := TStringList.Create();
   XmlReq := TStringList.Create;
+  AdbLink := AAdbLink;
 end;
 
 destructor TNodesSendedToNzis.destroy;
@@ -2368,6 +2468,59 @@ begin
   FreeAndNil(XmlResp);
   FreeAndNil(XmlReq);
   inherited;
+end;
+
+function TNodesSendedToNzis.GetLinkPos: cardinal;
+begin
+  Result := cardinal(self.node) - Cardinal(AdbLink.Buf);
+end;
+
+procedure TNodesSendedToNzis.LoadFromFile(filename: string);
+var
+  FF: TFileStream;
+  linkPos: Cardinal;
+  len: Word;
+  stream: TMemoryStream;
+begin
+  FF := TFileStream.Create(filename, fmOpenReadWrite);
+  FF.Position := 0;
+  FF.read(linkPos, 4);
+  node := SetNode(linkPos);
+  FF.read(len, 2);
+  stream := TMemoryStream.Create;
+  stream.CopyFrom(FF, len);
+  stream.Position := 0;
+  XmlReq.LoadFromStream(stream);
+//  XmlReq.SaveToStream(ff, TEncoding.ANSI);
+//  len := length(XmlResp.Text);
+//  FF.Write(Len, 2);
+//  XmlResp.SaveToStream(ff, TEncoding.ANSI);
+  stream.Free;
+  FF.Free;
+end;
+
+procedure TNodesSendedToNzis.SaveToFile(filename: string);
+var
+  FF: TFileStream;
+  linkPos: Cardinal;
+  len: Word;
+begin
+  FF := TFileStream.Create(filename, fmOpenReadWrite);
+  FF.Position := FF.Size;
+  linkPos := GetLinkPos;
+  FF.Write(linkPos, 4);
+  len := length(XmlReq.Text);
+  FF.Write(Len, 2);
+  XmlReq.SaveToStream(ff, TEncoding.ANSI);
+  len := length(XmlResp.Text);
+  FF.Write(Len, 2);
+  XmlResp.SaveToStream(ff, TEncoding.ANSI);
+  FF.Free;
+end;
+
+function TNodesSendedToNzis.SetNode(linkPos: cardinal): PVirtualNode;
+begin
+  Result := pointer(PByte(AdbLink.Buf) + linkPos);
 end;
 
 end.

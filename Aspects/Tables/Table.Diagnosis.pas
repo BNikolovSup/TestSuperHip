@@ -162,7 +162,7 @@ begin
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
   //SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
-  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
+  SaveAnyStreamCommand(@PRecord.setProp, 1, CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -473,7 +473,7 @@ begin
     Diagnosis_CL011Pos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
     Diagnosis_MkbPos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
     Diagnosis_MkbAddPos: str :=  inttostr(Diagnosis.getCardMap(Self.Buf, Self.posData, propIndex));
-    Diagnosis_Logical: str :=  Diagnosis.Logical32ToStr(Diagnosis.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    Diagnosis_Logical: str :=  Diagnosis.Logical16ToStr(Diagnosis.getLogical16Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);

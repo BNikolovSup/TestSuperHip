@@ -100,7 +100,6 @@
         <DCCReference Include="FMX\Parnassus.FMXContainerReg.pas"/>
         <DCCReference Include="NzisThreadFull.pas"/>
         <DCCReference Include="ThreadLoadDB.pas"/>
-        <DCCReference Include="Options.pas"/>
         <DCCReference Include="DbHelper.pas"/>
         <DCCReference Include="VTREditors.pas"/>
         <DCCReference Include="HistoryNav.pas"/>
@@ -170,7 +169,7 @@
         <DCCReference Include="Aspects\Tables\Table.NZIS_RESULT_DIAGNOSTIC_REPORT.pas"/>
         <DCCReference Include="Aspects\Tables\Table.NZIS_DIAGNOSTIC_REPORT.pas"/>
         <DCCReference Include="Aspects\Tables\Table.CL144.pas"/>
-        <DCCReference Include="X002.pas"/>
+        <DCCReference Include="XML\msgX002.pas"/>
         <DCCReference Include="L010.pas"/>
         <DCCReference Include="CertHelper.pas"/>
         <DCCReference Include="X004.pas"/>
@@ -201,6 +200,10 @@
         <DCCReference Include="..\Popup\RoleBar.pas">
             <FormType>fmx</FormType>
         </DCCReference>
+        <DCCReference Include="..\Popup\OptionsForm.pas">
+            <FormType>fmx</FormType>
+        </DCCReference>
+        <DCCReference Include="C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas"/>
         <RcItem Include="..\..\..\Hippocrates40\bin\Hippocrates360\supHip.ini">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>

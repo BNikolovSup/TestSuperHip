@@ -50,7 +50,6 @@ interface
     DiagRect: TRectangle;
     diag: TRealDiagnosisItem;
     asp: PAspRec;
-    field: Word;
     node: PVirtualNode;
     edtMain: TEdit;
     edtAdd: TEdit;
@@ -58,6 +57,15 @@ interface
     DelDiag: TRectangle;
     SelectMain: TRectangle;
     SelectAdd: TRectangle;
+    txtMain: TText;
+    txtAdd: TText;
+    VerifStatus: TComboBox;
+    ClinicStatus: TRectangle;
+    iconVerifStatus: TRectangle;
+    iconClinicStatus: TRectangle;
+    canValidate: Boolean;
+    ClinicStatusTXT: TText;
+    constructor Create;
   end;
 
   TMdnAnals = class
@@ -138,6 +146,7 @@ interface
   procedure WalkChildrenEdtMn(Parent: TFmxObject; MnLabel: TMnsLabel);
   procedure WalkChildrenEdtImun(Parent: TFmxObject; ImunLabel: TImmunsLabel);
   function WalkChildrenCombo(Parent: TFmxObject): TComboBox;
+  function WalkChildrenComboStyle(Parent: TFmxObject; styleName: string): TComboBox;
   function WalkChildrenText(Parent: TFmxObject): TText;
   function WalkChildrenTextStyle(Parent: TFmxObject; styleName: string): TText;
   function WalkChildrenExpander(Parent: TFmxObject): Texpander;
@@ -290,6 +299,31 @@ begin
       if Result = nil then
       begin
         Result := WalkChildrenCombo(Child);
+      end;
+    end;
+  end;
+end;
+
+function WalkChildrenComboStyle(Parent: TFmxObject; styleName: string): TComboBox;
+var
+  i: Integer;
+  Child: TFmxObject;
+begin
+  Result := nil;
+  for i := 0 to Parent.ChildrenCount-1 do
+  begin
+    Child := Parent.Children[i];
+    if (Child.ClassName = 'TComboBox') and (Child.StyleName = styleName) then
+    begin
+      Result := TComboBox(Child);
+      Exit;
+    end
+    else
+    begin
+      //Memo1.Lines.Add(Child.ClassName);
+      if Result = nil then
+      begin
+        Result := WalkChildrenComboStyle(Child, styleName);
       end;
     end;
   end;
@@ -784,6 +818,8 @@ begin
   end;
 end;
 
+
+
 function InnerChildrenRect(control: TControl): TRectF;
 var
   i: Integer;
@@ -863,6 +899,14 @@ destructor TImmunsLabel.destroy;
 begin
 
   inherited;
+end;
+
+{ TDiagLabel }
+
+constructor TDiagLabel.Create;
+begin
+  node := nil;
+  canValidate := True;
 end;
 
 end.

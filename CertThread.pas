@@ -137,6 +137,7 @@ var
   ArrRdn: TArray<string>;
   Cert: TCertificatesItem;
   fs: TFormatSettings;
+
 begin
   CloseStorage(false);
   LstToken := TList<Integer>.Create;
@@ -167,6 +168,8 @@ begin
     begin
       CloseStorage(false);
       CertStorage.Open ( Format('pkcs11:///%s?slot=%d&readonly=1&login=0', [FStorageFilename, LstToken[i]]));
+      if CertStorage.Certificates.Count = 0 then
+        Continue;
       CertStorage.Certificates[0].SerialNumber;
       CertStorage.Certificates[0].SubjectRDN;
       ArrRdn := CertStorage.Certificates[0].SubjectRDN.Split(['/']);
@@ -178,17 +181,18 @@ begin
           egn := Copy(ArrRdn[j], 10, 100);// намира егн-то на подписа (доктор или какъвто и да е)
           for k := 0 to CollDoctor.Count - 1 do
           begin
-            if CollDoctor.getAnsiStringMap(CollDoctor.Items[k].DataPos, word(Doctor_EGN)) = egn then
+            if (CollDoctor.getAnsiStringMap(CollDoctor.Items[k].DataPos, word(Doctor_EGN)) = egn)  then
             begin
               CollDoctor.Items[k].SlotTokenSerial := CertStorage.Config('PKCS11SlotTokenSerial[' + IntToStr(LstToken[i]) + ']' );;
               CollDoctor.Items[k].TokenIsPlug := True;
               CollDoctor.Items[k].Cert := FindCertFromSerNumber(CertStorage.Certificates[0].SerialNumber);
               CollDoctor.Items[k].SlotNom := LstToken[i];
+              CollDoctor.Items[k].CertPlug := CertStorage.Certificates[0];
               Cert := nil;
               for m := 0 to CollCert.Count - 1 do
               begin
                 if Trim(CollCert.getAnsiStringMap(CollCert.Items[m].DataPos, word(Certificates_CERT_ID))) =
-                              BuildHexString1(CertStorage.Certificates[0].SerialNumber) then
+                              BuildHexString1(CertStorage.Certificates.item[0].SerialNumber) then
                 begin
                   fs.DateSeparator := '-';
                   fs.TimeSeparator := ':';
@@ -229,6 +233,11 @@ begin
                 Cert.InsertCertificates;
                 Dispose(Cert.PRecord);
                 Cert.PRecord := nil;
+              end
+              else
+              begin
+                Cert.CertPlug := CertStorage.Certificates[0];
+
               end;
 
               LstPlugCardDoctor.Add(CollDoctor.Items[k].DataPos);

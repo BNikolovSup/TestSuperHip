@@ -134,7 +134,7 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -180,7 +180,7 @@ var
   propIndx: TPropertyIndex;
 begin
   CollType := ctMkb;
-  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
+  SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion, dataPosition);
   case FVersion of
     0:
     begin

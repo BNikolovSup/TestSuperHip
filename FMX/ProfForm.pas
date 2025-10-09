@@ -1,9 +1,10 @@
 unit ProfForm;
-//TDateEdit 'err  f12  cursor resource font
+//TDateEdit 'err  f12  cursor resource минали    wheel
 
 interface
 uses
-   Winapi.Windows, JclDebug, Vcl.StdCtrls, System.DateUtils,
+    Vcl.Forms,
+   Winapi.Windows, JclDebug, Vcl.StdCtrls, System.DateUtils, Parnassus.FMXContainer,
    Aspects.Types, Aspects.Collections, Table.PregledNew, Table.PatientNew, Table.CL132,
    Table.PR001, Table.CL088, Table.CL139, Table.CL134, Table.Diagnosis, Table.ExamAnalysis,
    Table.MDN, Table.CL022, Table.CL142, Table.CL144, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
@@ -15,6 +16,7 @@ uses
    rtti, VirtualTrees, VirtualStringTreeHipp, VirtualStringTreeAspect,
    RealObj.RealHipp, RealObj.NzisNomen, ProfGraph, ADB_DataUnit,
 
+
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, FMX.TextLayout,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Edit, FMX.StdCtrls, FMX.Controls.Presentation,
   FMX.ListBox, FMX.Layouts, FMX.Ani, FMX.Objects, FMX.Styles.Objects,
@@ -22,7 +24,7 @@ uses
   System.ImageList, FMX.ImgList, FMX.Menus, FMX.ScrollBox, FMX.Memo,
   System.Generics.Collections, system.Math, FMX.Effects,
   FMX.Filter.Effects, FMX.DateTimeCtrls, FMX.Calendar,
-  FMX.ComboEdit
+  FMX.ComboEdit, FMX.Platform
 
   , WalkFunctions;
 
@@ -39,7 +41,9 @@ type
   TEventShowHint = procedure(seneder: TObject; hint: string; R: TRect) of object;
   TReShowPregledFMX = procedure(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode ) of object;
   //TEventSelecMkb = procedure(
+  TPopupAll = class(TPopup)
 
+  end;
 
   TComboMultiLabel = class
     chk: TCheckBox;
@@ -107,6 +111,7 @@ type
     canValidate: Boolean;
     SourceAnsw: TSourceAnsw;
     rctSourceAnsw: TRectangle;
+    lineSaver: TLine;
     constructor Create;
   end;
 
@@ -169,9 +174,23 @@ type
 
   
 
-  
+  TWinCursorService = class(TInterfacedObject, IFMXCursorService)
+  private
+    class var FPreviousPlatformService: IFMXCursorService;
+    class var FWinCursorService: TWinCursorService;
+    class var FCursorOverride: TCursor;
+    class procedure SetCursorOverride(const Value: TCursor); static;
+  public
+    class property CursorOverride: TCursor read FCursorOverride write SetCursorOverride;
 
-  
+    class constructor Create;
+    procedure SetCursor(const ACursor: TCursor);
+    function GetCursor: TCursor;
+  end;
+
+  TControlProt = class(TControl)
+
+  end;
 
 
 
@@ -511,10 +530,10 @@ type
     rctDiag: TRectangle;
     lytMKB: TLayout;
     edtMainDiag: TEdit;
-    Rectangle33: TRectangle;
+    rctMkb: TRectangle;
     FloatAnimation41: TFloatAnimation;
     edtAddDiag: TEdit;
-    Rectangle32: TRectangle;
+    rctMkbAdd: TRectangle;
     FloatAnimation40: TFloatAnimation;
     mmoDiag: TMemo;
     rctAddDiaglabel: TRectangle;
@@ -525,7 +544,7 @@ type
     FloatAnimation42: TFloatAnimation;
     lytDelDiag: TLayout;
     lytNzisStatus: TLayout;
-    Layout3: TLayout;
+    lytDiagDateFirst: TLayout;
     CheckBox1: TCheckBox;
     Rectangle35: TRectangle;
     DateEdit3: TDateEdit;
@@ -533,19 +552,32 @@ type
     FloatAnimation43: TFloatAnimation;
     Edit10: TEdit;
     Line4: TLine;
-    Layout10: TLayout;
+    lytDiagClinicStatus: TLayout;
     CheckBox2: TCheckBox;
     Rectangle37: TRectangle;
     Line5: TLine;
-    ComboBox1: TComboBox;
-    Text8: TText;
-    Layout11: TLayout;
+    lytDiagVerifStatus: TLayout;
     CheckBox3: TCheckBox;
     Rectangle38: TRectangle;
     Line6: TLine;
-    ComboBox2: TComboBox;
+    cbbDiagVerifStatus: TComboBox;
     Text9: TText;
     rctBkDiag: TRectangle;
+    pDiagVerifStatus: TPopup;
+    txtTest: TText;
+    txtMkb: TText;
+    rctBlankaTransparent: TRectangle;
+    txtMkbAdd: TText;
+    rctDiagclinicStatusChoice1: TRectangle;
+    anim5: TFloatAnimation;
+    cbbDiagClinicStatus: TRectangle;
+    Text8: TText;
+    rctDiagclinicStatusChoice: TRectangle;
+    FloatAnimation44: TFloatAnimation;
+    clrnmtn1: TColorAnimation;
+    clrnmtn2: TColorAnimation;
+    Rectangle32: TRectangle;
+    rct3: TRectangle;
     procedure scrlbx1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure scrlbx1Resize(Sender: TObject);
     procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
@@ -571,6 +603,7 @@ type
     procedure cbb1PregMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure BtnMultiMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure cbbOnePregMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+    procedure cbbDiagStatusMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure lstItemNomenApplyStyleLookup(Sender: TObject);
     procedure lst1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     procedure p1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
@@ -591,7 +624,6 @@ type
    // procedure lst1Click(Sender: TObject);
     procedure lstOneClick(Sender: TObject);
     procedure xpdrMdnApplyStyleLookup(Sender: TObject);
-    procedure xpdrDoctorApplyStyleLookup(Sender: TObject);
     procedure xpdrDiagnApplyStyleLookup(Sender: TObject);
     procedure xpdrVisitForResize(Sender: TObject);
     procedure rctBlankaDblClick(Sender: TObject);
@@ -679,7 +711,6 @@ type
     procedure cbb2ApplyStyleLookup(Sender: TObject);
     procedure lbPorpuseChange(Sender: TObject);
     procedure ListBoxItem1Click(Sender: TObject);
-    procedure edtPropChangeTracking(Sender: TObject);
     procedure edtCl132ChangeTracking(Sender: TObject);
     procedure edtIzslChangeTracking(Sender: TObject);
     procedure edtAmbListPainting(Sender: TObject; Canvas: TCanvas;
@@ -802,7 +833,44 @@ type
       Shift: TShiftState; X, Y: Single);
     procedure SelectDiagMainMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
-    procedure Rectangle32Click(Sender: TObject);
+    procedure rctMkbAddClick(Sender: TObject);
+    procedure rctMkbPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure edtMainDiagValidating(Sender: TObject; var Text: string);
+    procedure rctDiagMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure rctDiagDragOver(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF; var Operation: TDragOperation);
+    procedure txtMainDiagDragOver(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF; var Operation: TDragOperation);
+    procedure txtMainDiagDragEnter(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF);
+    procedure txtMainDiagDragDrop(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF);
+    procedure xpdrDiagnDragOver(Sender: TObject; const Data: TDragObject;
+      const Point: TPointF; var Operation: TDragOperation);
+    procedure rctDiagMouseEnter(Sender: TObject);
+    procedure linSaverClick(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
+    procedure FormResize(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char;
+      Shift: TShiftState);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char;
+      Shift: TShiftState);
+    procedure rctBlankaTransparentMouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Single);
+    procedure rctBlankaTransparentMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure rctBlankaTransparentMouseDown(Sender: TObject;
+      Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+    procedure edtMainDiagEnter(Sender: TObject);
+    procedure edtMainDiagExit(Sender: TObject);
+    procedure mmoDiagMouseEnter(Sender: TObject);
+    procedure rctMkbMouseEnter(Sender: TObject);
+    procedure cbbDiagVerifStatusMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Single);
+    procedure TextClinicStatusPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
 
     
 
@@ -816,7 +884,10 @@ type
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
     FScaleDyn: Single;
+    IsFirstActivate: boolean;
     KeyLocal: HKL;
+    ExPointHand: TPointF;
+    pAll: TPopup;
 
     LstExpanders: TList<TExpander>;
     LstExpandersInVisitFor: TList<TExpander>;
@@ -832,7 +903,7 @@ type
     LstOneCombosLYT: TList<TLayout>;
     LstItemsLst: TList<TListBoxItem>;
     LstChecksSup: TList<TCheckBox>;
-    LstDiags: TList<TRectangle>;
+
     LstMdns: TList<TLayout>;
     LstMns: TList<TLayout>;
     LstImuns: TList<TLayout>;
@@ -915,7 +986,7 @@ type
     FSourceAnswerDefault: TSourceAnsw;
     FPlanedTypeColl: TRealNZIS_PLANNED_TYPEColl;
     patNodes: TPatNodes;
-    FTADBDataModule: TADBDataModule;
+    FAdb_dm: TADBDataModule;
     ListPlaneds: TList<TRealNZIS_PLANNED_TYPEItem>;
     FprofGR: TProfGraph;
     FOnAddNewMn: TActionEventMnInPregled;
@@ -932,11 +1003,13 @@ type
     FOnDeleteNewDiag: TActionEventDiagInPregled;
     FMkbColl: TMkbColl;
     FOnSelectMkb: TNotifyEvent;
+    FTmpVtr: Tobject;
 
 
 
 
     procedure CreateTempItem;
+    procedure PositionPopup;
     procedure InitProps;
     procedure InitHelpTags;
 
@@ -948,6 +1021,7 @@ type
     procedure SetCheckKepCounter(const Value: Integer);
     procedure SetCheckKep(const Value: boolean);
     procedure SetSourceAnswerDefault(const Value: TSourceAnsw);
+    procedure SetAdb_dm(const Value: TADBDataModule);
 
 
   public
@@ -957,12 +1031,15 @@ type
     cbbVisitFor: TComboBox;
     cbbMdnFor: TComboBox;
     mmoTest: Vcl.StdCtrls.TMemo;
+    fmxCntrDyn: TFireMonkeyContainer;
     patNameF, patNameS, patNameL: string;
+    LstDiags: TList<TRectangle>;
 
     procedure RepaintEdtEGN;
     procedure RepaintDoctorUIN;
     procedure InitSetings;
     procedure DoTabHandlingXE();
+    procedure DragOver(const Data: TDragObject; const Point: TPointF; var Operation: TDragOperation); override;
 
     procedure ClearBlanka;
     procedure FillProfActivityPreg(Anode: Pointer);
@@ -982,7 +1059,7 @@ type
     procedure FillExpanderMDNs1(Layout: TLayout; idxListMdns: integer; mdn: TRealMDNItem);
     procedure FillExpanderMNs1(Layout: TLayout; idxListMns: integer; mn: TRealBLANKA_MED_NAPRItem);
     procedure FillExpanderImmun(Layout: TLayout; idxListImun: integer; Imun: TRealExamImmunizationItem);
-    procedure AddDiag(Layout: TFlowLayout; asp: PAspRec; idxListDiags: integer; field: word; diag: TRealDiagnosisItem);
+    procedure AddDiag(Layout: TFlowLayout; asp: PAspRec; idxListDiags: integer; diag: TRealDiagnosisItem);
     procedure AddDiagInPregled(mkb: string);
     //procedure AddCombo(Expndr: TExpander; idxListCombo: Integer; RunNode: PVirtualNode; capt: string; IsMulti: boolean) overload;
     //procedure AddCombo(ExpndrLayout: TFlowLayout; idxListCombo: Integer; RunNode: PVirtualNode; capt: string; IsMulti: boolean);
@@ -1023,6 +1100,7 @@ type
     procedure ChangePositionScroll(x, y: single);
     procedure VibroControl(node: PVirtualNode);
     procedure WmHelp(mousePos: TPoint);
+    procedure ZoomToWidth(W: single);
 
 
   property scaleDyn: Single read FScaleDyn write SetScaleDyn;
@@ -1039,7 +1117,7 @@ type
   property AspAdbPosData: Cardinal read FAspAdbPosData write FAspAdbPosData;
   property VtrGrapf: TVirtualStringTreeHipp read FVtrGrapf write FVtrGrapf;
   property VtrPregLink: TVirtualStringTreeAspect read FVtrPregLink write FVtrPregLink;
-  property Adb_dm: TADBDataModule read FTADBDataModule write FTADBDataModule;
+  property Adb_dm: TADBDataModule read FAdb_dm write SetAdb_dm;
   property profGR: TProfGraph read FprofGR write FprofGR;
   property CL006Coll: TRealCL006Coll read FCL006Coll write FCL006Coll;
   property Cl132Coll: TCL132Coll read FCl132Coll write FCl132Coll;
@@ -1091,9 +1169,14 @@ type
   property CheckKep: boolean read FCheckKep write SetCheckKep;
   property SourceAnswerDefault: TSourceAnsw read FSourceAnswerDefault write SetSourceAnswerDefault;
   property OnReShowProfForm: TReShowPregledFMX read FOnReShowProfForm write FOnReShowProfForm;
+  property TmpVtr: TObject read FTmpVtr write FTmpVtr;
 
 
   end;
+
+  const
+  HANDFLAT: TCursor = 5;
+  HANDGRAB: TCursor = 6;
 
 //var
   //frmProfFormFMX: TfrmProfFormFMX;
@@ -1101,6 +1184,9 @@ type
 implementation
 
 {$R *.fmx}
+
+uses
+  TempVtrHelper, FmxControls;
 
 //procedure TfrmProfFormFMX.btn1Click(Sender: TObject);
 //var
@@ -1637,6 +1723,9 @@ begin
     else
     begin
       dataRunNode := Pointer(PByte(RunNode) + lenNode);
+      TempComboLabel.chk.IsChecked := false;
+      TempComboLabel.rctNull.Visible := true;
+      TempComboLabel.txt.Text := '';
       case dataRunNode.vid of
         vvNZIS_QUESTIONNAIRE_ANSWER:
         begin
@@ -1653,9 +1742,7 @@ begin
 
         end;
       end;
-      TempComboLabel.chk.IsChecked := false;
-      TempComboLabel.rctNull.Visible := true;
-      TempComboLabel.txt.Text := '';
+
     end;
     TempComboLabel.rctSourceAnsw.OnMouseDown := rctAnswMouseDown;
 
@@ -2064,11 +2151,16 @@ begin
   end;
 end;
 
-procedure TfrmProfFormFMX.AddDiag(Layout: TFlowLayout; asp: PAspRec; idxListDiags: integer; field: word; diag: TRealDiagnosisItem);
+procedure TfrmProfFormFMX.AddDiag(Layout: TFlowLayout; asp: PAspRec; idxListDiags: integer; diag: TRealDiagnosisItem);
 var
   TempRect: TRectangle;
   TempDiagLabel: TDiagLabel;
+  Lyt: TFlowLayout;
 begin
+  if Layout = nil then
+    Lyt := lytDiag
+  else
+    Lyt := Layout;
   if (LstDiags.Count - 1) < idxListDiags then
   begin
     TempRect := TRectangle(rctDiag.Clone(self));
@@ -2082,20 +2174,29 @@ begin
       TempDiagLabel.node := diag.Node;
     end;
     TempDiagLabel.asp := asp;
-    TempDiagLabel.field := field;
+    //TempDiagLabel.field := field;
     TempDiagLabel.DelDiag := WalkChildrenRectStyle(TempRect, 'DelDiag');
     TempDiagLabel.SelectMain := WalkChildrenRect(TempDiagLabel.edtMain);
+    TempDiagLabel.txtMain := WalkChildrenText(TempDiagLabel.SelectMain);
     TempDiagLabel.SelectAdd := WalkChildrenRect(TempDiagLabel.edtAdd);
     TempDiagLabel.mmoDiag := WalkChildrenMemo(TempRect);
+    TempDiagLabel.VerifStatus := WalkChildrenComboStyle(TempRect, 'verif');
+    TempDiagLabel.ClinicStatus := WalkChildrenRectStyle(TempRect, 'clinic');
+    TempDiagLabel.ClinicStatusTXT := WalkChildrenText(TempDiagLabel.ClinicStatus);
+    TempDiagLabel.ClinicStatusTXT.OnPaint := TextClinicStatusPainting;
+
     TempDiagLabel.DelDiag.OnMouseUp := Rectangle34MouseUp;
     TempDiagLabel.SelectMain.OnMouseUp := SelectDiagMainMouseUp;
+    TempDiagLabel.SelectMain.OnPainting := rctMkbPainting;
+    TempDiagLabel.VerifStatus.OnMouseUp := cbbDiagStatusMouseDown;
+    TempDiagLabel.ClinicStatus.OnMouseUp := cbbDiagStatusMouseDown;
 
     TempRect.Visible := True;
-    TempRect.Width := Layout.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
+    TempRect.Width := Lyt.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
     TempRect.Tag := LstDiags.Add(TempRect);
     TempRect.TagObject := TempDiagLabel;
     TempRect.Position.Point := PointF(TempRect.Position.Point.X, 0);
-    TempRect.Parent := Layout;
+    TempRect.Parent := Lyt;
 
     //TempRect.OnApplyStyleLookup := mmoPregApplyStyleLookup;
     TempRect.OnPainting := rctDiagPainting;
@@ -2110,14 +2211,10 @@ begin
       TempDiagLabel.node := diag.Node;
     end;
     TempDiagLabel.asp := asp;
-    TempDiagLabel.field := field;
+    //TempDiagLabel.field := field;
     TempRect.Position.Point := PointF(TempRect.Position.Point.X, 0);
-    TempRect.Width := Layout.Width;//  - Layout.Padding.Left - Layout.Padding.Right ;
-    //if idxListDiags > 0 then
-    begin
-      TempRect.Parent := Layout;
-    end;
-    //TempRect.OnApplyStyleLookup := mmoPregApplyStyleLookup;
+    TempRect.Width := Lyt.Width;
+    TempRect.Parent := Lyt;
     TempRect.OnPainting := rctDiagPainting;
 
   end;
@@ -2125,7 +2222,18 @@ begin
   begin
     TempRect.SendToBack;
     rctMainDiaglabel.SendToBack;
+    TempDiagLabel.SelectMain := WalkChildrenRect(TempDiagLabel.edtMain);
+    TempDiagLabel.txtMain := WalkChildrenText(TempDiagLabel.SelectMain);
+    TempDiagLabel.SelectAdd := WalkChildrenRect(TempDiagLabel.edtAdd);
+    TempDiagLabel.mmoDiag := WalkChildrenMemo(TempRect);
+   // TempDiagLabel.DelDiag.OnMouseUp := Rectangle34MouseUp;
+    TempDiagLabel.SelectMain.OnMouseUp := SelectDiagMainMouseUp;
+    TempDiagLabel.SelectMain.OnPainting := rctMkbPainting;
   end;
+  TempRect.OnMouseDown := rctDiagMouseDown;
+  TempDiagLabel.edtMain.OnValidating := edtMainDiagValidating;
+  TempDiagLabel.edtMain.OnEnter := edtMainDiagEnter;
+  TempDiagLabel.edtMain.OnExit := edtMainDiagExit;
 end;
 
 procedure TfrmProfFormFMX.AddDiagInPregled(mkb: string);
@@ -2138,7 +2246,7 @@ begin
 
 
 
-  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, Word(PregledNew_TERAPY), nil);
+  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, nil);
   inc(idxDiags);
   FPregled.FDiagnosis.Add(nil);
   xpdrDiagn.RecalcSize;
@@ -2394,10 +2502,12 @@ begin
     TempLstItem := LstItemsLst[idxListItemLst];
     TempLstItem.Position.Point := PointF(TempLstItem.Position.Point.X, 0);
     TempLstItem.Parent := lst1;
+    TempLstItem.Width := lst1.Width;
     txtCalcMemo.MaxSize := PointF(lst1.Width -22, 100000);
     txtCalcMemo.Text := str;
-    TempLstItem.Text := txtCalcMemo.Text;
+    TempLstItem.Text := str;
     TempLstItem.Height := txtCalcMemo.Height + 14;
+
     TempLstItem.OnClick := lstItemNomenClick;
     AbsHeight := AbsHeight + TempLstItem.Height;
     //TempLstItem.OnApplyStyleLookup := lstItemNomenApplyStyleLookup;
@@ -2408,6 +2518,7 @@ begin
     TempLstItem.Position.Point := PointF(TempLstItem.Position.Point.X, 0);
     //TempLstItem.Width := flwlyt1.Width ;
     TempLstItem.Parent := lst1;
+    TempLstItem.Width := lst1.Width;
     txtCalcMemo.MaxSize := PointF(lst1.Width -22, 100000);
     txtCalcMemo.Text := str;
     TempLstItem.Text := txtCalcMemo.Text;
@@ -2637,6 +2748,8 @@ begin
     TempMemoLabel.rctNull := WalkChildrenRect(TempMemoLabel.chk);
     TempMemoLabel.rctSourceAnsw := WalkChildrenRectStyle(TempMemoLYT, 'AnswRect');
     TempMemoLabel.memo := WalkChildrenMemo(TempMemoLYT);
+    TempMemoLabel.LineSaver := WalkChildrenLine(TempMemoLYT);
+    TempMemoLabel.LineSaver.OnClick := linSaverClick;
     TempMemoLabel.chk.Text := capt;
     TempMemoLabel.chk.Scale.X := 0.7;
     TempMemoLabel.chk.Scale.y := 0.7;
@@ -2687,6 +2800,7 @@ begin
     //TempMemo.OnApplyStyleLookup := mmoCL132ApplyStyleLookup;
     //TempMemo.OnChangeTracking := mmoCL132ChangeTracking;
   end;
+
 end;
 
 procedure TfrmProfFormFMX.AddMemoPreg(ExpndrLayout: TFlowLayout;
@@ -2902,11 +3016,25 @@ begin
 
   if delta >= 0  then
   begin
-    TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Остават %d дни до края на плана)',[startDate, endDate, delta]);
+    if delta <> 1 then
+    begin
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Остават %d дни до края на плана)',[startDate, endDate, delta]);
+    end
+    else
+    begin
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Остава %d ден до края на плана)',[startDate, endDate, delta]);
+    end;
   end
   else
   begin
-    TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минали са %d дни до края на плана)',[startDate, endDate, -delta]);
+    if delta <> -1 then
+    begin
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минали са %d дни от края на плана)',[startDate, endDate, -delta]);
+    end
+    else
+    begin
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минал е %d ден от края на плана)',[startDate, endDate, -delta]);
+    end;
   end;
   case Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_CL136_Mapping))[1] of
     '1':
@@ -3235,13 +3363,24 @@ begin
 end;
 
 procedure TfrmProfFormFMX.Button1Click(Sender: TObject);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
 begin
-  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, Word(PregledNew_TERAPY), nil);
+  AddDiag(lytDiag, nil, FPregled.FDiagnosis.Count, nil);
+  TempRect := LstDiags[idxDiags];
+  TempDiagLabel := TDiagLabel(TempRect.TagObject);
+  TempDiagLabel.canValidate := False;
+  TempDiagLabel.edtMain.Text := '';
+  TempDiagLabel.edtAdd.Text := '';
+  TempDiagLabel.mmoDiag.Text := '';
+
+  TempDiagLabel.canValidate := true;
   inc(idxDiags);
+
   FPregled.FDiagnosis.Add(nil);
   xpdrDiagn.RecalcSize;
   lytDiagFrame.Height := xpdrDiagn.Height + 30;
-
 end;
 
 procedure TfrmProfFormFMX.Button2Click(Sender: TObject);
@@ -3451,6 +3590,55 @@ procedure TfrmProfFormFMX.cbb2Popup(Sender: TObject);
 begin
   //if not TCbb(Sender).Popup.IsOpen then
 
+end;
+
+procedure TfrmProfFormFMX.cbbDiagStatusMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  idxListItemLst: Integer;
+  i, j: Integer;
+  cl138Index: string;
+  cl139: TCL139Item;
+  cl134: TCL134Item;
+  str: string;
+  AbsH: Single;
+  cbb: TComboBox;
+  node: PVirtualNode;
+  data: PAspRec;
+  TempDiagLabel: TDiagLabel;
+  oldTarget: TControl;
+begin
+  if TControl(Sender).StyleName = 'clinic' then
+  begin
+    pAll.BoundsRect := frmFmxControls.lbDiagClinicStatus.BoundsRect;
+    frmFmxControls.lbDiagClinicStatus.Parent := pAll;
+    frmFmxControls.lbDiagVerifStatus.Parent := nil;
+    frmFmxControls.lbDiagClinicStatus.Align := TAlignLayout.Client;
+  end
+  else
+  begin
+    pAll.BoundsRect := frmFmxControls.lbDiagVerifStatus.BoundsRect;
+    frmFmxControls.lbDiagVerifStatus.Parent := pAll;
+    frmFmxControls.lbDiagClinicStatus.Parent := nil;
+    frmFmxControls.lbDiagVerifStatus.Align := TAlignLayout.Client;
+  end;
+  oldTarget := pAll.PlacementTarget;
+  pAll.PlacementTarget := TControl(Sender);
+  if (pAll.IsOpen) and (oldTarget <> TControl(Sender)) then
+  begin
+    //TCustomPopupForm(TPopupAll(pAll).PopupForm).ApplyPlacement;
+  end
+  else
+  begin
+    if (pAll.IsOpen) then
+    begin
+      pAll.IsOpen := false;
+    end
+    else
+    begin
+      pAll.Popup();
+    end;
+  end;
 end;
 
 procedure TfrmProfFormFMX.cbbMdnForMouseDown(Sender: TObject;
@@ -3668,7 +3856,7 @@ var
   TempComboLabel: TComboOneLabel;
 begin
   Self.Focused := nil;
-  rctSelector.Parent := nil;
+  //rctSelector.Parent := nil;
   for i := 0 to LstExpanders.Count - 1 do
   begin
     LstExpanders[i].Parent := nil;
@@ -3747,6 +3935,7 @@ begin
     LstOneCombosLYT[i].Parent := nil;
     TempComboLabel := TComboOneLabel(LstOneCombosLYT[i].TagObject);
     TempComboLabel.SourceAnsw := TSourceAnsw.saNone;
+    TempComboLabel.chk.IsChecked := false;
   end;
   for i := 0 to LstPlaneds.Count - 1 do
   begin
@@ -3783,12 +3972,13 @@ var
   i, j: Integer;
   diag: TRealDiagnosisItem;
 begin
-  if (FPregled.FDiagnosis <> nil) and (FPregled.CanDeleteDiag) then
+  if (FPregled.FDiagnosis <> nil) and  (FPregled.CanDeleteDiag) then
   begin
     for i := 0 to FPregled.FDiagnosis.Count - 1 do
     begin
       if FPregled.FDiagnosis[i] = nil then Continue;
       if FPregled.FDiagnosis[i].PRecord <> nil then Continue;
+      if FPregled.FDiagnosis[i].MkbNode <> nil then Continue;
 
       FPregled.FDiagnosis[i].Destroy;
       FPregled.FDiagnosis[i]:= nil;
@@ -3930,6 +4120,37 @@ begin
       //txt.Text := '';
     end;
   end;
+end;
+
+procedure TfrmProfFormFMX.cbbDiagVerifStatusMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  idxListItemLst: Integer;
+  i, j: Integer;
+  cl138Index: string;
+  cl139: TCL139Item;
+  cl134: TCL134Item;
+  str: string;
+  AbsH: Single;
+  cbb: TComboBox;
+  node: PVirtualNode;
+  data: PAspRec;
+  TempDiagLabel: TDiagLabel;
+begin
+  if frmFmxControls.pDiagVerifStatus.IsOpen then
+  begin
+     //frmFmxControls.pDiagVerifStatus.IsOpen  := False;
+    //TCommonCustomForm(frmFmxControls.pDiagClinicStatus).Close;
+    //frmFmxControls.pDiagClinicStatus.PlacementTarget := TControl(Sender);
+    //Exit;
+  end;
+  frmFmxControls.pDiagClinicStatus.PlacementTarget := TControl(Sender);
+  frmFmxControls.pDiagClinicStatus.Width := frmFmxControls.lbDiagClinicStatus.Width;
+  frmFmxControls.pDiagClinicStatus.Height :=frmFmxControls.lbDiagClinicStatus.Height;
+  frmFmxControls.pDiagClinicStatus.Scale.X := FScaleDyn;
+  frmFmxControls.pDiagClinicStatus.Scale.Y := FScaleDyn;
+
+  frmFmxControls.pDiagClinicStatus.Popup();
 end;
 
 procedure TfrmProfFormFMX.ComboTestPaint(Sender: TObject; Canvas: TCanvas;
@@ -4142,6 +4363,41 @@ begin
   begin
     focus.SetFocus;
   end;
+end;
+
+procedure TfrmProfFormFMX.DragOver(const Data: TDragObject;
+  const Point: TPointF; var Operation: TDragOperation);
+var
+  NewTarget, FTarget: IControl;
+  newpoint, pTarget: TPointF;
+begin
+  //Operation := TDragOperation.Move;
+  if not(data.Source is TRectangle) then Exit;
+  Operation := TDragOperation.Move;
+  newpoint := PointF(Point.X -Self.Left, Point.y - self.top);
+  rctSelector.Position.Point := newpoint;
+  pTarget := txtMainDiag.LocalToAbsolute(PointF(0,0));
+
+  //txtTest.Text := (newpoint.X - pTarget.X).ToString();
+
+  //inherited DragOver(Data, newpoint, Operation);
+  //NewTarget := FindTarget(Point, Data);
+//  if (NewTarget <> FTarget) then
+//  begin
+//    if FTarget <> nil then
+//    begin
+//      FTarget.DragLeave;
+//      FTarget.RemoveFreeNotify(Self);
+//    end;
+//    FTarget := NewTarget;
+//    if FTarget <> nil then
+//    begin
+//      FTarget.AddFreeNotify(Self);
+//      FTarget.DragEnter(Data, FTarget.ScreenToLocal(Point));
+//    end;
+//  end;
+//  if FTarget <> nil then
+//    FTarget.DragOver(Data, FTarget.ScreenToLocal(Point), Operation);
 end;
 
 procedure TfrmProfFormFMX.dtdtCl132ApplyStyleLookup(Sender: TObject);
@@ -4906,7 +5162,7 @@ var
 begin
   edt := TEdit(sender);
   ambNom := PregledColl.getIntMap(FPregled.DataPos, Word(PregledNew_AMB_LISTN));
-  ambNRN := Copy(FPregled.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_NRN)), 1, 12);
+  ambNRN := Copy(FPregled.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_NRN_LRN)), 1, 12);
   if (ambNRN.StartsWith('_')) or (ambNRN.StartsWith(' ')) then
     ambNRN := '                                   ';
   nzisStatus := PregledColl.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
@@ -5209,67 +5465,6 @@ begin
   end;
 end;
 
-procedure TfrmProfFormFMX.edtPropChangeTracking(Sender: TObject);
-var
-  edt: TEdit;
-  ParamSetProp: TParamSetProp;
-  PP: PParamSetProp;
-  paramField: TParamProp;
-  ArrStr: TArray<string>;
-  obj: TCollectionItem;
-begin
-  edt := tedit(sender);
-  if not edt.IsFocused then
-    Exit;
-  if edt.TagObject = nil then
-  begin
-    Caption := 'opasno';
-    Exit;
-  end;
-
-  PP := PParamSetProp(edt.tag);
-  if PP = nil then Exit;
-
-  ParamSetProp := pp^;
-  ArrStr := edt.Text.Split([' ']);
-  if Length(ArrStr) = 1 then
-  begin
-    if TBaseItem(edt.TagObject).GetPRecord = nil then
-    begin
-      if TBaseItem(edt.TagObject).Collection = nil then
-      begin
-        case TBaseItem(edt.TagObject).GetCollType of
-          ctPatientNew:
-          begin
-            obj := PatientColl.Add;
-            edt.TagObject := obj;
-          end;
-        end;
-      end;
-      TBaseItem(edt.TagObject).NewPrecord;
-      TBaseItem(edt.TagObject).FillPRecord(ParamSetProp, ArrStr);
-    end
-    else
-    begin
-      TBaseItem(edt.TagObject).FillPRecord(ParamSetProp, ArrStr);
-    end;
-  end;
-
-
-  //for paramField in ParamSetProp do
-//  begin
-//    SetLength(ArrStr, length(ArrStr) + 1);
-//    ArrStr[length(ArrStr) - 1] := TBaseItem(edt.TagObject).getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(paramField));
-//  end;
-//  if length(ArrStr) > 1 then
-//  begin
-//    edt.Text := edt.Text.Join(' ' , ArrStr);
-//  end
-//  else
-//  begin
-//    edt.Text := ArrStr[0];
-//  end;
-end;
 
 procedure TfrmProfFormFMX.edtCl132Paint(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
@@ -6220,6 +6415,67 @@ begin
 //  end;
 end;
 
+procedure TfrmProfFormFMX.edtMainDiagEnter(Sender: TObject);
+var
+  TempDiagLabel: TDiagLabel;
+  tempDiagRect: TRectangle;
+begin
+  LoadKeyBoardLayout('00000409',1);
+  tempDiagRect := TRectangle(TFmxObject(Sender).parent.parent);
+  TempDiagLabel := TDiagLabel(LstDiags[tempDiagRect.tag].TagObject);
+  if Assigned(FOnChoicerMkb) then
+    FOnChoicerMkb(FPregled);
+end;
+
+procedure TfrmProfFormFMX.edtMainDiagExit(Sender: TObject);
+begin
+  LoadKeyBoardLayout('00040402',1);
+end;
+
+procedure TfrmProfFormFMX.edtMainDiagValidating(Sender: TObject;
+  var Text: string);
+var
+  TempDiagLabel: TDiagLabel;
+  tempDiagRect: TRectangle;
+  mkbPos: Cardinal;
+  IndexMkb: Integer;
+begin
+  tempDiagRect := TRectangle(TFmxObject(Sender).parent.parent);
+  TempDiagLabel := TDiagLabel(LstDiags[tempDiagRect.tag].TagObject);
+  if not TempDiagLabel.canValidate then Exit;
+  Text := UpperCase(text);
+
+
+  if  (Assigned(TempDiagLabel.diag)) and (TempDiagLabel.diag.DataPos > 0) then
+  begin
+    DiagColl.SetAnsiStringMap(TempDiagLabel.diag.DataPos, word(Diagnosis_code_CL011), Text);
+    TempDiagLabel.SelectMain.Fill.Color := $FFFBD3C6;
+    //TempDiagLabel.edtMain.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
+//    TempDiagLabel.edtAdd.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_additionalCode_CL011));
+//   // TempDiagLabel.diag.PData.DataPos
+//    if TempDiagLabel.diag <> nil then
+//    begin
+//      mkbPos := TempDiagLabel.diag.getCardMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_MkbPos));
+//      if mkbPos > 100 then
+//        TempDiagLabel.mmoDiag.Text := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME))
+//      else
+//        TempDiagLabel.mmoDiag.Text := '100';
+//    end;
+  end
+  else
+  begin
+    if TTempVtrHelper(FTmpVtr).FindMkbDataPosFromCode(Text, IndexMkb) then
+    begin
+      TempDiagLabel.SelectMain.Fill.Color := $FFE4F6C8;
+    end
+    else
+    begin
+      TempDiagLabel.SelectMain.Fill.Color := $FFFBD3C6;
+    end;
+  end;
+
+end;
+
 procedure TfrmProfFormFMX.edtMdn1KeyDown(Sender: TObject; var Key: Word;
   var KeyChar: Char; Shift: TShiftState);
 begin
@@ -6993,11 +7249,11 @@ begin
     spec := CL006Coll.getAnsiStringMap(posSpec, word(CL006_Key));
     TempMnsLabel.edtSpec.Text := spec;
     TempMnsLabel.edtSpecName.Text := CL006Coll.getAnsiStringMap(posSpec, word(CL006_nhif_name));;
-    if mn.FDiagnosis.Count > 0 then
+    if mn.FDiagnosis2.Count > 0 then
     begin
-      for i := 0 to mn.FDiagnosis.Count - 1 do
+      for i := 0 to mn.FDiagnosis2.Count - 1 do
       begin
-        TempMnsLabel.LstMkbs[i].MKB :=  mn.FDiagnosis[i];
+        TempMnsLabel.LstMkbs[i].MKB :=  mn.FDiagnosis2[i];
 
         if TempMnsLabel.LstMkbs[i].MKB.PRecord = nil then
         begin
@@ -7012,7 +7268,7 @@ begin
         end;
 
         if TempMnsLabel.LstMkbs[i].edtMkb.Text = '' then
-          TempMnsLabel.LstMkbs[i].edtMkb.Text :=  mn.FDiagnosis[i].getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
+          TempMnsLabel.LstMkbs[i].edtMkb.Text :=  mn.FDiagnosis2[i].getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
         TempMnsLabel.LstMkbs[i].edtMkb.TagObject := TempMnsLabel.LstMkbs[i];
 
       end;
@@ -7707,11 +7963,13 @@ begin
       tempDiagLabel.edtMain := edtMainDiag;
       tempDiagLabel.edtAdd := edtAddDiag;
       tempDiagLabel.mmoDiag := mmoDiag;
+      tempDiagLabel.ClinicStatusTXT := Text8;
+      tempDiagLabel.ClinicStatus := rctDiagclinicStatusChoice;
     end;
 
     for i := 0 to Pregled.FDiagnosis.Count - 1 do
     begin
-      AddDiag(lytDiag, dataPreg, i, Word(PregledNew_TERAPY), Pregled.FDiagnosis[i]);
+      AddDiag(lytDiag, dataPreg, i, Pregled.FDiagnosis[i]);//zzzzzzzzzzzzzzzzz  трябва нещата да са на диагнозата
 
       inc(idxDiags);
     end;
@@ -7857,17 +8115,45 @@ begin
   end;
 end;
 
+procedure TfrmProfFormFMX.FormActivate(Sender: TObject);
+var
+  handled: Boolean;
+begin
+  if IsFirstActivate then
+  begin
+    //scrlbx1MouseWheel(Pointer(1300), [ssCtrl], 20, handled);
+    IsFirstActivate := False;
+  end;
+end;
+
 procedure TfrmProfFormFMX.FormCreate(Sender: TObject);
 
 begin
   //stylbk1.FileName := System.SysUtils.GetCurrentDir + '\styles\superHip.style';
   //Application.OnHint := btn1Click;
-  Self.scldlyt1.Scale.X := 1.0;
-  Self.scldlyt1.Scale.Y := 1.0;
+
+  pAll := TPopup.Create(Self);
+
+  pAll.Name := 'pAll';
+  pAll.VerticalOffset := 2.000000000000000000;
+  //pAll.OnMouseWheel := scrlbx1MouseWheel;
+  //pAll.OnPopup := p1Popup;
+  pAll.Parent := scldlyt1;
+  
+
+  rctTokenPlug.ShowHint := True;
+  Vcl.Forms.Screen.Cursors[HANDFLAT] := LoadCursorFromFile('C:\Program Files (x86)\Embarcadero\Studio\17.0\Images\Cursors\HANDFLAT.CUR');
+  Vcl.Forms.Screen.Cursors[HANDGRAB] := LoadCursorFromFile('C:\Program Files (x86)\Embarcadero\Studio\17.0\Images\Cursors\HANDGRAB.CUR');
+  rctBlankaTransparent.Cursor := HANDFLAT;
+
+
+  Self.scldlyt1.Scale.X := 1;
+  Self.scldlyt1.Scale.Y := 1;
   Application.OnException := appEvntsMainException;
   FPatient := TRealPatientNewItem.Create(nil);
   FOtherPregleds := TList<PVirtualNode>.Create;
   scaleDyn := 1;
+  IsFirstActivate := True;
   expndrCL132.Visible  := False;
   mmoCL132.Visible := False;
   cbb1.Visible := False;
@@ -7942,6 +8228,7 @@ begin
   lbSourceAnsw.Parent := pSourceAnsw;
   lbSourceAnsw.Align := TAlignLayout.Client;
 
+
   txtCalcMemo := TTextLayoutManager.DefaultTextLayout.Create;
   txtCalcMemo.HorizontalAlign:= TTextAlign.center;
   txtCalcMemo.VerticalAlign := TTextAlign.center;
@@ -8001,6 +8288,50 @@ end;
 
 
 
+procedure TfrmProfFormFMX.FormKeyDown(Sender: TObject; var Key: Word;
+  var KeyChar: Char; Shift: TShiftState);
+begin
+  if TWinCursorService.CursorOverride > 0 then  Exit;
+
+  if (ssCtrl in Shift) and (ssShift in Shift) then
+  begin
+    case Key of
+      vkC: // Ctrl+Shift+C
+        begin
+          // Implement your custom action here
+          mmoAddres.Text := ('Ctrl+Shift+C pressed!');
+        end;
+      vkV: // Ctrl+Shift+V
+        begin
+          // Implement your custom action here
+          mmoAddres.Text := ('Ctrl+Shift+V pressed!');
+        end;
+    else
+      mmoAddres.Text := ('Ctrl+Shift');
+      rctBlankaTransparent.BringToFront;
+      rctBlankaTransparent.HitTest := True;
+      TWinCursorService.CursorOverride := HANDFLAT;
+    end;
+  end;
+
+end;
+
+procedure TfrmProfFormFMX.FormKeyUp(Sender: TObject; var Key: Word;
+  var KeyChar: Char; Shift: TShiftState);
+begin
+  mmoAddres.Text := ('');
+  rctBlankaTransparent.SendToBack;
+  rctBlankaTransparent.HitTest := false;
+  TWinCursorService.CursorOverride := crDefault;
+  //IFMXCursorService
+  //rctCursorHand.Visible := False;
+end;
+
+procedure TfrmProfFormFMX.FormResize(Sender: TObject);
+begin
+  ZoomToWidth(self.Width);
+end;
+
 procedure TfrmProfFormFMX.FreeTempItem;
 begin
   FreeAndNil(pr001Temp);
@@ -8018,6 +8349,8 @@ end;
 procedure TfrmProfFormFMX.InitHelpTags;
 begin
   rctTokenPlug.TagString := 'Бутон за намиране на подпис';
+  rctMkb.TagString := 'Бутон за основна диагноза';
+  rctMkbAdd.TagString := 'Бутон за свързана диагноза';
 end;
 
 procedure TfrmProfFormFMX.InitProps;
@@ -8039,7 +8372,7 @@ procedure TfrmProfFormFMX.InitSetings;
 var
   tempH: Single;
 begin
-  //Exit;
+  Exit;
   if not FIssetings then
   begin
     tempH  := scldlyt1.Height * 1.3;
@@ -8185,6 +8518,16 @@ begin
       lin.Stroke.Color := TAlphaColorRec.Null;
     end;
   end;
+end;
+
+procedure TfrmProfFormFMX.linSaverClick(Sender: TObject);
+var
+  TempMemoLabel: TMemoLabel;
+  TempMemoLYT: TLayout;
+begin
+  TempMemoLYT := TLayout(TLine(Sender).Parent);
+  TempMemoLabel := TMemoLabel(TempMemoLYT.TagObject);
+  TempMemoLabel.memo.Caret.Width := 12;
 end;
 
 procedure TfrmProfFormFMX.ListBoxItem1Click(Sender: TObject);
@@ -9381,6 +9724,22 @@ Exit;
 
 end;
 
+procedure TfrmProfFormFMX.mmoDiagMouseEnter(Sender: TObject);
+var
+  r: TRect;
+  rf: TRectF;
+begin
+    rf := mmoDiag.AbsoluteRect;
+    rf.TopLeft := Self.ClientToScreen(rf.TopLeft);
+    rf.BottomRight := Self.ClientToScreen(rf.BottomRight);
+    r.Left := Round(rf.Left);
+    r.Right := Round(rf.Right);
+    r.Top := Round(rf.Top);
+    r.Bottom := Round(rf.Bottom);
+  if Assigned(FOnSowHint) then
+    FOnSowHint(Sender, 'dddddddd', r);
+end;
+
 procedure TfrmProfFormFMX.mmoDynEnter(Sender: TObject);
 begin
   TMemo(Sender).Position.Point := PointF(TMemo(Sender).Position.Point.x + 2, TMemo(Sender).Position.Point.y);
@@ -9957,7 +10316,18 @@ begin
     r.Bottom := Round(rf.Bottom);
 
     if Assigned(FOnSowHint) then
-      FOnSowHint(c, c.Hint, r);
+      if not c.ClassName.StartsWith('tstyled', True) then
+      begin
+        FOnSowHint(c, c.Hint, r);
+      end
+      else
+      begin
+        case c.ClassName[8] of
+          'E': // TStyledEdit
+          FOnSowHint(c.Parent, TEdit(c.parent).Hint, r);
+        end;
+
+      end;
   end
   else
   begin
@@ -10448,7 +10818,7 @@ var
 begin
   if sender = nil then Exit;
 
-  if (p1.PlacementTarget.ClassName = 'TComboBox') then
+  if (p1.PlacementTarget.ClassName = 'TComboBox') and (p1.PlacementTarget.StyleName = '') then
   begin
     cbb := TComboBox(p1.PlacementTarget);
     TempComboLabel := TComboOneLabel(cbb.Parent.TagObject);
@@ -10474,7 +10844,7 @@ var
 begin
   if sender = nil then Exit;
 
-  if (p1.PlacementTarget.ClassName = 'TComboBox') then
+  if (p1.PlacementTarget.ClassName = 'TComboBox') and (p1.PlacementTarget.StyleName = '') then
   begin
     rctBtnSaveLst.Visible := true;
     rctBtnCancelLst.Visible := true;
@@ -10511,6 +10881,14 @@ begin
       mniX013.Visible := false;
     end;
   end;
+end;
+
+procedure TfrmProfFormFMX.PositionPopup;
+begin
+  //pAll.Scale.x := scaleDyn;
+//  pAll.Scale.y := scaleDyn;
+  if pAll.HasPopupForm then
+    TCustomPopupForm(TPopupAll(pall).PopupForm).ApplyPlacement
 end;
 
 procedure TfrmProfFormFMX.rctAnswDoctorClick(Sender: TObject);
@@ -10637,6 +11015,35 @@ begin
   //scrlbx1.FindStyleResource<TScrollBar>('vscrollbar', vScrol);
   //vScrol.Value := vScrol.Value - 1 * scaleDyn;
   //btn1.Text := FloatToStr(y);
+end;
+
+procedure TfrmProfFormFMX.rctBlankaTransparentMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+  TWinCursorService.CursorOverride := HANDGRAB;
+  ExPointHand := PointF(x, y);
+end;
+
+procedure TfrmProfFormFMX.rctBlankaTransparentMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Single);
+var
+  vScrol, hScrol: TScrollBar;
+  deltaY, deltaX: Single;
+begin
+    if TWinCursorService.FCursorOverride <> HANDGRAB then  Exit;
+
+    scrlbx1.FindStyleResource<TScrollBar>('vscrollbar', vScrol);
+    scrlbx1.FindStyleResource<TScrollBar>('hscrollbar', hScrol);
+    deltaY := (ExPointHand.Y - y) ;
+    deltaX := (ExPointHand.X - x) ;
+    vScrol.Value := (DeltaY + scrlbx1.ViewportPosition.y);
+    hScrol.Value := (Deltax + scrlbx1.ViewportPosition.x);
+end;
+
+procedure TfrmProfFormFMX.rctBlankaTransparentMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+begin
+  TWinCursorService.CursorOverride := HANDFLAT;
 end;
 
 procedure TfrmProfFormFMX.RecalcBlankaRect;
@@ -11079,7 +11486,7 @@ begin
       FOnSelectMkb(diag);
 end;
 
-procedure TfrmProfFormFMX.Rectangle32Click(Sender: TObject);
+procedure TfrmProfFormFMX.rctMkbAddClick(Sender: TObject);
 var
   TempRect: TRectangle;
   TempDiagLabel: TDiagLabel;
@@ -11095,6 +11502,41 @@ begin
 
 end;
 
+procedure TfrmProfFormFMX.rctMkbMouseEnter(Sender: TObject);
+var
+  r: TRect;
+  rf: TRectF;
+begin
+    rf := rctMkb.AbsoluteRect;
+    rf.TopLeft := Self.ClientToScreen(rf.TopLeft);
+    rf.BottomRight := Self.ClientToScreen(rf.BottomRight);
+    r.Left := Round(rf.Left);
+    r.Right := Round(rf.Right);
+    r.Top := Round(rf.Top);
+    r.Bottom := Round(rf.Bottom);
+  if Assigned(FOnSowHint) then
+    FOnSowHint(Sender, 'mkb', r);
+end;
+
+procedure TfrmProfFormFMX.rctMkbPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
+  nodePreg, nodeDiag: PVirtualNode;
+  diag: TRealDiagnosisItem;
+begin
+    //TempRect := TRectangle(TRectangle(sender).Parent.Parent.parent);
+//    TempDiagLabel := TDiagLabel(TempRect.TagObject);
+//    nodePreg := TempDiagLabel.node.Parent;
+//    nodeDiag := TempDiagLabel.node;
+//    diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
+//    if diag.MkbNode <> nil then
+//      TRectangle(sender).StrokeThickness := 7
+//    else
+//      TRectangle(sender).StrokeThickness := 2;
+end;
+
 procedure TfrmProfFormFMX.Rectangle34MouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 var
@@ -11105,12 +11547,22 @@ var
 begin
     TempRect := TRectangle(TRectangle(sender).Parent.Parent);
     TempDiagLabel := TDiagLabel(TempRect.TagObject);
-    nodePreg := TempDiagLabel.node.Parent;
-    nodeDiag := TempDiagLabel.node;
-    diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
-    if Assigned(FOnDeleteNewDiag) then
-      FOnDeleteNewDiag(Self, nodePreg, nodeDiag, diag);
-    //FPregled.FDiagnosis.Delete(FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag));
+    if TempDiagLabel.node <> nil then
+    begin
+      nodePreg := TempDiagLabel.node.Parent;
+      nodeDiag := TempDiagLabel.node;
+      diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
+      TTempVtrHelper(TmpVtr).Vtr.CheckState[diag.MkbNode] := csUncheckedNormal;
+      if Assigned(FOnDeleteNewDiag) then
+        FOnDeleteNewDiag(Self, nodePreg, nodeDiag, diag);
+      //FPregled.FDiagnosis.Delete(FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag));
+    end
+    else
+    begin
+      TempRect.Parent := nil;
+      xpdrDiagn.RecalcSize;
+      lytDiagFrame.Height := xpdrDiagn.Height + 30;
+    end;
 end;
 
 procedure TfrmProfFormFMX.Rectangle3MouseUp(Sender: TObject;
@@ -11238,6 +11690,9 @@ begin
     end;
     ctrl := ctrl.Parent;
   end;
+  if not datEdt.IsChecked then
+    datEdt.Date := Date;
+
   datEdt.IsChecked := True;
 
   if datEdt.IsPickerOpened then
@@ -11861,37 +12316,98 @@ begin
   lytRightResize(nil);
 end;
 
+procedure TfrmProfFormFMX.rctDiagDragOver(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF; var Operation: TDragOperation);
+begin
+  //
+end;
+
+procedure TfrmProfFormFMX.rctDiagMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
+var
+  Svc: IFMXDragDropService;
+  DragData: TDragObject;
+  DragImage: TBitmap;
+  obj: TObject;
+begin
+  if  TPlatformServices.Current.SupportsPlatformService(IFMXDragDropService, Svc) then
+  begin
+    DragData.Source := TRectangle(Sender);
+    DragImage := TRectangle(Sender).MakeScreenshot;
+    try
+      DragData.Data := DragImage;
+      obj := TObject.Create;
+      Svc.BeginDragDrop(self, DragData, DragImage);
+    finally
+      DragImage.Free;
+    end;
+  end;
+end;
+
+procedure TfrmProfFormFMX.rctDiagMouseEnter(Sender: TObject);
+begin
+  //
+end;
+
 procedure TfrmProfFormFMX.rctDiagPainting(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 var
   TempDiagLabel: TDiagLabel;
   tempDiagRect: TRectangle;
   mkbPos: Cardinal;
+  mkbNote: string;
+  arrstr: TArray<string>;
 begin
   if LstDiags.Count = 0 then Exit;
 
   tempDiagRect := TRectangle(Sender);
   TempDiagLabel := TDiagLabel(LstDiags[tempDiagRect.tag].TagObject);
+  TempDiagLabel.canValidate := False;
+  //TempDiagLabel.ClinicStatus.Fill.Bitmap.Assign(FmxControls.frmFmxControls.Rectangle10.Fill.Bitmap);
+
   if  (Assigned(TempDiagLabel.diag)) and (TempDiagLabel.diag.DataPos > 0) then
   begin
+
     TempDiagLabel.edtMain.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
     TempDiagLabel.edtAdd.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_additionalCode_CL011));
-   // TempDiagLabel.diag.PData.DataPos
-    if TempDiagLabel.diag <> nil then
+    mkbPos := TempDiagLabel.diag.getCardMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_MkbPos));
+    if mkbPos > 100 then
     begin
-      mkbPos := TempDiagLabel.diag.getCardMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_MkbPos));
-      if mkbPos > 100 then
-        TempDiagLabel.mmoDiag.Text := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME))
-      else
-        TempDiagLabel.mmoDiag.Text := '100';
-    end;
+      TempDiagLabel.mmoDiag.Text := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+      mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
+      if TempDiagLabel.txtMain <> nil then
+      begin
+        if mkbNote.Contains('*') then
+        begin
+          caption:= 'ddd';
+          TempDiagLabel.txtMain.Text := 'МКБ†';
+          TempDiagLabel.SelectAdd.Enabled := True;
+          arrstr := mkbNote.Split(['(', ')']);
+          //ls := TStringList.Create;
+//            for i := 0 to Length(arrstr) - 1 do
+//            begin
+//              if arrstr[i].EndsWith('*') then
+//              begin
+//                ls.Add(arrstr[i].Replace('*', ''));
+//              end;
+//            end;
+        end
+        else
+        begin
+          TempDiagLabel.txtMain.Text := 'МКБ';
+          TempDiagLabel.SelectAdd.Enabled := False;
+        end;
+      end;
+    end
+    else
+      TempDiagLabel.mmoDiag.Text := '100';
   end
   else
   begin
-    TempDiagLabel.edtMain.Text := '';
-    TempDiagLabel.edtAdd.Text := '';
+    //TempDiagLabel.edtMain.Text := '';
+    //TempDiagLabel.edtAdd.Text := '';
   end;
-
+  TempDiagLabel.canValidate := true;
 end;
 
 procedure TfrmProfFormFMX.rctIconPlanedTypeClick(Sender: TObject);
@@ -11979,26 +12495,75 @@ procedure TfrmProfFormFMX.scrlbx1MouseWheel(Sender: TObject; Shift: TShiftState;
 var
   tempH: Single;
   delta: Integer;
-  vScrol: TScrollBar;
+  vScrol, hScrol: TScrollBar;
+  pf1, pf2, tempPf: TPointF;
+  scaleFactor: Single;
 begin
   if ssCtrl in Shift then
   begin
     tempH := scldlyt1.Height;
-    if WheelDelta> 0 then
+    tempPf := scrlbx1.ViewportPosition;
+    pf2 := Screen.MousePos;
+
+    pf2 := self.ScreenToClient(pf2);
+    pf2 := scldlyt1.AbsoluteToLocal(pf2);
+    pf2.X := pf2.X / scaleDyn;
+    pf2.y := pf2.y / scaleDyn;
+    if Sender = self then
     begin
-      tempH  := scldlyt1.Height * 1.1;
-      scaleDyn := tempH / scldlyt1.OriginalHeight;
-      scldlyt1.Width := scldlyt1.Width * 1.1;
-      scldlyt1.Height := scldlyt1.Height * 1.1;
+      scaleFactor := 1.1;
     end
     else
     begin
-      tempH  := scldlyt1.Height / 1.1;
+      scaleFactor := Integer(Sender)/1000;
+    end;
+    if WheelDelta> 0 then
+    begin
+      tempH  := scldlyt1.Height * scaleFactor;
       scaleDyn := tempH / scldlyt1.OriginalHeight;
-      scldlyt1.Width := scldlyt1.Width / 1.1;
-      scldlyt1.Height := scldlyt1.Height / 1.1;
+      scldlyt1.Width := scldlyt1.Width * scaleFactor;
+      scldlyt1.Height := scldlyt1.Height * scaleFactor;
+    end
+    else
+    begin
+      tempH  := scldlyt1.Height / scaleFactor;
+      scaleDyn := tempH / scldlyt1.OriginalHeight;
+      scldlyt1.Width := scldlyt1.Width / scaleFactor;
+      scldlyt1.Height := scldlyt1.Height / scaleFactor;
     end;
     Handled := True;
+    pf1 := Screen.MousePos;
+
+    pf1 := self.ScreenToClient(pf1);
+    pf1 := scldlyt1.AbsoluteToLocal(pf1);
+    pf1.X := pf1.X / scaleDyn;
+    pf1.y := pf1.y / scaleDyn;
+    //rctSelector.Parent := scldlyt1;
+    //rctSelector.Position.Point := pf1;
+
+
+    //mmoAddres.Text := pf.X.ToString();
+    //scrlbx1.ViewportPosition := PointF(pf.x * scaleDyn, pf.y * scaleDyn);
+    if Sender = self then
+    begin
+      scrlbx1.BeginUpdate;
+      scrlbx1.FindStyleResource<TScrollBar>('vscrollbar', vScrol);
+      scrlbx1.FindStyleResource<TScrollBar>('hscrollbar', hScrol);
+      vScrol.Value := scrlbx1.ViewportPosition.y + (-pf1.y * scaleDyn + pf2.y* scaleDyn);
+      hScrol.Value := scrlbx1.ViewportPosition.x + (-pf1.x * scaleDyn + pf2.x* scaleDyn);
+     // pf := mmoAddres.AbsoluteToLocal(pf);
+      //vScrol.Value := rctSelector.LocalToAbsolute(Pointf(0,0)).y  + scrlbx1.ViewportPosition.y;
+      //vScrol.Value := pf.y;// + scrlbx1.ViewportPosition.y;
+
+      //hScrol.Value :=  mmoAddres.LocalToAbsolute(Pointf(pf.x,0)).x - pf.x + scrlbx1.ViewportPosition.x;
+      //hScrol.Value := pf.x/ scaleDyn;// + scrlbx1.ViewportPosition.x;
+
+      //txtTest.Text := Format('%f',  [scrlbx1.LocalToAbsolute(pf1).y * scaleDyn]);
+      txtTest.Text := Format('%f',  [scaleDyn]);
+      //vScrol.Value := scrlbx1.LocalToAbsolute(pf).y;
+      //mmoAddres.Text := (tempPf.X - scrlbx1.ViewportPosition.X).ToString();
+      scrlbx1.EndUpdate;
+    end;
   end
   else
   begin
@@ -12013,13 +12578,13 @@ begin
       vScrol.Value := vScrol.Value + 20 * scaleDyn;
     end;
     Handled := True;
-    //btn1.Text := Self.ActiveControl.ClassName;
+
   end;
   if p2.IsOpen then
     p2.IsOpen := False;
   p2.Scale.x := scaleDyn;
   p2.Scale.y := scaleDyn;
-
+  PositionPopup;
 end;
 
 procedure TfrmProfFormFMX.scrlbx1Resize(Sender: TObject);
@@ -12042,9 +12607,16 @@ begin
   slctnpnt3.Position.Point := PointF(slctnpnt3.Position.X ,p1.y);
   txt1.Text := Format('%f,   %f',  [NewViewportPosition.y, p1.y]);
   //slctnpnt3.Position := scrlbx1.con
+  //txtTest.Text := Format('%f',  [mmoAddres.Position.y * scaleDyn]);
 end;
 
 
+
+procedure TfrmProfFormFMX.SetAdb_dm(const Value: TADBDataModule);
+begin
+  FAdb_dm := Value;
+  frmFmxControls.Adb_DM := FAdb_dm;
+end;
 
 procedure TfrmProfFormFMX.SetCheckKep(const Value: boolean);
 begin
@@ -12218,6 +12790,43 @@ begin
   scldlyt1.Width := x * FScaleDyn;
 end;
 
+procedure TfrmProfFormFMX.TextClinicStatusPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  TempRect: TRectangle;
+  TempDiagLabel: TDiagLabel;
+  log16: TlogicalDiagnosisSet;
+  logstat: TlogicalDiagnosis;
+  str: string;
+begin
+  TempRect := TRectangle(TControl(Sender).Parent.Parent.Parent.Parent);
+  TempDiagLabel := TDiagLabel(TempRect.TagObject);
+  log16 := TlogicalDiagnosisSet(DiagColl.getLogical16Map(TempDiagLabel.diag.DataPos, word(Diagnosis_Logical)));
+  if log16 <> [] then
+  begin
+    logStat := TRealDiagnosisColl.GetClinicStatus(log16);
+
+    case logStat of
+      TlogicalDiagnosis(-1): str := 'neznam';
+      ClinicalStatus_Active: str := 'Активен';
+      ClinicalStatus_Recurrence: str := 'Активен - Повторно проявяване';
+      ClinicalStatus_Relapse: str := 'Активен - В рецидив';
+      ClinicalStatus_Inactive: str := 'Неактивен';
+      ClinicalStatus_Remission: str := 'Неактивен - В ремисия';
+      ClinicalStatus_Resolved: str := 'Неактивен - Решен';
+    else
+      raise Exception.Create('Не може да има повече от един клиничен статус!');
+    end;
+  end
+  else
+  begin
+    str := 'neznam';
+  end;
+
+  TText(Sender).Stretch := (Canvas.TextWidth(str) > (ARect.Width - 5));
+  TText(Sender).Text := str;
+end;
+
 //procedure TfrmProfFormFMX.slctnpnt3Track(Sender: TObject; var X, Y: Single);
 //var
 //  idxList: Integer;
@@ -12359,6 +12968,8 @@ end;
 //  RecalcBlankaRect1;
 //end;
 
+
+
 procedure TfrmProfFormFMX.txtAddDiagLabelResize(Sender: TObject);
 begin
   Caption := FloatToStr(txtAddDiagLabel.Height);
@@ -12373,7 +12984,7 @@ var
 begin
   txt := TText(sender);
   ambNom := FPregled.getIntMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_AMB_LISTN));
-  amnNRN := FPregled.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_NRN));
+  amnNRN := FPregled.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_NRN_LRN));
 
   txt.Text := Format('АМБУЛАТОРЕН ЛИСТ  № %d НРН %s', [ambNom, amnNRN]);
   //dtdtStartDate.Position.Point := PointF(txt.Width + 10, 5);
@@ -12384,6 +12995,24 @@ procedure TfrmProfFormFMX.txtAmbListResize(Sender: TObject);
 begin
   //dtdtStartDate.Repaint;
   //dtdtStartDate.Position.Point := PointF(txtAmbList.BoundsRect.Right + 10, 5);
+end;
+
+procedure TfrmProfFormFMX.txtMainDiagDragDrop(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF);
+begin
+  //
+end;
+
+procedure TfrmProfFormFMX.txtMainDiagDragEnter(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF);
+begin
+  //
+end;
+
+procedure TfrmProfFormFMX.txtMainDiagDragOver(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF; var Operation: TDragOperation);
+begin
+  Operation := TDragOperation.Move;
 end;
 
 procedure TfrmProfFormFMX.txtNzisStatusPainting(Sender: TObject;
@@ -12511,16 +13140,50 @@ var
   p: TPointF;
   Cntrl: IControl;
   StyledCtrl: TStyledControl;
+  li: TListBoxItem;
 begin
-  Cntrl := self.ObjectAtPoint(MousePos);
-  if Cntrl.GetObject is TStyledControl then
+
+  if p1.IsOpen then
   begin
-    StyledCtrl := TStyledControl(Cntrl.GetObject);
-    ShowMessage(IntToStr(TStyledControl(StyledCtrl.parent).HelpContext));
+    Cntrl := TControlProt(p1).ObjectAtPoint(mousePos);
+    if Cntrl.GetObject is TStyledControl then
+    begin
+      StyledCtrl := TStyledControl(Cntrl.GetObject);
+      if StyledCtrl.ClassName.StartsWith('TStyled', true) then
+      begin
+        ShowMessage(IntToStr(TStyledControl(StyledCtrl.parent).HelpContext));
+      end
+      else
+      begin
+        ShowMessage(IntToStr(StyledCtrl.HelpContext));
+      end;
+    end
+    else
+    begin
+      //TControl(Cntrl.GetObject).GetNamePath
+      ShowMessage(Cntrl.GetObject.TagString);
+    end;
   end
   else
   begin
-    ShowMessage(Cntrl.GetObject.TagString);
+    Cntrl := self.ObjectAtPoint(MousePos);
+    if Cntrl.GetObject is TStyledControl then
+    begin
+      StyledCtrl := TStyledControl(Cntrl.GetObject);
+      if StyledCtrl.ClassName.StartsWith('TStyled', true) then
+      begin
+        ShowMessage(IntToStr(TStyledControl(StyledCtrl.parent).HelpContext));
+      end
+      else
+      begin
+        ShowMessage(IntToStr(StyledCtrl.HelpContext));
+      end;
+    end
+    else
+    begin
+      //TControl(Cntrl.GetObject).GetNamePath
+      ShowMessage(Cntrl.GetObject.TagString);
+    end;
   end;
 end;
 
@@ -12549,6 +13212,12 @@ begin
   begin
     lbl.text := 'Придр.';
   end;
+end;
+
+procedure TfrmProfFormFMX.xpdrDiagnDragOver(Sender: TObject;
+  const Data: TDragObject; const Point: TPointF; var Operation: TDragOperation);
+begin
+  //
 end;
 
 procedure TfrmProfFormFMX.xpdrDiagnResize(Sender: TObject);
@@ -12622,56 +13291,7 @@ begin
   end;
 end;
 
-procedure TfrmProfFormFMX.xpdrDoctorApplyStyleLookup(Sender: TObject);
-var
-  txt: TText;
-  edt: TEdit;
-  lbl: TLabel;
-  PP: PParamSetProp;
-begin
-  Exit;
-  if xpdrDoctor.Tag = 1 then  Exit;
-  xpdrDoctor.Tag := 1;
-  if xpdrDoctor.FindStyleResource<TText>('text', txt) then
-  begin
-    txt.Text := 'Лекар';
-    txt.AutoSize := False;
-    txt.Trimming := TTextTrimming.Character;
-  end;
-  if xpdrDoctor.FindStyleResource<TEdit>('edit1style', edt) then
-  begin
-    edt.OnPainting := edtADBPaint;
-    edt.OnChangeTracking := edtPropChangeTracking;
-    Include(PerformerUinSetProp, TParamProp(Doctor_UIN));
-    PP := @PerformerUinSetProp;
-    edt.Tag := Integer(PP);
-    edt.TagObject := FDoctor;
-  end;
-  if xpdrDoctor.FindStyleResource<TEdit>('edit2style', edt) then
-  begin
-    edt.OnPainting := edtADBPaint;
-    Include(PerformerNameSetProp, TParamProp(Doctor_FNAME));
-    Include(PerformerNameSetProp, TParamProp(Doctor_SNAME));
-    Include(PerformerNameSetProp, TParamProp(Doctor_LNAME));
-    PP := @PerformerNameSetProp;
-    edt.Tag := Integer(PP);
-    edt.TagObject := FDoctor;
-  end;
-  //if xpdrDoctor.FindStyleResource<TEdit>('edit3style', edt) then
-//  begin
-//    edt.OnPainting := edtADBCalcPaint;
-//    edt.Tag := word(PatientNew_BIRTH_DATE);
-//    edt.TagObject := FDoctor;
-//  end;
-  if xpdrDoctor.FindStyleResource<TLabel>('label1style', lbl) then
-  begin
-    lbl.text := 'УИН';
-  end;
-  if xpdrDoctor.FindStyleResource<TLabel>('label2style', lbl) then
-  begin
-    lbl.text := 'Име';
-  end;
-end;
+
 
 procedure TfrmProfFormFMX.xpdrMdnApplyStyleLookup(Sender: TObject);
 var
@@ -12778,6 +13398,13 @@ begin
 end;
 
 
+
+procedure TfrmProfFormFMX.ZoomToWidth(W: single);
+var
+  handled: Boolean;
+begin
+  scrlbx1MouseWheel(Pointer(Round(((w-20)/scldlyt1.Width) * 1000)), [ssCtrl], 20, handled);
+end;
 
 { TEditLabel }
 
@@ -12936,6 +13563,45 @@ begin
 end;
 
 
+
+{ TWinCursorService }
+
+class constructor TWinCursorService.Create;
+begin
+  FWinCursorService := TWinCursorService.Create;
+  FCursorOverride := crDefault;
+
+  FPreviousPlatformService := TPlatformServices.Current.GetPlatformservice(IFMXCursorService) as IFMXCursorService; // TODO: if not assigned
+
+  TPlatformServices.Current.RemovePlatformService(IFMXCursorService);
+  TPlatformServices.Current.AddPlatformService(IFMXCursorService, FWinCursorService);
+end;
+
+function TWinCursorService.GetCursor: TCursor;
+begin
+  result :=  FPreviousPlatformService.GetCursor;
+end;
+
+procedure TWinCursorService.SetCursor(const ACursor: TCursor);
+begin
+
+  if ACursor <= 0 then
+  begin
+    Winapi.Windows.SetCursor(Vcl.Forms.Screen.Cursors[ACursor]);
+
+  end
+  else
+  begin
+    Winapi.Windows.SetCursor(Vcl.Forms.Screen.Cursors[FCursorOverride]);
+  end;
+end;
+
+
+class procedure TWinCursorService.SetCursorOverride(const Value: TCursor);
+begin
+  FCursorOverride := Value;
+  TWinCursorService.FPreviousPlatformService.SetCursor(FCursorOverride);
+end;
 
 initialization
 

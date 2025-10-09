@@ -113,7 +113,7 @@ TPracticaItem = class(TBaseItem)
 	IndexAnsiStr: PAnsiChar;
     IndexAnsiStr1: AnsiString;
     IndexField: TPropertyIndex;
-	
+
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
     procedure InsertPractica;
@@ -151,6 +151,7 @@ TPracticaItem = class(TBaseItem)
     procedure SortByIndexAnsiString;
 
 	function DisplayName(propIndex: Word): string;
+  //function GetTableName: string; override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
@@ -197,6 +198,7 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
+  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
     begin
@@ -205,7 +207,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -271,6 +273,7 @@ var
   propIndx: TPropertyIndex;
 begin
   CollType := ctPractica;
+  SaveStreamCommand(TLogicalData40(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
     begin
@@ -653,6 +656,11 @@ begin
   Result := TPracticaItem(inherited GetItem(Index));
 end;
 
+
+//function TPracticaColl.GetTableName: string;
+//begin
+//  Result := 'Practica';
+//end;
 
 procedure TPracticaColl.IndexValue(propIndex: TPracticaItem.TPropertyIndex);
 var
@@ -1636,3 +1644,44 @@ begin
 end;
 
 end.
+{
+
+
+
+ADDRESS_ACT=AnsiString
+ADDRESS_DOGNZOK=AnsiString
+ADRES=AnsiString
+BANKA=AnsiString
+BANKOW_KOD=AnsiString
+BULSTAT=AnsiString
+COMPANYNAME=AnsiString
+CONTRACT_DATE=TDate
+CONTRACT_RZOK=AnsiString
+CONTRACT_TYPE=word
+DAN_NOMER=AnsiString
+EGN=AnsiString
+FNAME=AnsiString
+FULLNAME=AnsiString
+INVOICECOMPANY=boolean
+ISSUER_TYPE=boolean
+IS_SAMOOSIG=boolean
+KOD_RAJON=AnsiString
+KOD_RZOK=AnsiString
+LNAME=AnsiString
+LNCH=AnsiString
+NAME=AnsiString
+NAS_MQSTO=AnsiString
+NEBL_USL=double
+NOMER_LZ=AnsiString
+NOM_NAP=AnsiString
+NZOK_NOMER=AnsiString
+OBLAST=AnsiString
+OBSHTINA=AnsiString
+SELF_INSURED_DECLARATION=boolean
+SMETKA=AnsiString
+SNAME=AnsiString
+UPRAVITEL=AnsiString
+VIDFIRMA=AnsiString
+VID_IDENT=AnsiString
+VID_PRAKTIKA=AnsiString
+}

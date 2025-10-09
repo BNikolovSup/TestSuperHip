@@ -66,6 +66,15 @@
         <Projects Include="WordBreak\WordBreak\WordBreak.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="C:\Users\Administrator1\Downloads\WebView4Delphi-main\demos\Delphi_VCL\MiniBrowser\MiniBrowser.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ImportNzis\ImportNzis.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\NzisMessages\NzisMessagesDll.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -263,14 +272,41 @@
     <Target Name="WordBreak:Make">
         <MSBuild Projects="WordBreak\WordBreak\WordBreak.dproj" Targets="Make"/>
     </Target>
+    <Target Name="MiniBrowser">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\WebView4Delphi-main\demos\Delphi_VCL\MiniBrowser\MiniBrowser.dproj"/>
+    </Target>
+    <Target Name="MiniBrowser:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\WebView4Delphi-main\demos\Delphi_VCL\MiniBrowser\MiniBrowser.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="MiniBrowser:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Downloads\WebView4Delphi-main\demos\Delphi_VCL\MiniBrowser\MiniBrowser.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ImportNzis">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ImportNzis\ImportNzis.dproj"/>
+    </Target>
+    <Target Name="ImportNzis:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ImportNzis\ImportNzis.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ImportNzis:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ImportNzis\ImportNzis.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="NzisMessagesDll">
+        <MSBuild Projects="..\NzisMessages\NzisMessagesDll.dproj"/>
+    </Target>
+    <Target Name="NzisMessagesDll:Clean">
+        <MSBuild Projects="..\NzisMessages\NzisMessagesDll.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="NzisMessagesDll:Make">
+        <MSBuild Projects="..\NzisMessages\NzisMessagesDll.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

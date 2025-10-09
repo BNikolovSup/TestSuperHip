@@ -63,7 +63,9 @@ CL022_Key
     procedure InsertCL022;
     procedure UpdateCL022;
     procedure SaveCL022(var dataPosition: Cardinal);
-	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+    procedure FillPropCl022(propindex: TPropertyIndex; stream: TStream);
+    procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
+	  function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
   end;
 
 
@@ -133,6 +135,62 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TCL022Item.FillPropCl022(propindex: TPropertyIndex; stream: TStream);
+var
+  lenStr: Word;
+begin
+  case propindex of
+    CL022_Key:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.Key, lenstr);
+      stream.Read(Self.PRecord.Key[1], lenStr);
+    end;
+    CL022_Description:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.Description, lenstr);
+      stream.Read(Self.PRecord.Description[1], lenStr);
+    end;
+    CL022_DescriptionEn:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.DescriptionEn, lenstr);
+      stream.Read(Self.PRecord.DescriptionEn[1], lenStr);
+    end;
+    CL022_achi_code:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.achi_code, lenstr);
+      stream.Read(Self.PRecord.achi_code[1], lenStr);
+    end;
+    CL022_nhif_package:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.nhif_package, lenstr);
+      stream.Read(Self.PRecord.nhif_package[1], lenStr);
+    end;
+    CL022_achi_chapter:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.achi_chapter, lenstr);
+      stream.Read(Self.PRecord.achi_chapter[1], lenStr);
+    end;
+    CL022_nhif_code:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.nhif_code, lenstr);
+      stream.Read(Self.PRecord.nhif_code[1], lenStr);
+    end;
+    CL022_achi_block:
+    begin
+      stream.Read(lenStr, 2);
+      setlength(Self.PRecord.achi_block, lenstr);
+      stream.Read(Self.PRecord.achi_block[1], lenStr);
+    end;
+  end;
 end;
 
 procedure TCL022Item.InsertCL022;
@@ -223,6 +281,40 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TCL022Item.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
+  vCmd: PVirtualNode; CmdItem: TCmdItem);
+var
+  delta: integer;
+  flds8: TLogicalData08;
+  propindexcl022: TCL022Item.TPropertyIndex;
+  vCmdProp: PVirtualNode;
+  dataCmdProp: PAspRec;
+begin
+  delta := sizeof(TLogicalData128) - sizeof(TLogicalData08);
+  stream.Read(flds8, sizeof(TLogicalData08));
+  stream.Position := stream.Position + delta;
+  New(self.PRecord);
+
+  self.PRecord.setProp := TCL022Item.TSetProp(flds8);// тука се записва какво има като полета
+
+
+  for propindexcl022 := Low(TCL022Item.TPropertyIndex) to High(TCL022Item.TPropertyIndex) do
+  begin
+    if not (propindexcl022 in self.PRecord.setProp) then
+      continue;
+    if vtrTemp <> nil then
+    begin
+      vCmdProp := vtrTemp.AddChild(vCmd, nil);
+      dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
+      dataCmdProp.index := word(propindexcl022);
+      dataCmdProp.vid := vvCl022;
+    end;
+    self.FillPropCl022(propindexcl022, stream);
+  end;
+
+  CmdItem.AdbItem := self;
 end;
 
 procedure TCL022Item.SaveCL022(var dataPosition: Cardinal);

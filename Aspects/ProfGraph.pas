@@ -1,4 +1,4 @@
-unit ProfGraph;   //d:\ няма 01.01.2020 current   c5
+unit ProfGraph;   //d:\ няма 01.01.2020 current   vtrGraph.AddChild(nil
 
 interface
 uses
@@ -69,7 +69,9 @@ type
     procedure GeneratePeriodOld(Apat: TObject);
     function RuleCl132_PR001(cl132, pr001: TObject): Boolean;
 
+    procedure LoadVtrGraph1(Apat: TObject; patIndex: Integer);
     procedure LoadVtrGraph(Apat: TObject; patIndex: Integer);
+    procedure LoadVtrGraphOutVtr(Apat: TObject; patIndex: Integer);
     property CurrDate: TDate read FCurrDate write FCurrDate;
     property SexMale: Boolean read FSexMale write FSexMale;
     property VisibleMinali: Boolean read FVisibleMinali write FVisibleMinali;
@@ -79,7 +81,7 @@ type
 implementation
 uses
   RealObj.RealHipp,
-  SuperHipp,
+  //SuperHipp,
   ADB_DataUnit;
 
 { TProfGraph }
@@ -485,6 +487,7 @@ begin
   Stopwatch := TStopwatch.StartNew;
 
   pat := TRealPatientNewItem(Apat);
+  //gr := TGraphPeriod132.Create;
   startMin := 0;
   currentMin := 0;
   startMax := 0;
@@ -1350,6 +1353,620 @@ begin
   //vtrGraph.FocusedNode := vtrGraph.RootNode.FirstChild;
   //vtrGraph.Selected[vtrGraph.RootNode.FirstChild] := True;
   vtrGraph.EndUpdate;
+end;
+
+procedure TProfGraph.LoadVtrGraph1(Apat: TObject; patIndex: Integer);
+var
+  i, j, k, m: Integer;
+  gr: TGraphPeriod132;
+  examAnal: TRealExamAnalysisItem;
+  vPat, vMinali, vNast, vBudeshti, vCl132, vPr001, vCL134, vCL088, vRun: PVirtualNode;
+  data, dataNast: PAspRec;
+  cl134: TCL134Item;
+  Cl132: TRealCl132Item;
+  pr001: TRealPR001Item;
+  Cl088: TRealCl088Item;
+  test, note, Field_cl133: string;
+  pat: TRealPatientNewItem;
+  Rule88, ACL088_key, Cl132Key: string;
+  AEndDate, datTemp: TDate;
+  adbDM: TADBDataModule;
+
+  prStartDate: TDate;
+  IsPregForPerform: boolean;
+
+  dataExamAnal: PAspRec;
+  NodeExamAnal: PVirtualNode;
+  cl22Pr1, cl22ExamAnal: string;
+  PatNodes: TPatNodes;
+begin
+
+  adbDM := TADBDataModule(Adb_DM);
+
+ // vtrGraph.BeginUpdate;
+  IsPregForPerform := False;
+  pat := TRealPatientNewItem(Apat);
+  PatNodes := adbDM.GetPatNodes(pat.FNode);
+  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
+ // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
+  vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
+  data := vtrGraph.GetNodeData(vPat);
+  data.DataPos := pat.DataPos;
+  data.index := patIndex;
+  data.vid := vvPatient;
+  vNast := vtrGraph.AddChild(vPat, nil);
+
+  dataNast := vtrGraph.GetNodeData(vNast);
+  dataNast.index := -2;
+  dataNast.DataPos := MaxInt;
+
+  if FVisibleMinali then
+  begin
+    vMinali := vtrGraph.AddChild(vPat, nil);
+    data := vtrGraph.GetNodeData(vMinali);
+    data.index := -1;
+  end;
+
+  if FVisibleBudeshti then
+  begin
+    vBudeshti := vtrGraph.AddChild(vPat, nil);
+    data := vtrGraph.GetNodeData(vBudeshti);
+    data.index := -3;
+  end;
+  for i := 0 to pat.lstGraph.Count - 1 do
+  begin
+
+    gr := pat.lstGraph[i];
+
+    FreeAndNil(gr.Cl132.FExamAnal);
+    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
+      FreeAndNil(gr.Cl132.FListPr001[j].FExamAnal);
+    //Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key));
+    //SuperHipp.frmSuperHip.mmoTest.Lines.Add(DateToStr(gr.startDate) + '   ' + Cl132Key);
+    if UserDate > gr.endDate then
+    begin
+      if not FVisibleMinali then Continue;
+      vCl132 := vtrGraph.AddChild(vMinali, nil);
+      vCl132.CheckType := ctCheckBox;
+      vCl132.CheckState := csUncheckedNormal;
+      data := vtrGraph.GetNodeData(vCl132);
+      data.vid := vvCl132;
+      data.index := i;
+    end
+    else
+    if (UserDate < gr.endDate) and (UserDate < gr.startDate) then
+    begin
+      if not FVisibleBudeshti then Continue;
+      vCl132 := vtrGraph.AddChild(vBudeshti, nil);
+      data := vtrGraph.GetNodeData(vCl132);
+      vCl132.CheckType := ctCheckBox;
+      vCl132.CheckState := csUncheckedNormal;
+      data.vid := vvCl132;
+      data.index := i;
+    end
+    else
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
+    begin
+      vCl132 := vtrGraph.AddChild(vNast, nil);
+      data := vtrGraph.GetNodeData(vCl132);
+
+      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
+      case gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1]  of
+        '1': //ако е тип преглед
+        begin
+          gr.Cl132.FPregled := nil;
+          Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key));
+          for j := 0 to pat.FPregledi.Count - 1 do
+          begin
+            prStartDate := pat.FPregledi[j].getDateMap(BufADB, posDataADB, word(PregledNew_START_DATE));
+            if (prStartDate <= gr.endDate) and ((prStartDate >= gr.startDate)) then
+            begin
+
+              //if pat.FPregledi[j].Cl132 = gr.Cl132 then
+              begin
+                gr.Cl132.FPregled := pat.FPregledi[j];
+                pat.FPregledi[j].Cl132 := gr.Cl132;
+                pat.CurrentGraphIndex := i;
+                Break;
+              end;
+            end;
+          end;
+          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          begin
+            if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
+            begin
+              vCl132.CheckType := ctCheckBox;
+              vCl132.CheckState := csUncheckedNormal;
+              //pat.ListCurrentProf.Add(gr);
+            end
+            else
+            begin
+              if IsPregForPerform then
+              begin
+                vCl132.CheckType := ctButton;
+                vCl132.CheckState := csCheckedDisabled;
+                //pat.ListCurrentProf.Add(gr);
+                //IsPregForPerform := true;
+                //AEndDate := gr.endDate;
+              end
+              else
+              begin
+                vCl132.CheckType := ctCheckBox;
+                vCl132.CheckState := csCheckedDisabled;
+                IsPregForPerform := true;
+                AEndDate := gr.endDate;
+                if dataNast.DataPos = MaxInt then
+                begin
+                  dataNast.DataPos := i;
+                  pat.NoteProf := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Description));
+                  pat.CurrentGraphIndex := i;
+                  //pat.ListCurrentProf.Add(gr);
+                end
+                else
+                begin
+                  ShowMessage('Има повече от един преглед');
+                end;
+              end;
+            end;
+          end
+          else  // намерен е преглед
+          begin
+            vCl132.CheckType := ctNone;
+            //Include(vcl132.States, vsDisabled);
+            //vCl132.CheckState := csUncheckedNormal;
+            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
+          end;
+        end;
+        '2': // изследвания
+        begin
+          //pat.ListCurrentProf.Add(gr);
+          //vCl132.CheckType := ctCheckBox;
+          //Include(vCl132.States, vsExpanded);
+          for k := 0 to PatNodes.ExamAnals.Count - 1 do
+          begin
+            NodeExamAnal := PatNodes.ExamAnals[k];
+            dataExamAnal := pointer(PByte(NodeExamAnal) + lenNode);
+            examAnal := TRealExamAnalysisItem.Create(nil);
+            examAnal.DataPos := dataExamAnal.DataPos;
+            cl22ExamAnal := examAnal.getAnsiStringMap(bufADB, posDataADB, word(ExamAnalysis_NZIS_CODE_CL22));
+            datTemp := examAnal.getDateMap(bufADB, posDataADB, word(ExamAnalysis_DATA));
+            for m := 0 to gr.Cl132.FListPr001.Count - 1 do
+            begin
+              cl22Pr1 := gr.Cl132.FListPr001[m].getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Activity_ID));
+              if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
+              begin
+                if cl22Pr1 = cl22ExamAnal then
+                begin
+                  if examAnal.Cl132 = nil then
+                  begin
+                    //vCl132.CheckType := ctNone;
+                    gr.Cl132.FListPr001[m].FExamAnal := TRealExamAnalysisItem.Create(nil);
+                    TRealExamAnalysisItem(gr.Cl132.FListPr001[m].FExamAnal).DataPos := dataExamAnal.DataPos;
+                    gr.Cl132.FExamAnal := TRealExamAnalysisItem.Create(nil);
+                    TRealExamAnalysisItem(gr.Cl132.FExamAnal).DataPos := dataExamAnal.DataPos;
+                    //pat.FExamAnals.Add()
+                    //examAnal.Cl132 := gr.Cl132;
+                  end;
+                end;
+              end;
+            end;
+            FreeAndNil(examAnal);
+          end;
+        end;
+        '3': // имунизации
+        begin
+          //pat.ListCurrentProf.Add(gr);
+        end
+      else
+
+      end;
+
+
+     // begin
+//        if gr.endDate = AEndDate then // ако другата дейност е със същия краен срок като прегледа
+//        begin
+//          vCl132.CheckType := ctCheckBox;
+//          vCl132.CheckState := csCheckedDisabled;
+//        end
+//        else
+//        begin
+//          vCl132.CheckType := ctCheckBox;
+//          vCl132.CheckState := csUncheckedNormal;
+//        end;
+//      end;
+      data.vid := vvCl132;
+      data.index := i;
+    end;
+    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
+    begin
+      if vCl132 = nil then
+      begin
+        vCl132 := nil;
+      end;
+      vPr001 := vtrGraph.AddChild(vCl132, nil);
+      data := vtrGraph.GetNodeData(vPr001);
+      data.vid := vvPr001;
+      data.index := j;
+
+      pr001 := gr.Cl132.FListPr001[j];
+      if pr001.FExamAnal <> nil then
+      begin
+        vPr001.CheckType := ctNone;
+        Include(vPr001.States, vsDisabled);
+      end
+      else
+      begin
+        vPr001.CheckType := ctCheckBox;
+      end;
+
+      //pr001.
+
+      if pr001.CL142 <> nil  then
+      begin
+        Rule88 := pr001.getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Rules));
+
+        if pr001.CL142.FListCL088.Count > 1 then
+        begin
+          for k := 0 to pr001.CL142.FListCL088.Count - 1 do
+          begin
+            if Trim(Rule88) <> '' then
+            begin
+              Cl088 := pr001.CL142.FListCL088[k];
+              ACL088_key := cl088.getAnsiStringMap(BufNomen, PR001Coll.posData, word(CL088_key));
+              if Pos(ACL088_key, Rule88) = 0 then Continue;
+            end;
+
+            vCL088 := vtrGraph.AddChild(vPr001, nil);
+            data := vtrGraph.GetNodeData(vCL088);
+            data.vid := vvCL088;
+            data.index := k;
+          end;
+        end;
+      end;
+
+      for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do
+      begin
+        cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
+        note := cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_Note));
+        Field_cl133 := cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_CL133));
+        if (note <> '') and (Field_cl133[1] in ['5', '6']) then
+        begin
+          test := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key)) +
+                   cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_Note));
+        end
+        else
+        begin
+          test := '';
+        end;
+
+       // if (test = '')  or  (lstValid.Text.Contains(test)) then
+        begin
+          vCL134 := vtrGraph.AddChild(vPr001, nil);
+          data := vtrGraph.GetNodeData(vCL134);
+          data.vid := vvCl134;
+          data.index := k;
+        end;
+      end;
+    end;
+  end;
+  //vtrGraph.FullExpand();
+  vtrGraph.Expanded[vNast] := True;
+  vtrGraph.Expanded[vPat] := True;
+  vtrGraph.Sort(vNast, 0, sdAscending, false);
+  vtrGraph.Sort(vMinali, 0, sdAscending, false);
+  vtrGraph.Sort(vBudeshti, 0, sdAscending, false);
+  if vNast.FirstChild <> nil then
+  begin
+    vRun := vNast.FirstChild.NextSibling;
+    while vRun <> nil do
+    begin
+      vtrGraph.Expanded[vRun] := True;
+      vRun := vRun.NextSibling;
+    end;
+  end
+  else
+  begin
+    //ShowMessage('Няма никакъв план');
+  end;
+  PatNodes.Destroy;
+  pat.ListCurrentProf.Clear;
+  //vtrGraph.FocusedNode := vtrGraph.RootNode.FirstChild;
+  //vtrGraph.Selected[vtrGraph.RootNode.FirstChild] := True;
+  //vtrGraph.EndUpdate;
+end;
+
+procedure TProfGraph.LoadVtrGraphOutVtr(Apat: TObject; patIndex: Integer);
+var
+  i, j, k, m: Integer;
+  gr: TGraphPeriod132;
+  examAnal: TRealExamAnalysisItem;
+  vPat, vMinali, vNast, vBudeshti, vCl132, vPr001, vCL134, vCL088, vRun: PVirtualNode;
+  data, dataNast: PAspRec;
+  cl134: TCL134Item;
+  Cl132: TRealCl132Item;
+  pr001: TRealPR001Item;
+  Cl088: TRealCl088Item;
+  test, note, Field_cl133: string;
+  pat: TRealPatientNewItem;
+  Rule88, ACL088_key, Cl132Key: string;
+  AEndDate, datTemp: TDate;
+  adbDM: TADBDataModule;
+
+  prStartDate: TDate;
+  IsPregForPerform: boolean;
+
+  dataExamAnal: PAspRec;
+  NodeExamAnal: PVirtualNode;
+  cl22Pr1, cl22ExamAnal: string;
+  PatNodes: TPatNodes;
+  dataNast_DataPos: Cardinal;
+begin
+  adbDM := TADBDataModule(Adb_DM);
+
+
+  //vtrGraph.BeginUpdate;
+  IsPregForPerform := False;
+  pat := TRealPatientNewItem(Apat);
+  PatNodes := adbDM.GetPatNodes(pat.FNode);
+  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
+ // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
+  //vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
+  //data := vtrGraph.GetNodeData(vPat);
+  //data.DataPos := pat.DataPos;
+  //data.index := patIndex;
+  //data.vid := vvPatient;
+
+  //vNast := vtrGraph.AddChild(vPat, nil);
+
+  //dataNast := vtrGraph.GetNodeData(vNast);
+  //dataNast.index := -2;
+  dataNast_DataPos := MaxInt;
+
+  //if FVisibleMinali then
+//  begin
+//    vMinali := vtrGraph.AddChild(vPat, nil);
+//    data := vtrGraph.GetNodeData(vMinali);
+//    data.index := -1;
+//  end;
+//
+//  if FVisibleBudeshti then
+//  begin
+//    vBudeshti := vtrGraph.AddChild(vPat, nil);
+//    data := vtrGraph.GetNodeData(vBudeshti);
+//    data.index := -3;
+//  end;
+  pat.ListCurrentProf.Clear;
+  for i := 0 to pat.lstGraph.Count - 1 do
+  begin
+
+    gr := pat.lstGraph[i];
+    FreeAndNil(gr.Cl132.FExamAnal);
+    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
+      FreeAndNil(gr.Cl132.FListPr001[j].FExamAnal);
+    if UserDate > gr.endDate then
+    begin
+      if not FVisibleMinali then Continue;
+      //vCl132 := vtrGraph.AddChild(vMinali, nil);
+//      vCl132.CheckType := ctCheckBox;
+//      vCl132.CheckState := csUncheckedNormal;
+//      data := vtrGraph.GetNodeData(vCl132);
+//      data.vid := vvCl132;
+//      data.index := i;
+    end
+    else
+    if (UserDate < gr.endDate) and (UserDate < gr.startDate) then
+    begin
+      if not FVisibleBudeshti then Continue;
+      //vCl132 := vtrGraph.AddChild(vBudeshti, nil);
+//      data := vtrGraph.GetNodeData(vCl132);
+//      vCl132.CheckType := ctCheckBox;
+//      vCl132.CheckState := csUncheckedNormal;
+//      data.vid := vvCl132;
+//      data.index := i;
+    end
+    else
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
+    begin
+      //vCl132 := vtrGraph.AddChild(vNast, nil);
+      //data := vtrGraph.GetNodeData(vCl132);
+
+      case gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1]  of
+        '1': //ако е тип преглед
+        begin
+          gr.Cl132.FPregled := nil;
+          Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key));
+          for j := 0 to pat.FPregledi.Count - 1 do
+          begin
+            prStartDate := pat.FPregledi[j].getDateMap(BufADB, posDataADB, word(PregledNew_START_DATE));
+            if (prStartDate <= gr.endDate) and ((prStartDate >= gr.startDate)) then
+            begin
+
+              //if pat.FPregledi[j].Cl132 = gr.Cl132 then
+              begin
+                gr.Cl132.FPregled := pat.FPregledi[j];
+                pat.FPregledi[j].Cl132 := gr.Cl132;
+                pat.CurrentGraphIndex := i;
+                Break;
+              end;
+            end;
+          end;
+          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          begin
+            if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
+            begin
+              //vCl132.CheckType := ctCheckBox;
+//              vCl132.CheckState := csUncheckedNormal;
+              pat.ListCurrentProf.Add(gr);
+            end
+            else
+            begin
+              if IsPregForPerform then
+              begin
+                //vCl132.CheckType := ctButton;
+//                vCl132.CheckState := csCheckedDisabled;
+                pat.ListCurrentProf.Add(gr);
+              end
+              else
+              begin
+                //vCl132.CheckType := ctCheckBox;
+//                vCl132.CheckState := csCheckedDisabled;
+                IsPregForPerform := true;
+                AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+                if dataNast_DataPos = MaxInt then
+                begin
+                  dataNast_DataPos := i;
+                  pat.NoteProf := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Description));
+                  pat.CurrentGraphIndex := i;
+                  pat.ListCurrentProf.Add(gr);
+                end
+                else
+                begin
+                  ShowMessage('Има повече от един преглед');
+                end;
+              end;
+            end;
+          end
+          else  // намерен е преглед
+          begin
+            //vCl132.CheckType := ctNone;
+            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
+          end;
+        end;
+        '2': // изследвания
+        begin
+          pat.ListCurrentProf.Add(gr);
+          for k := 0 to PatNodes.ExamAnals.Count - 1 do
+          begin
+            NodeExamAnal := PatNodes.ExamAnals[k];
+            dataExamAnal := pointer(PByte(NodeExamAnal) + lenNode);
+            examAnal := TRealExamAnalysisItem.Create(nil);
+            examAnal.DataPos := dataExamAnal.DataPos;
+            cl22ExamAnal := examAnal.getAnsiStringMap(bufADB, posDataADB, word(ExamAnalysis_NZIS_CODE_CL22));
+            datTemp := examAnal.getDateMap(bufADB, posDataADB, word(ExamAnalysis_DATA));
+            for m := 0 to gr.Cl132.FListPr001.Count - 1 do
+            begin
+              cl22Pr1 := gr.Cl132.FListPr001[m].getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Activity_ID));
+              if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
+              begin
+                if cl22Pr1 = cl22ExamAnal then
+                begin
+                  if examAnal.Cl132 = nil then
+                  begin
+                    //vCl132.CheckType := ctNone;
+                    gr.Cl132.FListPr001[m].FExamAnal := TRealExamAnalysisItem.Create(nil);
+                    TRealExamAnalysisItem(gr.Cl132.FListPr001[m].FExamAnal).DataPos := dataExamAnal.DataPos;
+                    gr.Cl132.FExamAnal := TRealExamAnalysisItem.Create(nil);
+                    TRealExamAnalysisItem(gr.Cl132.FExamAnal).DataPos := dataExamAnal.DataPos;
+                    //pat.FExamAnals.Add()
+                    //examAnal.Cl132 := gr.Cl132;
+                  end;
+                end;
+              end;
+            end;
+          end;
+        end;
+        '3': // имунизации
+        begin
+          pat.ListCurrentProf.Add(gr);
+        end
+      else
+
+      end;
+
+
+
+      //data.vid := vvCl132;
+      //data.index := i;
+    end;
+    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
+    begin
+
+      //vPr001 := vtrGraph.AddChild(vCl132, nil);
+//      data := vtrGraph.GetNodeData(vPr001);
+//      data.vid := vvPr001;
+//      data.index := j;
+
+      pr001 := gr.Cl132.FListPr001[j];
+      //if pr001.FExamAnal <> nil then
+//      begin
+//        vPr001.CheckType := ctNone;
+//        Include(vPr001.States, vsDisabled);
+//      end
+//      else
+//      begin
+//        vPr001.CheckType := ctCheckBox;
+//      end;
+
+      //pr001.
+
+      if pr001.CL142 <> nil  then
+      begin
+        Rule88 := pr001.getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Rules));
+
+        if pr001.CL142.FListCL088.Count > 1 then
+        begin
+          for k := 0 to pr001.CL142.FListCL088.Count - 1 do
+          begin
+            if Trim(Rule88) <> '' then
+            begin
+              Cl088 := pr001.CL142.FListCL088[k];
+              ACL088_key := cl088.getAnsiStringMap(BufNomen, PR001Coll.posData, word(CL088_key));
+              if Pos(ACL088_key, Rule88) = 0 then Continue;
+            end;
+
+            //vCL088 := vtrGraph.AddChild(vPr001, nil);
+//            data := vtrGraph.GetNodeData(vCL088);
+//            data.vid := vvCL088;
+//            data.index := k;
+          end;
+        end;
+      end;
+
+      for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do
+      begin
+        cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
+        note := cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_Note));
+        Field_cl133 := cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_CL133));
+        if (note <> '') and (Field_cl133[1] in ['5', '6']) then
+        begin
+          test := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key)) +
+                   cl134.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL134_Note));
+        end
+        else
+        begin
+          test := '';
+        end;
+
+        begin
+          //vCL134 := vtrGraph.AddChild(vPr001, nil);
+//          data := vtrGraph.GetNodeData(vCL134);
+//          data.vid := vvCl134;
+//          data.index := k;
+        end;
+      end;
+    end;
+  end;
+  ////vtrGraph.FullExpand();
+//  vtrGraph.Expanded[vNast] := True;
+//  vtrGraph.Expanded[vPat] := True;
+//  vtrGraph.Sort(vNast, 0, sdAscending, false);
+//  vtrGraph.Sort(vMinali, 0, sdAscending, false);
+//  vtrGraph.Sort(vBudeshti, 0, sdAscending, false);
+  //if vNast.FirstChild <> nil then
+//  begin
+//    vRun := vNast.FirstChild.NextSibling;
+//    while vRun <> nil do
+//    begin
+//      vtrGraph.Expanded[vRun] := True;
+//      vRun := vRun.NextSibling;
+//    end;
+//  end
+//  else
+//  begin
+//    ShowMessage('Няма никакъв план');
+//  end;
+
+  //vtrGraph.EndUpdate;
 end;
 
 function TProfGraph.RuleCl132_PR001(cl132, pr001: TObject): boolean;

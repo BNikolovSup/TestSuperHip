@@ -1,4 +1,4 @@
-unit ThreadLoadDB;    //cl142  cmd
+unit ThreadLoadDB;    //cl142  cmd  †
 
 interface
 uses
@@ -9,6 +9,7 @@ uses
   Aspects.Types, Table.PatientNew, Table.Doctor, Table.Mkb, table.mdn,
   Table.PregledNew, Table.Unfav, Table.EventsManyTimes, Table.Practica, Table.AnalsNew,
   Table.ExamImmunization, Table.Procedures,Table.CL142, Table.KARTA_PROFILAKTIKA2017,
+  Table.INC_MDN, Table.INC_NAPR,
   RealObj.RealHipp, RealObj.NzisNomen, DbHelper, Aspects.Collections
   //DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr
 
@@ -55,9 +56,15 @@ TLoadDBThread = class(TThread)
 
     
     procedure AddMedNapr;
+    procedure AddMedNapr3A;
+    procedure AddMedNaprHosp;
+    procedure AddMedNaprLkk;
     procedure AddMkb;
     procedure AddProcedures;
     procedure AddProfCard;
+
+    procedure AddIncMdn;
+    procedure AddIncMN;
 
     procedure RemontCl142;
     procedure FillCl142InProcedures;
@@ -90,6 +97,11 @@ TLoadDBThread = class(TThread)
     Cl142Coll: TRealCL142Coll;
     KARTA_PROFILAKTIKA2017Coll: TRealKARTA_PROFILAKTIKA2017Coll;
     MedNaprColl: TRealBLANKA_MED_NAPRColl;
+    MedNapr3AColl: TRealBLANKA_MED_NAPR_3AColl;
+    MedNaprHospColl: TRealHOSPITALIZATIONColl;
+    MedNaprLkkColl: TRealEXAM_LKKColl;
+    IncMNColl: TRealINC_NAPRColl;
+    IncMdnColl: TRealINC_MDNColl;
     // дървета
     LinkAnals: TMappedFile;
 
@@ -157,7 +169,144 @@ begin
   MedNaprColl.CntInADB := ibsqMedNapr.RecordCount;
 
   if Assigned(FOnProgres) then
-    FOnProgres(Self, Integer(MedNaprColl), ibsqMedNapr.RecordCount);
+    FOnProgres(Self, Integer(BLANKA_MED_NAPR), ibsqMedNapr.RecordCount);
+  Sleep(1);
+end;
+
+procedure TLoadDBThread.AddMedNapr3A;
+var
+  p: PInt;
+  TempItem: TRealBLANKA_MED_NAPR_3AItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  ibsqMedNapr3A: TIBSQL;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  ibsqMedNapr3A := Fdm.ibsqlMedNapr3A;
+  ibsqMedNapr3A.ExecQuery;
+  while not ibsqMedNapr3A.Eof do
+  begin
+    TempItem := TRealBLANKA_MED_NAPR_3AItem(MedNapr3AColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertMedNapr3AField(ibsqMedNapr3A, TempItem); // otdeleno
+    if (ibsqMedNapr3A.RecordCount mod 1000) = 0 then
+    begin
+      MedNapr3AColl.CntInADB := ibsqMedNapr3A.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(BLANKA_MED_NAPR_3A), ibsqMedNapr3A.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertBLANKA_MED_NAPR_3A;
+
+    MedNapr3AColl.streamComm.Len := MedNapr3AColl.streamComm.Size;
+    CmdFile.CopyFrom(MedNapr3AColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqMedNapr3A.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  MedNapr3AColl.CntInADB := ibsqMedNapr3A.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(BLANKA_MED_NAPR_3A), ibsqMedNapr3A.RecordCount);
+  Sleep(1);
+end;
+
+procedure TLoadDBThread.AddMedNaprHosp;
+var
+  p: PInt;
+  TempItem: TRealHOSPITALIZATIONItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  ibsqMedNaprHosp: TIBSQL;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  ibsqMedNaprHosp := Fdm.ibsqlMedNaprHosp;
+  ibsqMedNaprHosp.ExecQuery;
+  while not ibsqMedNaprHosp.Eof do
+  begin
+    TempItem := TRealHOSPITALIZATIONItem(MedNaprHospColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertMedNaprHospField(ibsqMedNaprHosp, TempItem); // otdeleno
+    if (ibsqMedNaprHosp.RecordCount mod 1000) = 0 then
+    begin
+      MedNaprHospColl.CntInADB := ibsqMedNaprHosp.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(HOSPITALIZATION), ibsqMedNaprHosp.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertHOSPITALIZATION;
+
+    MedNaprHospColl.streamComm.Len := MedNaprHospColl.streamComm.Size;
+    CmdFile.CopyFrom(MedNaprHospColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqMedNaprHosp.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  MedNaprHospColl.CntInADB := ibsqMedNaprHosp.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(HOSPITALIZATION), ibsqMedNaprHosp.RecordCount);
+  Sleep(1);
+end;
+
+procedure TLoadDBThread.AddMedNaprLkk;
+var
+  TempItem: TRealEXAM_LKKItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  ibsqMedNaprLkk: TIBSQL;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  ibsqMedNaprLkk := Fdm.ibsqlMedNaprLKK;
+  ibsqMedNaprLkk.ExecQuery;
+  while not ibsqMedNaprLkk.Eof do
+  begin
+    TempItem := TRealEXAM_LKKItem(MedNaprLkkColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertMedNaprLkkField(ibsqMedNaprLkk, TempItem); // otdeleno
+    if (ibsqMedNaprLkk.RecordCount mod 1000) = 0 then
+    begin
+      MedNaprLkkColl.CntInADB := ibsqMedNaprLkk.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(EXAM_LKK), ibsqMedNaprLkk.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertEXAM_LKK;
+
+    MedNaprLkkColl.streamComm.Len := MedNaprLkkColl.streamComm.Size;
+    CmdFile.CopyFrom(MedNaprLkkColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqMedNaprLkk.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  MedNaprLkkColl.CntInADB := ibsqMedNaprLkk.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(EXAM_LKK), ibsqMedNaprLkk.RecordCount);
   Sleep(1);
 end;
 
@@ -307,6 +456,101 @@ begin
   Sleep(1);
 end;
 
+procedure TLoadDBThread.AddIncMdn;
+var
+  p: PInt;
+  TempItem: TRealINC_MDNItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  ibsqIncMdn: TIBSQL;
+begin
+  Exit;
+  if Fdm.IsGP then  Exit;
+  Stopwatch := TStopwatch.StartNew;
+  ibsqIncMdn := Fdm.ibsqlIncMDN;
+  ibsqIncMdn.ExecQuery;
+  while not ibsqIncMdn.Eof do
+  begin
+    TempItem := TRealINC_MDNItem(IncMdnColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertIncMdnField(ibsqIncMdn, TempItem); // otdeleno
+    if (ibsqIncMdn.RecordCount mod 1000) = 0 then
+    begin
+      IncMdnColl.CntInADB := ibsqIncMdn.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(INC_MDN), ibsqIncMdn.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertINC_MDN;
+
+    IncMdnColl.streamComm.Len := IncMdnColl.streamComm.Size;
+    CmdFile.CopyFrom(IncMdnColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqIncMdn.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  IncMdnColl.CntInADB := ibsqIncMdn.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(INC_MDN), ibsqIncMdn.RecordCount);
+  Sleep(1);
+end;
+
+procedure TLoadDBThread.AddIncMN;
+var
+  TempItem: TRealINC_NAPRItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  ibsqIncNapr: TIBSQL;
+begin
+  if  Fdm.IsGP then  Exit;
+
+  Stopwatch := TStopwatch.StartNew;
+  ibsqIncNapr := Fdm.ibsqlIncMN;
+  ibsqIncNapr.ExecQuery;
+  while not ibsqIncNapr.Eof do
+  begin
+    TempItem := TRealINC_NAPRItem(IncMNColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertIncMNField(ibsqIncNapr, TempItem); // otdeleno
+    if (ibsqIncNapr.RecordCount mod 1000) = 0 then
+    begin
+      IncMNColl.CntInADB := ibsqIncNapr.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(INC_NAPR), ibsqIncNapr.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertINC_NAPR;
+
+    IncMNColl.streamComm.Len := IncMNColl.streamComm.Size;
+    CmdFile.CopyFrom(IncMNColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqIncNapr.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  IncMNColl.CntInADB := ibsqIncNapr.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(INC_NAPR), ibsqIncNapr.RecordCount);
+  Sleep(1);
+end;
+
 procedure TLoadDBThread.AddMDN;
 var
   p: PInt;
@@ -358,23 +602,23 @@ begin
     TempItem.PRecord.Logical := [];
 
     if ibsqlMDN.Fields[6].AsString = 'Y' then
-      Include(TempItem.PRecord.Logical, IS_LKK);
+      Include(TempItem.PRecord.Logical, TLogicalMDN.IS_LKK);
     case ibsqlMDN.Fields[12].Asinteger  of
-      0: Include(TempItem.PRecord.Logical, NZIS_STATUS_None);
-      3: Include(TempItem.PRecord.Logical, NZIS_STATUS_Sended);
-      5: Include(TempItem.PRecord.Logical, NZIS_STATUS_Cancel);
+      0: Include(TempItem.PRecord.Logical, TLogicalMDN.NZIS_STATUS_None);
+      3: Include(TempItem.PRecord.Logical, TLogicalMDN.NZIS_STATUS_Sended);
+      5: Include(TempItem.PRecord.Logical, TLogicalMDN.NZIS_STATUS_Cancel);
     end;
 
 
     case ibsqlMDN.Fields[7].Asinteger  of
-      1: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Ostro);
-      2: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Hron);
-      3: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Disp);
-      4: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Prof);
-      5: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Iskane_Telk);
-      6: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Choice_Mother);
-      7: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Choice_Child);
-      9: Include(TempItem.PRecord.Logical, MED_DIAG_NAPR_Eksp);
+      1: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Ostro);
+      2: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Hron);
+      3: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Disp);
+      4: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Prof);
+      5: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Iskane_Telk);
+      6: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Choice_Mother);
+      7: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Choice_Child);
+      9: Include(TempItem.PRecord.Logical, TLogicalMDN.MED_DIAG_NAPR_Eksp);
     end;
     if TempItem.PRecord.Logical <> [] then
     begin
@@ -403,6 +647,8 @@ begin
   Elapsed := Stopwatch.Elapsed;
 
   MDNColl.CntInADB := ibsqlMDN.RecordCount;
+
+
   if Assigned(FOnProgres) then
     FOnProgres(Self, Integer(BLANKA_MDN), ibsqlMDN.RecordCount);
   Sleep(1);
@@ -1150,25 +1396,31 @@ begin
     inherited;
     //while  not Terminated do
     begin
-
+      FDBHelper.Fdm := Fdm;
       GetCountFromDB;
       PregledNewColl.FCollProceduresPreg := ProcCollPreg;
 
       AddPractica;
       AddDoctor;
       AddMkb;
-      //RemontCl142;
-      //AddProcedures;
       AddProfCard;
       FillCl142InProcedures;
       AddPacient;
+      AddIncMN;
       AddPregled; //  след добавянето на прегледите имам в тях списъци на процедурите им. В тях е и КодОпис-а
+      AddIncMdn;
+
       FillProceduresInPregledProcs;
-      DiagColl.FillMkb(MkbColl);
+
       AddMdn;
       AddEBL;
       AddExamAnal;
       AddExamImmun;
+      AddMedNapr;
+      AddMedNapr3A;
+      AddMedNaprHosp;
+      AddMedNaprLkk;
+      DiagColl.FillMkb(MkbColl);
 
      // if not Fdm.IsGP then
 //        AddUnFav;
@@ -1177,7 +1429,7 @@ begin
 
       SetUserHistory;
       GetNewID;
-      AddMedNapr;
+
 
     end;
   finally
