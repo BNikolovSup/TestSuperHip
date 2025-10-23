@@ -6,6 +6,7 @@ uses
 
 
   function ASPDateToStr(dat: TDate): string;
+  function ASPStrToDate(str: string): TDate;
 
 implementation
   function ASPDateToStr(dat: TDate): string;
@@ -18,5 +19,16 @@ implementation
     begin
       Result := DateToStr(dat);
     end;
+  end;
+
+  function ASPStrToDate(str: string): TDate;
+  var
+    fs: TFormatSettings;
+  begin
+    fs := TFormatSettings.Create();
+    fs.DateSeparator := '-';
+    fs.ShortDateFormat := 'YYYY-MM-DD';
+
+    result := StrToDate(str, fs);
   end;
 end.

@@ -21,24 +21,24 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 TLogicalEventsManyTimes = (
-    HEALTH_INSURANCE_NAME,
-    HEALTH_INSURANCE_NUMBER,
+    HEALTH_INSURANCE_NAME,  // име на осиг институция
+    HEALTH_INSURANCE_NUMBER, // номер на осиг институция
     DATA_HEALTH_INSURANCE,
     DATE_HEALTH_INSURANCE_CHECK,
     TIME_HEALTH_INSURANCE_CHECK,  //5
     DATE_OTPISVANE,
     DATE_ZAPISVANE,
-    DATEFROM,
-    DATEISSUE,
-    DATETO,  //10
-    DATETO_TEXT,
-    GRAJD,
+    DATEFROM,// от дата на валидност на документа
+    DATEISSUE, // дата на издаване на документа
+    DATETO,  //10 дата до дата на валидност на документа
+    DATETO_TEXT,  // може да е описана с текст "до края на света"
+    GRAJD, // гражданство
     IS_NEBL_USL,
     OSIGNO,
     OSIGUREN, //15
     PASS, //
     PREVIOUS_DOCTOR_ID,
-    TYPE_CERTIFICATE,
+    TYPE_CERTIFICATE,//документ
     FUND_ID,
     PAT_KIND,// 20
     RZOK,

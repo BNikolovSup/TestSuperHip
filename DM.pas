@@ -52,6 +52,7 @@ type
     ibsqlMedNaprHosp: TIBSQL;
     ibsqlMedNaprLKK: TIBSQL;
     ibsqlIncMN: TIBSQL;
+    ibsqlOtherDoctor: TIBSQL;
     procedure DataModuleDestroy(Sender: TObject);
     procedure ibsqlCommandSQLChanging(Sender: TObject);
     procedure DataModuleCreate(Sender: TObject);

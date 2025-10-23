@@ -17,6 +17,7 @@ interface
 
     Vcl.StdCtrls,
     Vcl.Graphics,
+    Vcl.ImgList,
 
 
 
@@ -29,12 +30,15 @@ interface
     ADB_DataUnit,
     WalkFunctions,
     WordBreakF,
+    CertThread,
 
     Table.PregledNew,
     Table.Mkb,
     Table.ExamAnalysis,
     Table.Diagnosis,
     Table.PatientNew,
+    Table.Doctor,
+
     Table.NZIS_PLANNED_TYPE,
     Table.CL132,
     Table.CL022,
@@ -56,6 +60,8 @@ type
     FFmxProfForm: TfrmProfFormFMX;
     FvtrNewAnal: TVirtualStringTreeAspect;
     FFilterText: string;
+    FCollDoctor: TRealDoctorColl;
+    FthrCert: TCertThread;
 
     function CompareStrings(const S1, S2: string): Integer;
 
@@ -72,11 +78,22 @@ type
     procedure InitVariableVtrMkb;
     procedure InitVariableVtrNzisHist;
     procedure InitVariableVtrOldMenu;
+    procedure InitVariableVtrDoctor;
+
+  public
+    //nodes
+    vRootDoctor: PVirtualNode;
+    vRootDoctorPrac: PVirtualNode;
+    vRootDoctorSender: PVirtualNode;
+    vRootDoctorConsult: PVirtualNode;
+    vRootDoctorColege: PVirtualNode;
+
 
   public
     ListBlanki: TStringList;
     constructor Create(AVtr: TVirtualStringTreeHipp;
           ACollMkb: TMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
+          ACollDoctor: TRealDoctorColl;
           AmmoTest: TMemo; AvNomenMKB: PVirtualNode; AFmxProfForm: TfrmProfFormFMX);
 
 
@@ -130,8 +147,24 @@ type
     //HistNzis
     procedure ChoiceNzisHist(sender: TObject);
 
-
-
+    // doctor
+    procedure ChoiceDoctor(sender: TObject);
+    procedure vtrChangeSelectDoctor(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vtrDoctorGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure vtrDoctorGetImageIndexEx(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+      var Ghosted: Boolean; var ImageIndex: TImageIndex;
+      var ImageList: TCustomImageList);
+    procedure vtrDoctorChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    procedure vtrTempInitNodeDoctor(Sender: TBaseVirtualTree; ParentNode,
+      Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+    procedure vtrTempInitChildrenDoctor(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      var ChildCount: Cardinal);
+    procedure vtrMeasureItemDoctor(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
+    procedure vtrDrawTextDoctor(Sender: TBaseVirtualTree; TargetCanvas: TCanvas;
+      Node: PVirtualNode; Column: TColumnIndex; const Text: string;
+      const CellRect: TRect; var DefaultDraw: Boolean);
 
 
 
@@ -153,11 +186,14 @@ type
     property CollMkb: TMkbColl read FCollMkb write FCollMkb;
     property Adb_DM: TADBDataModule read FAdb_DM write FAdb_DM;
     property CollDiag: TRealDiagnosisColl read FCollDiag write FCollDiag;
+    property CollDoctor: TRealDoctorColl read FCollDoctor write FCollDoctor;
+
     property mmoTest: TMemo read FmmoTest write FmmoTest;
     property vNomenMKB: PVirtualNode read FvNomenMKB write FvNomenMKB;
     property FmxProfForm: TfrmProfFormFMX read FFmxProfForm write SetFmxProfForm;
     property vtrNewAnal: TVirtualStringTreeAspect read FvtrNewAnal write FvtrNewAnal;
     property FilterText: string read FFilterText write FFilterText;
+    property thrCert: TCertThread read FthrCert write FthrCert;
   end;
 
 implementation
@@ -180,6 +216,60 @@ begin
   Elapsed := Stopwatch.Elapsed;
 
   mmotest.Lines.Add( 'CopyAnalTree ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TTempVtrHelper.ChoiceDoctor(sender: TObject);
+var
+  i: Integer;
+  data: PAspRec;
+  vDoctor: PVirtualNode;
+begin
+  Stopwatch := TStopwatch.StartNew;
+
+  FVtr.BeginUpdate;
+  FVtr.Tag := Word(vvDoctor);
+  FVtr.Clear;
+  InitVariableVtrDoctor;
+  vRootDoctor := FVtr.AddChild(nil, nil);
+  data := FVtr.GetNodeData(vRootDoctor);
+  data.vid := vvRootdoctor;
+  data.index := -1;
+  vRootDoctorPrac := FVtr.AddChild(vRootDoctor, nil);
+  data := FVtr.GetNodeData(vRootDoctorPrac);
+  data.vid := vvRootDoctorPrac;
+  data.index := -1;
+  vRootDoctorSender := FVtr.AddChild(vRootDoctor, nil);
+  data := FVtr.GetNodeData(vRootDoctorSender);
+  data.vid := vvRootDoctorSender;
+  data.index := -1;
+  vRootDoctorConsult := FVtr.AddChild(vRootDoctor, nil);
+  data := FVtr.GetNodeData(vRootDoctorConsult);
+  data.vid := vvRootDoctorConsult;
+  data.index := -1;
+  vRootDoctorColege := FVtr.AddChild(vRootDoctor, nil);
+  data := FVtr.GetNodeData(vRootDoctorColege);
+  data.vid := vvRootDoctorColege;
+  data.index := -1;
+
+  for i := 0 to CollDoctor.Count - 1 do
+  begin
+    vDoctor := FVtr.AddChild(vRootDoctorPrac, nil);
+    data := FVtr.GetNodeData(vDoctor);
+    data.vid := vvdoctor;
+    data.DataPos := CollDoctor.Items[i].DataPos;
+    data.index := i;
+  end;
+
+  FVtr.Expanded[vRootDoctor] := True;
+  FVtr.Expanded[vRootDoctorPrac] := True;
+
+  FVtr.UpdateVerticalScrollBar(true);
+  FVtr.EndUpdate;
+  //FVtr.FullExpand();
+
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'ChoiceDoctor ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
 procedure TTempVtrHelper.ChoiceMKB(sender: TObject);
@@ -425,12 +515,14 @@ end;
 
 constructor TTempVtrHelper.Create(AVtr: TVirtualStringTreeHipp;
   ACollMkb: TMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
+  ACollDoctor: TRealDoctorColl;
   AmmoTest: TMemo; AvNomenMKB: PVirtualNode; AFmxProfForm: TfrmProfFormFMX);
 begin
   Vtr := AVtr;
   FCollMkb := ACollMkb;
   FAdb_DM := AAdb_DM;
   FCollDiag := ACollDiag;
+  FCollDoctor := ACollDoctor;
   FmmoTest := AmmoTest;
   FvNomenMKB := AvNomenMKB;
   FFmxProfForm := AFmxProfForm;
@@ -558,6 +650,26 @@ begin
   FVtr.Header.AutoSizeIndex := 0;
   FVtr.Header.Columns.Items[0].Tag := Integer(vvAnal);
 
+end;
+
+procedure TTempVtrHelper.InitVariableVtrDoctor;
+begin
+  FVtr.OnChange := vtrChangeSelectDoctor;
+  FVtr.OnChecked := vtrDoctorChecked;
+  FVtr.OnMeasureItem := vtrMeasureItemDoctor;
+  FVtr.OnDrawText := vtrDrawTextDoctor;
+  FVtr.OnGetText := vtrDoctorGetText;
+  FVtr.OnInitNode := vtrTempInitNodeDoctor;
+  FVtr.OnInitChildren := vtrTempInitChildrenDoctor;
+  FVtr.OnGetImageIndexEx := vtrDoctorGetImageIndexEx;
+
+  FVtr.NodeDataSize := sizeof(TAspRec);
+  FVtr.DefaultNodeHeight := 33;
+  FVtr.Header.Columns.Items[0].Text := 'Лекари';
+  FVtr.Header.AutoSizeIndex := 1;
+  FVtr.Header.Columns.Items[0].Width := 183;
+  FVtr.Header.Columns.Items[0].Tag := Integer(vvDoctor);
+  FVtr.Header.AutoSizeIndex := 0;
 end;
 
 procedure TTempVtrHelper.InitVariableVtrMkb;
@@ -1284,6 +1396,12 @@ begin
 
 end;
 
+procedure TTempVtrHelper.vtrChangeSelectDoctor(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+begin
+
+end;
+
 procedure TTempVtrHelper.vtrChangeSelectMKB(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 begin
@@ -1307,7 +1425,114 @@ begin
   Fvtr.OnMeasureItem := vtrTempMeasureItem;
 end;
 
+procedure TTempVtrHelper.vtrDoctorChecked(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+begin
+
+end;
+
+procedure TTempVtrHelper.vtrDoctorGetImageIndexEx(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex;
+  var Ghosted: Boolean; var ImageIndex: TImageIndex;
+  var ImageList: TCustomImageList);
+var
+  i: integer;
+  data: PAspRec;
+begin
+  if Kind <> TVTImageKind.ikState then
+    Exit;
+  data := Sender.GetNodeData(node);
+  case Column of
+    0:
+    begin
+      case data.vid of
+        vvDoctor:
+        begin
+          ImageIndex := 12;
+        end;
+
+      end;
+    end;
+    1:
+    begin
+      case data.vid of
+        vvDoctor, vvPerformer, vvDeput:
+        begin
+          if thrCert = nil then  Exit;
+
+          for i := 0 to thrCert.LstPlugCardDoctor.Count - 1 do
+          begin
+            if Data.DataPos = thrCert.LstPlugCardDoctor[i] then
+            begin
+              ImageIndex := 102;
+              Break;
+            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+end;
+
+procedure TTempVtrHelper.vtrDoctorGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  data: PAspRec;
+begin
+  data := Sender.GetNodeData(node);
+  case Column of
+    0:
+    begin
+      if data.index = -1 then
+      begin
+        case data.vid of
+          vvRootdoctor: CellText := 'Лекари';
+          vvRootDoctorPrac: CellText := 'Лекари от практиката';
+          vvRootDoctorSender: CellText := 'Изпращащи лекари';
+          vvRootDoctorConsult: CellText := 'Консултиращи лекари';
+          vvRootDoctorColege: CellText := 'Колеги за заместване';
+        end;
+      end
+      else
+      begin
+        case data.vid of
+          vvDoctor:
+          begin
+            CellText := CollDoctor.Items[data.index].FullName;
+          end;
+
+
+
+        end;
+
+      end;
+    end;
+    1:
+    begin
+      case data.vid of
+        vvDoctor:
+        begin
+          CellText := CollDoctor.getAnsiStringMap(Data.DataPos, word(Doctor_UIN));
+        end;
+      else
+        begin
+          CellText := IntToStr(node.ChildCount);
+        end;
+      end;
+    end;
+  end;
+end;
+
 procedure TTempVtrHelper.vtrDrawTextAnal(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
+  const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
+begin
+
+end;
+
+procedure TTempVtrHelper.vtrDrawTextDoctor(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
   const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
 begin
@@ -1472,6 +1697,12 @@ begin
 end;
 
 procedure TTempVtrHelper.vtrMeasureItemAnal(Sender: TBaseVirtualTree;
+  TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
+begin
+
+end;
+
+procedure TTempVtrHelper.vtrMeasureItemDoctor(Sender: TBaseVirtualTree;
   TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
 begin
 
@@ -1755,6 +1986,12 @@ begin
   Stream.read(data^, sizeof(TAspRec));
 end;
 
+procedure TTempVtrHelper.vtrTempInitChildrenDoctor(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; var ChildCount: Cardinal);
+begin
+
+end;
+
 procedure TTempVtrHelper.vtrTempInitChildrenMKB(Sender: TBaseVirtualTree;
   Node: PVirtualNode; var ChildCount: Cardinal);
 var
@@ -1782,6 +2019,12 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TTempVtrHelper.vtrTempInitNodeDoctor(Sender: TBaseVirtualTree;
+  ParentNode, Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
+begin
+  Node.States := node.States + [vsMultiline];
 end;
 
 procedure TTempVtrHelper.vtrTempInitNodeMKB(Sender: TBaseVirtualTree; ParentNode,

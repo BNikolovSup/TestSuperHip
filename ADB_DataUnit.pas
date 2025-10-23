@@ -6,12 +6,12 @@ uses
   System.Rtti, system.DateUtils, Xml.XMLIntf, System.Math,
   System.Generics.Collections, Vcl.Dialogs, system.Diagnostics, System.TimeSpan,
   Aspects.Collections, Aspects.Types, VirtualStringTreeAspect, VirtualTrees,
-  Table.PregledNew, Table.PatientNew, Table.Doctor, Table.Diagnosis, Table.EventsManyTimes,
+  Table.PregledNew, Table.PatientNew, Table.Doctor, Table.Diagnosis, Table.Addres,
   Table.Practica, Table.CL132, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
   Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.CL139,
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
-  Table.Certificates, Table.Mkb, Table.AnalsNew,
-  ProfGraph, RealObj.NzisNomen
+  Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto,
+  ProfGraph, RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
   , SBxCertificateStorage;
 
@@ -61,7 +61,7 @@ uses
     docNode: PVirtualNode;
     diags: TListNodes;
     mkbs: TListNodes;
-    evnts: TListNodes;
+    //addrs: TListNodes;
     Planeds: TListNodes;
     Quests: TList<TQuests>;
     DiagReps: TList<TDiagRep>;
@@ -78,7 +78,7 @@ uses
   TPatNodes = class
     patNode: PVirtualNode;
     docNode: PVirtualNode;
-    evnts: TList<PVirtualNode>;
+    addresses: TList<PVirtualNode>;
     ExamAnals: TList<PVirtualNode>;
     diags: TList<PVirtualNode>;
     pregs: TList<PVirtualNode>;
@@ -156,6 +156,7 @@ uses
 
     AdbHip: TMappedFile;
     AdbLink: TMappedLinkFile;
+    NasMesto: TRealNasMestoAspects;
     cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
     strGuid: string;
@@ -163,6 +164,7 @@ uses
     ListPrimDocuments: TList<TBaseCollection>;
 
     procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer; DataPosMkb: cardinal);
+    procedure AddNewImportNzisPat(Pat: TRealPatientNewItem; treeLink: PVirtualNode);
 
     //XmlStream: TXmlStream;
     constructor Create();
@@ -287,6 +289,29 @@ begin
     AdbLink.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
   end;
   diag.Node := vDiag;
+end;
+
+procedure TADBDataModule.AddNewImportNzisPat(Pat: TRealPatientNewItem; treeLink: PVirtualNode);
+var
+  newPat: TRealPatientNewItem;
+  linkPos: Cardinal;
+begin
+  newPat := TRealPatientNewItem(CollPatient.add);
+  New(newPat.PRecord);
+  newPat.PRecord.setProp :=
+     [PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME, PatientNew_SNAME, PatientNew_LNAME, PatientNew_Logical];
+  newPat.PRecord.EGN := Pat.PRecord.EGN;
+  newPat.PRecord.BIRTH_DATE := Pat.PRecord.BIRTH_DATE;
+  newPat.PRecord.FNAME := Pat.PRecord.FNAME;
+  newPat.PRecord.SNAME := Pat.PRecord.SNAME;
+  newPat.PRecord.LNAME := Pat.PRecord.LNAME;
+  newPat.PRecord.Logical := Pat.PRecord.Logical;
+  newPat.InsertPatientNew;
+  Dispose(newPat.PRecord);
+  newPat.PRecord := nil;
+
+  AdbLink.AddNewNode(vvPatient, newPat.DataPos, AdbLink.FVTR.RootNode.FirstChild, amAddChildFirst, treeLink, linkPos);
+
 end;
 
 procedure TADBDataModule.AddTagToStream(XmlStream: TXmlStream; NameTag, ValueTag: string; amp: Boolean; Node: PVirtualNode);
@@ -1000,12 +1025,14 @@ var
   preg: TRealPregledNewItem;
   performer: TRealDoctorItem;
   pat: TRealPatientNewItem;
-  dataPreg: PAspRec;
+  dataPreg, dataAddrs: PAspRec;
+
 
   dataPat: PAspRec;
   buf: Pointer;
   posData: Cardinal;
   PregNodes: TPregledNodes;
+  PatNodes: TPatNodes;
 
   SenderId: string;
   LRN, dateLrn: string;
@@ -1023,6 +1050,7 @@ var
   qualification, NhifCodeSpec: string;
   Nationality: string;
   NodeSended: TNodesSendedToNzis;
+  AddresLinkPos: Integer;
 
   slotNom: Integer;
   i: Integer;
@@ -1036,6 +1064,8 @@ begin
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
   PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PatNodes := GetPatNodes(PregNodes.patNode);
+  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // ако има повече? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
   InitPerformer(XmlStream, PregNodes, performer );
 
@@ -1060,7 +1090,8 @@ begin
   AddTagToStream(XmlStream, 'nhis:openDate', Format('value="%s"',[OpenDateStr]), false);
   AddTagToStream(XmlStream, 'nhis:class', Format('value="%d"',[Integer(preg.clcClass)]));
   AddTagToStream(XmlStream, 'nhis:financingSource', Format('value="%d"',[Integer(preg.clcFinancingSource)]));
-  rhifAreaNumber := PregNodes.getRhifAreaNumber(buf, posData);
+  AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddrs.DataPos, word(Addres_LinkPos));
+  rhifAreaNumber := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
   AddTagToStream(XmlStream, 'nhis:rhifAreaNumber', Format('value="%s"',[rhifAreaNumber]));
   AddTagToStream(XmlStream, '/nhis:examination', '');
 
@@ -1147,7 +1178,7 @@ var
   pat: TRealPatientNewItem;
   dataPreg: PAspRec;
   dataPerf: PAspRec;
-  dataPat: PAspRec;
+  dataPat, dataAddrs: PAspRec;
   dataDiag: PAspRec;
 
   dataPlaned: PAspRec;
@@ -1162,6 +1193,7 @@ var
   buf: Pointer;
   posData: Cardinal;
   PregNodes: TPregledNodes;
+  patNodes: TPatNodes;
 
   SenderId: string;
   LRN: string;
@@ -1196,6 +1228,7 @@ var
   
   IsRes: Boolean;
   NodeSended: TNodesSendedToNzis;
+  AddresLinkPos: Integer;
 begin
   XmlStream.Clear;
   XmlStream.CurrentLine := 2; // първите два реда са от създаването
@@ -1206,6 +1239,8 @@ begin
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
   PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PatNodes := GetPatNodes(PregNodes.patNode);
+  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // ако има повече? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
   InitPerformer(XmlStream, PregNodes, performer );
 
@@ -1214,7 +1249,7 @@ begin
   pat.DataPos := dataPat.DataPos;
   nrn := Copy(CollPregled.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_NRN_LRN)), 1, 12);
 
-  logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posData, word(PatientNew_Logical)));
+  logPat := TlogicalPatientNewSet(pat.getLogical40Map(buf, posData, word(PatientNew_Logical)));
 
   SenderId := performer.getAnsiStringMap(buf, posData, word(Doctor_UIN));
   if correctionReason = '' then
@@ -1246,7 +1281,8 @@ begin
     AddTagToStream(XmlStream, 'nhis:correctionReason', Format('value="%s"',[correctionReason]), false);
     AddTagToStream(XmlStream, 'nhis:class', Format('value="%d"',[Integer(preg.clcClass)]));
     AddTagToStream(XmlStream, 'nhis:financingSource', Format('value="%d"',[Integer(preg.clcFinancingSource)]));
-    rhifAreaNumber := PregNodes.getRhifAreaNumber(buf, posData);
+    AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddrs.DataPos, word(Addres_LinkPos));
+    rhifAreaNumber := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
     AddTagToStream(XmlStream, 'nhis:rhifAreaNumber', Format('value="%s"',[rhifAreaNumber]));
   end;
   AddTagToStream(XmlStream, 'nhis:incidentalVisit', Format('value="%s"',['false']), false);
@@ -1416,7 +1452,7 @@ begin
   pat := TRealPatientNewItem.Create(nil);
   dataPat := pointer(PByte(PregNodes.patNode) + lenNode);
   pat.DataPos := dataPat.DataPos;
-  logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posData, word(PatientNew_Logical)));
+  logPat := TlogicalPatientNewSet(pat.getLogical40Map(buf, posData, word(PatientNew_Logical)));
 
   SenderId := performer.getAnsiStringMap(buf, posData, word(Doctor_UIN));
   FillXmlStreamHeader(XmlStream, X013, SenderId);
@@ -1611,9 +1647,9 @@ begin
           end;
         end;
       end;
-      vvEvnt:
+      vvAddres:
       begin
-        Result.evnts.Add(run);
+        Result.addresses.Add(run);
       end;
       vvPregled:
       begin
@@ -1761,10 +1797,10 @@ begin
           end;
         end;
       end;
-      vvEvnt:
-      begin
-        Result.evnts.Add(run);
-      end;
+      //vvEvnt:
+//      begin
+//        Result.evnts.Add(run);
+//      end;
       vvPregled: // за сега само диагнозите ще търся
       begin
         runPregled := run.FirstChild;
@@ -2184,7 +2220,7 @@ begin
   inherited;
   mkbs := TList<PVirtualNode>.Create;
   diags := TList<PVirtualNode>.Create;
-  evnts := TList<PVirtualNode>.Create;
+ // evnts := TList<PVirtualNode>.Create;
   Planeds := TList<PVirtualNode>.Create;
   Quests := TList<TQuests>.Create;
   DiagReps := TList<TDiagRep>.Create;
@@ -2194,7 +2230,7 @@ destructor TPregledNodes.destroy;
 begin
   FreeAndNil(mkbs);
   FreeAndNil(diags);
-  FreeAndNil(evnts);
+  //FreeAndNil(evnts);
   FreeAndNil(Planeds);
   FreeAndNil(Quests);
   FreeAndNil(DiagReps);
@@ -2210,7 +2246,7 @@ begin
   dataPat := pointer(PByte(patNode) + lenNode);
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
-  logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posdata, word(PatientNew_Logical)));
+  logPat := TlogicalPatientNewSet(pat.getLogical40Map(buf, posdata, word(PatientNew_Logical)));
   if SEX_TYPE_M in logPat then Result := TNzisGender.gbMale
   else if SEX_TYPE_F in logPat then Result := TNzisGender.gbFemale
   else  Result := TNzisGender.gbUnknown;
@@ -2226,7 +2262,7 @@ begin
   dataPat := pointer(PByte(patNode) + lenNode);
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
-  logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posdata, word(PatientNew_Logical)));
+  logPat := TlogicalPatientNewSet(pat.getLogical40Map(buf, posdata, word(PatientNew_Logical)));
   if PID_TYPE_E in logPat then Result := TNZISidentifierType.itbEGN
   else if PID_TYPE_B in logPat then Result := TNZISidentifierType.itbNBN
   else if PID_TYPE_F in logPat then Result := TNZISidentifierType.itbOther
@@ -2240,34 +2276,31 @@ var
   rzokEvn, rzokREvn: string;
   i: Integer;
   dataEvn: PAspRec;
-  EvnTemp: TRealEventsManyTimesItem;
-  logEvnt: TlogicalEventsManyTimesSet;
-  Aevnt: TLogicalEventsManyTimes;
 begin
-
-  for i := 0 to evnts.Count - 1 do
-  begin
-    dataEvn := pointer(PByte(evnts[i]) + lenNode);
-    EvnTemp := TRealEventsManyTimesItem.Create(nil);
-    EvnTemp.DataPos := dataEvn.DataPos;
-    logEvnt := TlogicalEventsManyTimesSet(EvnTemp.getLogical24Map(buf, posData, word(EventsManyTimes_Logical)));
-    for Aevnt in logEvnt do
-    begin
-      case Aevnt of
-        RZOK:
-        begin
-          rzokEvn := EvnTemp.getAnsiStringMap(Buf, posData, word(EventsManyTimes_valAnsiString));
-        end;
-        RZOKR:
-        begin
-          rzokREvn := EvnTemp.getAnsiStringMap(Buf, posData, word(EventsManyTimes_valAnsiString));
-        end;
-      end;
-    end;
-  end;
-  Result := rzokEvn + rzokREvn;
-  Result := '0202';//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-  FreeAndNil(EvnTemp);
+  raise Exception.Create(' getRhifAreaNumber  не е довършен')
+  //for i := 0 to evnts.Count - 1 do
+//  begin
+//    dataEvn := pointer(PByte(evnts[i]) + lenNode);
+//    EvnTemp := TRealEventsManyTimesItem.Create(nil);
+//    EvnTemp.DataPos := dataEvn.DataPos;
+//    logEvnt := TlogicalEventsManyTimesSet(EvnTemp.getLogical24Map(buf, posData, word(EventsManyTimes_Logical)));
+//    for Aevnt in logEvnt do
+//    begin
+//      case Aevnt of
+//        RZOK:
+//        begin
+//          rzokEvn := EvnTemp.getAnsiStringMap(Buf, posData, word(EventsManyTimes_valAnsiString));
+//        end;
+//        RZOKR:
+//        begin
+//          rzokREvn := EvnTemp.getAnsiStringMap(Buf, posData, word(EventsManyTimes_valAnsiString));
+//        end;
+//      end;
+//    end;
+//  end;
+//  Result := rzokEvn + rzokREvn;
+//  Result := '0202';//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+//  FreeAndNil(EvnTemp);
 end;
 
 { TPatNodes }
@@ -2277,7 +2310,7 @@ end;
 constructor TPatNodes.create;
 begin
   inherited;
-  evnts := TList<PVirtualNode>.create;
+  addresses := TList<PVirtualNode>.create;
   ExamAnals := TList<PVirtualNode>.create;
   diags := TList<PVirtualNode>.create;
   pregs := TList<PVirtualNode>.create;
@@ -2285,7 +2318,7 @@ end;
 
 destructor TPatNodes.destroy;
 begin
-  FreeAndNil(evnts);
+  FreeAndNil(addresses);
   FreeAndNil(ExamAnals);
   FreeAndNil(diags);
   FreeAndNil(pregs);
@@ -2301,7 +2334,7 @@ begin
   dataPat := pointer(PByte(patNode) + lenNode);
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
-  logPat := TlogicalPatientNewSet(pat.getLogical32Map(buf, posdata, word(PatientNew_Logical)));
+  logPat := TlogicalPatientNewSet(pat.getLogical40Map(buf, posdata, word(PatientNew_Logical)));
   if PID_TYPE_E in logPat then Result := TNZISidentifierType.itbEGN
   else if PID_TYPE_B in logPat then Result := TNZISidentifierType.itbNBN
   else if PID_TYPE_F in logPat then Result := TNZISidentifierType.itbOther

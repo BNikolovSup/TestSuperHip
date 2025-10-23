@@ -514,6 +514,7 @@ TCollectionForSort = class(TPersistent)
     function getLogical40Map(dataPos: cardinal; propIndex: word): TLogicalData40;
     function getLogical32Map(dataPos: cardinal; propIndex: word): TLogicalData32;
     function getLogical16Map(dataPos: cardinal; propIndex: word): TLogicalData16;
+    function getLogical24Map(dataPos: cardinal; propIndex: word): TLogicalData24;
 
     procedure SetIntMap(dataPos: cardinal; propIndex: word; Aint: integer);// специално за неща като ид-та
     procedure SetCardMap(dataPos: cardinal; propIndex: word; ACard: Cardinal);// специално за неща като ид-та
@@ -3197,6 +3198,24 @@ var
   P: ^Cardinal;
   ofset: Cardinal;
   pData: ^TLogicalData16;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
+function TBaseCollection.getLogical24Map(dataPos: cardinal;
+  propIndex: word): TLogicalData24;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData24;
 begin
   p := pointer(PByte(buf) + dataPos + 4*propIndex);
   if p^ = 0 then

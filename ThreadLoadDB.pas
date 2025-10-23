@@ -7,10 +7,11 @@ uses
   Vcl.Forms, Vcl.ExtCtrls, Winapi.Windows, Vcl.Graphics, Vcl.ComCtrls, system.Math,
   System.Generics.Collections, DM, Winapi.ActiveX, system.Variants, VirtualTrees,
   Aspects.Types, Table.PatientNew, Table.Doctor, Table.Mkb, table.mdn,
-  Table.PregledNew, Table.Unfav, Table.EventsManyTimes, Table.Practica, Table.AnalsNew,
+  Table.PregledNew, Table.Unfav, Table.Practica, Table.AnalsNew,
   Table.ExamImmunization, Table.Procedures,Table.CL142, Table.KARTA_PROFILAKTIKA2017,
-  Table.INC_MDN, Table.INC_NAPR,
-  RealObj.RealHipp, RealObj.NzisNomen, DbHelper, Aspects.Collections
+  Table.INC_MDN, Table.INC_NAPR, Table.Addres,
+  RealObj.RealHipp, RealObj.NzisNomen, DbHelper, Aspects.Collections,
+  RealNasMesto
   //DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr
 
 
@@ -65,6 +66,7 @@ TLoadDBThread = class(TThread)
 
     procedure AddIncMdn;
     procedure AddIncMN;
+    procedure AddIncDoctor;
 
     procedure RemontCl142;
     procedure FillCl142InProcedures;
@@ -77,6 +79,7 @@ TLoadDBThread = class(TThread)
     Fdm: TDUNzis;
     cmdFile: TFileStream;
     FDBHelper: TDbHelper;
+    FNasMesto: TRealNasMestoAspects;
     //колекции
     PatientColl: TRealPatientNewColl;
     DoctorColl: TRealDoctorColl;
@@ -88,7 +91,6 @@ TLoadDBThread = class(TThread)
     ProcCollNomen: TRealProceduresColl;
     ProcCollPreg: TRealProceduresColl;
     DiagnosticReportColl: TRealDiagnosticReportColl;
-    EventsManyTimesColl: TRealEventsManyTimesColl;
     MDNColl: TRealMDNColl;
     EblColl: TRealExam_boln_listColl;
     ExamAnalColl: TRealExamAnalysisColl;
@@ -101,6 +103,7 @@ TLoadDBThread = class(TThread)
     MedNaprHospColl: TRealHOSPITALIZATIONColl;
     MedNaprLkkColl: TRealEXAM_LKKColl;
     IncMNColl: TRealINC_NAPRColl;
+    OtherDoctorColl: TRealOtherDoctorColl;
     IncMdnColl: TRealINC_MDNColl;
     // дървета
     LinkAnals: TMappedFile;
@@ -453,6 +456,53 @@ begin
 
   if Assigned(FOnProgres) then
     FOnProgres(Self, Integer(EXAM_IMMUNIZATION), ibsqlExamImun.RecordCount);
+  Sleep(1);
+end;
+
+procedure TLoadDBThread.AddIncDoctor;
+var
+  TempItem: TRealOtherDoctorItem;
+  i: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData: Cardinal;
+  ibsqOtherDoctor: TIBSQL;
+begin
+  if  Fdm.IsGP then  Exit;
+
+  Stopwatch := TStopwatch.StartNew;
+  ibsqOtherDoctor := Fdm.ibsqlOtherDoctor;
+  ibsqOtherDoctor.ExecQuery;
+  while not ibsqOtherDoctor.Eof do
+  begin
+    TempItem := TRealOtherDoctorItem(OtherDoctorColl.Add);
+    New(TempItem.PRecord);
+    TempItem.PRecord.setProp := [];
+    FDBHelper.InsertIncDocField(ibsqOtherDoctor, TempItem); // otdeleno
+    if (ibsqOtherDoctor.RecordCount mod 1000) = 0 then
+    begin
+      OtherDoctorColl.CntInADB := ibsqOtherDoctor.RecordCount;
+      if Assigned(FOnProgres) then
+        FOnProgres(Self, Integer(INC_NAPR), ibsqOtherDoctor.RecordCount);
+      Sleep(1);
+    end;
+    TempItem.InsertOtherDoctor;
+
+    OtherDoctorColl.streamComm.Len := OtherDoctorColl.streamComm.Size;
+    CmdFile.CopyFrom(OtherDoctorColl.streamComm, 0);
+
+
+    Dispose(TempItem.PRecord);
+    TempItem.PRecord := nil;
+    ibsqOtherDoctor.Next;
+
+  end;
+  pCardinalData := pointer(FBuf);
+  FPosMetaData := pCardinalData^;
+  Elapsed := Stopwatch.Elapsed;
+  IncMNColl.CntInADB := ibsqOtherDoctor.RecordCount;
+
+  if Assigned(FOnProgres) then
+    FOnProgres(Self, Integer(INC_NAPR), ibsqOtherDoctor.RecordCount);
   Sleep(1);
 end;
 
@@ -825,17 +875,23 @@ begin
   else
     ibsqlPatientNew := Fdm.ibsqlPatNew_S;
 
-  FDBHelper.EventsManyTimesColl := EventsManyTimesColl;
   FDBHelper.cmdFile := cmdFile;
   Stopwatch := TStopwatch.StartNew;
   ibsqlPatientNew.ExecQuery;
   while not ibsqlPatientNew.Eof do
   begin
     TempItem := TRealPatientNewItem(PatientColl.Add);
-    tempitem.FEventsPat.Clear;
     New(TempItem.PRecord);
     TempItem.PRecord.setProp := [];
     FDBHelper.InsertPatientField(ibsqlPatientNew, TempItem);//otdelno
+    if TempItem.FAdresi.Count > 0 then
+    begin
+      TempItem.FAdresi[0].InsertAddres;
+      FNasMesto.addresColl.streamComm.Len := FNasMesto.addresColl.streamComm.Size;
+      CmdFile.CopyFrom(FNasMesto.addresColl.streamComm, 0);
+      Dispose( TempItem.FAdresi[0].PRecord);
+      TempItem.FAdresi[0].PRecord := nil;
+    end;
 
     if (ibsqlPatientNew.RecordCount mod 1000) = 0 then
     begin
@@ -1407,6 +1463,7 @@ begin
       FillCl142InProcedures;
       AddPacient;
       AddIncMN;
+      AddIncDoctor;
       AddPregled; //  след добавянето на прегледите имам в тях списъци на процедурите им. В тях е и КодОпис-а
       AddIncMdn;
 

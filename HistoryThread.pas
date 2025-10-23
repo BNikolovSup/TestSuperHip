@@ -262,10 +262,7 @@ var
   pCardinalData: PCardinal;
   ANode, runNode: PVirtualNode;
   data, runData: PAspRec;
-  evnt: TRealEventsManyTimesItem;
-  //ATempItem: TBaseItem;
 begin
-  //ATempItem := TBaseItem.Create(nil);
   Result := nil;
   linkPos := 100;
   pCardinalData := pointer(PByte(ABufLink));
@@ -303,12 +300,11 @@ begin
             while runNode <> nil do
             begin
               runData := pointer(PByte(runNode) + lenNode);
-              if runData.vid = vvEvnt then
-              begin
-                evnt := TRealEventsManyTimesItem.Create(nil);
-                evnt.DataPos := runData.DataPos;
-                TRealPatientNewItem(Result).FEventsPat.Add(evnt);
-              end;
+              //if runData.vid = vvEvnt then
+//              begin
+//                evnt.DataPos := runData.DataPos;
+//                TRealPatientNewItem(Result).FEventsPat.Add(evnt);
+//              end;
               runNode := runNode.NextSibling;
             end;
             Exit;

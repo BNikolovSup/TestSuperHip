@@ -22,7 +22,9 @@ end;
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
 TLogicalOtherDoctor = (
-    IS_);
+    IS_Sender
+   ,IS_Consultant
+   ,IS_Colege);
 TlogicalOtherDoctorSet = set of TLogicalOtherDoctor;
 
 

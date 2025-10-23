@@ -4,7 +4,7 @@ interface
 
 uses
   Table.PregledNew, Table.PatientNew, Table.diagnosis, Table.MDN,
-  Table.PatientNZOK, Table.doctor, Table.Unfav, table.EventsManyTimes,
+  Table.PatientNZOK, Table.doctor, Table.Unfav,
   Aspects.Collections, Aspects.Types, ProfGraph, VirtualTrees,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings, Vcl.Graphics,
   classes, system.SysUtils, windows, System.Generics.Collections, system.Math,

@@ -1,4 +1,4 @@
-﻿unit DbHelper; //PREVENTIVE_TYPE
+﻿unit DbHelper; //date_zapisvane
 
 interface
 uses
@@ -8,28 +8,23 @@ uses
   System.Generics.Collections, DM, Winapi.ActiveX, system.Variants, VirtualTrees,
   Aspects.Types, ProfGraph,
   Table.PatientNew, Table.Doctor, Table.Mkb, table.mdn,
-  Table.PregledNew, Table.Unfav, Table.EventsManyTimes, Table.Exam_boln_list,
-  RealObj.NzisNomen,
-  RealObj.RealHipp, Aspects.Collections, Table.Diagnosis, Table.ExamAnalysis,
+  Table.PregledNew, Table.Unfav, Table.Exam_boln_list,
+  RealObj.NzisNomen, ADB_DataUnit,
+  RealObj.RealHipp, RealNasMesto, Table.NasMesto, Table.Oblast, Table.Obshtina,
+  Aspects.Collections, Table.Diagnosis, Table.ExamAnalysis, Table.Addres,
   table.ExamImmunization, Table.CL132, Table.CL022, Table.KARTA_PROFILAKTIKA2017,
   table.BLANKA_MED_NAPR, Table.BLANKA_MED_NAPR_3A, Table.Practica, Table.INC_MDN,
-  Table.HOSPITALIZATION, Table.EXAM_LKK, Table.INC_NAPR;
+  Table.HOSPITALIZATION, Table.EXAM_LKK, Table.INC_NAPR, Table.OtherDoctor;
 
   type
   TDbHelper = class (TObject)
   private
-    function AddEvents(
-       valAnsiString: AnsiString;
-       valTDate: TDate;
-       valInteger: Integer;
-       valTTime: TTime;
-       valboolean: Boolean;
-       valword: Word;
-       LogIndex: TLogicalEventsManyTimes): TRealEventsManyTimesItem;
+
+
+
   public
     CollPreg: TRealPregledNewColl;
     CollDoctor: TRealDoctorColl;
-    EventsManyTimesColl: TRealEventsManyTimesColl;
     CollEbl: TRealExam_boln_listColl;
     CollDiag: TRealDiagnosisColl;
     collCl022: TCL022Coll;
@@ -39,6 +34,8 @@ uses
     cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
     Fdm: TDUNzis;
+    NasMesto: TRealNasMestoAspects;
+    AdbDM: TADBDataModule;
 
 
     procedure InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
@@ -61,6 +58,7 @@ uses
     procedure InsertMedNaprLkkField(ibsql: TIBSQL; TempItem: TRealEXAM_LKKItem);
     procedure InsertIncMdnField(ibsql: TIBSQL; TempItem: TRealINC_MDNItem);
     procedure InsertIncMNField(ibsql: TIBSQL; TempItem: TRealINC_NAPRItem);
+    procedure InsertIncDocField(ibsql: TIBSQL; TempItem: TRealOtherDoctorItem);
 
 
 
@@ -74,6 +72,7 @@ uses
     procedure InsertAdbMnField(TempItem: TRealBLANKA_MED_NAPRItem);
 
     //saveToHip
+    procedure SavePatientFDB(Pat: TRealPatientNewItem; ibsql: TIBSQL);
     procedure SavePregledFDB(preg: TRealPregledNewItem; ibsql: TIBSQL);
     procedure SaveMdn(mdn: TRealMdnItem; ibsql: TIBSQL);
     procedure SaveExamAnals(ExamAnal: TRealExamAnalysisItem; ibsql: TIBSQL);
@@ -84,53 +83,7 @@ end;
 
 implementation
 
-function TDbHelper.AddEvents(valAnsiString: AnsiString; valTDate: TDate;
-  valInteger: Integer; valTTime: TTime; valboolean: Boolean; valword: Word;
-  LogIndex: TLogicalEventsManyTimes): TRealEventsManyTimesItem;
-var
-  p: PInt;
-  TempItem: TRealEventsManyTimesItem;
-  i: Integer;
-  pCardinalData: ^Cardinal;
-  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
-begin
-    TempItem := TRealEventsManyTimesItem(EventsManyTimesColl.Add);
-    New(TempItem.PRecord);
-    case LogIndex of
-      HEALTH_INSURANCE_NAME, HEALTH_INSURANCE_NUMBER, DATA_HEALTH_INSURANCE, NAS_MQSTO:
-      begin
-        TempItem.PRecord.valAnsiString := valAnsiString;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valAnsiString, EventsManyTimes_Logical];
-      end;
-      DATE_HEALTH_INSURANCE_CHECK, DATE_ZAPISVANE, DATE_OTPISVANE:
-      begin
-        TempItem.PRecord.valTDate := valTDate;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valTDate, EventsManyTimes_Logical];
-      end;
-      RZOK, RZOKR:
-      begin
-        TempItem.PRecord.valTDate := valTDate;
-        TempItem.PRecord.valAnsiString := valAnsiString;
-        TempItem.PRecord.Logical := [LogIndex];
-        TempItem.PRecord.setProp := [EventsManyTimes_valTDate, EventsManyTimes_Logical, EventsManyTimes_valAnsiString];
-      end;
-    end;
 
-
-
-    TempItem.InsertEventsManyTimes;
-    EventsManyTimesColl.streamComm.Len := EventsManyTimesColl.streamComm.Size;
-    CmdFile.CopyFrom(EventsManyTimesColl.streamComm, 0);
-    Dispose(TempItem.PRecord);
-    TempItem.PRecord := nil;
-    Result := TempItem;
-
-  pCardinalData := pointer(PByte(EventsManyTimesColl.Buf));
-  FPosMetaData := pCardinalData^;
-  EventsManyTimesColl.CntInADB := EventsManyTimesColl.Count;
-end;
 
 procedure TDbHelper.FindDiagInPregled(vPregled: PVirtualNode; var diag0, diag1, diag2, diag3, diag4: TRealDiagnosisItem);
 var
@@ -909,6 +862,70 @@ var
     TempItem.PregledID := TempItem.PRecord.PREGLED_ID;
   end;
 
+procedure TDbHelper.InsertIncDocField(ibsql: TIBSQL;
+  TempItem: TRealOtherDoctorItem);
+var
+  ibsqlOtherDoctor: TIBSQL;
+begin
+    ibsqlOtherDoctor := ibsql;
+    if (not ibsqlOtherDoctor.Fields[1].IsNull)
+    then
+    begin
+      TempItem.PRecord.FNAME := ibsqlOtherDoctor.Fields[1].AsString;
+      Include(TempItem.PRecord.setProp, OtherDoctor_FNAME);
+    end;
+    if (not ibsqlOtherDoctor.Fields[0].IsNull)
+    then
+    begin
+       TempItem.PRecord.ID := ibsqlOtherDoctor.Fields[0].AsInteger;
+       Include(TempItem.PRecord.setProp, OtherDoctor_ID);
+    end;
+    if (not ibsqlOtherDoctor.Fields[3].IsNull)
+    then
+    begin
+      TempItem.PRecord.LNAME := ibsqlOtherDoctor.Fields[3].AsString;
+      Include(TempItem.PRecord.setProp, OtherDoctor_LNAME);
+    end;
+//    if (not ibsqlOtherDoctor.Fields[7].IsNull)
+//    then
+//    begin
+//       TempItem.PRecord.KOD_RAJON := ibsqlOtherDoctor.Fields[7].AsInteger;
+//       Include(TempItem.PRecord.setProp, OtherDoctor_KOD_RAJON);
+//    end;
+//    if (not ibsqlOtherDoctor.Fields[6].IsNull)
+//    then
+//    begin
+//       TempItem.PRecord.KOD_RZOK := ibsqlOtherDoctor.Fields[6].AsInteger;
+//       Include(TempItem.PRecord.setProp, OtherDoctor_KOD_RZOK);
+//    end;
+    if (not ibsqlOtherDoctor.Fields[8].IsNull)
+    then
+    begin
+      TempItem.PRecord.NOMER_LZ := ibsqlOtherDoctor.Fields[8].AsString;
+      Include(TempItem.PRecord.setProp, OtherDoctor_NOMER_LZ);
+    end;
+    if (not ibsqlOtherDoctor.Fields[2].IsNull)
+    then
+    begin
+      TempItem.PRecord.SNAME := ibsqlOtherDoctor.Fields[2].AsString;
+      Include(TempItem.PRecord.setProp, OtherDoctor_SNAME);
+    end;
+    if (not ibsqlOtherDoctor.Fields[5].IsNull)
+    then
+    begin
+       TempItem.PRecord.SPECIALITY := ibsqlOtherDoctor.Fields[5].AsInteger;
+       Include(TempItem.PRecord.setProp, OtherDoctor_SPECIALITY);
+    end;
+    if (not ibsqlOtherDoctor.Fields[4].IsNull)
+    then
+    begin
+      TempItem.PRecord.UIN := ibsqlOtherDoctor.Fields[4].AsString;
+      Include(TempItem.PRecord.setProp, OtherDoctor_UIN);
+    end;
+
+    TempItem.DoctorID  := ibsqlOtherDoctor.Fields[0].AsInteger;
+end;
+
 procedure TDbHelper.InsertIncMdnField(ibsql: TIBSQL; TempItem: TRealINC_MDNItem);
 var
   ibsqlInc_MDN: TIBSQL;
@@ -1129,6 +1146,7 @@ begin
   TempItem.PatientID := ibsqlINC_NAPR.Fields[23].AsInteger;
   TempItem.NRN := ibsqlINC_NAPR.Fields[7].AsString;
   TempItem.Nomer := ibsqlINC_NAPR.Fields[8].AsInteger;
+  TempItem.IncDoctorId := ibsqlINC_NAPR.Fields[19].AsInteger;
 end;
 
 procedure TDbHelper.InsertKardProfField(ibsql: TIBSQL;
@@ -1627,9 +1645,9 @@ var
   data: PAspRec;
   dataPosition: Cardinal;
   iEvn: Integer;
-  evn: TRealEventsManyTimesItem;
   BLOOD_TYPE: string;
   PidType: string;
+  adres: TRealAddresItem;
 begin
   ibsqlPatientNew := ibsql;
   if not ibsqlPatientNew.Fields[0].IsNull then
@@ -1722,54 +1740,134 @@ begin
   if not ibsqlPatientNew.Fields[16].IsNull then
   begin
     tempitem.HEALTH_INSURANCE_NAME := ibsqlPatientNew.Fields[16].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME);
+//    end;
+   // iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[17].IsNull) and (ibsqlPatientNew.Fields[17].AsString <> '') then
   begin
     tempitem.HEALTH_INSURANCE_NUMBER := ibsqlPatientNew.Fields[17].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[18].IsNull) and (ibsqlPatientNew.Fields[18].AsString <> '') then
   begin
     tempitem.DATA_HEALTH_INSURANCE := ibsqlPatientNew.Fields[18].AsString;
-    evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
-    evn.PatID := TempItem.PatID;
-    TempItem.FEventsPat.Add(evn);
+    //if evn = nil then
+//    begin
+//      evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
+//    end;
+//
 //      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE));
-     // TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+//      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.DATE_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[19].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, '', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.TIME_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[20].AsTime;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, '',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
 
   if (not ibsqlPatientNew.Fields[21].IsNull) and (ibsqlPatientNew.Fields[21].AsDate  <> 0) then
   begin
     tempitem.DATE_OTPISVANE := ibsqlPatientNew.Fields[21].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, '', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[22].IsNull) and (ibsqlPatientNew.Fields[22].AsDate  <> 0) then
   begin
     tempitem.DATE_ZAPISVANE := ibsqlPatientNew.Fields[22].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    TempItem.PRecord.DATE_ZAPISVANE := ibsqlPatientNew.Fields[22].AsDate;
+    Include(TempItem.PRecord.setProp, PatientNew_DATE_ZAPISVANE);
+//    if evn = nil then
+//    begin
+//      evn := AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, '', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[23].IsNull) and (ibsqlPatientNew.Fields[23].AsDate  <> 0) then
   begin
     tempitem.DATEFROM := ibsqlPatientNew.Fields[23].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, '', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
 
 
@@ -1789,20 +1887,97 @@ begin
   if (not ibsqlPatientNew.Fields[36].IsNull) then
   begin
     tempitem.RZOK := ibsqlPatientNew.Fields[36].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+//    if evn = nil then
+//    begin
+//      evn := AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK);
+//    end;
+   // iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[37].IsNull) then
   begin
     tempitem.RZOKR := ibsqlPatientNew.Fields[37].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //if evn = nil then
+//    begin
+//      evn := AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR);
+//      evn.PatID := TempItem.PatID;
+//      TempItem.FEventsPat.Add(evn);
+//    end
+//    else
+//    begin
+//      evn := AppendEvents(evn, tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR);
+//    end;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[48].IsNull) then
   begin
-    tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString; // трябва да е последно или да направя отделно поле да инсъртва адреса
+    adres := TempItem.FAdresi[0];//  при импорта има само един адрес;
+    if (not ibsqlPatientNew.Fields[49].IsNull) then
+    begin
+      adres.PRecord.AP := ibsqlPatientNew.Fields[49].AsString;
+      Include(adres.PRecord.setProp, Addres_AP);
+      Include(adres.PRecord.Logical, USE_AP);
+    end;
+    if (not ibsqlPatientNew.Fields[50].IsNull) then
+    begin
+      adres.PRecord.BL := ibsqlPatientNew.Fields[50].AsString;
+      Include(adres.PRecord.setProp, Addres_BL);
+      Include(adres.PRecord.Logical, USE_BL);
+    end;
+    if (not ibsqlPatientNew.Fields[51].IsNull) then
+    begin
+      adres.PRecord.DTEL := ibsqlPatientNew.Fields[51].AsString;
+      Include(adres.PRecord.setProp, Addres_DTEL);
+
+    end;
+    if (not ibsqlPatientNew.Fields[52].IsNull) then
+    begin
+      adres.PRecord.EMAIL := ibsqlPatientNew.Fields[52].AsString;
+      Include(adres.PRecord.setProp, Addres_EMAIL);
+    end;
+    if (not ibsqlPatientNew.Fields[53].IsNull) then
+    begin
+      adres.PRecord.ET := ibsqlPatientNew.Fields[53].AsString;
+      Include(adres.PRecord.setProp, Addres_ET);
+      Include(adres.PRecord.Logical, USE_ET);
+    end;
+    if (not ibsqlPatientNew.Fields[54].IsNull) then
+    begin
+      adres.PRecord.JK := ibsqlPatientNew.Fields[54].AsString;
+      Include(adres.PRecord.setProp, Addres_JK);
+      Include(adres.PRecord.Logical, USE_JK);
+    end;
+    if (not ibsqlPatientNew.Fields[55].IsNull) then
+    begin
+      adres.PRecord.NOMER := ibsqlPatientNew.Fields[55].AsString;
+      Include(adres.PRecord.setProp, Addres_NOMER);
+      Include(adres.PRecord.Logical, USE_NOMER);
+    end;
+    if (not ibsqlPatientNew.Fields[56].IsNull) then
+    begin
+      adres.PRecord.PKUT := ibsqlPatientNew.Fields[56].AsString;
+      Include(adres.PRecord.setProp, Addres_PKUT);
+    end;
+    if (not ibsqlPatientNew.Fields[57].IsNull) then
+    begin
+      adres.PRecord.ULICA := ibsqlPatientNew.Fields[57].AsString;
+      Include(adres.PRecord.setProp, Addres_ULICA);
+      Include(adres.PRecord.Logical, USE_ULICA);
+    end;
+    if (not ibsqlPatientNew.Fields[58].IsNull) then
+    begin
+      adres.PRecord.VH := ibsqlPatientNew.Fields[58].AsString;
+      Include(adres.PRecord.setProp, Addres_VH);
+      Include(adres.PRecord.Logical, USE_VH);
+    end;
   end;
   tempitem.DoctorId := ibsqlPatientNew.Fields[47].AsInteger;
   // logical
@@ -1843,6 +2018,12 @@ begin
     Include(TempItem.PRecord.Logical, PID_TYPE_S);
   if PidType = 'F' then
     Include(TempItem.PRecord.Logical, PID_TYPE_F);
+
+   case TempItem.PAT_KIND of
+     1: Include(TempItem.PRecord.Logical, PAT_KIND_REG);
+     2: Include(TempItem.PRecord.Logical, PAT_KIND_NOREG);
+     3: Include(TempItem.PRecord.Logical, PAT_KIND_TEMP_REG);
+   end;
 
 
 
@@ -2443,6 +2624,82 @@ begin
 
   ibsql.ExecQuery;
   ibsql.Transaction.CommitRetaining;
+end;
+
+procedure TDbHelper.SavePatientFDB(Pat: TRealPatientNewItem; ibsql: TIBSQL);
+var
+  logData40: TLogicalData40;
+  logPat: TlogicalPatientNewSet;
+  i, AddresLinkPos: Integer;
+  SetProp: TPregledNewItem.TSetProp;
+  addr: TRealAddresItem;
+  rhifAreaNumber: string;
+  PatNodes: TPatNodes;
+  dataDoc, dataAddr: PAspRec;
+  nasMest: TRealNasMestoItem;
+begin
+  PatNodes := AdbDM.GetPatNodes(Pat.FNode);
+  dataDoc := Pointer(PByte(PatNodes.docNode) + lenNode);
+  dataAddr := Pointer(PByte(PatNodes.addresses[0]) + lenNode);
+  nasMest := NasMesto.FindNasMestFromDataPos(AddresLinkPos);
+
+  logData40 := pat.getLogical40Map(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_Logical));
+  logPat := TlogicalPatientNewSet(logData40);
+  ibsql.Close;
+  ibsql.SQL.Text := 'select gen_id(gen_pacient, 1) from rdb$database';
+  ibsql.ExecQuery;
+  pat.PatID  := ibsql.Fields[0].AsInteger;
+  ibsql.Close;
+  pat.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+  //addr := Pat.FAdresi[0];
+  AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddr.DataPos, word(Addres_LinkPos));
+  rhifAreaNumber := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
+
+
+
+  ibsql.Close;
+  ibsql.SQL.Text :=
+    'insert into PACIENT (ID, BIRTH_DATE, FNAME, SNAME, LNAME, PAT_KIND, DOCTOR_ID, RZOK, RZOKR,' + #13#10 +
+                     'DATE_ZAPISVANE, SEX_TYPE, NAS_MQSTO, OBLAST, OBSHTINA, GRAJD, COUNTRY,' + #13#10 +
+                     'PID_TYPE, EGN, EKATTE_RESIDENTIAL_ADDRESS)' + #13#10 +
+                     'values (:ID, :BIRTH_DATE, :FNAME, :SNAME, :LNAME, :PAT_KIND, :DOCTOR_ID, :RZOK, :RZOKR,' + #13#10 +
+                     ':DATE_ZAPISVANE, :SEX_TYPE, :NAS_MQSTO, :OBLAST, :OBSHTINA, :GRAJD, :COUNTRY,' + #13#10 +
+                     ':PID_TYPE, :EGN, :EKATTE_RESIDENTIAL_ADDRESS);';
+  for i := 0 to ibsql.Params.Count - 1 do
+  begin
+    ibsql.Params[i].Clear;
+  end;
+
+
+
+  ibsql.ParamByName('ID').AsInteger := pat.PatID;
+  ibsql.ParamByName('DOCTOR_ID').AsInteger := pat.DoctorID;
+
+
+  ibsql.ParamByName('BIRTH_DATE').AsDate := pat.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_BIRTH_DATE));
+  ibsql.ParamByName('FNAME').AsString := pat.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_FNAME));
+  ibsql.ParamByName('SNAME').AsString := pat.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_SNAME));
+  ibsql.ParamByName('LNAME').AsString := pat.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_LNAME));
+
+  ibsql.ParamByName('PAT_KIND').AsInteger := 1;  //zzzzzzzzzzzzzzzzzzzzzz registr
+  ibsql.ParamByName('RZOK').AsString := Copy(rhifAreaNumber, 1, 2);
+  ibsql.ParamByName('RZOKR').AsString := Copy(rhifAreaNumber, 3, 2);
+  ibsql.ParamByName('DATE_ZAPISVANE').AsDate := pat.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_DATE_ZAPISVANE));
+  if TLogicalPatientNew(PATIENT_SEX_TYPE_M) in logPat then
+    ibsql.ParamByName('SEX_TYPE').AsInteger := 1
+  else
+    ibsql.ParamByName('SEX_TYPE').AsInteger := 0;
+  ibsql.ParamByName('NAS_MQSTO').AsString := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_NasMestoName));
+  ibsql.ParamByName('OBLAST').AsString := NasMesto.OblColl.getAnsiStringMap(nasMest.FObl.DataPos, word(Oblast_OblastName));
+  ibsql.ParamByName('OBSHTINA').AsString :=  NasMesto.obshtColl.getAnsiStringMap(nasMest.FObsh.DataPos, word(Obshtina_ObshtinaName));
+  ibsql.ParamByName('EKATTE_RESIDENTIAL_ADDRESS').AsString := NasMesto.nasMestoColl.getAnsiStringMap(nasMest.DataPos, word(NasMesto_EKATTE));
+  ibsql.ParamByName('GRAJD').AsString := 'българско';
+  ibsql.ParamByName('PID_TYPE').AsString := 'E';  //zzzzzzzzzzzzzzzzzzzzz
+  ibsql.ParamByName('EGN').AsString := pat.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_EGN));
+
+  //ibsql.ExecQuery;
+  //ibsql.Transaction.CommitRetaining;
+
 end;
 
 procedure TDbHelper.SavePregledFDB(preg: TRealPregledNewItem; ibsql: TIBSQL);
@@ -3427,7 +3684,6 @@ var
   datPos, linkPos: Cardinal;
   pCardinalData: PCardinal;
   iEvn: Integer;
-  evn: TRealEventsManyTimesItem;
   BLOOD_TYPE: string;
   PidType: string;
   Is_change: Boolean;
@@ -3547,67 +3803,67 @@ begin
   if not ibsqlPatientNew.Fields[16].IsNull then
   begin
     tempitem.HEALTH_INSURANCE_NAME := ibsqlPatientNew.Fields[16].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NAME, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NAME));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[17].IsNull) and (ibsqlPatientNew.Fields[17].AsString <> '') then
   begin
     tempitem.HEALTH_INSURANCE_NUMBER := ibsqlPatientNew.Fields[17].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.HEALTH_INSURANCE_NUMBER, 0, 0 ,0 , False, 0, HEALTH_INSURANCE_NUMBER));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[18].IsNull) and (ibsqlPatientNew.Fields[18].AsString <> '') then
   begin
     tempitem.DATA_HEALTH_INSURANCE := ibsqlPatientNew.Fields[18].AsString;
-    evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
-    evn.PatID := TempItem.PatID;
-    TempItem.FEventsPat.Add(evn);
+    //evn := AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE);
+//    evn.PatID := TempItem.PatID;
+//    TempItem.FEventsPat.Add(evn);
 //      iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.DATA_HEALTH_INSURANCE, 0, 0 ,0 , False, 0, DATA_HEALTH_INSURANCE));
      // TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[19].IsNull) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.DATE_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[19].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_HEALTH_INSURANCE_CHECK, 0 ,0 , False, 0, DATE_HEALTH_INSURANCE_CHECK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[20].IsNull) and (ibsqlPatientNew.Fields[20].AsTime  <> 0) and (ibsqlPatientNew.Fields[19].AsDate  <> 0) then
   begin
     tempitem.TIME_HEALTH_INSURANCE_CHECK := ibsqlPatientNew.Fields[20].AsTime;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('',0 , 0 ,tempitem.TIME_HEALTH_INSURANCE_CHECK , False, 0, TIME_HEALTH_INSURANCE_CHECK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
 
   if (not ibsqlPatientNew.Fields[21].IsNull) and (ibsqlPatientNew.Fields[21].AsDate  <> 0) then
   begin
     tempitem.DATE_OTPISVANE := ibsqlPatientNew.Fields[21].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_OTPISVANE, 0 ,0 , False, 0, DATE_OTPISVANE));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[22].IsNull) and (ibsqlPatientNew.Fields[22].AsDate  <> 0) then
   begin
     tempitem.DATE_ZAPISVANE := ibsqlPatientNew.Fields[22].AsDate;
-    Is_change := True;
-    for i := 0 to TempItem.FEventsPat.Count - 1 do
-    begin
-      if (TlogicalEventsManyTimesSet(TempItem.FEventsPat[i].getLogical24Map(buf, AdbHip.FPosData, word(EventsManyTimes_Logical))) = [DATE_ZAPISVANE])
-          and (TempItem.FEventsPat[i].getDateMap(buf, AdbHip.FPosData, word(EventsManyTimes_valTDate)) = tempitem.DATE_ZAPISVANE) then
-      begin
-        Is_change := False;
-        Break;
-      end;
-    end;
-    if Is_change then
-    begin
-      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
-      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
-    end;
+    //Is_change := True;
+//    for i := 0 to TempItem.FEventsPat.Count - 1 do
+//    begin
+//      if (TlogicalEventsManyTimesSet(TempItem.FEventsPat[i].getLogical24Map(buf, AdbHip.FPosData, word(EventsManyTimes_Logical))) = [DATE_ZAPISVANE])
+//          and (TempItem.FEventsPat[i].getDateMap(buf, AdbHip.FPosData, word(EventsManyTimes_valTDate)) = tempitem.DATE_ZAPISVANE) then
+//      begin
+//        Is_change := False;
+//        Break;
+//      end;
+//    end;
+//    if Is_change then
+//    begin
+//      iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATE_ZAPISVANE, 0 ,0 , False, 0, DATE_ZAPISVANE));
+//      TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+//    end;
   end;
   if (not ibsqlPatientNew.Fields[23].IsNull) and (ibsqlPatientNew.Fields[23].AsDate  <> 0) then
   begin
     tempitem.DATEFROM := ibsqlPatientNew.Fields[23].AsDate;
-    iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents('', tempitem.DATEFROM, 0 ,0 , False, 0, DATEFROM));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
 
 
@@ -3627,20 +3883,20 @@ begin
   if (not ibsqlPatientNew.Fields[36].IsNull) then
   begin
     tempitem.RZOK := ibsqlPatientNew.Fields[36].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOK, UserDate, 0 ,0 , False, 0, RZOK));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[37].IsNull) then
   begin
     tempitem.RZOKR := ibsqlPatientNew.Fields[37].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.RZOKR, UserDate, 0 ,0 , False, 0, RZOKR));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   if (not ibsqlPatientNew.Fields[48].IsNull) then
   begin
     tempitem.NAS_MQSTO := ibsqlPatientNew.Fields[48].AsString;
-    iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
-    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
+    //iEvn := TempItem.FEventsPat.Add(AddEvents(tempitem.NAS_MQSTO, UserDate, 0 ,0 , False, 0, NAS_MQSTO));
+//    TempItem.FEventsPat[iEvn].PatID := TempItem.PatID;
   end;
   tempitem.DoctorId := ibsqlPatientNew.Fields[47].AsInteger;
   // logical
@@ -3685,7 +3941,7 @@ begin
 
 
   if (TempItem.PRecord.Logical <> [])
-  and (TempItem.getLogical32map(buf, datPos, word(PatientNew_Logical))<> tlogicaldata32(TempItem.PRecord.Logical)) then
+  and (TempItem.getLogical40map(buf, datPos, word(PatientNew_Logical))<> tlogicaldata40(TempItem.PRecord.Logical)) then
     Include(TempItem.PRecord.setProp, PatientNew_Logical);
 end;
 

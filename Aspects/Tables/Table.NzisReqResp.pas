@@ -1,4 +1,4 @@
-unit Table.NzisReqResp;
+unit Table.NzisReqResp;//birthDate
 
 interface
 uses
@@ -6,7 +6,7 @@ uses
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
   VirtualTrees, VCLTee.Control, System.Generics.Defaults,
-  RealObj.RealHipp,
+  RealObj.RealHipp, RealNasMesto,
   Table.PatientNew, Table.PregledNew
   ;
 
@@ -109,9 +109,11 @@ TNzisReqRespItem = class(TBaseItem)
     procedure SetSearchingValue(const Value: string);
   public
     CollPat: TRealPatientNewColl;
+    collAddres: TRealAddresColl;
     CollPreg: TRealPregledNewColl;
     CollMdn: TRealMDNColl;
     CollIncMN: TRealINC_NAPRColl;
+    CollIncDoc: TRealOtherDoctorColl;
 
     FindedRes: TFindedResult;
 	linkOptions: TMappedLinkFile;
@@ -427,9 +429,11 @@ begin
     ArrayPropOrderSearchOptions[i] := i;
   end;
   CollPat := TRealPatientNewColl.Create(TRealPatientNewItem);
+  collAddres := TRealAddresColl.Create(TRealAddresItem);
   CollPreg := TRealPregledNewColl.Create(TRealPregledNewItem);
   CollMdn := TRealMDNColl.Create(TRealMDNItem);
   CollIncMN := TRealINC_NAPRColl.Create(TRealINC_NAPRItem);
+  CollIncDoc := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);;
 end;
 
 destructor TNzisReqRespColl.destroy;
@@ -438,9 +442,11 @@ begin
   FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   FreeAndNil(CollPat);
+  FreeAndNil(collAddres);
   FreeAndNil(CollPreg);
   FreeAndNil(CollMdn);
   FreeAndNil(CollIncMN);
+  FreeAndNil(CollIncDoc);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
 

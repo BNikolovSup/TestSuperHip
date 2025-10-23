@@ -47,7 +47,16 @@ TLogicalPatientNew = (
     PID_TYPE_S,
     PID_TYPE_F,
     RH_POS,
-    RH_NEG);
+    RH_NEG,
+    IS_NEBL_USL,
+    OSIGUREN,
+    PAT_KIND_REG,
+    PAT_KIND_TEMP_REG,
+    PAT_KIND_NOREG,
+    RELATION_SELF,
+    RELATION_PARENT,
+    RELATION_NAST,
+    RELATION_POPECHITEL);
 TlogicalPatientNewSet = set of TLogicalPatientNew;
 
 
@@ -57,6 +66,7 @@ TPatientNewItem = class(TBaseItem)
       TPropertyIndex = (
        PatientNew_BABY_NUMBER
        , PatientNew_BIRTH_DATE
+       , PatientNew_DATE_ZAPISVANE
        , PatientNew_DIE_DATE
        , PatientNew_DIE_FROM
        , PatientNew_DOSIENOMER
@@ -80,6 +90,7 @@ TPatientNewItem = class(TBaseItem)
       TRecPatientNew = record
         BABY_NUMBER: integer;
         BIRTH_DATE: TDate;
+        DATE_ZAPISVANE: TDate;
         DIE_DATE: TDate;
         DIE_FROM: AnsiString;
         DOSIENOMER: AnsiString;
@@ -113,7 +124,7 @@ TPatientNewItem = class(TBaseItem)
     procedure SavePatientNew(var dataPosition: Cardinal)overload;
 	procedure SavePatientNew(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
-    function GetPRecord: Pointer; override;
+	function GetPRecord: Pointer; override;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
     function GetCollType: TCollectionsType; override;
   end;
@@ -167,7 +178,7 @@ TPatientNewItem = class(TBaseItem)
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
-    procedure OrderFieldsSearch(Grid: TTeeGrid);override;
+	procedure OrderFieldsSearch(Grid: TTeeGrid);override;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
@@ -181,7 +192,8 @@ TPatientNewItem = class(TBaseItem)
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
     procedure OnSetTextSearchLog(Log: TlogicalPatientNewSet);
-    procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
+	procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
+    procedure CheckForSave(var cnt: Integer);
   end;
 
 implementation
@@ -212,9 +224,9 @@ begin
   begin
     PropertyIndex := TPropertyIndex(byte(paramField));
     Include(Self.PRecord.setProp, PropertyIndex);
-    case PropertyIndex of
-      PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
-    end;
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
     inc(i);
   end;
 end;
@@ -268,6 +280,7 @@ begin
           case propIndx of
             PatientNew_BABY_NUMBER: SaveData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
             PatientNew_BIRTH_DATE: SaveData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            PatientNew_DATE_ZAPISVANE: SaveData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_DATE: SaveData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_FROM: SaveData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
             PatientNew_DOSIENOMER: SaveData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
@@ -282,7 +295,7 @@ begin
             PatientNew_NZIS_PID: SaveData(PRecord.NZIS_PID, PropPosition, metaPosition, dataPosition);
             PatientNew_RACE: SaveData(PRecord.RACE, PropPosition, metaPosition, dataPosition);
             PatientNew_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
-            PatientNew_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            PatientNew_Logical: SaveData(TLogicalData40(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -311,12 +324,13 @@ begin
     if Result = false then
       Exit;
     pidx := TPatientNewColl(coll).ArrPropSearchClc[i];
-	  ATempItem := TPatientNewColl(coll).ListForFinder.Items[0];
+	ATempItem := TPatientNewColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
         PatientNew_BABY_NUMBER: Result := IsFinded(ATempItem.PRecord.BABY_NUMBER, buf, FPosDataADB, word(PatientNew_BABY_NUMBER), cot);
             PatientNew_BIRTH_DATE: Result := IsFinded(ATempItem.PRecord.BIRTH_DATE, buf, FPosDataADB, word(PatientNew_BIRTH_DATE), cot);
+            PatientNew_DATE_ZAPISVANE: Result := IsFinded(ATempItem.PRecord.DATE_ZAPISVANE, buf, FPosDataADB, word(PatientNew_DATE_ZAPISVANE), cot);
             PatientNew_DIE_DATE: Result := IsFinded(ATempItem.PRecord.DIE_DATE, buf, FPosDataADB, word(PatientNew_DIE_DATE), cot);
             PatientNew_DIE_FROM: Result := IsFinded(ATempItem.PRecord.DIE_FROM, buf, FPosDataADB, word(PatientNew_DIE_FROM), cot);
             PatientNew_DOSIENOMER: Result := IsFinded(ATempItem.PRecord.DOSIENOMER, buf, FPosDataADB, word(PatientNew_DOSIENOMER), cot);
@@ -331,7 +345,7 @@ begin
             PatientNew_NZIS_PID: Result := IsFinded(ATempItem.PRecord.NZIS_PID, buf, FPosDataADB, word(PatientNew_NZIS_PID), cot);
             PatientNew_RACE: Result := IsFinded(ATempItem.PRecord.RACE, buf, FPosDataADB, word(PatientNew_RACE), cot);
             PatientNew_SNAME: Result := IsFinded(ATempItem.PRecord.SNAME, buf, FPosDataADB, word(PatientNew_SNAME), cot);
-            PatientNew_Logical: Result := IsFinded(TLogicalData32(ATempItem.PRecord.Logical), buf, FPosDataADB, word(PatientNew_Logical), cot);
+            PatientNew_Logical: Result := IsFinded(TLogicalData40(ATempItem.PRecord.Logical), buf, FPosDataADB, word(PatientNew_Logical), cot);
       end;
     end;
   end;
@@ -370,6 +384,7 @@ begin
           case propIndx of
             PatientNew_BABY_NUMBER: SaveData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
             PatientNew_BIRTH_DATE: SaveData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            PatientNew_DATE_ZAPISVANE: SaveData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_DATE: SaveData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_FROM: SaveData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
             PatientNew_DOSIENOMER: SaveData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
@@ -384,7 +399,7 @@ begin
             PatientNew_NZIS_PID: SaveData(PRecord.NZIS_PID, PropPosition, metaPosition, dataPosition);
             PatientNew_RACE: SaveData(PRecord.RACE, PropPosition, metaPosition, dataPosition);
             PatientNew_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
-            PatientNew_Logical: SaveData(TLogicalData32(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            PatientNew_Logical: SaveData(TLogicalData40(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -417,6 +432,7 @@ begin
           case propIndx of
             PatientNew_BABY_NUMBER: UpdateData(PRecord.BABY_NUMBER, PropPosition, metaPosition, dataPosition);
             PatientNew_BIRTH_DATE: UpdateData(PRecord.BIRTH_DATE, PropPosition, metaPosition, dataPosition);
+            PatientNew_DATE_ZAPISVANE: UpdateData(PRecord.DATE_ZAPISVANE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_DATE: UpdateData(PRecord.DIE_DATE, PropPosition, metaPosition, dataPosition);
             PatientNew_DIE_FROM: UpdateData(PRecord.DIE_FROM, PropPosition, metaPosition, dataPosition);
             PatientNew_DOSIENOMER: UpdateData(PRecord.DOSIENOMER, PropPosition, metaPosition, dataPosition);
@@ -498,6 +514,111 @@ begin
   end;  
 end;
 
+procedure TPatientNewColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TPatientNewItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  if (PatientNew_BABY_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.BABY_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_BABY_NUMBER))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_BIRTH_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.BIRTH_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_BIRTH_DATE))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_DATE_ZAPISVANE in tempItem.PRecord.setProp) and (tempItem.PRecord.DATE_ZAPISVANE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DATE_ZAPISVANE))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_DIE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DIE_DATE))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_DIE_FROM in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_FROM <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DIE_FROM))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_DOSIENOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSIENOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DOSIENOMER))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_DZI_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.DZI_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DZI_NUMBER))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EGN))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_EHIC_NO in tempItem.PRecord.setProp) and (tempItem.PRecord.EHIC_NO <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EHIC_NO))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_FNAME))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(PatientNew_ID))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_LAK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.LAK_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_LAK_NUMBER))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_LNAME))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_NZIS_BEBE in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_BEBE <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_BEBE))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_NZIS_PID in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_PID <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_PID))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_RACE in tempItem.PRecord.setProp) and (tempItem.PRecord.RACE <> Self.getDoubleMap(tempItem.DataPos, word(PatientNew_RACE))) then
+begin
+inc(cnt);
+exit;
+end;
+    if (PatientNew_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_SNAME))) then
+begin
+inc(cnt);
+exit;
+end;
+//    if (PatientNew_Logical in tempItem.PRecord.setProp) and (tempItem.PRecord.Logical <> Self.(tempItem.DataPos, word(PatientNew_Logical))) then
+//begin
+//inc(cnt);
+//exit;
+//end;
+    end;
+  end;
+end;
+
+
 constructor TPatientNewColl.Create(ItemClass: TCollectionItemClass);
 var
   i: Integer;
@@ -534,6 +655,7 @@ begin
   case TPatientNewItem.TPropertyIndex(propIndex) of
     PatientNew_BABY_NUMBER: Result := 'BABY_NUMBER';
     PatientNew_BIRTH_DATE: Result := 'BIRTH_DATE';
+    PatientNew_DATE_ZAPISVANE: Result := 'DATE_ZAPISVANE';
     PatientNew_DIE_DATE: Result := 'DIE_DATE';
     PatientNew_DIE_FROM: Result := 'DIE_FROM';
     PatientNew_DOSIENOMER: Result := 'DOSIENOMER';
@@ -594,7 +716,7 @@ end;
 function TPatientNewColl.FieldCount: Integer; 
 begin
   inherited;
-  Result := 17;
+  Result := 18;
 end;
 
 function TPatientNewColl.FindRootCollOptionNode(): PVirtualNode;
@@ -764,6 +886,7 @@ begin
   case TPatientNewItem.TPropertyIndex(propIndex) of
     PatientNew_BABY_NUMBER: str := inttostr(PatientNew.PRecord.BABY_NUMBER);
     PatientNew_BIRTH_DATE: str := AspDateToStr(PatientNew.PRecord.BIRTH_DATE);
+    PatientNew_DATE_ZAPISVANE: str := AspDateToStr(PatientNew.PRecord.DATE_ZAPISVANE);
     PatientNew_DIE_DATE: str := AspDateToStr(PatientNew.PRecord.DIE_DATE);
     PatientNew_DIE_FROM: str := (PatientNew.PRecord.DIE_FROM);
     PatientNew_DOSIENOMER: str := (PatientNew.PRecord.DOSIENOMER);
@@ -778,7 +901,7 @@ begin
     PatientNew_NZIS_PID: str := (PatientNew.PRecord.NZIS_PID);
     PatientNew_RACE: str := FloatToStr(PatientNew.PRecord.RACE);
     PatientNew_SNAME: str := (PatientNew.PRecord.SNAME);
-    PatientNew_Logical: str := PatientNew.Logical32ToStr(TLogicalData32(PatientNew.PRecord.Logical));
+    PatientNew_Logical: str := PatientNew.Logical32ToStr(TLogicalData40(PatientNew.PRecord.Logical));
   else
     begin
       str := '';
@@ -876,6 +999,7 @@ begin
   case TPatientNewItem.TPropertyIndex(propIndex) of
     PatientNew_BABY_NUMBER: str :=  inttostr(PatientNew.getIntMap(Self.Buf, Self.posData, propIndex));
     PatientNew_BIRTH_DATE: str :=  AspDateToStr(PatientNew.getDateMap(Self.Buf, Self.posData, propIndex));
+    PatientNew_DATE_ZAPISVANE: str :=  AspDateToStr(PatientNew.getDateMap(Self.Buf, Self.posData, propIndex));
     PatientNew_DIE_DATE: str :=  AspDateToStr(PatientNew.getDateMap(Self.Buf, Self.posData, propIndex));
     PatientNew_DIE_FROM: str :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     PatientNew_DOSIENOMER: str :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -1051,8 +1175,6 @@ begin
   end;
 end;
 
-
-
 procedure TPatientNewColl.OnSetTextSearchDateEdt(date: TDate; field: Word;
   Condition: TConditionSet);
 begin
@@ -1123,6 +1245,7 @@ var
   ArrCol: TArray<TColumn>;
 begin
   inherited;
+  exit;//zzzzzzzzzzzzzzzzzzzzzzzzzzzz
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
@@ -1143,6 +1266,7 @@ begin
   case TPatientNewItem.TPropertyIndex(propIndex) of
     PatientNew_BABY_NUMBER: Result := actinteger;
     PatientNew_BIRTH_DATE: Result := actTDate;
+    PatientNew_DATE_ZAPISVANE: Result := actTDate;
     PatientNew_DIE_DATE: Result := actTDate;
     PatientNew_DIE_FROM: Result := actAnsiString;
     PatientNew_DOSIENOMER: Result := actAnsiString;
@@ -1165,7 +1289,7 @@ end;
 
 function TPatientNewColl.RankSortOption(propIndex: Word): cardinal;
 begin
-
+  //
 end;
 
 procedure TPatientNewColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1189,6 +1313,7 @@ begin
     case TPatientNewItem.TPropertyIndex(ACol) of
       PatientNew_BABY_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    PatientNew_DATE_ZAPISVANE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
     PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
     PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1219,6 +1344,7 @@ begin
   case TPatientNewItem.TPropertyIndex(ACol) of
     PatientNew_BABY_NUMBER: PatientNew.PRecord.BABY_NUMBER := StrToInt(AValue);
     PatientNew_BIRTH_DATE: PatientNew.PRecord.BIRTH_DATE := StrToDate(AValue);
+    PatientNew_DATE_ZAPISVANE: PatientNew.PRecord.DATE_ZAPISVANE := StrToDate(AValue);
     PatientNew_DIE_DATE: PatientNew.PRecord.DIE_DATE := StrToDate(AValue);
     PatientNew_DIE_FROM: PatientNew.PRecord.DIE_FROM := AValue;
     PatientNew_DOSIENOMER: PatientNew.PRecord.DOSIENOMER := AValue;
@@ -1233,7 +1359,7 @@ begin
     PatientNew_NZIS_PID: PatientNew.PRecord.NZIS_PID := AValue;
     PatientNew_RACE: PatientNew.PRecord.RACE := StrToFloat(AValue);
     PatientNew_SNAME: PatientNew.PRecord.SNAME := AValue;
-    PatientNew_Logical: PatientNew.PRecord.Logical := tlogicalPatientNewSet(PatientNew.StrToLogical32(AValue));
+    PatientNew_Logical: PatientNew.PRecord.Logical := tlogicalPatientNewSet(PatientNew.StrToLogical40(AValue));
   end;
 end;
 
@@ -1256,6 +1382,7 @@ begin
     case TPatientNewItem.TPropertyIndex(ACol) of
       PatientNew_BABY_NUMBER: isOld :=  PatientNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     PatientNew_BIRTH_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    PatientNew_DATE_ZAPISVANE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
     PatientNew_DIE_DATE: isOld :=  PatientNew.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
     PatientNew_DIE_FROM: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     PatientNew_DOSIENOMER: isOld :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1286,6 +1413,7 @@ begin
   case TPatientNewItem.TPropertyIndex(ACol) of
     PatientNew_BABY_NUMBER: PatientNew.PRecord.BABY_NUMBER := StrToInt(AFieldText);
     PatientNew_BIRTH_DATE: PatientNew.PRecord.BIRTH_DATE := StrToDate(AFieldText);
+    PatientNew_DATE_ZAPISVANE: PatientNew.PRecord.DATE_ZAPISVANE := StrToDate(AFieldText);
     PatientNew_DIE_DATE: PatientNew.PRecord.DIE_DATE := StrToDate(AFieldText);
     PatientNew_DIE_FROM: PatientNew.PRecord.DIE_FROM := AFieldText;
     PatientNew_DOSIENOMER: PatientNew.PRecord.DOSIENOMER := AFieldText;
@@ -1300,7 +1428,7 @@ begin
     PatientNew_NZIS_PID: PatientNew.PRecord.NZIS_PID := AFieldText;
     PatientNew_RACE: PatientNew.PRecord.RACE := StrToFloat(AFieldText);
     PatientNew_SNAME: PatientNew.PRecord.SNAME := AFieldText;
-    PatientNew_Logical: PatientNew.PRecord.Logical := tlogicalPatientNewSet(PatientNew.StrToLogical32(AFieldText));
+    PatientNew_Logical: PatientNew.PRecord.Logical := tlogicalPatientNewSet(PatientNew.StrToLogical40(AFieldText));
   end;
 end;
 
@@ -1635,24 +1763,3 @@ begin
 end;
 
 end.
-
-
-{
-BABY_NUMBER=integer;
-BIRTH_DATE=TDate;
-DIE_DATE=TDate;
-DIE_FROM=AnsiString;
-DOSIENOMER=AnsiString;
-DZI_NUMBER=AnsiString;
-EGN=AnsiString;
-EHIC_NO=AnsiString;
-FNAME=AnsiString;
-ID=integer;
-LAK_NUMBER=integer;
-LNAME=AnsiString;
-NZIS_BEBE=AnsiString;
-NZIS_PID=AnsiString;
-RACE=double;
-SNAME=AnsiString;
-Logical=tLogicalSet:BLOOD_TYPE_0,BLOOD_TYPE_A1,BLOOD_TYPE_A2,BLOOD_TYPE_B,BLOOD_TYPE_A1B,BLOOD_TYPE_A2B,BLOOD_TYPE_A,BLOOD_TYPE_AB,SEX_TYPE_F,SEX_TYPE_M,NZIS_PID_TYPE_1,NZIS_PID_TYPE_2,NZIS_PID_TYPE_3,NZIS_PID_TYPE_4,NZIS_PID_TYPE_5,EHRH_PATIENT,GDPR_PRINTED,KYRMA3MES,KYRMA6MES,PID_TYPE_B,PID_TYPE_E,PID_TYPE_L,PID_TYPE_S,PID_TYPE_F,RH_POS,RH_NEG
-}

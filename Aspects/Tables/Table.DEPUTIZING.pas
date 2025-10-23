@@ -1,4 +1,4 @@
-unit Table.NasMesto;
+unit Table.DEPUTIZING;
 
 interface
 uses
@@ -21,42 +21,40 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
-TLogicalNasMesto = (
-    Is_Selo,
-    IsGrad,
-    IsManastir);
-TlogicalNasMestoSet = set of TLogicalNasMesto;
+TLogicalDEPUTIZING = (
+    Is_Titul,
+    Is_Zamestnik,
+    Is_Naet,
+    deputizing,
+    deputizedBy);
+TlogicalDEPUTIZINGSet = set of TLogicalDEPUTIZING;
 
 
-TNasMestoItem = class(TBaseItem)
+TDEPUTIZINGItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-       NasMesto_NasMestoName
-       , NasMesto_ObshID
-       , NasMesto_OblID
-       , NasMesto_EKATTE
-       , NasMesto_ZIP
-       , NasMesto_RCZR
-       , NasMesto_Logical
+       DEPUTIZING_BEGIN_AT
+       , DEPUTIZING_DoctorDataPos
+       , DEPUTIZING_DeputDataPos
+       , DEPUTIZING_END_AT
+       , DEPUTIZING_Logical
        );
 	  
       TSetProp = set of TPropertyIndex;
       PSetProp = ^TSetProp;
-      PRecNasMesto = ^TRecNasMesto;
-      TRecNasMesto = record
-        NasMestoName: AnsiString;
-        ObshID: word;
-        OblID: word;
-        EKATTE: AnsiString;
-        ZIP: AnsiString;
-        RCZR: AnsiString;
-        Logical: TlogicalNasMestoSet;
+      PRecDEPUTIZING = ^TRecDEPUTIZING;
+      TRecDEPUTIZING = record
+        BEGIN_AT: TDate;
+        DoctorDataPos: integer;
+        DeputDataPos: integer;
+        END_AT: TDate;
+        Logical: TlogicalDEPUTIZINGSet;
         setProp: TSetProp;
       end;
 
   public
-    PRecord: ^TRecNasMesto;
+    PRecord: ^TRecDEPUTIZING;
 	IndexInt: Integer;
 	IndexWord: Word;
 	IndexAnsiStr: PAnsiChar;
@@ -65,50 +63,50 @@ TNasMestoItem = class(TBaseItem)
 	
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
-    procedure InsertNasMesto;
-    procedure UpdateNasMesto;
-    procedure SaveNasMesto(var dataPosition: Cardinal)overload;
-	procedure SaveNasMesto(Abuf: Pointer; var dataPosition: Cardinal)overload;
+    procedure InsertDEPUTIZING;
+    procedure UpdateDEPUTIZING;
+    procedure SaveDEPUTIZING(var dataPosition: Cardinal)overload;
+	procedure SaveDEPUTIZING(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
   end;
 
 
-  TNasMestoColl = class(TBaseCollection)
+  TDEPUTIZINGColl = class(TBaseCollection)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
-	tempItem: TNasMestoItem;
-    function GetItem(Index: Integer): TNasMestoItem;
-    procedure SetItem(Index: Integer; const Value: TNasMestoItem);
+	tempItem: TDEPUTIZINGItem;
+    function GetItem(Index: Integer): TDEPUTIZINGItem;
+    procedure SetItem(Index: Integer; const Value: TDEPUTIZINGItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
 	linkOptions: TMappedLinkFile;
-	ListForFinder: TList<TNasMestoItem>;
-    ListNasMestoSearch: TList<TNasMestoItem>;
-	PRecordSearch: ^TNasMestoItem.TRecNasMesto;
-    ArrPropSearch: TArray<TNasMestoItem.TPropertyIndex>;
-    ArrPropSearchClc: TArray<TNasMestoItem.TPropertyIndex>;
-	ArrayPropOrder: TArray<TNasMestoItem.TPropertyIndex>;
+	ListForFinder: TList<TDEPUTIZINGItem>;
+    ListDEPUTIZINGSearch: TList<TDEPUTIZINGItem>;
+	PRecordSearch: ^TDEPUTIZINGItem.TRecDEPUTIZING;
+    ArrPropSearch: TArray<TDEPUTIZINGItem.TPropertyIndex>;
+    ArrPropSearchClc: TArray<TDEPUTIZINGItem.TPropertyIndex>;
+	ArrayPropOrder: TArray<TDEPUTIZINGItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
 
-    function AddItem(ver: word):TNasMestoItem;
+    function AddItem(ver: word):TDEPUTIZINGItem;
 	function AddItemForSearch: Integer;
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     function PropType(propIndex: Word): TAsectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-	procedure GetCellFromMap(propIndex: word; ARow: Integer; NasMesto: TNasMestoItem; var AValue:String);
-    procedure GetCellFromRecord(propIndex: word; NasMesto: TNasMestoItem; var AValue:String);
+	procedure GetCellFromMap(propIndex: word; ARow: Integer; DEPUTIZING: TDEPUTIZINGItem; var AValue:String);
+    procedure GetCellFromRecord(propIndex: word; DEPUTIZING: TDEPUTIZINGItem; var AValue:String);
 	procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-    procedure SortByIndexValue(propIndex: TNasMestoItem.TPropertyIndex);
+    procedure SortByIndexValue(propIndex: TDEPUTIZINGItem.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
@@ -124,35 +122,35 @@ TNasMestoItem = class(TBaseItem)
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
-	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TNasMestoItem>);
+	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TDEPUTIZINGItem>);
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
     
-    procedure IndexValue(propIndex: TNasMestoItem.TPropertyIndex);
-	procedure IndexValueListNodes(propIndex:  TNasMestoItem.TPropertyIndex);
-    property Items[Index: Integer]: TNasMestoItem read GetItem write SetItem;
+    procedure IndexValue(propIndex: TDEPUTIZINGItem.TPropertyIndex);
+	procedure IndexValueListNodes(propIndex:  TDEPUTIZINGItem.TPropertyIndex);
+    property Items[Index: Integer]: TDEPUTIZINGItem read GetItem write SetItem;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
-    procedure OnSetTextSearchLog(Log: TlogicalNasMestoSet);
+    procedure OnSetTextSearchLog(Log: TlogicalDEPUTIZINGSet);
   end;
 
 implementation
 
-{ TNasMestoItem }
+{ TDEPUTIZINGItem }
 
-constructor TNasMestoItem.Create(Collection: TCollection);
+constructor TDEPUTIZINGItem.Create(Collection: TCollection);
 begin
   inherited;
 end;
 
-destructor TNasMestoItem.Destroy;
+destructor TDEPUTIZINGItem.Destroy;
 begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
 end;
 
-procedure TNasMestoItem.InsertNasMesto;
+procedure TDEPUTIZINGItem.InsertDEPUTIZING;
 var
   CollType: TCollectionsType;
   metaPosition, dataPosition, PropPosition: cardinal;
@@ -161,7 +159,7 @@ var
   pCardinalData: ^Cardinal;
   pWordData: ^Word;
 begin
-  CollType := Aspects.Types.TCollectionsType.ctNasMesto;
+  CollType := Aspects.Types.TCollectionsType.ctDEPUTIZING;
   pCardinalData := pointer(PByte(buf));
   FPosMetaData := pCardinalData^;
   pCardinalData := pointer(PByte(buf) + 4);
@@ -189,13 +187,11 @@ begin
         if Assigned(PRecord) and (propIndx in PRecord.setProp) then
         begin
           case propIndx of
-            NasMesto_NasMestoName: SaveData(PRecord.NasMestoName, PropPosition, metaPosition, dataPosition);
-            NasMesto_ObshID: SaveData(PRecord.ObshID, PropPosition, metaPosition, dataPosition);
-            NasMesto_OblID: SaveData(PRecord.OblID, PropPosition, metaPosition, dataPosition);
-            NasMesto_EKATTE: SaveData(PRecord.EKATTE, PropPosition, metaPosition, dataPosition);
-            NasMesto_ZIP: SaveData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
-            NasMesto_RCZR: SaveData(PRecord.RCZR, PropPosition, metaPosition, dataPosition);
-            NasMesto_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_BEGIN_AT: SaveData(PRecord.BEGIN_AT, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DoctorDataPos: SaveData(PRecord.DoctorDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DeputDataPos: SaveData(PRecord.DeputDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_END_AT: SaveData(PRecord.END_AT, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -211,36 +207,34 @@ begin
   end;
 end;
 
-function  TNasMestoItem.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
+function  TDEPUTIZINGItem.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
 var
   i: Integer;
-  pidx:  TNasMestoItem.TPropertyIndex;
+  pidx:  TDEPUTIZINGItem.TPropertyIndex;
   cot: TConditionSet;
-  ATempItem: TNasMestoItem;
+  ATempItem: TDEPUTIZINGItem;
 begin
   Result := True;
-  for i := 0 to Length(TNasMestoColl(coll).ArrPropSearchClc) - 1 do
+  for i := 0 to Length(TDEPUTIZINGColl(coll).ArrPropSearchClc) - 1 do
   begin
     if Result = false then
       Exit;
-    pidx := TNasMestoColl(coll).ArrPropSearchClc[i];
-	ATempItem := TNasMestoColl(coll).ListForFinder.Items[0];
+    pidx := TDEPUTIZINGColl(coll).ArrPropSearchClc[i];
+	ATempItem := TDEPUTIZINGColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
-        NasMesto_NasMestoName: Result := IsFinded(ATempItem.PRecord.NasMestoName, buf, FPosDataADB, word(NasMesto_NasMestoName), cot);
-            NasMesto_ObshID: Result := IsFinded(ATempItem.PRecord.ObshID, buf, FPosDataADB, word(NasMesto_ObshID), cot);
-            NasMesto_OblID: Result := IsFinded(ATempItem.PRecord.OblID, buf, FPosDataADB, word(NasMesto_OblID), cot);
-            NasMesto_EKATTE: Result := IsFinded(ATempItem.PRecord.EKATTE, buf, FPosDataADB, word(NasMesto_EKATTE), cot);
-            NasMesto_ZIP: Result := IsFinded(ATempItem.PRecord.ZIP, buf, FPosDataADB, word(NasMesto_ZIP), cot);
-            NasMesto_RCZR: Result := IsFinded(ATempItem.PRecord.RCZR, buf, FPosDataADB, word(NasMesto_RCZR), cot);
-            NasMesto_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(NasMesto_Logical), cot);
+        DEPUTIZING_BEGIN_AT: Result := IsFinded(ATempItem.PRecord.BEGIN_AT, buf, FPosDataADB, word(DEPUTIZING_BEGIN_AT), cot);
+            DEPUTIZING_DoctorDataPos: Result := IsFinded(ATempItem.PRecord.DoctorDataPos, buf, FPosDataADB, word(DEPUTIZING_DoctorDataPos), cot);
+            DEPUTIZING_DeputDataPos: Result := IsFinded(ATempItem.PRecord.DeputDataPos, buf, FPosDataADB, word(DEPUTIZING_DeputDataPos), cot);
+            DEPUTIZING_END_AT: Result := IsFinded(ATempItem.PRecord.END_AT, buf, FPosDataADB, word(DEPUTIZING_END_AT), cot);
+            DEPUTIZING_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(DEPUTIZING_Logical), cot);
       end;
     end;
   end;
 end;
 
-procedure TNasMestoItem.SaveNasMesto(Abuf: Pointer; var dataPosition: Cardinal);
+procedure TDEPUTIZINGItem.SaveDEPUTIZING(Abuf: Pointer; var dataPosition: Cardinal);
 var
   pCardinalData: PCardinal;
   APosData, ALenData: Cardinal;
@@ -250,16 +244,16 @@ begin
   pCardinalData := pointer(PByte(ABuf) + 12);
   ALenData := pCardinalData^;
   dataPosition :=  ALenData + APosData;
-  SaveNasMesto(dataPosition);
+  SaveDEPUTIZING(dataPosition);
 end;
 
-procedure TNasMestoItem.SaveNasMesto(var dataPosition: Cardinal);
+procedure TDEPUTIZINGItem.SaveDEPUTIZING(var dataPosition: Cardinal);
 var
   CollType: TCollectionsType;
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctNasMesto;
+  CollType := ctDEPUTIZING;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -271,13 +265,11 @@ begin
           SaveHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            NasMesto_NasMestoName: SaveData(PRecord.NasMestoName, PropPosition, metaPosition, dataPosition);
-            NasMesto_ObshID: SaveData(PRecord.ObshID, PropPosition, metaPosition, dataPosition);
-            NasMesto_OblID: SaveData(PRecord.OblID, PropPosition, metaPosition, dataPosition);
-            NasMesto_EKATTE: SaveData(PRecord.EKATTE, PropPosition, metaPosition, dataPosition);
-            NasMesto_ZIP: SaveData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
-            NasMesto_RCZR: SaveData(PRecord.RCZR, PropPosition, metaPosition, dataPosition);
-            NasMesto_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_BEGIN_AT: SaveData(PRecord.BEGIN_AT, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DoctorDataPos: SaveData(PRecord.DoctorDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DeputDataPos: SaveData(PRecord.DeputDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_END_AT: SaveData(PRecord.END_AT, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -291,13 +283,13 @@ begin
   end;
 end;
 
-procedure TNasMestoItem.UpdateNasMesto;
+procedure TDEPUTIZINGItem.UpdateDEPUTIZING;
 var
   CollType: TCollectionsType;
   metaPosition, dataPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctNasMesto;
+  CollType := ctDEPUTIZING;
   case FVersion of
     0:
     begin
@@ -308,12 +300,10 @@ begin
           UpdateHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            NasMesto_NasMestoName: UpdateData(PRecord.NasMestoName, PropPosition, metaPosition, dataPosition);
-            NasMesto_ObshID: UpdateData(PRecord.ObshID, PropPosition, metaPosition, dataPosition);
-            NasMesto_OblID: UpdateData(PRecord.OblID, PropPosition, metaPosition, dataPosition);
-            NasMesto_EKATTE: UpdateData(PRecord.EKATTE, PropPosition, metaPosition, dataPosition);
-            NasMesto_ZIP: UpdateData(PRecord.ZIP, PropPosition, metaPosition, dataPosition);
-            NasMesto_RCZR: UpdateData(PRecord.RCZR, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_BEGIN_AT: UpdateData(PRecord.BEGIN_AT, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DoctorDataPos: UpdateData(PRecord.DoctorDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_DeputDataPos: UpdateData(PRecord.DeputDataPos, PropPosition, metaPosition, dataPosition);
+            DEPUTIZING_END_AT: UpdateData(PRecord.END_AT, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -327,11 +317,11 @@ begin
   end;
 end;
 
-{ TNasMestoColl }
+{ TDEPUTIZINGColl }
 
-function TNasMestoColl.AddItem(ver: word): TNasMestoItem;
+function TDEPUTIZINGColl.AddItem(ver: word): TDEPUTIZINGItem;
 begin
-  Result := TNasMestoItem(add);
+  Result := TDEPUTIZINGItem(add);
   Result.Version := ver;
   case ver of // в зависимост от версията на записа
     0:
@@ -340,11 +330,11 @@ begin
   end;
 end;
 
-function TNasMestoColl.AddItemForSearch: Integer;
+function TDEPUTIZINGColl.AddItemForSearch: Integer;
 var
-  ItemForSearch: TNasMestoItem;
+  ItemForSearch: TDEPUTIZINGItem;
 begin
-  ItemForSearch := TNasMestoItem.Create(nil);
+  ItemForSearch := TDEPUTIZINGItem.Create(nil);
   SetLength(ItemForSearch.ArrCondition, self.FieldCount);
 
   New(ItemForSearch.PRecord);
@@ -353,7 +343,7 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
-function TNasMestoColl.CreateRootCollOptionNode(): PVirtualNode;
+function TDEPUTIZINGColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
   linkPos: Cardinal;
@@ -381,29 +371,29 @@ begin
   end;  
 end;
 
-constructor TNasMestoColl.Create(ItemClass: TCollectionItemClass);
+constructor TDEPUTIZINGColl.Create(ItemClass: TCollectionItemClass);
 var
   i: Integer;
 begin
   inherited;
-  tempItem := TNasMestoItem.Create(nil);
-  ListNasMestoSearch := TList<TNasMestoItem>.Create;
-  ListForFinder := TList<TNasMestoItem>.Create;
+  tempItem := TDEPUTIZINGItem.Create(nil);
+  ListDEPUTIZINGSearch := TList<TDEPUTIZINGItem>.Create;
+  ListForFinder := TList<TDEPUTIZINGItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
   SetLength(ArrayPropOrder, FieldCount);
   SetLength(ArrayPropOrderSearchOptions, FieldCount);
   for i := 0 to FieldCount - 1 do
   begin
-    ArrayPropOrder[i] := TNasMestoItem.TPropertyIndex(i);
+    ArrayPropOrder[i] := TDEPUTIZINGItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
 end;
 
-destructor TNasMestoColl.destroy;
+destructor TDEPUTIZINGColl.destroy;
 begin
-  FreeAndNil(ListNasMestoSearch);
+  FreeAndNil(ListDEPUTIZINGSearch);
   FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
@@ -411,21 +401,19 @@ begin
   inherited;
 end;
 
-function TNasMestoColl.DisplayName(propIndex: Word): string;
+function TDEPUTIZINGColl.DisplayName(propIndex: Word): string;
 begin
   inherited;
-  case TNasMestoItem.TPropertyIndex(propIndex) of
-    NasMesto_NasMestoName: Result := 'NasMestoName';
-    NasMesto_ObshID: Result := 'ObshID';
-    NasMesto_OblID: Result := 'OblID';
-    NasMesto_EKATTE: Result := 'EKATTE';
-    NasMesto_ZIP: Result := 'ZIP';
-    NasMesto_RCZR: Result := 'RCZR';
-    NasMesto_Logical: Result := 'Logical';
+  case TDEPUTIZINGItem.TPropertyIndex(propIndex) of
+    DEPUTIZING_BEGIN_AT: Result := 'BEGIN_AT';
+    DEPUTIZING_DoctorDataPos: Result := 'DoctorDataPos';
+    DEPUTIZING_DeputDataPos: Result := 'DeputDataPos';
+    DEPUTIZING_END_AT: Result := 'END_AT';
+    DEPUTIZING_Logical: Result := 'Logical';
   end;
 end;
 
-procedure TNasMestoColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+procedure TDEPUTIZINGColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
   FieldCollOptionNode, run: PVirtualNode;
   pSource, pTarget: PVirtualNode;
@@ -464,13 +452,13 @@ begin
 end;
 
 
-function TNasMestoColl.FieldCount: Integer; 
+function TDEPUTIZINGColl.FieldCount: Integer; 
 begin
   inherited;
-  Result := 7;
+  Result := 5;
 end;
 
-function TNasMestoColl.FindRootCollOptionNode(): PVirtualNode;
+function TDEPUTIZINGColl.FindRootCollOptionNode(): PVirtualNode;
 var
   linkPos: Cardinal;
   pCardinalData: PCardinal;
@@ -498,7 +486,7 @@ begin
     Result := CreateRootCollOptionNode;
 end;
 
-function TNasMestoColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+function TDEPUTIZINGColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
 var
   run, vRootPregOptions: PVirtualNode;
   dataRun: PAspRec;
@@ -517,7 +505,7 @@ begin
   end;
 end;
 
-function TNasMestoColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+function TDEPUTIZINGColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
 var
   run, vRootPregOptions: PVirtualNode;
   dataRun: PAspRec;
@@ -537,7 +525,7 @@ begin
   end;
 end;
 
-function TNasMestoColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+function TDEPUTIZINGColl.FindSearchFieldCollOptionNode(): PVirtualNode;
 var
   linkPos: Cardinal;
   run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
@@ -585,31 +573,31 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TDEPUTIZINGColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  NasMesto: TNasMestoItem;
+  DEPUTIZING: TDEPUTIZINGItem;
   ACol: Integer;
-  prop: TNasMestoItem.TPropertyIndex;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if Count = 0 then Exit;
 
-  NasMesto := Items[ARow];
-  prop := TNasMestoItem.TPropertyIndex(ACol);
-  if Assigned(NasMesto.PRecord) and (prop in NasMesto.PRecord.setProp) then
+  DEPUTIZING := Items[ARow];
+  prop := TDEPUTIZINGItem.TPropertyIndex(ACol);
+  if Assigned(DEPUTIZING.PRecord) and (prop in DEPUTIZING.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, NasMesto, AValue);
+    GetCellFromRecord(ACol, DEPUTIZING, AValue);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, NasMesto, AValue);
+    GetCellFromMap(ACol, ARow, DEPUTIZING, AValue);
   end;
 end;
 
-procedure TNasMestoColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
   ACol, RowSelect: Integer;
-  prop: TNasMestoItem.TPropertyIndex;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   inherited;
   if ARow < 0 then
@@ -630,18 +618,16 @@ begin
   GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
 end;
 
-procedure TNasMestoColl.GetCellFromRecord(propIndex: word; NasMesto: TNasMestoItem; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellFromRecord(propIndex: word; DEPUTIZING: TDEPUTIZINGItem; var AValue: String);
 var
   str: string;
 begin
-  case TNasMestoItem.TPropertyIndex(propIndex) of
-    NasMesto_NasMestoName: str := (NasMesto.PRecord.NasMestoName);
-    NasMesto_ObshID: str := inttostr(NasMesto.PRecord.ObshID);
-    NasMesto_OblID: str := inttostr(NasMesto.PRecord.OblID);
-    NasMesto_EKATTE: str := (NasMesto.PRecord.EKATTE);
-    NasMesto_ZIP: str := (NasMesto.PRecord.ZIP);
-    NasMesto_RCZR: str := (NasMesto.PRecord.RCZR);
-    NasMesto_Logical: str := NasMesto.Logical08ToStr(TLogicalData08(NasMesto.PRecord.Logical));
+  case TDEPUTIZINGItem.TPropertyIndex(propIndex) of
+    DEPUTIZING_BEGIN_AT: str := AspDateToStr(DEPUTIZING.PRecord.BEGIN_AT);
+    DEPUTIZING_DoctorDataPos: str := inttostr(DEPUTIZING.PRecord.DoctorDataPos);
+    DEPUTIZING_DeputDataPos: str := inttostr(DEPUTIZING.PRecord.DeputDataPos);
+    DEPUTIZING_END_AT: str := AspDateToStr(DEPUTIZING.PRecord.END_AT);
+    DEPUTIZING_Logical: str := DEPUTIZING.Logical08ToStr(TLogicalData08(DEPUTIZING.PRecord.Logical));
   else
     begin
       str := '';
@@ -650,17 +636,17 @@ begin
   AValue := str;
 end;
 
-procedure TNasMestoColl.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  AtempItem: TNasMestoItem;
+  AtempItem: TDEPUTIZINGItem;
   ACol: Integer;
-  prop: TNasMestoItem.TPropertyIndex;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if ListForFinder.Count = 0 then Exit;
 
   AtempItem := ListForFinder[ARow];
-  prop := TNasMestoItem.TPropertyIndex(ACol);
+  prop := TDEPUTIZINGItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
     GetCellFromRecord(ACol, AtempItem, AValue);
@@ -671,61 +657,61 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   ACol: Integer;
-  prop: TNasMestoItem.TPropertyIndex;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   inherited;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListNodes.count - 1) < ARow then exit;
   
   TempItem.DataPos := ListNodes[ARow].DataPos;
-  prop := TNasMestoItem.TPropertyIndex(ACol);
+  prop := TDEPUTIZINGItem.TPropertyIndex(ACol);
   GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
 
-procedure TNasMestoColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  NasMesto: TNasMestoItem;
+  DEPUTIZING: TDEPUTIZINGItem;
   ACol: Integer;
-  prop: TNasMestoItem.TPropertyIndex;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if Count = 0 then Exit;
 
-  NasMesto := ListNasMestoSearch[ARow];
-  prop := TNasMestoItem.TPropertyIndex(ACol);
-  if Assigned(NasMesto.PRecord) and (prop in NasMesto.PRecord.setProp) then
+  DEPUTIZING := ListDEPUTIZINGSearch[ARow];
+  prop := TDEPUTIZINGItem.TPropertyIndex(ACol);
+  if Assigned(DEPUTIZING.PRecord) and (prop in DEPUTIZING.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, NasMesto, AValue);
+    GetCellFromRecord(ACol, DEPUTIZING, AValue);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, NasMesto, AValue);
+    GetCellFromMap(ACol, ARow, DEPUTIZING, AValue);
   end;
 end;
 
-procedure TNasMestoColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+procedure TDEPUTIZINGColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
-  NasMesto: TNasMestoItem;
-  prop: TNasMestoItem.TPropertyIndex;
+  DEPUTIZING: TDEPUTIZINGItem;
+  prop: TDEPUTIZINGItem.TPropertyIndex;
 begin
   if Count = 0 then Exit;
 
-  NasMesto := Items[ARow];
-  prop := TNasMestoItem.TPropertyIndex(ACol);
-  if Assigned(NasMesto.PRecord) and (prop in NasMesto.PRecord.setProp) then
+  DEPUTIZING := Items[ARow];
+  prop := TDEPUTIZINGItem.TPropertyIndex(ACol);
+  if Assigned(DEPUTIZING.PRecord) and (prop in DEPUTIZING.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, NasMesto, AFieldText);
+    GetCellFromRecord(ACol, DEPUTIZING, AFieldText);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, NasMesto, AFieldText);
+    GetCellFromMap(ACol, ARow, DEPUTIZING, AFieldText);
   end;
 end;
 
-procedure TNasMestoColl.GetCellFromMap(propIndex: word; ARow: Integer; NasMesto: TNasMestoItem; var AValue: String);
+procedure TDEPUTIZINGColl.GetCellFromMap(propIndex: word; ARow: Integer; DEPUTIZING: TDEPUTIZINGItem; var AValue: String);
 var
   str: string;
   len: Word;
@@ -736,14 +722,12 @@ var
   pDbl: PDouble;
   pbl: PBoolean;
 begin
-  case TNasMestoItem.TPropertyIndex(propIndex) of
-    NasMesto_NasMestoName: str :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    NasMesto_ObshID: str :=  inttostr(NasMesto.getWordMap(Self.Buf, Self.posData, propIndex));
-    NasMesto_OblID: str :=  inttostr(NasMesto.getWordMap(Self.Buf, Self.posData, propIndex));
-    NasMesto_EKATTE: str :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    NasMesto_ZIP: str :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    NasMesto_RCZR: str :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    NasMesto_Logical: str :=  NasMesto.Logical08ToStr(NasMesto.getLogical08Map(Self.Buf, Self.posData, propIndex));
+  case TDEPUTIZINGItem.TPropertyIndex(propIndex) of
+    DEPUTIZING_BEGIN_AT: str :=  AspDateToStr(DEPUTIZING.getDateMap(Self.Buf, Self.posData, propIndex));
+    DEPUTIZING_DoctorDataPos: str :=  inttostr(DEPUTIZING.getIntMap(Self.Buf, Self.posData, propIndex));
+    DEPUTIZING_DeputDataPos: str :=  inttostr(DEPUTIZING.getIntMap(Self.Buf, Self.posData, propIndex));
+    DEPUTIZING_END_AT: str :=  AspDateToStr(DEPUTIZING.getDateMap(Self.Buf, Self.posData, propIndex));
+    DEPUTIZING_Logical: str :=  DEPUTIZING.Logical08ToStr(DEPUTIZING.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -752,80 +736,40 @@ begin
   AValue := str;
 end;
 
-function TNasMestoColl.GetItem(Index: Integer): TNasMestoItem;
+function TDEPUTIZINGColl.GetItem(Index: Integer): TDEPUTIZINGItem;
 begin
-  Result := TNasMestoItem(inherited GetItem(Index));
+  Result := TDEPUTIZINGItem(inherited GetItem(Index));
 end;
 
 
-procedure TNasMestoColl.IndexValue(propIndex: TNasMestoItem.TPropertyIndex);
+procedure TDEPUTIZINGColl.IndexValue(propIndex: TDEPUTIZINGItem.TPropertyIndex);
 var
   i: Integer;
   len: Word;
-  TempItem: TNasMestoItem;
+  TempItem: TDEPUTIZINGItem;
 begin
   for i := 0 to self.Count - 1 do
   begin
     TempItem := self.Items[i];
     case propIndex of
-      NasMesto_NasMestoName:
-begin
-  TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-  if TempItem.IndexAnsiStr <> nil then
-  begin
-    TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-  end
-  else
-    TempItem.IndexAnsiStr1 := '';
-end;
-      NasMesto_ObshID: TempItem.IndexWord :=  TempItem.getPWordMap(Self.Buf, self.posData, word(propIndex))^;
-      NasMesto_OblID: TempItem.IndexWord :=  TempItem.getPWordMap(Self.Buf, self.posData, word(propIndex))^;
-      NasMesto_EKATTE:
-      begin
-        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-        if TempItem.IndexAnsiStr <> nil then
-        begin
-          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-        end
-        else
-          TempItem.IndexAnsiStr1 := '';
-      end;
-      NasMesto_ZIP:
-      begin
-        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-        if TempItem.IndexAnsiStr <> nil then
-        begin
-          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-        end
-        else
-          TempItem.IndexAnsiStr1 := '';
-      end;
-      NasMesto_RCZR:
-      begin
-        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-        if TempItem.IndexAnsiStr <> nil then
-        begin
-          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-        end
-        else
-          TempItem.IndexAnsiStr1 := '';
-      end;
+      DEPUTIZING_DoctorDataPos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      DEPUTIZING_DeputDataPos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
 
-procedure TNasMestoColl.IndexValueListNodes(propIndex: TNasMestoItem.TPropertyIndex);
+procedure TDEPUTIZINGColl.IndexValueListNodes(propIndex: TDEPUTIZINGItem.TPropertyIndex);
 begin
 
 end;
 
-procedure TNasMestoColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+procedure TDEPUTIZINGColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
-  Tempitem: TNasMestoItem;
+  Tempitem: TDEPUTIZINGItem;
 begin
   if index < 0 then
   begin
-    Tempitem := TNasMestoItem.Create(nil);
+    Tempitem := TDEPUTIZINGItem.Create(nil);
     Tempitem.DataPos := datapos;
     GetCellFromMap(field, -1, Tempitem, value);
     Tempitem.Free;
@@ -844,39 +788,39 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+procedure TDEPUTIZINGColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 begin
   if Text = '' then
   begin
-    Exclude(ListForFinder[0].PRecord.setProp, TNasMestoItem.TPropertyIndex(Field));
+    Exclude(ListForFinder[0].PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(Field));
   end
   else
   begin
-    include(ListForFinder[0].PRecord.setProp, TNasMestoItem.TPropertyIndex(Field));
+    include(ListForFinder[0].PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(Field));
     //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
   end;
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
   if cotSens in Condition then
   begin
-    //case TNasMestoItem.TPropertyIndex(Field) of
-    //  NasMesto_EGN: ListForFinder[0].PRecord.EGN  := Text;
+    //case TDEPUTIZINGItem.TPropertyIndex(Field) of
+    //  DEPUTIZING_EGN: ListForFinder[0].PRecord.EGN  := Text;
     //  
     //end;
   end
   else
   begin
-    //case TNasMestoItem.TPropertyIndex(Field) of
-    //  NasMesto_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
+    //case TDEPUTIZINGItem.TPropertyIndex(Field) of
+    //  DEPUTIZING_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
     //end;
   end;
 end;
 
-procedure TNasMestoColl.OnSetTextSearchLog(Log: TlogicalNasMestoSet);
+procedure TDEPUTIZINGColl.OnSetTextSearchLog(Log: TlogicalDEPUTIZINGSet);
 begin
   ListForFinder[0].PRecord.Logical := Log;
 end;
 
-procedure TNasMestoColl.OrderFieldsSearch1(Grid: TTeeGrid);
+procedure TDEPUTIZINGColl.OrderFieldsSearch1(Grid: TTeeGrid);
 var
   FieldCollOptionNode, run: PVirtualNode;
   Comparison: TComparison<PVirtualNode>;
@@ -898,186 +842,148 @@ begin
 
 end;
 
-function TNasMestoColl.PropType(propIndex: Word): TAsectTypeKind;
+function TDEPUTIZINGColl.PropType(propIndex: Word): TAsectTypeKind;
 begin
   inherited;
-  case TNasMestoItem.TPropertyIndex(propIndex) of
-    NasMesto_NasMestoName: Result := actAnsiString;
-    NasMesto_ObshID: Result := actword;
-    NasMesto_OblID: Result := actword;
-    NasMesto_EKATTE: Result := actAnsiString;
-    NasMesto_ZIP: Result := actAnsiString;
-    NasMesto_RCZR: Result := actAnsiString;
-    NasMesto_Logical: Result := actLogical;
+  case TDEPUTIZINGItem.TPropertyIndex(propIndex) of
+    DEPUTIZING_BEGIN_AT: Result := actTDate;
+    DEPUTIZING_DoctorDataPos: Result := actinteger;
+    DEPUTIZING_DeputDataPos: Result := actinteger;
+    DEPUTIZING_END_AT: Result := actTDate;
+    DEPUTIZING_Logical: Result := actLogical;
   else
     Result := actNone;
   end
 end;
 
-function TNasMestoColl.RankSortOption(propIndex: Word): cardinal;
+function TDEPUTIZINGColl.RankSortOption(propIndex: Word): cardinal;
 begin
   //
 end;
 
-procedure TNasMestoColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TDEPUTIZINGColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   isOld: Boolean;
-  NasMesto: TNasMestoItem;
+  DEPUTIZING: TDEPUTIZINGItem;
   ACol: Integer;
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   isOld := False;
-  NasMesto := Items[ARow];
-  if not Assigned(NasMesto.PRecord) then
+  DEPUTIZING := Items[ARow];
+  if not Assigned(DEPUTIZING.PRecord) then
   begin
-    New(NasMesto.PRecord);
-    NasMesto.PRecord.setProp := [];
+    New(DEPUTIZING.PRecord);
+    DEPUTIZING.PRecord.setProp := [];
 	CntUpdates := CntUpdates + 1;
   end
   else
   begin
-    case TNasMestoItem.TPropertyIndex(ACol) of
-      NasMesto_NasMestoName: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    NasMesto_ObshID: isOld :=  NasMesto.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    NasMesto_OblID: isOld :=  NasMesto.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    NasMesto_EKATTE: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    NasMesto_ZIP: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    NasMesto_RCZR: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    case TDEPUTIZINGItem.TPropertyIndex(ACol) of
+      DEPUTIZING_BEGIN_AT: isOld :=  DEPUTIZING.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    DEPUTIZING_DoctorDataPos: isOld :=  DEPUTIZING.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    DEPUTIZING_DeputDataPos: isOld :=  DEPUTIZING.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    DEPUTIZING_END_AT: isOld :=  DEPUTIZING.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
     end;
   end;
   if isOld then
   begin
-    Exclude(NasMesto.PRecord.setProp, TNasMestoItem.TPropertyIndex(ACol));
-    if NasMesto.PRecord.setProp = [] then
+    Exclude(DEPUTIZING.PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(ACol));
+    if DEPUTIZING.PRecord.setProp = [] then
     begin
-      Dispose(NasMesto.PRecord);
-      NasMesto.PRecord := nil;
+      Dispose(DEPUTIZING.PRecord);
+      DEPUTIZING.PRecord := nil;
       CntUpdates := CntUpdates - 1;
       Exit;
     end;
   end;
-  Include(NasMesto.PRecord.setProp, TNasMestoItem.TPropertyIndex(ACol));
-  case TNasMestoItem.TPropertyIndex(ACol) of
-    NasMesto_NasMestoName: NasMesto.PRecord.NasMestoName := AValue;
-    NasMesto_ObshID: NasMesto.PRecord.ObshID := StrToInt(AValue);
-    NasMesto_OblID: NasMesto.PRecord.OblID := StrToInt(AValue);
-    NasMesto_EKATTE: NasMesto.PRecord.EKATTE := AValue;
-    NasMesto_ZIP: NasMesto.PRecord.ZIP := AValue;
-    NasMesto_RCZR: NasMesto.PRecord.RCZR := AValue;
-    NasMesto_Logical: NasMesto.PRecord.Logical := tlogicalNasMestoSet(NasMesto.StrToLogical08(AValue));
+  Include(DEPUTIZING.PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(ACol));
+  case TDEPUTIZINGItem.TPropertyIndex(ACol) of
+    DEPUTIZING_BEGIN_AT: DEPUTIZING.PRecord.BEGIN_AT := StrToDate(AValue);
+    DEPUTIZING_DoctorDataPos: DEPUTIZING.PRecord.DoctorDataPos := StrToInt(AValue);
+    DEPUTIZING_DeputDataPos: DEPUTIZING.PRecord.DeputDataPos := StrToInt(AValue);
+    DEPUTIZING_END_AT: DEPUTIZING.PRecord.END_AT := StrToDate(AValue);
+    DEPUTIZING_Logical: DEPUTIZING.PRecord.Logical := tlogicalDEPUTIZINGSet(DEPUTIZING.StrToLogical08(AValue));
   end;
 end;
 
-procedure TNasMestoColl.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+procedure TDEPUTIZINGColl.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   isOld: Boolean;
-  NasMesto: TNasMestoItem;
+  DEPUTIZING: TDEPUTIZINGItem;
 begin
   if Count = 0 then Exit;
   isOld := False; 
-  NasMesto := Items[ARow];
-  if not Assigned(NasMesto.PRecord) then
+  DEPUTIZING := Items[ARow];
+  if not Assigned(DEPUTIZING.PRecord) then
   begin
-    New(NasMesto.PRecord);
-    NasMesto.PRecord.setProp := [];
+    New(DEPUTIZING.PRecord);
+    DEPUTIZING.PRecord.setProp := [];
 	  CntUpdates := CntUpdates + 1;
   end
   else
   begin
-    case TNasMestoItem.TPropertyIndex(ACol) of
-      NasMesto_NasMestoName: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    NasMesto_ObshID: isOld :=  NasMesto.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    NasMesto_OblID: isOld :=  NasMesto.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    NasMesto_EKATTE: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    NasMesto_ZIP: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    NasMesto_RCZR: isOld :=  NasMesto.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    case TDEPUTIZINGItem.TPropertyIndex(ACol) of
+      DEPUTIZING_BEGIN_AT: isOld :=  DEPUTIZING.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    DEPUTIZING_DoctorDataPos: isOld :=  DEPUTIZING.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    DEPUTIZING_DeputDataPos: isOld :=  DEPUTIZING.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    DEPUTIZING_END_AT: isOld :=  DEPUTIZING.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
     end;
   end;
   if isOld then
   begin
-    Exclude(NasMesto.PRecord.setProp, TNasMestoItem.TPropertyIndex(ACol));
-    if NasMesto.PRecord.setProp = [] then
+    Exclude(DEPUTIZING.PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(ACol));
+    if DEPUTIZING.PRecord.setProp = [] then
     begin
-      Dispose(NasMesto.PRecord);
-      NasMesto.PRecord := nil;
+      Dispose(DEPUTIZING.PRecord);
+      DEPUTIZING.PRecord := nil;
       CntUpdates := CntUpdates - 1;
       Exit;
     end;
   end;
-  Include(NasMesto.PRecord.setProp, TNasMestoItem.TPropertyIndex(ACol));
-  case TNasMestoItem.TPropertyIndex(ACol) of
-    NasMesto_NasMestoName: NasMesto.PRecord.NasMestoName := AFieldText;
-    NasMesto_ObshID: NasMesto.PRecord.ObshID := StrToInt(AFieldText);
-    NasMesto_OblID: NasMesto.PRecord.OblID := StrToInt(AFieldText);
-    NasMesto_EKATTE: NasMesto.PRecord.EKATTE := AFieldText;
-    NasMesto_ZIP: NasMesto.PRecord.ZIP := AFieldText;
-    NasMesto_RCZR: NasMesto.PRecord.RCZR := AFieldText;
-    NasMesto_Logical: NasMesto.PRecord.Logical := tlogicalNasMestoSet(NasMesto.StrToLogical08(AFieldText));
+  Include(DEPUTIZING.PRecord.setProp, TDEPUTIZINGItem.TPropertyIndex(ACol));
+  case TDEPUTIZINGItem.TPropertyIndex(ACol) of
+    DEPUTIZING_BEGIN_AT: DEPUTIZING.PRecord.BEGIN_AT := StrToDate(AFieldText);
+    DEPUTIZING_DoctorDataPos: DEPUTIZING.PRecord.DoctorDataPos := StrToInt(AFieldText);
+    DEPUTIZING_DeputDataPos: DEPUTIZING.PRecord.DeputDataPos := StrToInt(AFieldText);
+    DEPUTIZING_END_AT: DEPUTIZING.PRecord.END_AT := StrToDate(AFieldText);
+    DEPUTIZING_Logical: DEPUTIZING.PRecord.Logical := tlogicalDEPUTIZINGSet(DEPUTIZING.StrToLogical08(AFieldText));
   end;
 end;
 
-procedure TNasMestoColl.SetItem(Index: Integer; const Value: TNasMestoItem);
+procedure TDEPUTIZINGColl.SetItem(Index: Integer; const Value: TDEPUTIZINGItem);
 begin
   inherited SetItem(Index, Value);
 end;
 
-procedure TNasMestoColl.SetSearchingValue(const Value: string);
+procedure TDEPUTIZINGColl.SetSearchingValue(const Value: string);
 var
   i: Integer;
 begin
   FSearchingValue := Value;
-  ListNasMestoSearch.Clear;
+  ListDEPUTIZINGSearch.Clear;
   for i := 0 to self.Count - 1 do
   begin
-    case  TNasMestoItem.TPropertyIndex(self.FindedRes.PropIndex) of
-	  NasMesto_NasMestoName:
-begin
-  if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-  begin
-    ListNasMestoSearch.Add(self.Items[i]);
-  end;
-end;
-      NasMesto_ObshID: 
+    case  TDEPUTIZINGItem.TPropertyIndex(self.FindedRes.PropIndex) of
+	  DEPUTIZING_DoctorDataPos: 
       begin
-        if IntToStr(self.Items[i].IndexWord) = FSearchingValue then
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
-          ListNasMestoSearch.Add(self.Items[i]);
+          ListDEPUTIZINGSearch.Add(self.Items[i]);
         end;
       end;
-      NasMesto_OblID: 
+      DEPUTIZING_DeputDataPos: 
       begin
-        if IntToStr(self.Items[i].IndexWord) = FSearchingValue then
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
-          ListNasMestoSearch.Add(self.Items[i]);
-        end;
-      end;
-      NasMesto_EKATTE:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListNasMestoSearch.Add(self.Items[i]);
-        end;
-      end;
-      NasMesto_ZIP:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListNasMestoSearch.Add(self.Items[i]);
-        end;
-      end;
-      NasMesto_RCZR:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListNasMestoSearch.Add(self.Items[i]);
+          ListDEPUTIZINGSearch.Add(self.Items[i]);
         end;
       end;
     end;
   end;
 end;
 
-procedure TNasMestoColl.ShowGrid(Grid: TTeeGrid);
+procedure TDEPUTIZINGColl.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
 
@@ -1104,7 +1010,7 @@ begin
 
 end;
 
-procedure TNasMestoColl.ShowGridFromList(Grid: TTeeGrid; LST: TList<TNasMestoItem>);
+procedure TDEPUTIZINGColl.ShowGridFromList(Grid: TTeeGrid; LST: TList<TDEPUTIZINGItem>);
 var
   i: word;
 
@@ -1132,17 +1038,17 @@ begin
 
 end;
 
-procedure TNasMestoColl.ShowSearchedGrid(Grid: TTeeGrid);
+procedure TDEPUTIZINGColl.ShowSearchedGrid(Grid: TTeeGrid);
 var
   i: word;
 
 begin
-  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListNasMestoSearch.Count);
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListDEPUTIZINGSearch.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListNasMestoSearch.Count]);
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListDEPUTIZINGSearch.Count]);
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -1159,7 +1065,7 @@ begin
   grid.Scrolling.Active := true;
 end;
 
-procedure TNasMestoColl.SortByIndexAnsiString;
+procedure TDEPUTIZINGColl.SortByIndexAnsiString;
 var
   sc : TList<TCollectionItem>;
 
@@ -1199,7 +1105,7 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.SortByIndexInt;
+procedure TDEPUTIZINGColl.SortByIndexInt;
 var
   sc : TList<TCollectionItem>;
 
@@ -1239,7 +1145,7 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.SortByIndexWord;
+procedure TDEPUTIZINGColl.SortByIndexWord;
 var
   sc : TList<TCollectionItem>;
 
@@ -1279,15 +1185,11 @@ begin
   end;
 end;
 
-procedure TNasMestoColl.SortByIndexValue(propIndex: TNasMestoItem.TPropertyIndex);
+procedure TDEPUTIZINGColl.SortByIndexValue(propIndex: TDEPUTIZINGItem.TPropertyIndex);
 begin
   case propIndex of
-    NasMesto_NasMestoName: SortByIndexAnsiString;
-      NasMesto_ObshID: SortByIndexWord;
-      NasMesto_OblID: SortByIndexWord;
-      NasMesto_EKATTE: SortByIndexAnsiString;
-      NasMesto_ZIP: SortByIndexAnsiString;
-      NasMesto_RCZR: SortByIndexAnsiString;
+    DEPUTIZING_DoctorDataPos: SortByIndexInt;
+      DEPUTIZING_DeputDataPos: SortByIndexInt;
   end;
 end;
 

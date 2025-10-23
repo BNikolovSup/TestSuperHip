@@ -1,5 +1,5 @@
 program Hippocrates360;
-// statusitem.
+// events.
 {$R *.dres}
 
 uses
@@ -41,7 +41,6 @@ uses
   Table.Diagnosis in 'Aspects\Tables\Table.Diagnosis.pas',
   Table.DiagnosticReport in 'Aspects\Tables\Table.DiagnosticReport.pas',
   Table.Doctor in 'Aspects\Tables\Table.Doctor.pas',
-  Table.EventsManyTimes in 'Aspects\Tables\Table.EventsManyTimes.pas',
   Table.Exam_boln_list in 'Aspects\Tables\Table.Exam_boln_list.pas',
   Table.ExamImmunization in 'Aspects\Tables\Table.ExamImmunization.pas',
   Table.MDN in 'Aspects\Tables\Table.MDN.pas',
@@ -128,7 +127,14 @@ uses
   msgR016 in 'msgR016.pas',
   Table.EXAM_LKK in 'Aspects\Tables\Table.EXAM_LKK.pas',
   Table.INC_NAPR in 'Aspects\Tables\Table.INC_NAPR.pas',
-  Table.OtherDoctor in 'Aspects\Tables\Table.OtherDoctor.pas';
+  Table.OtherDoctor in 'Aspects\Tables\Table.OtherDoctor.pas',
+  fmxImportNzisForm in '..\Popup\fmxImportNzisForm.pas' {frmImportNzis},
+  Table.Addres in 'Aspects\Tables\Table.Addres.pas',
+  RealNasMesto in 'RealNasMesto.pas',
+  uFuzzyMatch in 'uFuzzyMatch.pas',
+  Table.DEPUTIZING in 'Aspects\Tables\Table.DEPUTIZING.pas',
+  Nzis.NzisImport in 'NzisImport\Nzis.NzisImport.pas' ,
+  Nzis.XMLHelper in 'XML\Nzis.XMLHelper.pas';
 
 {$R *.res}
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
@@ -147,6 +153,7 @@ begin
 
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
   Application.CreateForm(TfrmFmxControls, frmFmxControls);
+  Application.CreateForm(TfrmImportNzis, frmImportNzis);
   //Application.CreateForm(TfrmRolePanels, frmRolePanels);
   //Application.CreateForm(TfrmOptionsForm, frmOptionsForm);
   if ParamStr(1) <> '' then

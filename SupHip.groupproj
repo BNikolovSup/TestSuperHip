@@ -33,9 +33,6 @@
         <Projects Include="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj">
             <Dependencies/>
         </Projects>
-        <Projects Include="AspTest.dproj">
-            <Dependencies/>
-        </Projects>
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\MemoValidating\MemoValidating.dproj">
             <Dependencies/>
         </Projects>
@@ -73,6 +70,15 @@
             <Dependencies/>
         </Projects>
         <Projects Include="..\NzisMessages\NzisMessagesDll.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestAspGtp\TestAspGtp.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\Tablet.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\NzisDll\NZIS_DLL\NZIS.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -172,15 +178,6 @@
     </Target>
     <Target Name="Rtti_Explorer_Seattle:Make">
         <MSBuild Projects="D:\Inst\blog-master\blog-master\RTTI\Rtti Explorer Lite\Rtti_Explorer_Seattle.dproj" Targets="Make"/>
-    </Target>
-    <Target Name="AspTest">
-        <MSBuild Projects="AspTest.dproj"/>
-    </Target>
-    <Target Name="AspTest:Clean">
-        <MSBuild Projects="AspTest.dproj" Targets="Clean"/>
-    </Target>
-    <Target Name="AspTest:Make">
-        <MSBuild Projects="AspTest.dproj" Targets="Make"/>
     </Target>
     <Target Name="MemoValidating">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\MemoValidating\MemoValidating.dproj"/>
@@ -299,14 +296,41 @@
     <Target Name="NzisMessagesDll:Make">
         <MSBuild Projects="..\NzisMessages\NzisMessagesDll.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TestAspGtp">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestAspGtp\TestAspGtp.dproj"/>
+    </Target>
+    <Target Name="TestAspGtp:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestAspGtp\TestAspGtp.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestAspGtp:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\TestAspGtp\TestAspGtp.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Tablet">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\Tablet.dproj"/>
+    </Target>
+    <Target Name="Tablet:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\Tablet.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Tablet:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\Tablet.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="NZIS">
+        <MSBuild Projects="..\NzisDll\NZIS_DLL\NZIS.dproj"/>
+    </Target>
+    <Target Name="NZIS:Clean">
+        <MSBuild Projects="..\NzisDll\NZIS_DLL\NZIS.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="NZIS:Make">
+        <MSBuild Projects="..\NzisDll\NZIS_DLL\NZIS.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;AspTest;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll;TestAspGtp;Tablet;NZIS"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;AspTest:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean;TestAspGtp:Clean;Tablet:Clean;NZIS:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;AspTest:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make;TestAspGtp:Make;Tablet:Make;NZIS:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

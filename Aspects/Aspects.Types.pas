@@ -37,7 +37,8 @@ type
                       ctNZIS_PLANNED_TYPE, ctNZIS_QUESTIONNAIRE_RESPONSE, ctNZIS_QUESTIONNAIRE_ANSWER,
                       ctNZIS_ANSWER_VALUE, ctNZIS_RESULT_DIAGNOSTIC_REPORT, ctNZIS_DIAGNOSTIC_REPORT,
                       ctCL144, ctCL037, ctCL006, ctNzisToken, ctCertificates, ctNzisReqResp, ctBLANKA_MED_NAPR_3A,
-                      ctINC_MDN, ctAnalResult, ctHOSPITALIZATION, ctEXAM_LKK, ctINC_NAPR, ctOtherDoctor);
+                      ctINC_MDN, ctAnalResult, ctHOSPITALIZATION, ctEXAM_LKK, ctINC_NAPR, ctOtherDoctor,
+                      ctAddres, ctDEPUTIZING);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -154,7 +155,18 @@ type
              vvIncMdn,
              vvMedNaprHosp,
              vvMedNaprLkk,
-             vvIncMN
+             vvIncMN,
+             vvOtherDoctor,
+             vvRootNasMesta,
+             vvOblast,
+             vvObshtina,
+             vvNasMesto,
+             vvAddres,
+             vvRootdoctor,
+             vvRootDoctorPrac,
+             vvRootDoctorSender,
+             vvRootDoctorConsult,
+             vvRootDoctorColege
              );
 
 
@@ -472,7 +484,9 @@ type
                 NZIS_RESULT_DIAGNOSTIC_REPORT,
                 NzisToken,
                 INC_MDN,
-                INC_NAPR
+                INC_NAPR,
+                Asp_Addres,
+                Asp_OtherDoctor
           );
    TPlanedStatus = (psNew, psInNzis, psMain, psNzisPending, psNzisPartiallyCompleted, psNzisCompleted);
    TPlanedStatusSet = set of TPlanedStatus;

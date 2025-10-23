@@ -25,9 +25,10 @@ TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 TOblastItem = class(TBaseItem)
   public
     type
-      TPropertyIndex = (Oblast_OblastName
-, Oblast_OblastID
-);
+      TPropertyIndex =
+      (  Oblast_OblastName
+       , Oblast_OblastID
+      );
       TSetProp = set of TPropertyIndex;
       PRecOblast = ^TRecOblast;
       TRecOblast = record

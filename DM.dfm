@@ -692,8 +692,17 @@ object DUNzis: TDUNzis
       ',PID_TYPE'
       ',RH'
       ',null as "Doctor_id"'
-      ',NAS_MQSTO '
-      ''
+      ',coalesce(pa.NAS_MQSTO, pa.ulica, pa.jk)'
+      ',pa.AP'
+      ',pa.BL'
+      ',pa.DTEL'
+      ',pa.EMAIL'
+      ',pa.ET'
+      ',pa.JK'
+      ',pa.NOMER'
+      ',pa.PKUT'
+      ',pa.ULICA'
+      ',pa.VH'
       ''
       ''
       'from pacient pa')
@@ -863,18 +872,27 @@ object DUNzis: TDUNzis
       ',pa.RZOK'
       ',pa.RZOKR'
       ''
-      ',BLOOD_TYPE'
-      ',SEX_TYPE'
-      ',NZIS_PID'
-      ',EHRH_PATIENT'
-      ',GDPR_PRINTED'
-      ',KYRMA3MES'
-      ',KYRMA6MES'
-      ',PID_TYPE'
-      ',RH'
-      ',Doctor_ID'
-      ',NAS_MQSTO'
-      ''
+      ',pa.BLOOD_TYPE'
+      ',pa.SEX_TYPE'
+      ',pa.NZIS_PID'
+      ',pa.EHRH_PATIENT'
+      ',pa.GDPR_PRINTED'
+      ',pa.KYRMA3MES'
+      ',pa.KYRMA6MES'
+      ',pa.PID_TYPE'
+      ',pa.RH'
+      ',pa.Doctor_ID'
+      ',coalesce(pa.NAS_MQSTO, pa.ulica, pa.jk)'
+      ',pa.AP'
+      ',pa.BL'
+      ',pa.DTEL'
+      ',pa.EMAIL'
+      ',pa.ET'
+      ',pa.JK'
+      ',pa.NOMER'
+      ',pa.PKUT'
+      ',pa.ULICA'
+      ',pa.VH'
       ''
       'from pacient pa')
     Transaction = traMain
@@ -1549,6 +1567,25 @@ object DUNzis: TDUNzis
       'left join speciality sp5 on sp.id = incMN.SPECIALITY_ID_5')
     Transaction = traMain
     Left = 623
+    Top = 432
+  end
+  object ibsqlOtherDoctor: TIBSQL
+    Database = DBMain
+    SQL.Strings = (
+      'select'
+      'IncDoc.ID,'
+      'IncDoc.FNAME,'
+      'IncDoc.SNAME,'
+      'IncDoc.LNAME,'
+      'IncDoc.UIN,'
+      'sp.specnziscode,'
+      'IncDoc.RZOK,'
+      'IncDoc.RZOKR,'
+      'IncDoc.REG_NUMBER'
+      'from inc_doctor IncDoc'
+      'inner join speciality sp on sp.id = incDoc.speciality_id')
+    Transaction = traMain
+    Left = 695
     Top = 432
   end
 end

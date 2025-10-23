@@ -1301,6 +1301,7 @@ var
   ArrCol: TArray<TColumn>;
 begin
   inherited;
+  Exit;
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;

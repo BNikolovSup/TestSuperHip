@@ -165,7 +165,6 @@
         <DCCReference Include="Aspects\Tables\Table.Diagnosis.pas"/>
         <DCCReference Include="Aspects\Tables\Table.DiagnosticReport.pas"/>
         <DCCReference Include="Aspects\Tables\Table.Doctor.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.EventsManyTimes.pas"/>
         <DCCReference Include="Aspects\Tables\Table.Exam_boln_list.pas"/>
         <DCCReference Include="Aspects\Tables\Table.ExamImmunization.pas"/>
         <DCCReference Include="Aspects\Tables\Table.MDN.pas"/>
@@ -268,6 +267,18 @@
         <DCCReference Include="Aspects\Tables\Table.EXAM_LKK.pas"/>
         <DCCReference Include="Aspects\Tables\Table.INC_NAPR.pas"/>
         <DCCReference Include="Aspects\Tables\Table.OtherDoctor.pas"/>
+        <DCCReference Include="..\Popup\fmxImportNzisForm.pas">
+            <Form>frmImportNzis</Form>
+            <FormType>fmx</FormType>
+        </DCCReference>
+        <DCCReference Include="Aspects\Tables\Table.Addres.pas"/>
+        <DCCReference Include="RealNasMesto.pas"/>
+        <DCCReference Include="uFuzzyMatch.pas"/>
+        <DCCReference Include="Aspects\Tables\Table.DEPUTIZING.pas"/>
+        <DCCReference Include="NzisImport\Nzis.NzisImport.pas">
+            <Form>$R *.res</Form>
+        </DCCReference>
+        <DCCReference Include="XML\Nzis.XMLHelper.pas"/>
         <RcItem Include="Res\MKB_Groups.txt">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>

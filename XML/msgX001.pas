@@ -409,10 +409,10 @@ type
   IXMLEkatteType = interface(IXMLNode)
     ['{DA6C373D-3023-415D-9429-50D97BCE1C2E}']
     { Property Accessors }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
     { Methods & Properties }
-    property Value: Integer read Get_Value write Set_Value;
+    property Value: UnicodeString read Get_Value write Set_Value;
   end;
 
 { IXMLCityType }
@@ -815,8 +815,8 @@ type
   TXMLEkatteType = class(TXMLNode, IXMLEkatteType)
   protected
     { IXMLEkatteType }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
   end;
 
 { TXMLCityType }
@@ -1396,12 +1396,12 @@ end;
 
 { TXMLEkatteType }
 
-function TXMLEkatteType.Get_Value: Integer;
+function TXMLEkatteType.Get_Value: UnicodeString;
 begin
   Result := AttributeNodes['value'].NodeValue;
 end;
 
-procedure TXMLEkatteType.Set_Value(Value: Integer);
+procedure TXMLEkatteType.Set_Value(Value: UnicodeString);
 begin
   SetAttribute('value', Value);
 end;
