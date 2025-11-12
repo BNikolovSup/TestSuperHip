@@ -1,5 +1,6 @@
 program Hippocrates360;
-// events.
+
+
 {$R *.dres}
 
 uses
@@ -116,9 +117,6 @@ uses
   FmxControls in '..\Popup\FmxControls.pas' {frmFmxControls},
   msgX001 in 'XML\msgX001.pas',
   msgX002 in 'XML\msgX002.pas',
-  msgX003 in 'XML\msgX003.pas',
-  msgX013 in 'msgX013.pas',
-  msgR001 in 'msgR001.pas',
   msgR002 in 'msgR002.pas',
   Table.BLANKA_MED_NAPR_3A in 'Aspects\Tables\Table.BLANKA_MED_NAPR_3A.pas',
   Table.INC_MDN in 'Aspects\Tables\Table.INC_MDN.pas',
@@ -133,9 +131,14 @@ uses
   RealNasMesto in 'RealNasMesto.pas',
   uFuzzyMatch in 'uFuzzyMatch.pas',
   Table.DEPUTIZING in 'Aspects\Tables\Table.DEPUTIZING.pas',
-  Nzis.NzisImport in 'NzisImport\Nzis.NzisImport.pas' ,
-  Nzis.XMLHelper in 'XML\Nzis.XMLHelper.pas';
+  Nzis.NzisImport in 'NzisImport\Nzis.NzisImport.pas',
+  Nzis.XMLHelper in 'XML\Nzis.XMLHelper.pas',
+  HISXMLHelper in 'HISXMLHelper.pas',
+  msgX003 in 'XML\msgX003.pas',
+  msgX013 in 'msgX013.pas',
+  msgR001 in 'msgR001.pas';
 
+{$R *.dres}
 {$R *.res}
 {$SetPEFlags IMAGE_FILE_LARGE_ADDRESS_AWARE}
 begin

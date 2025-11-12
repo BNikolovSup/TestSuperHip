@@ -3,7 +3,7 @@
 {                                                                                                                                                                                                                                              }
 {                                                                                                               XML Data Binding                                                                                                               }
 {                                                                                                                                                                                                                                              }
-{         Generated on: 1.10.2025 г. 9:26:17                                                                                                                                                                                                   }
+{         Generated on: 3.11.2025 г. 12:09:46                                                                                                                                                                                                  }
 {       Generated from: C:\Users\Administrator1\Downloads\За възстановяване на данни по предоставен xml от НЗИС\За възстановяване на данни по предоставен xml от НЗИС\attachments-katerinanikolova66mailbg-inbox-29131\Приложение 1\R001.xml   }
 {   Settings stored in: C:\Users\Administrator1\Downloads\За възстановяване на данни по предоставен xml от НЗИС\За възстановяване на данни по предоставен xml от НЗИС\attachments-katerinanikolova66mailbg-inbox-29131\Приложение 1\R001.xdb   }
 {                                                                                                                                                                                                                                              }
@@ -40,6 +40,17 @@ type
   IXMLFinancingSourceType = interface;
   IXMLLaboratoryType = interface;
   IXMLCodeType = interface;
+  IXMLConsultationType = interface;
+  IXMLQualificationType = interface;
+  IXMLQualificationTypeList = interface;
+  IXMLHospitalizationType = interface;
+  IXMLAdmissionType = interface;
+  IXMLDirectedByType = interface;
+  IXMLClinicalPathwayType = interface;
+  IXMLOutpatientProcedureType = interface;
+  IXMLMedicalExpertiseType = interface;
+  IXMLExamType = interface;
+  IXMLExamTypeList = interface;
   IXMLDiagnosisType = interface;
   IXMLUseType = interface;
   IXMLRankType = interface;
@@ -58,7 +69,6 @@ type
   IXMLCityType = interface;
   IXMLRequesterType = interface;
   IXMLPmiType = interface;
-  IXMLQualificationType = interface;
   IXMLRoleType = interface;
   IXMLPracticeNumberType = interface;
   IXMLSignatureType = interface;
@@ -77,7 +87,7 @@ type
 { IXMLMessageType }
 
   IXMLMessageType = interface(IXMLNode)
-    ['{2BD1AF19-09BD-445C-AE38-C8E17E9F1C7C}']
+    ['{A89A82A6-B757-47F6-A98C-2E2BF8E4E073}']
     { Property Accessors }
     function Get_Header: IXMLHeaderType;
     function Get_Contents: IXMLContentsType;
@@ -91,7 +101,7 @@ type
 { IXMLHeaderType }
 
   IXMLHeaderType = interface(IXMLNode)
-    ['{02320D46-F400-48CD-9102-1A8E01422F0A}']
+    ['{5A8FCDBA-C979-492F-9E25-DE623F7ADAF4}']
     { Property Accessors }
     function Get_Sender: IXMLSenderType;
     function Get_SenderId: IXMLSenderIdType;
@@ -115,7 +125,7 @@ type
 { IXMLSenderType }
 
   IXMLSenderType = interface(IXMLNode)
-    ['{83099306-A1C5-4EC1-8E6D-51096C1EC628}']
+    ['{2E101232-1369-4D60-BB3E-5FD2156E76A0}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -126,7 +136,7 @@ type
 { IXMLSenderIdType }
 
   IXMLSenderIdType = interface(IXMLNode)
-    ['{2F1B74A2-9CAB-4BCC-B104-668B178D9278}']
+    ['{359B3C73-EC75-471C-9AE9-49392010CB96}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -137,7 +147,7 @@ type
 { IXMLSenderISNameType }
 
   IXMLSenderISNameType = interface(IXMLNode)
-    ['{261ACB78-819F-45BA-9EA6-2DCF5C976E9B}']
+    ['{82703A49-E97D-47AE-A825-36451D489B6E}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -148,7 +158,7 @@ type
 { IXMLRecipientType }
 
   IXMLRecipientType = interface(IXMLNode)
-    ['{B5974367-25EB-44F0-AA47-ADFE5B06973A}']
+    ['{F06C1B12-4308-4BA5-AED2-DD7EE240AAF8}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -159,7 +169,7 @@ type
 { IXMLRecipientIdType }
 
   IXMLRecipientIdType = interface(IXMLNode)
-    ['{AD8EA11D-92AE-44D3-9088-8E9321243297}']
+    ['{B3E5AC86-9474-4F29-A18D-79C720A476D4}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -170,7 +180,7 @@ type
 { IXMLMessageIdType }
 
   IXMLMessageIdType = interface(IXMLNode)
-    ['{D99EFD0F-5078-4277-99A5-2D9CB9D3A098}']
+    ['{D970C57C-059C-466F-852F-AB3653B48052}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -181,7 +191,7 @@ type
 { IXMLMessageType2 }
 
   IXMLMessageType2 = interface(IXMLNode)
-    ['{82554CD0-9D50-4C6D-8BE5-3207EC5E9C34}']
+    ['{C3F74167-FD21-45AA-A0E4-DCD983533FFE}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -192,7 +202,7 @@ type
 { IXMLCreatedOnType }
 
   IXMLCreatedOnType = interface(IXMLNode)
-    ['{53568DA1-F175-46A1-BA23-67C6A232AC4F}']
+    ['{2633020E-E188-4999-9610-9C793D8590A9}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -203,7 +213,7 @@ type
 { IXMLContentsType }
 
   IXMLContentsType = interface(IXMLNode)
-    ['{28BD6C34-45CD-44B7-8F05-394C1FFD6161}']
+    ['{AF03B11E-233E-4BE2-8C34-5A0096C4FF96}']
     { Property Accessors }
     function Get_Referral: IXMLReferralType;
     function Get_Subject: IXMLSubjectType;
@@ -217,7 +227,7 @@ type
 { IXMLReferralType }
 
   IXMLReferralType = interface(IXMLNode)
-    ['{A5E3E93A-4502-462F-B496-4E27C5847649}']
+    ['{7C95D5A5-63A6-45AE-86FB-9CACC50402F4}']
     { Property Accessors }
     function Get_Lrn: IXMLLrnType;
     function Get_AuthoredOn: IXMLAuthoredOnType;
@@ -227,6 +237,9 @@ type
     function Get_BasedOn: IXMLBasedOnType;
     function Get_FinancingSource: IXMLFinancingSourceType;
     function Get_Laboratory: IXMLLaboratoryType;
+    function Get_Consultation: IXMLConsultationType;
+    function Get_Hospitalization: IXMLHospitalizationType;
+    function Get_MedicalExpertise: IXMLMedicalExpertiseType;
     function Get_Diagnosis: IXMLDiagnosisType;
     { Methods & Properties }
     property Lrn: IXMLLrnType read Get_Lrn;
@@ -237,13 +250,16 @@ type
     property BasedOn: IXMLBasedOnType read Get_BasedOn;
     property FinancingSource: IXMLFinancingSourceType read Get_FinancingSource;
     property Laboratory: IXMLLaboratoryType read Get_Laboratory;
+    property Consultation: IXMLConsultationType read Get_Consultation;
+    property Hospitalization: IXMLHospitalizationType read Get_Hospitalization;
+    property MedicalExpertise: IXMLMedicalExpertiseType read Get_MedicalExpertise;
     property Diagnosis: IXMLDiagnosisType read Get_Diagnosis;
   end;
 
 { IXMLLrnType }
 
   IXMLLrnType = interface(IXMLNode)
-    ['{943949B3-CEB9-40A2-91CE-5A5658E1C80D}']
+    ['{612FDA81-AD86-4E96-9CEB-D5CD16084F0D}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -254,7 +270,7 @@ type
 { IXMLAuthoredOnType }
 
   IXMLAuthoredOnType = interface(IXMLNode)
-    ['{C526A760-B0C3-42CA-AD9A-D606A2420C04}']
+    ['{817310F2-12A6-4577-B08B-93671BCAE0E5}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -265,7 +281,7 @@ type
 { IXMLCategoryType }
 
   IXMLCategoryType = interface(IXMLNode)
-    ['{0B18ED74-5617-4F9A-98E1-5DA471A8CEE4}']
+    ['{D574A5CC-17DC-4828-B9BF-06157A7A4A9A}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -276,7 +292,7 @@ type
 { IXMLTypeType }
 
   IXMLTypeType = interface(IXMLNode)
-    ['{D8EA603C-C3CF-435F-B2AA-647B49751F7E}']
+    ['{B0B66E19-28D8-40A6-BD44-B4F26A893A3D}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -287,7 +303,7 @@ type
 { IXMLRhifAreaNumberType }
 
   IXMLRhifAreaNumberType = interface(IXMLNode)
-    ['{3B60C340-9DCD-4161-A58A-34BBB7B63E9E}']
+    ['{E3B36C7F-9A3B-4242-80D7-B7E72984E240}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -298,7 +314,7 @@ type
 { IXMLBasedOnType }
 
   IXMLBasedOnType = interface(IXMLNode)
-    ['{1877B6FA-D1EE-4FDD-AAC5-8EFC0E830882}']
+    ['{61C8AC3F-A547-49A8-B116-3468680DA978}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -309,7 +325,7 @@ type
 { IXMLFinancingSourceType }
 
   IXMLFinancingSourceType = interface(IXMLNode)
-    ['{422FBFEE-719A-4265-B738-E48C3C8E616C}']
+    ['{7929A3E1-EF2F-4475-AFBC-859622903F13}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -320,7 +336,7 @@ type
 { IXMLLaboratoryType }
 
   IXMLLaboratoryType = interface(IXMLNodeCollection)
-    ['{4D4EB79F-F02D-4FF6-B6C0-8AFAD1F6843E}']
+    ['{AEAE1E3F-AC1E-4F34-8880-B8932CA0F44C}']
     { Property Accessors }
     function Get_Code(Index: Integer): IXMLCodeType;
     { Methods & Properties }
@@ -332,7 +348,7 @@ type
 { IXMLCodeType }
 
   IXMLCodeType = interface(IXMLNode)
-    ['{CA285A29-DFFF-451E-B008-97850BF33981}']
+    ['{110D7498-48E3-4391-B9FA-A415440212C3}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -340,10 +356,143 @@ type
     property Value: UnicodeString read Get_Value write Set_Value;
   end;
 
+{ IXMLConsultationType }
+
+  IXMLConsultationType = interface(IXMLNodeCollection)
+    ['{32607EB2-B865-4B44-805A-D0C22C21A5AB}']
+    { Property Accessors }
+    function Get_Qualification(Index: Integer): IXMLQualificationType;
+    { Methods & Properties }
+    function Add: IXMLQualificationType;
+    function Insert(const Index: Integer): IXMLQualificationType;
+    property Qualification[Index: Integer]: IXMLQualificationType read Get_Qualification; default;
+  end;
+
+{ IXMLQualificationType }
+
+  IXMLQualificationType = interface(IXMLNode)
+    ['{2617D857-A6F8-4CA0-889F-A105F85B275F}']
+    { Property Accessors }
+    function Get_Value: UnicodeString;
+    function Get_NhifCode: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+    procedure Set_NhifCode(Value: UnicodeString);
+    { Methods & Properties }
+    property Value: UnicodeString read Get_Value write Set_Value;
+    property NhifCode: UnicodeString read Get_NhifCode write Set_NhifCode;
+  end;
+
+{ IXMLQualificationTypeList }
+
+  IXMLQualificationTypeList = interface(IXMLNodeCollection)
+    ['{9380AB77-F29F-4B73-AAC5-7FCEBFCFFBB1}']
+    { Methods & Properties }
+    function Add: IXMLQualificationType;
+    function Insert(const Index: Integer): IXMLQualificationType;
+
+    function Get_Item(Index: Integer): IXMLQualificationType;
+    property Items[Index: Integer]: IXMLQualificationType read Get_Item; default;
+  end;
+
+{ IXMLHospitalizationType }
+
+  IXMLHospitalizationType = interface(IXMLNode)
+    ['{5981F905-FFA9-4427-84FF-2BB5603B64BC}']
+    { Property Accessors }
+    function Get_AdmissionType: IXMLAdmissionType;
+    function Get_DirectedBy: IXMLDirectedByType;
+    function Get_ClinicalPathway: IXMLClinicalPathwayType;
+    function Get_OutpatientProcedure: IXMLOutpatientProcedureType;
+    { Methods & Properties }
+    property AdmissionType: IXMLAdmissionType read Get_AdmissionType;
+    property DirectedBy: IXMLDirectedByType read Get_DirectedBy;
+    property ClinicalPathway: IXMLClinicalPathwayType read Get_ClinicalPathway;
+    property OutpatientProcedure: IXMLOutpatientProcedureType read Get_OutpatientProcedure;
+  end;
+
+{ IXMLAdmissionType }
+
+  IXMLAdmissionType = interface(IXMLNode)
+    ['{9269219D-4C35-4CE2-9EE1-46BC2FEC53E4}']
+    { Property Accessors }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+    { Methods & Properties }
+    property Value: Integer read Get_Value write Set_Value;
+  end;
+
+{ IXMLDirectedByType }
+
+  IXMLDirectedByType = interface(IXMLNode)
+    ['{DB3EB0D7-1926-4544-AB20-C0A55D7DBA68}']
+    { Property Accessors }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+    { Methods & Properties }
+    property Value: Integer read Get_Value write Set_Value;
+  end;
+
+{ IXMLClinicalPathwayType }
+
+  IXMLClinicalPathwayType = interface(IXMLNode)
+    ['{823A4120-4CD4-4395-A7AB-2BE6DFCD1BAF}']
+    { Property Accessors }
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+    { Methods & Properties }
+    property Value: UnicodeString read Get_Value write Set_Value;
+  end;
+
+{ IXMLOutpatientProcedureType }
+
+  IXMLOutpatientProcedureType = interface(IXMLNode)
+    ['{135C68D8-575F-41C9-A4EB-E5EB847C9CC3}']
+    { Property Accessors }
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+    { Methods & Properties }
+    property Value: UnicodeString read Get_Value write Set_Value;
+  end;
+
+{ IXMLMedicalExpertiseType }
+
+  IXMLMedicalExpertiseType = interface(IXMLNode)
+    ['{0169B8B4-A987-4C3D-8CB8-178F7CB551E3}']
+    { Property Accessors }
+    function Get_Qualification: IXMLQualificationTypeList;
+    function Get_ExamType: IXMLExamTypeList;
+    { Methods & Properties }
+    property Qualification: IXMLQualificationTypeList read Get_Qualification;
+    property ExamType: IXMLExamTypeList read Get_ExamType;
+  end;
+
+{ IXMLExamType }
+
+  IXMLExamType = interface(IXMLNode)
+    ['{15C10A4F-D08C-4775-A660-2BE2B8C2A9D4}']
+    { Property Accessors }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+    { Methods & Properties }
+    property Value: Integer read Get_Value write Set_Value;
+  end;
+
+{ IXMLExamTypeList }
+
+  IXMLExamTypeList = interface(IXMLNodeCollection)
+    ['{563FF60A-4437-45B9-A431-D81CE441267E}']
+    { Methods & Properties }
+    function Add: IXMLExamType;
+    function Insert(const Index: Integer): IXMLExamType;
+
+    function Get_Item(Index: Integer): IXMLExamType;
+    property Items[Index: Integer]: IXMLExamType read Get_Item; default;
+  end;
+
 { IXMLDiagnosisType }
 
   IXMLDiagnosisType = interface(IXMLNode)
-    ['{CC5C1A48-0D2A-462B-AB3F-AAB01802BE25}']
+    ['{C1C966B8-97D8-42AB-A07D-2DBDB9BB483D}']
     { Property Accessors }
     function Get_Code: IXMLCodeType;
     function Get_Use: IXMLUseType;
@@ -357,7 +506,7 @@ type
 { IXMLUseType }
 
   IXMLUseType = interface(IXMLNode)
-    ['{A5F90156-D7A0-4BF8-A061-9B86D14D0035}']
+    ['{AB27DCA3-91EB-48C6-AF7C-AFA247DD116A}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -368,7 +517,7 @@ type
 { IXMLRankType }
 
   IXMLRankType = interface(IXMLNode)
-    ['{7D1F4EE4-7E9F-499B-97C3-3AE16C599B4F}']
+    ['{039FB089-8690-442B-A389-2AFBD5403112}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -379,7 +528,7 @@ type
 { IXMLSubjectType }
 
   IXMLSubjectType = interface(IXMLNode)
-    ['{108EFC05-4393-4F0E-B36B-C096CBD6801C}']
+    ['{E76ECE74-3649-4738-851A-F45F3B22B92B}']
     { Property Accessors }
     function Get_IdentifierType: IXMLIdentifierType;
     function Get_Identifier: IXMLIdentifierType;
@@ -399,7 +548,7 @@ type
 { IXMLIdentifierType }
 
   IXMLIdentifierType = interface(IXMLNode)
-    ['{68B25182-F382-4819-87CB-4E33A0F649D8}']
+    ['{95E30A73-D832-4091-9721-F37B528A1DF3}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -410,7 +559,7 @@ type
 { IXMLBirthDateType }
 
   IXMLBirthDateType = interface(IXMLNode)
-    ['{D5974A12-EA61-4491-A6DC-8F23EEC0526A}']
+    ['{BEF1F222-EEEC-45A7-A94E-52EBB3F8515D}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -421,7 +570,7 @@ type
 { IXMLGenderType }
 
   IXMLGenderType = interface(IXMLNode)
-    ['{88AF50B1-E5F1-4794-9633-07FAE5D15DE3}']
+    ['{C4B80AFF-9618-4239-922E-94D666D6B513}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -432,7 +581,7 @@ type
 { IXMLNameType }
 
   IXMLNameType = interface(IXMLNode)
-    ['{D254845A-44DE-47FD-BB97-064D13CEA166}']
+    ['{023461B6-8D41-48C2-B25A-2D63675F299C}']
     { Property Accessors }
     function Get_Given: IXMLGivenType;
     function Get_Middle: IXMLMiddleType;
@@ -446,7 +595,7 @@ type
 { IXMLGivenType }
 
   IXMLGivenType = interface(IXMLNode)
-    ['{7D10F2BC-281C-4C13-91B4-1C6071A693AF}']
+    ['{72414576-7BC2-498E-A2CD-0EF1D8898453}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -457,7 +606,7 @@ type
 { IXMLMiddleType }
 
   IXMLMiddleType = interface(IXMLNode)
-    ['{224C37A3-1EFE-4C36-89C5-7CDE57990E53}']
+    ['{180F2C21-BE23-419D-98BE-3876889CA210}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -468,7 +617,7 @@ type
 { IXMLFamilyType }
 
   IXMLFamilyType = interface(IXMLNode)
-    ['{D64F685D-2792-4A9F-ADA1-035D45D89089}']
+    ['{CEDA7059-B1EF-4F4C-99B4-69E44D229578}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -479,7 +628,7 @@ type
 { IXMLAddressType }
 
   IXMLAddressType = interface(IXMLNode)
-    ['{AAAF877B-AB9D-4B4C-841B-38D188A72528}']
+    ['{5CC94DA6-8424-4C04-A1A6-CAE4D7887BB4}']
     { Property Accessors }
     function Get_Country: IXMLCountryType;
     function Get_County: IXMLCountyType;
@@ -495,7 +644,7 @@ type
 { IXMLCountryType }
 
   IXMLCountryType = interface(IXMLNode)
-    ['{D5E505B8-C14F-4F33-9A24-C865634B4C36}']
+    ['{8917B4AB-F35F-490E-9CCA-86D1E7F25BD8}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -506,7 +655,7 @@ type
 { IXMLCountyType }
 
   IXMLCountyType = interface(IXMLNode)
-    ['{F868A0D8-D4E8-4F13-A905-B5B8DBF4F264}']
+    ['{6BF23047-6680-415A-8548-DA561F6476CA}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -517,7 +666,7 @@ type
 { IXMLEkatteType }
 
   IXMLEkatteType = interface(IXMLNode)
-    ['{7E7AB407-2091-4D0C-B7DC-5D84F22F7340}']
+    ['{A682E5ED-056B-4D86-AFA5-D159F6AC0107}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -528,7 +677,7 @@ type
 { IXMLCityType }
 
   IXMLCityType = interface(IXMLNode)
-    ['{F3110389-8E48-4AA9-938F-0CBFBEC6E522}']
+    ['{1943B0F1-C18A-4D9B-9710-A9B77F86E748}']
     { Property Accessors }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
@@ -539,7 +688,7 @@ type
 { IXMLRequesterType }
 
   IXMLRequesterType = interface(IXMLNode)
-    ['{118EC4BB-2164-430E-ADB1-1B02AE91625C}']
+    ['{A51C3245-C497-4632-90B7-EF59DACEAC3D}']
     { Property Accessors }
     function Get_Pmi: IXMLPmiType;
     function Get_Qualification: IXMLQualificationType;
@@ -557,32 +706,18 @@ type
 { IXMLPmiType }
 
   IXMLPmiType = interface(IXMLNode)
-    ['{0A6C280C-396B-4E17-A3EF-4E82B99B8EA7}']
+    ['{F5D7D231-C820-42EC-98DC-052706495134}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
     { Methods & Properties }
     property Value: Integer read Get_Value write Set_Value;
-  end;
-
-{ IXMLQualificationType }
-
-  IXMLQualificationType = interface(IXMLNode)
-    ['{EFF5E271-5220-49BB-8D20-220F5E7A1227}']
-    { Property Accessors }
-    function Get_Value: Integer;
-    function Get_NhifCode: Integer;
-    procedure Set_Value(Value: Integer);
-    procedure Set_NhifCode(Value: Integer);
-    { Methods & Properties }
-    property Value: Integer read Get_Value write Set_Value;
-    property NhifCode: Integer read Get_NhifCode write Set_NhifCode;
   end;
 
 { IXMLRoleType }
 
   IXMLRoleType = interface(IXMLNode)
-    ['{2D2AA4C4-2D76-4E3B-9A8A-368F83D2E25F}']
+    ['{000CC94A-0FAE-4198-8973-6A82C0851F4E}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -593,7 +728,7 @@ type
 { IXMLPracticeNumberType }
 
   IXMLPracticeNumberType = interface(IXMLNode)
-    ['{E06C3682-B5DC-48BB-9AF2-8B6D84C985B8}']
+    ['{0A54647C-D846-4AD9-99CE-2B612C8B7ADB}']
     { Property Accessors }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
@@ -604,7 +739,7 @@ type
 { IXMLSignatureType }
 
   IXMLSignatureType = interface(IXMLNode)
-    ['{58485109-4396-4558-A34F-5856364794C7}']
+    ['{D1B80D26-C0EC-4B1C-890B-4B882465FF57}']
     { Property Accessors }
     function Get_Xmlns: UnicodeString;
     function Get_SignedInfo: IXMLSignedInfoType;
@@ -622,7 +757,7 @@ type
 { IXMLSignedInfoType }
 
   IXMLSignedInfoType = interface(IXMLNode)
-    ['{48730A18-17EB-4235-BDDE-DD6E924F4DC2}']
+    ['{C896C382-DA14-47C8-820A-9924AAE4F904}']
     { Property Accessors }
     function Get_Xmlns: UnicodeString;
     function Get_CanonicalizationMethod: IXMLCanonicalizationMethodType;
@@ -639,7 +774,7 @@ type
 { IXMLCanonicalizationMethodType }
 
   IXMLCanonicalizationMethodType = interface(IXMLNode)
-    ['{609B6864-8643-4CEC-9D85-FEEC013C3D82}']
+    ['{1B6E4F52-29C0-4436-ACCF-48DF195D869C}']
     { Property Accessors }
     function Get_Algorithm: UnicodeString;
     procedure Set_Algorithm(Value: UnicodeString);
@@ -650,7 +785,7 @@ type
 { IXMLSignatureMethodType }
 
   IXMLSignatureMethodType = interface(IXMLNode)
-    ['{12F29BC6-4779-4DF6-AF69-6D701D0AB299}']
+    ['{046A0406-FE21-444F-9EF7-124A14E14FC9}']
     { Property Accessors }
     function Get_Algorithm: UnicodeString;
     procedure Set_Algorithm(Value: UnicodeString);
@@ -661,7 +796,7 @@ type
 { IXMLReferenceType }
 
   IXMLReferenceType = interface(IXMLNode)
-    ['{D69B1707-EBE2-4A5F-96C8-F40F517AFFA8}']
+    ['{719AB9BA-88FD-4A44-BC60-5D3E1B0DF2DE}']
     { Property Accessors }
     function Get_URI: UnicodeString;
     function Get_Transforms: IXMLTransformsType;
@@ -679,7 +814,7 @@ type
 { IXMLTransformsType }
 
   IXMLTransformsType = interface(IXMLNode)
-    ['{FBC0CEDA-CEE0-44F8-9E7B-79F21AAF93E7}']
+    ['{D25A9CB1-A01F-4EE7-AC9F-5A79E90880D3}']
     { Property Accessors }
     function Get_Transform: IXMLTransformType;
     { Methods & Properties }
@@ -689,7 +824,7 @@ type
 { IXMLTransformType }
 
   IXMLTransformType = interface(IXMLNode)
-    ['{7700BE84-B129-4676-BD88-D0BE2D93355F}']
+    ['{40BA1D1F-871B-41D6-BC98-B3B5AFCD46C7}']
     { Property Accessors }
     function Get_Algorithm: UnicodeString;
     procedure Set_Algorithm(Value: UnicodeString);
@@ -700,7 +835,7 @@ type
 { IXMLDigestMethodType }
 
   IXMLDigestMethodType = interface(IXMLNode)
-    ['{EB007857-7CCE-4276-89C4-1D872CF1ACCB}']
+    ['{F6D80A4A-CD39-4E2C-9129-BBB8DE64C63F}']
     { Property Accessors }
     function Get_Algorithm: UnicodeString;
     procedure Set_Algorithm(Value: UnicodeString);
@@ -711,7 +846,7 @@ type
 { IXMLKeyInfoType }
 
   IXMLKeyInfoType = interface(IXMLNode)
-    ['{DA465015-C838-4160-A97D-F8B3CE53FD6E}']
+    ['{4B89E602-3EC5-40DE-B394-22C15B8D5195}']
     { Property Accessors }
     function Get_KeyValue: IXMLKeyValueType;
     function Get_X509Data: IXMLX509DataType;
@@ -723,7 +858,7 @@ type
 { IXMLKeyValueType }
 
   IXMLKeyValueType = interface(IXMLNode)
-    ['{AB231DD3-F5A5-4C57-A7DA-A77D87741095}']
+    ['{48B9EF67-9BF4-432E-BAAB-02663EBC605B}']
     { Property Accessors }
     function Get_RSAKeyValue: IXMLRSAKeyValueType;
     { Methods & Properties }
@@ -733,7 +868,7 @@ type
 { IXMLRSAKeyValueType }
 
   IXMLRSAKeyValueType = interface(IXMLNode)
-    ['{F9426E67-F64B-4CE7-A344-24E92B14ACE0}']
+    ['{0E63AACF-06ED-4251-BE11-6C10F9FD318A}']
     { Property Accessors }
     function Get_Modulus: UnicodeString;
     function Get_Exponent: UnicodeString;
@@ -747,7 +882,7 @@ type
 { IXMLX509DataType }
 
   IXMLX509DataType = interface(IXMLNode)
-    ['{F314E413-490A-4E45-9F37-A01365BE4BFD}']
+    ['{EA59A019-6DE3-4022-AF83-E6A61E9BB763}']
     { Property Accessors }
     function Get_X509Certificate: UnicodeString;
     procedure Set_X509Certificate(Value: UnicodeString);
@@ -778,6 +913,17 @@ type
   TXMLFinancingSourceType = class;
   TXMLLaboratoryType = class;
   TXMLCodeType = class;
+  TXMLConsultationType = class;
+  TXMLQualificationType = class;
+  TXMLQualificationTypeList = class;
+  TXMLHospitalizationType = class;
+  TXMLAdmissionType = class;
+  TXMLDirectedByType = class;
+  TXMLClinicalPathwayType = class;
+  TXMLOutpatientProcedureType = class;
+  TXMLMedicalExpertiseType = class;
+  TXMLExamType = class;
+  TXMLExamTypeList = class;
   TXMLDiagnosisType = class;
   TXMLUseType = class;
   TXMLRankType = class;
@@ -796,7 +942,6 @@ type
   TXMLCityType = class;
   TXMLRequesterType = class;
   TXMLPmiType = class;
-  TXMLQualificationType = class;
   TXMLRoleType = class;
   TXMLPracticeNumberType = class;
   TXMLSignatureType = class;
@@ -938,6 +1083,9 @@ type
     function Get_BasedOn: IXMLBasedOnType;
     function Get_FinancingSource: IXMLFinancingSourceType;
     function Get_Laboratory: IXMLLaboratoryType;
+    function Get_Consultation: IXMLConsultationType;
+    function Get_Hospitalization: IXMLHospitalizationType;
+    function Get_MedicalExpertise: IXMLMedicalExpertiseType;
     function Get_Diagnosis: IXMLDiagnosisType;
   public
     procedure AfterConstruction; override;
@@ -1025,6 +1173,123 @@ type
     { IXMLCodeType }
     function Get_Value: UnicodeString;
     procedure Set_Value(Value: UnicodeString);
+  end;
+
+{ TXMLConsultationType }
+
+  TXMLConsultationType = class(TXMLNodeCollection, IXMLConsultationType)
+  protected
+    { IXMLConsultationType }
+    function Get_Qualification(Index: Integer): IXMLQualificationType;
+    function Add: IXMLQualificationType;
+    function Insert(const Index: Integer): IXMLQualificationType;
+  public
+    procedure AfterConstruction; override;
+  end;
+
+{ TXMLQualificationType }
+
+  TXMLQualificationType = class(TXMLNode, IXMLQualificationType)
+  protected
+    { IXMLQualificationType }
+    function Get_Value: UnicodeString;
+    function Get_NhifCode: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+    procedure Set_NhifCode(Value: UnicodeString);
+  end;
+
+{ TXMLQualificationTypeList }
+
+  TXMLQualificationTypeList = class(TXMLNodeCollection, IXMLQualificationTypeList)
+  protected
+    { IXMLQualificationTypeList }
+    function Add: IXMLQualificationType;
+    function Insert(const Index: Integer): IXMLQualificationType;
+
+    function Get_Item(Index: Integer): IXMLQualificationType;
+  end;
+
+{ TXMLHospitalizationType }
+
+  TXMLHospitalizationType = class(TXMLNode, IXMLHospitalizationType)
+  protected
+    { IXMLHospitalizationType }
+    function Get_AdmissionType: IXMLAdmissionType;
+    function Get_DirectedBy: IXMLDirectedByType;
+    function Get_ClinicalPathway: IXMLClinicalPathwayType;
+    function Get_OutpatientProcedure: IXMLOutpatientProcedureType;
+  public
+    procedure AfterConstruction; override;
+  end;
+
+{ TXMLAdmissionType }
+
+  TXMLAdmissionType = class(TXMLNode, IXMLAdmissionType)
+  protected
+    { IXMLAdmissionType }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+  end;
+
+{ TXMLDirectedByType }
+
+  TXMLDirectedByType = class(TXMLNode, IXMLDirectedByType)
+  protected
+    { IXMLDirectedByType }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+  end;
+
+{ TXMLClinicalPathwayType }
+
+  TXMLClinicalPathwayType = class(TXMLNode, IXMLClinicalPathwayType)
+  protected
+    { IXMLClinicalPathwayType }
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+  end;
+
+{ TXMLOutpatientProcedureType }
+
+  TXMLOutpatientProcedureType = class(TXMLNode, IXMLOutpatientProcedureType)
+  protected
+    { IXMLOutpatientProcedureType }
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
+  end;
+
+{ TXMLMedicalExpertiseType }
+
+  TXMLMedicalExpertiseType = class(TXMLNode, IXMLMedicalExpertiseType)
+  private
+    FQualification: IXMLQualificationTypeList;
+    FExamType: IXMLExamTypeList;
+  protected
+    { IXMLMedicalExpertiseType }
+    function Get_Qualification: IXMLQualificationTypeList;
+    function Get_ExamType: IXMLExamTypeList;
+  public
+    procedure AfterConstruction; override;
+  end;
+
+{ TXMLExamType }
+
+  TXMLExamType = class(TXMLNode, IXMLExamType)
+  protected
+    { IXMLExamType }
+    function Get_Value: Integer;
+    procedure Set_Value(Value: Integer);
+  end;
+
+{ TXMLExamTypeList }
+
+  TXMLExamTypeList = class(TXMLNodeCollection, IXMLExamTypeList)
+  protected
+    { IXMLExamTypeList }
+    function Add: IXMLExamType;
+    function Insert(const Index: Integer): IXMLExamType;
+
+    function Get_Item(Index: Integer): IXMLExamType;
   end;
 
 { TXMLDiagnosisType }
@@ -1208,17 +1473,6 @@ type
     { IXMLPmiType }
     function Get_Value: Integer;
     procedure Set_Value(Value: Integer);
-  end;
-
-{ TXMLQualificationType }
-
-  TXMLQualificationType = class(TXMLNode, IXMLQualificationType)
-  protected
-    { IXMLQualificationType }
-    function Get_Value: Integer;
-    function Get_NhifCode: Integer;
-    procedure Set_Value(Value: Integer);
-    procedure Set_NhifCode(Value: Integer);
   end;
 
 { TXMLRoleType }
@@ -1611,6 +1865,9 @@ begin
   RegisterChildNode('basedOn', TXMLBasedOnType);
   RegisterChildNode('financingSource', TXMLFinancingSourceType);
   RegisterChildNode('laboratory', TXMLLaboratoryType);
+  RegisterChildNode('consultation', TXMLConsultationType);
+  RegisterChildNode('hospitalization', TXMLHospitalizationType);
+  RegisterChildNode('medicalExpertise', TXMLMedicalExpertiseType);
   RegisterChildNode('diagnosis', TXMLDiagnosisType);
   inherited;
 end;
@@ -1653,6 +1910,21 @@ end;
 function TXMLReferralType.Get_Laboratory: IXMLLaboratoryType;
 begin
   Result := ChildNodes['laboratory'] as IXMLLaboratoryType;
+end;
+
+function TXMLReferralType.Get_Consultation: IXMLConsultationType;
+begin
+  Result := ChildNodes['consultation'] as IXMLConsultationType;
+end;
+
+function TXMLReferralType.Get_Hospitalization: IXMLHospitalizationType;
+begin
+  Result := ChildNodes['hospitalization'] as IXMLHospitalizationType;
+end;
+
+function TXMLReferralType.Get_MedicalExpertise: IXMLMedicalExpertiseType;
+begin
+  Result := ChildNodes['medicalExpertise'] as IXMLMedicalExpertiseType;
 end;
 
 function TXMLReferralType.Get_Diagnosis: IXMLDiagnosisType;
@@ -1779,6 +2051,199 @@ end;
 procedure TXMLCodeType.Set_Value(Value: UnicodeString);
 begin
   SetAttribute('value', Value);
+end;
+
+{ TXMLConsultationType }
+
+procedure TXMLConsultationType.AfterConstruction;
+begin
+  RegisterChildNode('qualification', TXMLQualificationType);
+  ItemTag := 'qualification';
+  ItemInterface := IXMLQualificationType;
+  inherited;
+end;
+
+function TXMLConsultationType.Get_Qualification(Index: Integer): IXMLQualificationType;
+begin
+  Result := List[Index] as IXMLQualificationType;
+end;
+
+function TXMLConsultationType.Add: IXMLQualificationType;
+begin
+  Result := AddItem(-1) as IXMLQualificationType;
+end;
+
+function TXMLConsultationType.Insert(const Index: Integer): IXMLQualificationType;
+begin
+  Result := AddItem(Index) as IXMLQualificationType;
+end;
+
+{ TXMLQualificationType }
+
+function TXMLQualificationType.Get_Value: UnicodeString;
+begin
+  Result := AttributeNodes['value'].Text;
+end;
+
+procedure TXMLQualificationType.Set_Value(Value: UnicodeString);
+begin
+  SetAttribute('value', Value);
+end;
+
+function TXMLQualificationType.Get_NhifCode: UnicodeString;
+begin
+  Result := AttributeNodes['nhifCode'].Text;
+end;
+
+procedure TXMLQualificationType.Set_NhifCode(Value: UnicodeString);
+begin
+  SetAttribute('nhifCode', Value);
+end;
+
+{ TXMLQualificationTypeList }
+
+function TXMLQualificationTypeList.Add: IXMLQualificationType;
+begin
+  Result := AddItem(-1) as IXMLQualificationType;
+end;
+
+function TXMLQualificationTypeList.Insert(const Index: Integer): IXMLQualificationType;
+begin
+  Result := AddItem(Index) as IXMLQualificationType;
+end;
+
+function TXMLQualificationTypeList.Get_Item(Index: Integer): IXMLQualificationType;
+begin
+  Result := List[Index] as IXMLQualificationType;
+end;
+
+{ TXMLHospitalizationType }
+
+procedure TXMLHospitalizationType.AfterConstruction;
+begin
+  RegisterChildNode('admissionType', TXMLAdmissionType);
+  RegisterChildNode('directedBy', TXMLDirectedByType);
+  RegisterChildNode('clinicalPathway', TXMLClinicalPathwayType);
+  RegisterChildNode('outpatientProcedure', TXMLOutpatientProcedureType);
+  inherited;
+end;
+
+function TXMLHospitalizationType.Get_AdmissionType: IXMLAdmissionType;
+begin
+  Result := ChildNodes['admissionType'] as IXMLAdmissionType;
+end;
+
+function TXMLHospitalizationType.Get_DirectedBy: IXMLDirectedByType;
+begin
+  Result := ChildNodes['directedBy'] as IXMLDirectedByType;
+end;
+
+function TXMLHospitalizationType.Get_ClinicalPathway: IXMLClinicalPathwayType;
+begin
+  Result := ChildNodes['clinicalPathway'] as IXMLClinicalPathwayType;
+end;
+
+function TXMLHospitalizationType.Get_OutpatientProcedure: IXMLOutpatientProcedureType;
+begin
+  Result := ChildNodes['outpatientProcedure'] as IXMLOutpatientProcedureType;
+end;
+
+{ TXMLAdmissionType }
+
+function TXMLAdmissionType.Get_Value: Integer;
+begin
+  Result := AttributeNodes['value'].NodeValue;
+end;
+
+procedure TXMLAdmissionType.Set_Value(Value: Integer);
+begin
+  SetAttribute('value', Value);
+end;
+
+{ TXMLDirectedByType }
+
+function TXMLDirectedByType.Get_Value: Integer;
+begin
+  Result := AttributeNodes['value'].NodeValue;
+end;
+
+procedure TXMLDirectedByType.Set_Value(Value: Integer);
+begin
+  SetAttribute('value', Value);
+end;
+
+{ TXMLClinicalPathwayType }
+
+function TXMLClinicalPathwayType.Get_Value: UnicodeString;
+begin
+  Result := AttributeNodes['value'].Text;
+end;
+
+procedure TXMLClinicalPathwayType.Set_Value(Value: UnicodeString);
+begin
+  SetAttribute('value', Value);
+end;
+
+{ TXMLOutpatientProcedureType }
+
+function TXMLOutpatientProcedureType.Get_Value: UnicodeString;
+begin
+  Result := AttributeNodes['value'].Text;
+end;
+
+procedure TXMLOutpatientProcedureType.Set_Value(Value: UnicodeString);
+begin
+  SetAttribute('value', Value);
+end;
+
+{ TXMLMedicalExpertiseType }
+
+procedure TXMLMedicalExpertiseType.AfterConstruction;
+begin
+  RegisterChildNode('qualification', TXMLQualificationType);
+  RegisterChildNode('examType', TXMLExamType);
+  FQualification := CreateCollection(TXMLQualificationTypeList, IXMLQualificationType, 'qualification') as IXMLQualificationTypeList;
+  FExamType := CreateCollection(TXMLExamTypeList, IXMLExamType, 'examType') as IXMLExamTypeList;
+  inherited;
+end;
+
+function TXMLMedicalExpertiseType.Get_Qualification: IXMLQualificationTypeList;
+begin
+  Result := FQualification;
+end;
+
+function TXMLMedicalExpertiseType.Get_ExamType: IXMLExamTypeList;
+begin
+  Result := FExamType;
+end;
+
+{ TXMLExamType }
+
+function TXMLExamType.Get_Value: Integer;
+begin
+  Result := AttributeNodes['value'].NodeValue;
+end;
+
+procedure TXMLExamType.Set_Value(Value: Integer);
+begin
+  SetAttribute('value', Value);
+end;
+
+{ TXMLExamTypeList }
+
+function TXMLExamTypeList.Add: IXMLExamType;
+begin
+  Result := AddItem(-1) as IXMLExamType;
+end;
+
+function TXMLExamTypeList.Insert(const Index: Integer): IXMLExamType;
+begin
+  Result := AddItem(Index) as IXMLExamType;
+end;
+
+function TXMLExamTypeList.Get_Item(Index: Integer): IXMLExamType;
+begin
+  Result := List[Index] as IXMLExamType;
 end;
 
 { TXMLDiagnosisType }
@@ -2096,28 +2561,6 @@ end;
 procedure TXMLPmiType.Set_Value(Value: Integer);
 begin
   SetAttribute('value', Value);
-end;
-
-{ TXMLQualificationType }
-
-function TXMLQualificationType.Get_Value: Integer;
-begin
-  Result := AttributeNodes['value'].NodeValue;
-end;
-
-procedure TXMLQualificationType.Set_Value(Value: Integer);
-begin
-  SetAttribute('value', Value);
-end;
-
-function TXMLQualificationType.Get_NhifCode: Integer;
-begin
-  Result := AttributeNodes['nhifCode'].NodeValue;
-end;
-
-procedure TXMLQualificationType.Set_NhifCode(Value: Integer);
-begin
-  SetAttribute('nhifCode', Value);
 end;
 
 { TXMLRoleType }

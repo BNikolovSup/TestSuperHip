@@ -172,6 +172,7 @@ TPatientNewItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
     function FindRootCollOptionNode(): PVirtualNode;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
@@ -191,9 +192,11 @@ TPatientNewItem = class(TBaseItem)
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalPatientNewSet);
-	procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
-    procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer);
   end;
 
 implementation
@@ -494,7 +497,7 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPatientRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvPatientNewRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
@@ -524,96 +527,115 @@ begin
     tempItem := Items[i];
     if tempItem.PRecord <> nil then
     begin
-	  if (PatientNew_BABY_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.BABY_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_BABY_NUMBER))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_BIRTH_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.BIRTH_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_BIRTH_DATE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_DATE_ZAPISVANE in tempItem.PRecord.setProp) and (tempItem.PRecord.DATE_ZAPISVANE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DATE_ZAPISVANE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_DIE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DIE_DATE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_DIE_FROM in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_FROM <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DIE_FROM))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_DOSIENOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSIENOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DOSIENOMER))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_DZI_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.DZI_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DZI_NUMBER))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EGN))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_EHIC_NO in tempItem.PRecord.setProp) and (tempItem.PRecord.EHIC_NO <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EHIC_NO))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_FNAME))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(PatientNew_ID))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_LAK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.LAK_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_LAK_NUMBER))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_LNAME))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_NZIS_BEBE in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_BEBE <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_BEBE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_NZIS_PID in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_PID <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_PID))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_RACE in tempItem.PRecord.setProp) and (tempItem.PRecord.RACE <> Self.getDoubleMap(tempItem.DataPos, word(PatientNew_RACE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (PatientNew_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_SNAME))) then
-begin
-inc(cnt);
-exit;
-end;
-//    if (PatientNew_Logical in tempItem.PRecord.setProp) and (tempItem.PRecord.Logical <> Self.(tempItem.DataPos, word(PatientNew_Logical))) then
-//begin
-//inc(cnt);
-//exit;
-//end;
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (PatientNew_BABY_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.BABY_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_BABY_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_BIRTH_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.BIRTH_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_BIRTH_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_DATE_ZAPISVANE in tempItem.PRecord.setProp) and (tempItem.PRecord.DATE_ZAPISVANE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DATE_ZAPISVANE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_DIE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_DATE <> Self.getDateMap(tempItem.DataPos, word(PatientNew_DIE_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_DIE_FROM in tempItem.PRecord.setProp) and (tempItem.PRecord.DIE_FROM <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DIE_FROM))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_DOSIENOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSIENOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DOSIENOMER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_DZI_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.DZI_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_DZI_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EGN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_EHIC_NO in tempItem.PRecord.setProp) and (tempItem.PRecord.EHIC_NO <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_EHIC_NO))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_FNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(PatientNew_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_LAK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.LAK_NUMBER <> Self.getIntMap(tempItem.DataPos, word(PatientNew_LAK_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_LNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_NZIS_BEBE in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_BEBE <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_BEBE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_NZIS_PID in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_PID <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_NZIS_PID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_RACE in tempItem.PRecord.setProp) and (Abs(tempItem.PRecord.RACE - Self.getDoubleMap(tempItem.DataPos, word(PatientNew_RACE))) > 0.000001) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(PatientNew_SNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PatientNew_Logical in tempItem.PRecord.setProp) and (TLogicalData40(tempItem.PRecord.Logical) <> Self.getLogical40Map(tempItem.DataPos, word(PatientNew_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
     end;
   end;
 end;
@@ -673,6 +695,50 @@ begin
     PatientNew_Logical: Result := 'Logical';
   end;
 end;
+
+function TPatientNewColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'BLOOD_TYPE_0';
+    1: Result := 'BLOOD_TYPE_A1';
+    2: Result := 'BLOOD_TYPE_A2';
+    3: Result := 'BLOOD_TYPE_B';
+    4: Result := 'BLOOD_TYPE_A1B';
+    5: Result := 'BLOOD_TYPE_A2B';
+    6: Result := 'BLOOD_TYPE_A';
+    7: Result := 'BLOOD_TYPE_AB';
+    8: Result := 'SEX_TYPE_F';
+    9: Result := 'SEX_TYPE_M';
+    10: Result := 'NZIS_PID_TYPE_1';
+    11: Result := 'NZIS_PID_TYPE_2';
+    12: Result := 'NZIS_PID_TYPE_3';
+    13: Result := 'NZIS_PID_TYPE_4';
+    14: Result := 'NZIS_PID_TYPE_5';
+    15: Result := 'EHRH_PATIENT';
+    16: Result := 'GDPR_PRINTED';
+    17: Result := 'KYRMA3MES';
+    18: Result := 'KYRMA6MES';
+    19: Result := 'PID_TYPE_B';
+    20: Result := 'PID_TYPE_E';
+    21: Result := 'PID_TYPE_L';
+    22: Result := 'PID_TYPE_S';
+    23: Result := 'PID_TYPE_F';
+    24: Result := 'RH_POS';
+    25: Result := 'RH_NEG';
+    26: Result := 'IS_NEBL_USL';
+    27: Result := 'OSIGUREN';
+    28: Result := 'PAT_KIND_REG';
+    29: Result := 'PAT_KIND_TEMP_REG';
+    30: Result := 'PAT_KIND_NOREG';
+    31: Result := 'RELATION_SELF';
+    32: Result := 'RELATION_PARENT';
+    33: Result := 'RELATION_NAST';
+    34: Result := 'RELATION_POPECHITEL';
+  else
+    Result := '???';
+  end;
+end;
+
 
 procedure TPatientNewColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
@@ -736,7 +802,7 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPatientRoot then
+    if data.vid = vvPatientNewRoot then
     begin
       Result := Run;
       Exit;
@@ -901,7 +967,7 @@ begin
     PatientNew_NZIS_PID: str := (PatientNew.PRecord.NZIS_PID);
     PatientNew_RACE: str := FloatToStr(PatientNew.PRecord.RACE);
     PatientNew_SNAME: str := (PatientNew.PRecord.SNAME);
-    PatientNew_Logical: str := PatientNew.Logical32ToStr(TLogicalData40(PatientNew.PRecord.Logical));
+    PatientNew_Logical: str := PatientNew.Logical40ToStr(TLogicalData40(PatientNew.PRecord.Logical));
   else
     begin
       str := '';
@@ -1013,7 +1079,7 @@ begin
     PatientNew_NZIS_BEBE: str :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     PatientNew_NZIS_PID: str :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     PatientNew_SNAME: str :=  PatientNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    PatientNew_Logical: str :=  PatientNew.Logical32ToStr(PatientNew.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    PatientNew_Logical: str :=  PatientNew.Logical40ToStr(PatientNew.getLogical40Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -1175,25 +1241,7 @@ begin
   end;
 end;
 
-procedure TPatientNewColl.OnSetTextSearchDateEdt(date: TDate; field: Word;
-  Condition: TConditionSet);
-begin
-  if date = 0 then
-  begin
-    Exclude(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
-  end
-  else
-  begin
-    include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
-  end;
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
-  case TPatientNewItem.TPropertyIndex(Field) of
-    PatientNew_BIRTH_DATE: ListForFinder[0].PRecord.BIRTH_DATE  := date;
-  end;
-end;
-
+{=== TEXT SEARCH HANDLER ===}
 procedure TPatientNewColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 var
   AText: string;
@@ -1205,31 +1253,79 @@ begin
   else
   begin
     if not (cotSens in Condition) then
-    begin
-      AText := AnsiUpperCase(Text);
-    end
+      AText := AnsiUpperCase(Text)
     else
-    begin
       AText := Text;
-    end;
-    include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
+
+    Include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
   end;
+
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
   case TPatientNewItem.TPropertyIndex(Field) of
-    PatientNew_EGN: ListForFinder[0].PRecord.EGN  := AText;
-    PatientNew_FNAME: ListForFinder[0].PRecord.FNAME  := AText;
-    PatientNew_SNAME: ListForFinder[0].PRecord.SNAME  := AText;
-    PatientNew_ID: ListForFinder[0].PRecord.ID  := StrToInt(AText);
-    //PatientNew_BIRTH_DATE: ListForFinder[0].PRecord.BIRTH_DATE  := StrToInt(Text);
+PatientNew_DIE_FROM: ListForFinder[0].PRecord.DIE_FROM := AText;
+    PatientNew_DOSIENOMER: ListForFinder[0].PRecord.DOSIENOMER := AText;
+    PatientNew_DZI_NUMBER: ListForFinder[0].PRecord.DZI_NUMBER := AText;
+    PatientNew_EGN: ListForFinder[0].PRecord.EGN := AText;
+    PatientNew_EHIC_NO: ListForFinder[0].PRecord.EHIC_NO := AText;
+    PatientNew_FNAME: ListForFinder[0].PRecord.FNAME := AText;
+    PatientNew_LNAME: ListForFinder[0].PRecord.LNAME := AText;
+    PatientNew_NZIS_BEBE: ListForFinder[0].PRecord.NZIS_BEBE := AText;
+    PatientNew_NZIS_PID: ListForFinder[0].PRecord.NZIS_PID := AText;
+    PatientNew_SNAME: ListForFinder[0].PRecord.SNAME := AText;
   end;
 end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TPatientNewColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPatientNewItem.TPropertyIndex(Field) of
+    PatientNew_BIRTH_DATE: ListForFinder[0].PRecord.BIRTH_DATE := Value;
+    PatientNew_DATE_ZAPISVANE: ListForFinder[0].PRecord.DATE_ZAPISVANE := Value;
+    PatientNew_DIE_DATE: ListForFinder[0].PRecord.DIE_DATE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TPatientNewColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPatientNewItem.TPropertyIndex(Field) of
+PatientNew_BABY_NUMBER: ListForFinder[0].PRecord.BABY_NUMBER := Value;
+    PatientNew_ID: ListForFinder[0].PRecord.ID := Value;
+    PatientNew_LAK_NUMBER: ListForFinder[0].PRecord.LAK_NUMBER := Value;
+    PatientNew_RACE: ListForFinder[0].PRecord.RACE := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TPatientNewColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TPatientNewItem.TPropertyIndex(Field) of
+    PatientNew_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalPatientNew(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalPatientNew(logIndex))   
+    end;
+  end;
+end;
+
 
 procedure TPatientNewColl.OnSetTextSearchLog(Log: TlogicalPatientNewSet);
 begin
   ListForFinder[0].PRecord.Logical := Log;
 end;
+
 
 procedure TPatientNewColl.OrderFieldsSearch(Grid: TTeeGrid);
 begin

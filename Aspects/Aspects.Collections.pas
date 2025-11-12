@@ -814,7 +814,7 @@ begin
   p := pointer(PByte(buf) + FDataPos + 4*propIndex); //
   if p^ = 0 then
   begin
-    Result := 0;
+    Result := MinDateTime;
     Exit;
   end;
   ofset := p^ + PosData;
@@ -1523,7 +1523,7 @@ begin
       end;
       cotBigger:
       begin
-        if str <  PAnsFind then
+        if str >  PAnsFind then
           Exclude(ACot, cotBigger);
       end;
     end;

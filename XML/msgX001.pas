@@ -447,10 +447,10 @@ type
   IXMLPmiType = interface(IXMLNode)
     ['{4F141704-B3A0-459B-A594-DF6FC3E8E8B7}']
     { Property Accessors }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
     { Methods & Properties }
-    property Value: Integer read Get_Value write Set_Value;
+    property Value: UnicodeString read Get_Value write Set_Value;
   end;
 
 { IXMLQualificationType }
@@ -483,10 +483,10 @@ type
   IXMLPracticeNumberType = interface(IXMLNode)
     ['{34E76D51-9BDA-4C87-AAC5-E859D7226AD0}']
     { Property Accessors }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
     { Methods & Properties }
-    property Value: Integer read Get_Value write Set_Value;
+    property Value: UnicodeString read Get_Value write Set_Value;
   end;
 
 { Forward Decls }
@@ -846,8 +846,8 @@ type
   TXMLPmiType = class(TXMLNode, IXMLPmiType)
   protected
     { IXMLPmiType }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
   end;
 
 { TXMLQualificationType }
@@ -875,8 +875,8 @@ type
   TXMLPracticeNumberType = class(TXMLNode, IXMLPracticeNumberType)
   protected
     { IXMLPracticeNumberType }
-    function Get_Value: Integer;
-    procedure Set_Value(Value: Integer);
+    function Get_Value: UnicodeString;
+    procedure Set_Value(Value: UnicodeString);
   end;
 
 { Global Functions }
@@ -1451,12 +1451,12 @@ end;
 
 { TXMLPmiType }
 
-function TXMLPmiType.Get_Value: Integer;
+function TXMLPmiType.Get_Value: UnicodeString;
 begin
   Result := AttributeNodes['value'].NodeValue;
 end;
 
-procedure TXMLPmiType.Set_Value(Value: Integer);
+procedure TXMLPmiType.Set_Value(Value: UnicodeString);
 begin
   SetAttribute('value', Value);
 end;
@@ -1497,12 +1497,12 @@ end;
 
 { TXMLPracticeNumberType }
 
-function TXMLPracticeNumberType.Get_Value: Integer;
+function TXMLPracticeNumberType.Get_Value: UnicodeString;
 begin
   Result := AttributeNodes['value'].NodeValue;
 end;
 
-procedure TXMLPracticeNumberType.Set_Value(Value: Integer);
+procedure TXMLPracticeNumberType.Set_Value(Value: UnicodeString);
 begin
   SetAttribute('value', Value);
 end;

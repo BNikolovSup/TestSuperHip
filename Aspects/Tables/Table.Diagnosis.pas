@@ -161,7 +161,6 @@ begin
   pCardinalData := pointer(PByte(buf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  //SaveStreamCommand(TLogicalData08(PRecord.setProp), CollType, toInsert, FVersion);
   SaveAnyStreamCommand(@PRecord.setProp, 1, CollType, toInsert, FVersion, metaPosition + 4);
   case FVersion of
     0:
@@ -258,7 +257,7 @@ begin
         end
         else
         begin
-          //SaveNull(metaPosition);
+          //нищо не прави
         end;
       end;
       Dispose(PRecord);

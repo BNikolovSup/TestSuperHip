@@ -1,5 +1,5 @@
 unit FinderFormFMX;
-          //dyn
+          //logicallabel
 interface
 
 uses
@@ -7,7 +7,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   System.Generics.Collections, SearchThread,
 
-  RealObj.RealHipp,
+  RealObj.RealHipp, system.Rtti,
 
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Layouts,
   FMX.Controls.Presentation, FMX.StdCtrls,
@@ -19,6 +19,12 @@ uses
 
 
 type
+
+  TCheckLabel = class
+    rctCheck: TRectangle;
+    CheckState: TCheckBoxState;
+    checkBox: TCheckBox;
+  end;
 
   TEditCotLabel = class
     edt: TEdit;
@@ -56,6 +62,8 @@ type
     LytIn: TLayout;
     CollectionsType: TCollectionsType;
     lstEditFind: TList<TEditCotLabel>;
+    lstDateFind: TList<TDateCotLabel>;
+    lstChkFind: TList<TCheckLabel>;
     constructor create;
     destructor destroy; override;
   end;
@@ -64,7 +72,6 @@ type
   TfrmFinder = class(TForm)
     scrlbx1: TScrollBox;
     scldlyt1: TScaledLayout;
-    btn1: TButton;
     brshCOT_starting: TBrushObject;
     lstCOT: TListBox;
     lstCotEqual: TListBoxItem;
@@ -157,6 +164,10 @@ type
     rctDatePickerPopup: TRectangle;
     FloatAnimation15: TFloatAnimation;
     edtDateRaw: TEdit;
+    chkForCloning: TCheckBox;
+    Rectangle8: TRectangle;
+    grdlytLogical: TGridLayout;
+    txtLogical: TText;
 
     procedure FormShow(Sender: TObject);
     procedure FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -184,6 +195,7 @@ type
     FIsFinding: Boolean;
     idxEditsCot: Integer;
     idxDatesCot: Integer;
+    idxCheckLog: Integer;
     procedure SetScaleDyn(const Value: Single);
     procedure OnSetTextSearchEDT(Vid: TVtrVid; Text: string; field: Word; Condition: TConditionSet);
     procedure OnSetTextSearchDateEdt(Vid: TVtrVid; dat: Tdate; field: Word; Condition: TConditionSet);
@@ -198,11 +210,13 @@ type
     CollPregled: TRealPregledNewColl;
     lstExpanedrTable: TList<TExpanerTableLabel>;
     lstEditCot: TList<TEditCotLabel>;
+    lstCheckLog: TList<TCheckLabel>;
     lstDateEditCot: TList<TDateCotLabel>;
     thrSearch: TSearchThread;
     procedure AddExpanderPat1(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure AddEditCot(idxEditCot: Integer; lyt: TLayout; field: word; VtrVid: TVtrVid);
     procedure AddDateCot(idxDateCot: Integer; lyt: TLayout; field: word; VtrVid: TVtrVid);
+    procedure AddCheckLog(idxCheckLog: Integer; lyt: TGridLayout; field: word; VtrVid: TVtrVid; capt: string);
     procedure AddExpanderPreg(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure AddExpanderPreg1(idxListExpander: Integer; RunNode: PVirtualNode);
     procedure RecalcBlanka;
@@ -229,6 +243,50 @@ implementation
 
 
 { TForm9 }
+
+procedure TfrmFinder.AddCheckLog(idxCheckLog: Integer; lyt: TGridLayout;
+  field: word; VtrVid: TVtrVid; capt: string);
+var
+  TempCheckLog: TCheckBox;
+  TempCheckLabel: TCheckLabel;
+begin
+  if idxCheckLog > (lstCheckLog.Count - 1) then
+  begin
+    TempCheckLog := TCheckBox(chkForCloning.Clone(nil));
+    TempCheckLabel := TCheckLabel.Create;
+    TempCheckLabel.checkBox := TempCheckLog;
+    //TempCheckLabel.field := field;
+    TempCheckLog.TagObject := TempCheckLabel;
+
+
+    lstCheckLog.Add(TempCheckLabel);
+  end
+  else
+  begin
+    TempCheckLabel := lstCheckLog[idxCheckLog];
+    TempCheckLog := TempCheckLabel.checkBox;
+  end;
+
+ // TempCheckLabel.VtrVid := VtrVid;
+  //TempCheckLog.Position.y := 10000;
+  //TempCheckLog.Align  := TAlignLayout.Top;
+  TempCheckLog.Visible := True;
+  //case VtrVid of
+//    vvPatient:
+//    begin
+//      TempEditLabel.captTxt.Text := CollPatient.DisplayName(field);
+//      TempEditCot.TextPrompt := CollPatient.DisplayName(field);
+//    end;
+//    vvPregled:
+//    begin
+//      TempEditLabel.captTxt.Text := CollPregled.DisplayName(field);
+//      TempEditCot.TextPrompt := CollPregled.DisplayName(field);
+//    end;
+//  end;
+
+  TempCheckLog.text := capt;
+  TempCheckLog.Parent := lyt;
+end;
 
 procedure TfrmFinder.AddDateCot(idxDateCot: Integer; lyt: TLayout; field: word;
   VtrVid: TVtrVid);
@@ -343,6 +401,7 @@ procedure TfrmFinder.AddExpanderPat1(idxListExpander: Integer;
   RunNode: PVirtualNode);
 var
   TempExpndrLyt, TempExpIn: TLayout;   ///TExpanerTableLabel;
+  TempGrid: TGridLayout;
   TempExpander: TExpander;
   i: integer;
   act: TAsectTypeKind;
@@ -350,6 +409,7 @@ var
   txt1, txt2: TText;
   ArctCot1: TRectangle;
   h: Single;
+  log: TLogicalPatientNew;
 begin
   if (lstExpanedrTable.Count - 1) < idxListExpander then
   begin
@@ -370,6 +430,7 @@ begin
     TempExpndrLyt.Position.Point := PointF(TempExpndrLyt.Position.Point.X, 0);
 
     TempExpndrLyt.Margins.Right := 30;
+    TempGrid := WalkChildrenGridStyle(TempExpander, 'grdlytLogical');
   end
   else
   begin
@@ -389,6 +450,15 @@ begin
       begin
         AddDateCot(idxDatesCot, TempExpIn, i, vvPatient);
         inc(idxDatesCot)
+      end;
+      actLogical:
+      begin
+        for log := Low(TlogicalPatientNew) to High(TlogicalPatientNew) do
+        begin
+          AddCheckLog(idxCheckLog, TempGrid, 0, vvPatient, TRttiEnumerationType.GetName(log));
+          inc(idxCheckLog);
+        end;
+
       end;
     end;
   end;
@@ -685,10 +755,12 @@ begin
   dtdtForCloning.Visible := False;
   lstExpanedrTable := TList<TExpanerTableLabel>.Create;
   lstEditCot := TList<TEditCotLabel>.Create;
+  lstCheckLog := TList<TCheckLabel>.Create;
   lstDateEditCot := TList<TDateCotLabel>.Create;
   lytCollection.Visible := False;
   idxEditsCot := 0;
   idxDatesCot := 0;
+  idxCheckLog := 0;
 end;
 
 procedure TfrmFinder.FormDestroy(Sender: TObject);
@@ -696,6 +768,7 @@ begin
   FreeAndNil(lstExpanedrTable);
   FreeAndNil(lstEditCot);
   FreeAndNil(lstDateEditCot);
+  FreeAndNil(lstCheckLog);
 end;
 
 procedure TfrmFinder.FormMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -798,7 +871,7 @@ begin
   case Vid of
     vvPatient:
     begin
-      CollPatient.OnSetTextSearchDateEdt(dat, field, Condition);
+      CollPatient.OnSetDateSearchEDT(dat, field, Condition);
       CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
@@ -868,9 +941,9 @@ var
 begin
   lytBlanka.Height := 10;
   h := InnerChildrenRect(lytBlanka).Height / FScaleDyn;
-  scldlyt1.OriginalHeight := h;
+  scldlyt1.OriginalHeight := h + 20;
   scldlyt1.Height := scldlyt1.OriginalHeight * FScaleDyn;
-  lytBlanka.Height := scldlyt1.OriginalHeight;
+  lytBlanka.Height := scldlyt1.OriginalHeight
 //  Elapsed := Stopwatch.Elapsed;
 //  txtTest.Text := ( Format('fill за %f',[Elapsed.TotalMilliseconds]));
 end;
@@ -945,14 +1018,39 @@ end;
 
 procedure TfrmFinder.expndrCollectionResize(Sender: TObject);
 var
-  h: Single;
+  h, hIn, hLogical, hTxt: Single;
   TempExpander: TExpander;
   TempExpIn, TempExpndrLyt: TLayout;
+  grdLogical: TGridLayout;
+  txtLogical: TText;
 begin
   TempExpander := TExpander(Sender);
   TempExpndrLyt := TLayout(TempExpander.Parent);
+
   TempExpIn := WalkChildrenLytStyle(TempExpander, 'LytIn');
-  TempExpIn.Height := 10;
+  grdLogical := WalkChildrenGridStyle(TempExpander, 'grdlytLogical');
+  txtLogical := WalkChildrenTextStyle(TempExpander, 'txtLogical');
+
+  // --- Височини на отделните секции ---
+  if Assigned(TempExpIn) then
+    hIn := InnerChildrenRect(TempExpIn).Height / FScaleDyn
+  else
+    hIn := 0;
+
+  if Assigned(grdLogical) then
+    hLogical := InnerChildrenRect(grdLogical).Height / FScaleDyn
+  else
+    hLogical := 0;
+
+  if Assigned(txtLogical) then
+    hTxt := txtLogical.Height + 6
+  else
+    hTxt := 0;
+
+  // --- Обща височина на вътрешното съдържание ---
+  h := hIn + hLogical + hTxt;
+
+  // --- Ако е свит експандера ---
   if not TempExpander.IsExpanded then
   begin
     TempExpander.Height := 55;
@@ -960,12 +1058,12 @@ begin
   end
   else
   begin
-    h := InnerChildrenRect(TempExpIn).Height / FScaleDyn ;
-    TempExpander.Height := h+ 75;
-    TempExpIn.Height := TempExpander.Height + 35;
+    // --- Разгънат експандер ---
+    TempExpander.Height := h + 75;
+    TempExpIn.Height := hIn;
     TempExpndrLyt.Height := h + 95;
   end;
-
+  RecalcBlanka;
 end;
 
 { TStyleSuggestEditProxy }
@@ -997,5 +1095,4 @@ begin
   Condition := [];
 end;
 
-initialization
 end.

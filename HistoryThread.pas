@@ -348,6 +348,7 @@ var
   TableAction: Byte;
   pCardinalData: PCardinal;
 begin
+  Exit;
   pCardinalData := pointer(PByte(FBuf) + 32);
   NewID := pCardinalData^;
   Fdm.ibsqlCommand.Close;
@@ -701,18 +702,17 @@ begin
       ibsqlPatientNew := Fdm.ibsqlPatNew_S;
     end;
     ibsqlPatientNew.Close;
-    if not Fdm.ibsqlPatNew_GP.SQL.Text.Contains('where') then
+    if Fdm.IsGP then
     begin
-      if Fdm.IsGP then
-      begin
+      if not Fdm.ibsqlPatNew_GP.SQL.Text.Contains('where') then
         ibsqlPatientNew.SQL.Text := Fdm.ibsqlPatNew_GP.SQL.Text + #13#10 +
         'where id = :id;';
-      end
-      else
-      begin
+    end
+    else
+    begin
+      if not Fdm.ibsqlPatNew_S.SQL.Text.Contains('where') then
         ibsqlPatientNew.SQL.Text := Fdm.ibsqlPatNew_S.SQL.Text + #13#10 +
         'where id = :id;';
-      end;
     end;
 
     ibsqlPatientNew.Params[0].AsInteger := id;
@@ -759,6 +759,7 @@ var
   FPosMetaData, FLenMetaData, FPosData, FLenData, dataPosition: Cardinal;
   ibsqlPregledNew: TIBSQL;
 begin
+  exit;    // да стане като при пациента. ис√ѕ...
   TempItem := TRealPregledNewItem(FindItemADB(id, Buf, BufLink, vvPregled));
   if TempItem <> nil then
   begin

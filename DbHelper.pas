@@ -24,9 +24,11 @@ uses
 
   public
     CollPreg: TRealPregledNewColl;
+    CollPat: TRealPatientNewColl;
     CollDoctor: TRealDoctorColl;
     CollEbl: TRealExam_boln_listColl;
     CollDiag: TRealDiagnosisColl;
+    CollMdn: TRealMDNColl;
     collCl022: TCL022Coll;
     AdbHip: TMappedFile;
     AdbNomenNzis: TMappedFile;
@@ -36,6 +38,7 @@ uses
     Fdm: TDUNzis;
     NasMesto: TRealNasMestoAspects;
     AdbDM: TADBDataModule;
+    mkbColl: TRealMkbColl;
 
 
     procedure InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
@@ -1144,9 +1147,22 @@ begin
   TempItem.ICD_CODE3 := ibsqlINC_NAPR.Fields[16].AsString;
   TempItem.ICD_CODE3_ADD := ibsqlINC_NAPR.Fields[17].AsString;
   TempItem.PatientID := ibsqlINC_NAPR.Fields[23].AsInteger;
+  if TempItem.PatientID = 85386 then
+    TempItem.PatientID := 85386;
   TempItem.NRN := ibsqlINC_NAPR.Fields[7].AsString;
   TempItem.Nomer := ibsqlINC_NAPR.Fields[8].AsInteger;
   TempItem.IncDoctorId := ibsqlINC_NAPR.Fields[19].AsInteger;
+
+  TempItem.Spec1 := ibsqlINC_NAPR.Fields[34].AsString;
+  TempItem.Spec2 := ibsqlINC_NAPR.Fields[35].AsString;
+  TempItem.Spec3 := ibsqlINC_NAPR.Fields[36].AsString;
+  TempItem.Spec4 := ibsqlINC_NAPR.Fields[37].AsString;
+  TempItem.Spec5 := ibsqlINC_NAPR.Fields[38].AsString;
+
+
+  TempItem.NAPR_TYPE_ID := ibsqlINC_NAPR.Fields[21].AsInteger;
+  TempItem.VISIT_TYPE_ID := ibsqlINC_NAPR.Fields[31].AsInteger;
+
 end;
 
 procedure TDbHelper.InsertKardProfField(ibsql: TIBSQL;
@@ -1389,14 +1405,14 @@ begin
     5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.NZIS_STATUS_Cancel);
   end;
   case ibsqlBLANKA_MED_NAPR_3A.Fields[19].Asinteger  of
-    1: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Ostro);
-    2: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Hron);
-    3: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Disp);
-    4: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Prof);
-    5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Iskane_Telk);
-    6: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Choice_Mother);
-    7: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Choice_Child);
-    9: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_DIAG_NAPR_Eksp);
+    1: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Ostro);
+    2: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Hron);
+    3: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Disp);
+    4: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Prof);
+    5: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Iskane_Telk);
+    6: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Choice_Mother);
+    7: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Choice_Child);
+    9: Include(TempItem.PRecord.Logical, TLogicalBLANKA_MED_NAPR_3A.MED_NAPR_3A_Eksp);
   end;
 
 
@@ -1523,8 +1539,8 @@ begin
     3: Include(TempItem.PRecord.Logical, MED_NAPR_Disp);
     4: Include(TempItem.PRecord.Logical, MED_NAPR_Prof);
     5: Include(TempItem.PRecord.Logical, MED_NAPR_Iskane_Telk);
-    6: Include(TempItem.PRecord.Logical, MED_NAPR_Mother);
-    7: Include(TempItem.PRecord.Logical, MED_NAPR_Child);
+    6: Include(TempItem.PRecord.Logical, MED_NAPR_Choice_Mother);
+    7: Include(TempItem.PRecord.Logical, MED_NAPR_Choice_Child);
     9: Include(TempItem.PRecord.Logical, MED_NAPR_Eksp);
   end;
 
@@ -1586,12 +1602,31 @@ begin
        TempItem.PRecord.NUMBER := ibsqlHOSPITALIZATION.Fields[6].AsInteger;
        Include(TempItem.PRecord.setProp, HOSPITALIZATION_NUMBER);
     end;
+    if ibsqlHOSPITALIZATION.Fields[18].AsString = 'Y' then
+       Include(TempItem.PRecord.Logical, IS_PLANNED);
+    if ibsqlHOSPITALIZATION.Fields[21].AsString = 'Y' then
+       Include(TempItem.PRecord.Logical, IS_URGENT);
+    case ibsqlHOSPITALIZATION.Fields[7].Asinteger of
+      1: Include(TempItem.PRecord.Logical, DIRECTED_BY_OPL);
+      2: Include(TempItem.PRecord.Logical, DIRECTED_BY_SIMP);
+      3: Include(TempItem.PRecord.Logical, DIRECTED_BY_HOSP);
+      4: Include(TempItem.PRecord.Logical, DIRECTED_BY_EMERG);
+    end;
+
+    case ibsqlHOSPITALIZATION.Fields[22].Asinteger  of
+      0: Include(TempItem.PRecord.Logical, TLogicalHOSPITALIZATION.NZIS_STATUS_None);
+      3: Include(TempItem.PRecord.Logical, TLogicalHOSPITALIZATION.NZIS_STATUS_Sended);
+      5: Include(TempItem.PRecord.Logical, TLogicalHOSPITALIZATION.NZIS_STATUS_Cancel);
+    end;
+
 
   TempItem.ICD_CODE := ibsqlHOSPITALIZATION.Fields[10].AsString;
   TempItem.ICD_CODE_ADD := ibsqlHOSPITALIZATION.Fields[11].AsString;
   TempItem.ICD_CODE2 := ibsqlHOSPITALIZATION.Fields[12].AsString;
   TempItem.ICD_CODE2_ADD := ibsqlHOSPITALIZATION.Fields[13].AsString;
   TempItem.PregledID := ibsqlHOSPITALIZATION.Fields[23].AsInteger;
+
+
 
 end;
 
@@ -2586,20 +2621,42 @@ begin
   ibsql.Transaction.CommitRetaining;
 end;
 
+
 procedure TDbHelper.SaveMdn(mdn: TRealMdnItem; ibsql: TIBSQL);
 var
   logData24: TLogicalData24;
   logMdn: TlogicalMDNSet;
   i: Integer;
-  //amb
+  run, DiagNode: PVirtualNode;
+  rundata, DiagData:  PAspRec;
+  diagStr, diagAddStr: string;
 begin
-  logData24 := mdn.getLogical24Map(AdbHip.Buf, AdbHip.FPosData, word(Mdn_Logical));
+  Exit;
+  run := mdn.FNode.FirstChild;
+  while run <> nil do
+  begin
+    rundata := Pointer(PByte(run) + lenNode);
+    case rundata.vid of
+      vvDiag:
+      begin
+        DiagData := rundata;
+        diagStr := CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_code_CL011));
+        diagAddStr := CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_additionalCode_CL011));
+      end;
+      vvAnal:
+      begin
+
+      end;
+    end;
+     run := run.NextSibling;
+  end;
+  logData24 := CollMdn.getLogical24Map(mdn.DataPos, word(Mdn_Logical));
   logMdn := TlogicalMDNSet(logData24);
   ibsql.Close;
   ibsql.SQL.Text := 'select gen_id(gen_blanka_mdn, 1) from rdb$database';
   ibsql.ExecQuery;
   mdn.MdnId  := ibsql.Fields[0].AsInteger;
-  mdn.SetIntMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_ID), mdn.MdnId); // трябва инсърта в АДБ да му е направил място
+  CollMdn.SetIntMap(mdn.DataPos, word(MDN_ID), mdn.MdnId); // трябва инсърта в АДБ да му е направил място
   //mdn.GetIntMap(AdbHip.Buf, AdbHip.FPosData, word(mdn_ID));
   ibsql.Close;
   ibsql.SQL.Text :=
@@ -2613,14 +2670,14 @@ begin
     ibsql.Params[i].Clear;
   end;
   ibsql.ParamByName('ID').AsInteger := mdn.MdnId;
-  ibsql.ParamByName('PREGLED_ID').AsInteger := mdn.PregledID;
-  ibsql.ParamByName('NUMBER').AsInteger := mdn.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_NUMBER));
-  ibsql.ParamByName('DATA').AsDate := mdn.FPregled.getdateMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_DATE));      //  mdn.getdateMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_DATA));
-  ibsql.ParamByName('NRN').AsString := mdn.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_NRN));
+  ibsql.ParamByName('PREGLED_ID').AsInteger := mdn.FPregled.PregledID;
+  ibsql.ParamByName('NUMBER').AsInteger := CollMdn.getIntMap(mdn.DataPos, word(MDN_NUMBER));
+  ibsql.ParamByName('DATA').AsDate := CollMdn.getDateMap(mdn.DataPos, word(MDN_DATA));      //  mdn.getdateMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_DATA));
+  ibsql.ParamByName('NRN').AsString := CollMdn.getAnsiStringMap(mdn.DataPos, word(MDN_NRN));
   ibsql.ParamByName('NZIS_STATUS').Asinteger := 3;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   ibsql.ParamByName('MED_DIAG_NAPR_TYPE_ID').AsInteger := 1;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-  ibsql.ParamByName('IS_PRINTED').Asstring := 'N';
-
+  ibsql.ParamByName('IS_PRINTED').Asstring := 'Y';
+  ibsql.ParamByName('ICD_CODE').Asstring := diagStr; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
   ibsql.ExecQuery;
   ibsql.Transaction.CommitRetaining;
@@ -2650,7 +2707,10 @@ begin
   ibsql.ExecQuery;
   pat.PatID  := ibsql.Fields[0].AsInteger;
   ibsql.Close;
-  pat.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+  if Fdm.IsGP then
+  begin
+    pat.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+  end;
   //addr := Pat.FAdresi[0];
   AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddr.DataPos, word(Addres_LinkPos));
   rhifAreaNumber := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
@@ -2658,13 +2718,26 @@ begin
 
 
   ibsql.Close;
-  ibsql.SQL.Text :=
-    'insert into PACIENT (ID, BIRTH_DATE, FNAME, SNAME, LNAME, PAT_KIND, DOCTOR_ID, RZOK, RZOKR,' + #13#10 +
-                     'DATE_ZAPISVANE, SEX_TYPE, NAS_MQSTO, OBLAST, OBSHTINA, GRAJD, COUNTRY,' + #13#10 +
-                     'PID_TYPE, EGN, EKATTE_RESIDENTIAL_ADDRESS)' + #13#10 +
-                     'values (:ID, :BIRTH_DATE, :FNAME, :SNAME, :LNAME, :PAT_KIND, :DOCTOR_ID, :RZOK, :RZOKR,' + #13#10 +
-                     ':DATE_ZAPISVANE, :SEX_TYPE, :NAS_MQSTO, :OBLAST, :OBSHTINA, :GRAJD, :COUNTRY,' + #13#10 +
-                     ':PID_TYPE, :EGN, :EKATTE_RESIDENTIAL_ADDRESS);';
+  if Fdm.IsGP then
+  begin
+    ibsql.SQL.Text :=
+      'insert into PACIENT (ID, BIRTH_DATE, FNAME, SNAME, LNAME, PAT_KIND, DOCTOR_ID, RZOK, RZOKR,' + #13#10 +
+                       'DATE_ZAPISVANE, SEX_TYPE, NAS_MQSTO, OBLAST, OBSHTINA, GRAJD, COUNTRY,' + #13#10 +
+                       'PID_TYPE, EGN, EKATTE_RESIDENTIAL_ADDRESS)' + #13#10 +
+                       'values (:ID, :BIRTH_DATE, :FNAME, :SNAME, :LNAME, :PAT_KIND, :DOCTOR_ID, :RZOK, :RZOKR,' + #13#10 +
+                       ':DATE_ZAPISVANE, :SEX_TYPE, :NAS_MQSTO, :OBLAST, :OBSHTINA, :GRAJD, :COUNTRY,' + #13#10 +
+                       ':PID_TYPE, :EGN, :EKATTE_RESIDENTIAL_ADDRESS);';
+  end
+  else
+  begin
+    ibsql.SQL.Text :=
+      'insert into PACIENT (ID, BIRTH_DATE, FNAME, SNAME, LNAME, PAT_KIND,  RZOK, RZOKR,' + #13#10 +
+                       'DATE_ZAPISVANE, SEX_TYPE, NAS_MQSTO, OBLAST, OBSHTINA, GRAJD, COUNTRY,' + #13#10 +
+                       'PID_TYPE, EGN, EKATTE_RESIDENTIAL_ADDRESS)' + #13#10 +
+                       'values (:ID, :BIRTH_DATE, :FNAME, :SNAME, :LNAME, :PAT_KIND,  :RZOK, :RZOKR,' + #13#10 +
+                       ':DATE_ZAPISVANE, :SEX_TYPE, :NAS_MQSTO, :OBLAST, :OBSHTINA, :GRAJD, :COUNTRY,' + #13#10 +
+                       ':PID_TYPE, :EGN, :EKATTE_RESIDENTIAL_ADDRESS);';
+  end;
   for i := 0 to ibsql.Params.Count - 1 do
   begin
     ibsql.Params[i].Clear;
@@ -2673,7 +2746,10 @@ begin
 
 
   ibsql.ParamByName('ID').AsInteger := pat.PatID;
-  ibsql.ParamByName('DOCTOR_ID').AsInteger := pat.DoctorID;
+  if fdm.IsGP then
+  begin
+    ibsql.ParamByName('DOCTOR_ID').AsInteger := pat.DoctorID;
+  end;
 
 
   ibsql.ParamByName('BIRTH_DATE').AsDate := pat.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_BIRTH_DATE));
@@ -2696,11 +2772,13 @@ begin
   ibsql.ParamByName('GRAJD').AsString := 'българско';
   ibsql.ParamByName('PID_TYPE').AsString := 'E';  //zzzzzzzzzzzzzzzzzzzzz
   ibsql.ParamByName('EGN').AsString := pat.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_EGN));
+  if ibsql.ParamByName('EGN').AsString = '8811130099' then  Exit;
 
-  //ibsql.ExecQuery;
-  //ibsql.Transaction.CommitRetaining;
-
+  ibsql.ExecQuery;
+  ibsql.Transaction.CommitRetaining;
+  CollPat.SetIntMap(Pat.DataPos, word(PatientNew_ID), pat.PatID);
 end;
+//////////////////////////////////////////////////////////////////////////////
 
 procedure TDbHelper.SavePregledFDB(preg: TRealPregledNewItem; ibsql: TIBSQL);
 var
@@ -2708,13 +2786,24 @@ var
   logPreg: TlogicalPregledNewSet;
   i: Integer;
   SetProp: TPregledNewItem.TSetProp;
+  pregNodes: TPregledNodes;
+  dataDoc, dataDiag, datapat, dataIncMN, dataRequester, dataPreg: PAspRec;
+  rankDiag: Integer;
+  mkb: string;
+  mkbPos: Cardinal;
+  IncNaprlog: TlogicalINC_NAPRSet;
+  intSet: TNaprType;
 begin
+  pregNodes := AdbDM.GetPregNodes(preg.FNode);
+  datapat := Pointer(PByte(pregNodes.patNode) + lenNode);
+  dataPreg :=  Pointer(PByte(pregNodes.pregNode) + lenNode);
   logData40 := preg.getLogical40Map(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_Logical));
   logPreg := TlogicalPregledNewSet(logData40);
   ibsql.Close;
   ibsql.SQL.Text := 'select gen_id(gen_pregled, 1) from rdb$database';
   ibsql.ExecQuery;
   preg.PregledID  := ibsql.Fields[0].AsInteger;
+  CollPreg.SetIntMap(dataPreg.DataPos, word(PregledNew_ID), preg.PregledID);
 
   ibsql.Close;
   ibsql.SQL.Text :=
@@ -2723,7 +2812,16 @@ begin
                   'from NUMERATION NUM' + #13#10 +
                   'where NUM.NUMERATION_CLASS_ID = 1 and' + #13#10 +
                         'NUM.DOCTOR_ID = :DOCTORID) returning new.VAL';
-  preg.DoctorID := preg.FDoctor.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(Doctor_ID));
+  dataDoc := Pointer(PByte(pregNodes.perfNode) + lenNode);
+
+  if preg.FDoctor <> nil then
+  begin
+    preg.DoctorID := preg.FDoctor.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(Doctor_ID));
+  end
+  else
+  begin
+    preg.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+  end;
   ibsql.ParamByName('DOCTORID').AsInteger := preg.DoctorID;
   ibsql.ExecQuery;
   preg.AMB_LISTN  := ibsql.Fields[0].AsInteger;
@@ -2743,71 +2841,165 @@ begin
   cmdFile.CopyFrom(CollPreg.streamComm, 0);
 
 
-  ibsql.Close;
-  ibsql.SQL.Text :=
-    'insert into PREGLED (ID, PACIENT_ID, DOCTOR_ID, START_DATE, START_TIME, AMB_LISTN, OBSHTAPR, AMB_PR, DOM_PR,' + #13#10 +
-                     'IS_DISPANSERY, IS_NO_DELAY, IS_EMERGENCY, IS_PREVENTIVE, IS_CONSULTATION, IS_ANALYSIS,' + #13#10 +
-                     'IS_MANIPULATION, IS_OPERATION, IS_NOTIFICATION, IS_EPIKRIZA, IS_HOSPITALIZATION, IS_REHABILITATION,' + #13#10 +
-                     'TALON_LKK, MAIN_DIAG_MKB, MAIN_DIAG_OPIS, IS_NEW, MEDTRANSKM, PR_ZAB1_MKB, PR_ZAB1_OPIS,' + #13#10 +
-                     'PR_ZAB2_MKB, PR_ZAB2_OPIS, PR_ZAB3_MKB, PR_ZAB3_OPIS, PR_ZAB4_MKB, PR_ZAB4_OPIS, PROCEDURE1_MKB,' + #13#10 +
-                     'PROCEDURE1_OPIS, PROCEDURE2_MKB, PROCEDURE2_OPIS, PROCEDURE3_MKB, PROCEDURE3_OPIS, ANAMN, SYST,' + #13#10 +
-                     'IZSL, TERAPY, IS_FORM_VALID, RECKNNO, IS_PODVIZHNO_LZ, MAIN_DIAG_MKB_ADD, PR_ZAB1_MKB_ADD,' + #13#10 +
-                     'PR_ZAB2_MKB_ADD, PR_ZAB3_MKB_ADD, PR_ZAB4_MKB_ADD, IS_ZAMESTVASHT, IS_NAET, PREVENTIVE_TYPE, GS,' + #13#10 +
-                     'IS_VSD, VSD_TYPE, IS_RECEPTA_HOSPIT, IS_EXPERTIZA, IS_TELK, NRD, EXAM_BOLN_LIST_ID, IS_NAPR_TELK,' + #13#10 +
-                     'IS_RISK_GROUP, PROCEDURE4_MKB, PROCEDURE4_OPIS, IS_PRINTED, LIFESENSOR_ID, PAY, INCIDENTALLY,' + #13#10 +
-                     'IS_REGISTRATION, AMB_JOURNALN, TO_BE_DISPANSERED, NOMERBELEGKA, NOMERKASHAPARAT, SIMP_NZOKNOMER,' + #13#10 +
-                     'IS_MEDBELEJKA, PATIENTOF_NEOTL, PATIENTOF_NEOTLID, NRN, NZIS_STATUS, COPIED_FROM_NRN,' + #13#10 +
-                     'SIMP_NAPR_NRN, SIMP_PRIMARY_AMBLIST_NRN, IS_BABY_CARE, PRIMARY_NOTE_ID, THREAD_IDS, PROCEDURE1_ID,' + #13#10 +
-                     'PROCEDURE2_ID, PROCEDURE3_ID, PROCEDURE4_ID)' + #13#10 +
-                     '' + #13#10 +
-                     'values' + #13#10 +
-                     '' + #13#10 +
-                     '(:ID, :PACIENT_ID, :DOCTOR_ID, :START_DATE, :START_TIME, :AMB_LISTN, :OBSHTAPR, :AMB_PR, :DOM_PR, :IS_DISPANSERY,' + #13#10 +
-                     ':IS_NO_DELAY, :IS_EMERGENCY, :IS_PREVENTIVE, :IS_CONSULTATION, :IS_ANALYSIS, :IS_MANIPULATION, :IS_OPERATION,' + #13#10 +
-                     ':IS_NOTIFICATION, :IS_EPIKRIZA, :IS_HOSPITALIZATION, :IS_REHABILITATION, :TALON_LKK, :MAIN_DIAG_MKB, :MAIN_DIAG_OPIS,' + #13#10 +
-                     ':IS_NEW, :MEDTRANSKM, :PR_ZAB1_MKB, :PR_ZAB1_OPIS, :PR_ZAB2_MKB, :PR_ZAB2_OPIS, :PR_ZAB3_MKB, :PR_ZAB3_OPIS,' + #13#10 +
-                     ':PR_ZAB4_MKB, :PR_ZAB4_OPIS, :PROCEDURE1_MKB, :PROCEDURE1_OPIS, :PROCEDURE2_MKB, :PROCEDURE2_OPIS, :PROCEDURE3_MKB,' + #13#10 +
-                     ':PROCEDURE3_OPIS, :ANAMN, :SYST, :IZSL, :TERAPY, :IS_FORM_VALID, :RECKNNO, :IS_PODVIZHNO_LZ, :MAIN_DIAG_MKB_ADD,' + #13#10 +
-                     ':PR_ZAB1_MKB_ADD, :PR_ZAB2_MKB_ADD, :PR_ZAB3_MKB_ADD, :PR_ZAB4_MKB_ADD, :IS_ZAMESTVASHT, :IS_NAET, :PREVENTIVE_TYPE,' + #13#10 +
-                     ':GS, :IS_VSD, :VSD_TYPE, :IS_RECEPTA_HOSPIT, :IS_EXPERTIZA, :IS_TELK, :NRD, :EXAM_BOLN_LIST_ID, :IS_NAPR_TELK,' + #13#10 +
-                     ':IS_RISK_GROUP, :PROCEDURE4_MKB, :PROCEDURE4_OPIS, :IS_PRINTED, :LIFESENSOR_ID, :PAY, :INCIDENTALLY, :IS_REGISTRATION,' + #13#10 +
-                     ':AMB_JOURNALN, :TO_BE_DISPANSERED, :NOMERBELEGKA, :NOMERKASHAPARAT, :SIMP_NZOKNOMER, :IS_MEDBELEJKA, :PATIENTOF_NEOTL,' + #13#10 +
-                     ':PATIENTOF_NEOTLID, :NRN, :NZIS_STATUS, :COPIED_FROM_NRN, :SIMP_NAPR_NRN, :SIMP_PRIMARY_AMBLIST_NRN, :IS_BABY_CARE,' + #13#10 +
-                     ':PRIMARY_NOTE_ID, :THREAD_IDS, :PROCEDURE1_ID, :PROCEDURE2_ID, :PROCEDURE3_ID, :PROCEDURE4_ID);';
+  ibsql.Close;  //simp_napr
+  if Fdm.IsGP then
+  begin
+    ibsql.SQL.Text :=
+      'insert into PREGLED (ID, PACIENT_ID, DOCTOR_ID, START_DATE, START_TIME, AMB_LISTN, OBSHTAPR, AMB_PR, DOM_PR,' + #13#10 +
+                       'IS_DISPANSERY, IS_NO_DELAY, IS_EMERGENCY, IS_PREVENTIVE, IS_CONSULTATION, IS_ANALYSIS,' + #13#10 +
+                       'IS_MANIPULATION, IS_OPERATION, IS_NOTIFICATION, IS_EPIKRIZA, IS_HOSPITALIZATION, IS_REHABILITATION,' + #13#10 +
+                       'TALON_LKK, MAIN_DIAG_MKB, MAIN_DIAG_OPIS, IS_NEW, MEDTRANSKM, PR_ZAB1_MKB, PR_ZAB1_OPIS,' + #13#10 +
+                       'PR_ZAB2_MKB, PR_ZAB2_OPIS, PR_ZAB3_MKB, PR_ZAB3_OPIS, PR_ZAB4_MKB, PR_ZAB4_OPIS, PROCEDURE1_MKB,' + #13#10 +
+                       'PROCEDURE1_OPIS, PROCEDURE2_MKB, PROCEDURE2_OPIS, PROCEDURE3_MKB, PROCEDURE3_OPIS, ANAMN, SYST,' + #13#10 +
+                       'IZSL, TERAPY, IS_FORM_VALID, RECKNNO, IS_PODVIZHNO_LZ, MAIN_DIAG_MKB_ADD, PR_ZAB1_MKB_ADD,' + #13#10 +
+                       'PR_ZAB2_MKB_ADD, PR_ZAB3_MKB_ADD, PR_ZAB4_MKB_ADD, IS_ZAMESTVASHT, IS_NAET, PREVENTIVE_TYPE, GS,' + #13#10 +
+                       'IS_VSD, VSD_TYPE, IS_RECEPTA_HOSPIT, IS_EXPERTIZA, IS_TELK, NRD, EXAM_BOLN_LIST_ID, IS_NAPR_TELK,' + #13#10 +
+                       'IS_RISK_GROUP, PROCEDURE4_MKB, PROCEDURE4_OPIS, IS_PRINTED, LIFESENSOR_ID, PAY, INCIDENTALLY,' + #13#10 +
+                       'IS_REGISTRATION, AMB_JOURNALN, TO_BE_DISPANSERED, NOMERBELEGKA, NOMERKASHAPARAT, SIMP_NZOKNOMER,' + #13#10 +
+                       'IS_MEDBELEJKA, PATIENTOF_NEOTL, PATIENTOF_NEOTLID, NRN, NZIS_STATUS, COPIED_FROM_NRN,' + #13#10 +
+                       'SIMP_NAPR_NRN, SIMP_PRIMARY_AMBLIST_NRN, IS_BABY_CARE, PRIMARY_NOTE_ID, THREAD_IDS, PROCEDURE1_ID,' + #13#10 +
+                       'PROCEDURE2_ID, PROCEDURE3_ID, PROCEDURE4_ID)' + #13#10 +
+                       '' + #13#10 +
+                       'values' + #13#10 +
+                       '' + #13#10 +
+                       '(:ID, :PACIENT_ID, :DOCTOR_ID, :START_DATE, :START_TIME, :AMB_LISTN, :OBSHTAPR, :AMB_PR, :DOM_PR, :IS_DISPANSERY,' + #13#10 +
+                       ':IS_NO_DELAY, :IS_EMERGENCY, :IS_PREVENTIVE, :IS_CONSULTATION, :IS_ANALYSIS, :IS_MANIPULATION, :IS_OPERATION,' + #13#10 +
+                       ':IS_NOTIFICATION, :IS_EPIKRIZA, :IS_HOSPITALIZATION, :IS_REHABILITATION, :TALON_LKK, :MAIN_DIAG_MKB, :MAIN_DIAG_OPIS,' + #13#10 +
+                       ':IS_NEW, :MEDTRANSKM, :PR_ZAB1_MKB, :PR_ZAB1_OPIS, :PR_ZAB2_MKB, :PR_ZAB2_OPIS, :PR_ZAB3_MKB, :PR_ZAB3_OPIS,' + #13#10 +
+                       ':PR_ZAB4_MKB, :PR_ZAB4_OPIS, :PROCEDURE1_MKB, :PROCEDURE1_OPIS, :PROCEDURE2_MKB, :PROCEDURE2_OPIS, :PROCEDURE3_MKB,' + #13#10 +
+                       ':PROCEDURE3_OPIS, :ANAMN, :SYST, :IZSL, :TERAPY, :IS_FORM_VALID, :RECKNNO, :IS_PODVIZHNO_LZ, :MAIN_DIAG_MKB_ADD,' + #13#10 +
+                       ':PR_ZAB1_MKB_ADD, :PR_ZAB2_MKB_ADD, :PR_ZAB3_MKB_ADD, :PR_ZAB4_MKB_ADD, :IS_ZAMESTVASHT, :IS_NAET, :PREVENTIVE_TYPE,' + #13#10 +
+                       ':GS, :IS_VSD, :VSD_TYPE, :IS_RECEPTA_HOSPIT, :IS_EXPERTIZA, :IS_TELK, :NRD, :EXAM_BOLN_LIST_ID, :IS_NAPR_TELK,' + #13#10 +
+                       ':IS_RISK_GROUP, :PROCEDURE4_MKB, :PROCEDURE4_OPIS, :IS_PRINTED, :LIFESENSOR_ID, :PAY, :INCIDENTALLY, :IS_REGISTRATION,' + #13#10 +
+                       ':AMB_JOURNALN, :TO_BE_DISPANSERED, :NOMERBELEGKA, :NOMERKASHAPARAT, :SIMP_NZOKNOMER, :IS_MEDBELEJKA, :PATIENTOF_NEOTL,' + #13#10 +
+                       ':PATIENTOF_NEOTLID, :NRN, :NZIS_STATUS, :COPIED_FROM_NRN, :SIMP_NAPR_NRN, :SIMP_PRIMARY_AMBLIST_NRN, :IS_BABY_CARE,' + #13#10 +
+                       ':PRIMARY_NOTE_ID, :THREAD_IDS, :PROCEDURE1_ID, :PROCEDURE2_ID, :PROCEDURE3_ID, :PROCEDURE4_ID);';
+  end
+  else
+  begin
+    ibsql.SQL.Text :=
+                       'insert into PREGLED (ID, PACIENT_ID, DOCTOR_ID, START_DATE, START_TIME, AMB_LISTN, OBSHTAPR, AMB_PR, DOM_PR,' + #13#10 +
+                       'IS_DISPANSERY, IS_NO_DELAY, IS_EMERGENCY, IS_PREVENTIVE, IS_CONSULTATION, IS_ANALYSIS,' + #13#10 +
+                       'IS_MANIPULATION, IS_OPERATION, IS_NOTIFICATION, IS_EPIKRIZA, IS_HOSPITALIZATION, IS_REHABILITATION,' + #13#10 +
+                       'TALON_LKK, MAIN_DIAG_MKB, MAIN_DIAG_OPIS, IS_NEW, MEDTRANSKM, PR_ZAB1_MKB, PR_ZAB1_OPIS,' + #13#10 +
+                       'PR_ZAB2_MKB, PR_ZAB2_OPIS, PR_ZAB3_MKB, PR_ZAB3_OPIS, PR_ZAB4_MKB, PR_ZAB4_OPIS, PROCEDURE1_MKB,' + #13#10 +
+                       'PROCEDURE1_OPIS, PROCEDURE2_MKB, PROCEDURE2_OPIS, PROCEDURE3_MKB, PROCEDURE3_OPIS, ANAMN, SYST,' + #13#10 +
+                       'IZSL, TERAPY, IS_FORM_VALID, RECKNNO, IS_PODVIZHNO_LZ, MAIN_DIAG_MKB_ADD, PR_ZAB1_MKB_ADD,' + #13#10 +
+                       'PR_ZAB2_MKB_ADD, PR_ZAB3_MKB_ADD, PR_ZAB4_MKB_ADD, IS_ZAMESTVASHT, IS_NAET, PREVENTIVE_TYPE, GS,' + #13#10 +
+                       'IS_VSD, VSD_TYPE, IS_RECEPTA_HOSPIT, IS_EXPERTIZA, IS_TELK, NRD, EXAM_BOLN_LIST_ID, IS_NAPR_TELK,' + #13#10 +
+                       'IS_RISK_GROUP, PROCEDURE4_MKB, PROCEDURE4_OPIS, IS_PRINTED, LIFESENSOR_ID, PAY, INCIDENTALLY,' + #13#10 +
+                       'IS_REGISTRATION, TO_BE_DISPANSERED, NOMERBELEGKA, NOMERKASHAPARAT, SIMP_NZOKNOMER,' + #13#10 +
+                       'IS_MEDBELEJKA, PATIENTOF_NEOTL, PATIENTOF_NEOTLID, NRN, NZIS_STATUS, COPIED_FROM_NRN,' + #13#10 +
+                       'SIMP_NAPR_NRN, SIMP_PRIMARY_AMBLIST_NRN, IS_BABY_CARE, PRIMARY_NOTE_ID, THREAD_IDS, PROCEDURE1_ID,' + #13#10 +
+                       'PROCEDURE2_ID, PROCEDURE3_ID, PROCEDURE4_ID, simp_form_date,' + #13#10 +
+                       'simp_praktika, simp_uin, napr_type_id, simp_speciality_code, simp_napr_n, simp_primary_amblist_date)' + #13#10 +
+
+                       '' + #13#10 +
+                       'values' + #13#10 +
+                       '' + #13#10 +
+                       '(:ID, :PACIENT_ID, :DOCTOR_ID, :START_DATE, :START_TIME, :AMB_LISTN, :OBSHTAPR, :AMB_PR, :DOM_PR, :IS_DISPANSERY,' + #13#10 +
+                       ':IS_NO_DELAY, :IS_EMERGENCY, :IS_PREVENTIVE, :IS_CONSULTATION, :IS_ANALYSIS, :IS_MANIPULATION, :IS_OPERATION,' + #13#10 +
+                       ':IS_NOTIFICATION, :IS_EPIKRIZA, :IS_HOSPITALIZATION, :IS_REHABILITATION, :TALON_LKK, :MAIN_DIAG_MKB, :MAIN_DIAG_OPIS,' + #13#10 +
+                       ':IS_NEW, :MEDTRANSKM, :PR_ZAB1_MKB, :PR_ZAB1_OPIS, :PR_ZAB2_MKB, :PR_ZAB2_OPIS, :PR_ZAB3_MKB, :PR_ZAB3_OPIS,' + #13#10 +
+                       ':PR_ZAB4_MKB, :PR_ZAB4_OPIS, :PROCEDURE1_MKB, :PROCEDURE1_OPIS, :PROCEDURE2_MKB, :PROCEDURE2_OPIS, :PROCEDURE3_MKB,' + #13#10 +
+                       ':PROCEDURE3_OPIS, :ANAMN, :SYST, :IZSL, :TERAPY, :IS_FORM_VALID, :RECKNNO, :IS_PODVIZHNO_LZ, :MAIN_DIAG_MKB_ADD,' + #13#10 +
+                       ':PR_ZAB1_MKB_ADD, :PR_ZAB2_MKB_ADD, :PR_ZAB3_MKB_ADD, :PR_ZAB4_MKB_ADD, :IS_ZAMESTVASHT, :IS_NAET, :PREVENTIVE_TYPE,' + #13#10 +
+                       ':GS, :IS_VSD, :VSD_TYPE, :IS_RECEPTA_HOSPIT, :IS_EXPERTIZA, :IS_TELK, :NRD, :EXAM_BOLN_LIST_ID, :IS_NAPR_TELK,' + #13#10 +
+                       ':IS_RISK_GROUP, :PROCEDURE4_MKB, :PROCEDURE4_OPIS, :IS_PRINTED, :LIFESENSOR_ID, :PAY, :INCIDENTALLY, :IS_REGISTRATION,' + #13#10 +
+                       ':TO_BE_DISPANSERED, :NOMERBELEGKA, :NOMERKASHAPARAT, :SIMP_NZOKNOMER, :IS_MEDBELEJKA, :PATIENTOF_NEOTL,' + #13#10 +
+                       ':PATIENTOF_NEOTLID, :NRN, :NZIS_STATUS, :COPIED_FROM_NRN, :SIMP_NAPR_NRN, :SIMP_PRIMARY_AMBLIST_NRN, :IS_BABY_CARE,' + #13#10 +
+                       ':PRIMARY_NOTE_ID, :THREAD_IDS, :PROCEDURE1_ID, :PROCEDURE2_ID, :PROCEDURE3_ID, :PROCEDURE4_ID,' + #13#10 +
+                       ':simp_form_date, :simp_praktika, :simp_uin, :napr_type_id, (select sp.code from speciality sp where sp.specnziscode = :simp_speciality_code), 1,' + #13#10 +
+                       '(select pr.start_date from pregled pr where pr.nrn = :PrimNrn));';
+
+
+
+
+  end;
   for i := 0 to ibsql.Params.Count - 1 do
   begin
     ibsql.Params[i].Clear;
   end;
 
-  for i := 0 to preg.FDiagnosis.Count - 1 do
+  for i := 0 to pregNodes.diags.Count - 1 do
   begin
-    if i = 0 then
+    dataDiag := Pointer(PByte(pregNodes.diags[i]) + lenNode);
+    mkb  := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+    rankDiag := CollDiag.getwordMap(dataDiag.DataPos, word(Diagnosis_rank));
+    mkbPos := CollDiag.getCardMap(dataDiag.DataPos, word(Diagnosis_MkbPos));
+
+    if rankDiag = 0 then
     begin
-      ibsql.ParamByName('main_diag_mkb').Asstring := preg.FDiagnosis[i].getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(Diagnosis_code_CL011));
-      preg.FDiagnosis[i].AddMkb := preg.FDiagnosis[i].getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(Diagnosis_additionalCode_CL011));
-      if preg.FDiagnosis[i].AddMkb <> '' then
-      ibsql.ParamByName('main_diag_mkb_add').Asstring := preg.FDiagnosis[i].AddMkb;
+      if mkbPos > 100 then
+    begin
+      ibsql.ParamByName('MAIN_DIAG_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+      //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
+    end;
+      ibsql.ParamByName('main_diag_mkb').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+      if CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
+        ibsql.ParamByName('main_diag_mkb_add').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
     end
     else
     begin
-      ibsql.ParamByName('PR_ZAB' + IntToStr(i) + '_MKB').Asstring := preg.FDiagnosis[i].getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(Diagnosis_code_CL011));
-      preg.FDiagnosis[i].AddMkb := preg.FDiagnosis[i].getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(Diagnosis_additionalCode_CL011));
-      if preg.FDiagnosis[i].AddMkb <> '' then
-      ibsql.ParamByName('PR_ZAB' + IntToStr(i) + '_MKB_ADD').Asstring := preg.FDiagnosis[i].AddMkb;
+      if mkbPos > 100 then
+      begin
+        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+        //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
+      end;
+      ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+      if CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
+        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB_ADD').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
     end;
   end;
-
+  ibsql.ParamByName('PrimNrn').Asstring := '---------';
   ibsql.ParamByName('ID').AsInteger := preg.PregledID;
-  ibsql.ParamByName('AMB_JOURNALN').AsInteger := 0;
+  //ibsql.ParamByName('AMB_JOURNALN').AsInteger := 0;
   ibsql.ParamByName('DOCTOR_ID').AsInteger := preg.DoctorID;
+  if pregNodes.incNaprNode <> nil then
+  begin
+    dataIncMN :=  Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+    dataRequester :=  Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+
+    ibsql.ParamByName('copied_from_nrn').AsString :=
+         CollPreg.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_NRN));
+    //ibsql.ParamByName('simp_napr_nrn').AsString :=
+//         CollPreg.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_AMB_LIST_NRN));
+    ibsql.ParamByName('simp_form_date').AsDate :=
+         CollPreg.getDateMap(dataIncMN.DataPos, word(INC_NAPR_ISSUE_DATE));
+    ibsql.ParamByName('simp_praktika').AsString :=
+         CollPreg.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_NOMER_LZ));
+    ibsql.ParamByName('simp_uin').AsString :=
+         CollPreg.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_UIN));
+    ibsql.ParamByName('simp_speciality_code').AsInteger :=
+         CollPreg.getIntMap(dataRequester.DataPos, word(OtherDoctor_SPECIALITY));
+
+    IncNaprlog := TlogicalINC_NAPRSet(CollPreg.getLogical24Map(dataIncMN.DataPos, Word(INC_NAPR_Logical)));
+  //intSet := IncNaprColl.GetNaprCode_Quick(IncNaprlog);
+    intSet := NativeUInt(NaprGroup * IncNaprLog);
+    case intSet of
+      TNaprType(NaprMask_Ostro): ibsql.ParamByName('napr_type_id').Asinteger := 1; //txt.Text := 'Остро заболяване или състояние извън останалите типове';
+      TNaprType(NaprMask_Hron): ibsql.ParamByName('napr_type_id').Asinteger := 2; //txt.Text := 'Хронично заболяване, неподлежащо на диспансерно наблюдение';
+      TNaprType(NaprMask_Izbor): ibsql.ParamByName('napr_type_id').Asinteger := 3; //txt.Text := 'Избор на специалист за диспансерно наблюдение';
+      TNaprType(NaprMask_Disp): ibsql.ParamByName('napr_type_id').Asinteger := 4; //txt.Text := 'Диспансерно наблюдение';
+      TNaprType(NaprMask_Eksp): ibsql.ParamByName('napr_type_id').Asinteger := 5; //txt.Text := 'Медицинска експертиза';
+      TNaprType(NaprMask_Prof): ibsql.ParamByName('napr_type_id').Asinteger := 6; //txt.Text := 'Профилактика нa пълнолетни лица';
+      TNaprType(NaprMask_Iskane_Telk): ibsql.ParamByName('napr_type_id').Asinteger := 7; //txt.Text := 'По искане на ТЕЛК (НЕЛК)';
+      TNaprType(NaprMask_Choice_Mother): ibsql.ParamByName('napr_type_id').Asinteger := 8; //txt.Text := 'Избор на специалист за майчино здравеопазване';
+      TNaprType(NaprMask_Choice_Child): ibsql.ParamByName('napr_type_id').Asinteger := 9; //txt.Text := 'Избор на специалист за детско здравеопазване';
+      TNaprType(NaprMask_PreChoice_Mother): ibsql.ParamByName('napr_type_id').Asinteger := 10; //txt.Text := 'Преизбор на специалист за майчино здравеопазване';
+      TNaprType(NaprMask_PreChoice_Child): ibsql.ParamByName('napr_type_id').Asinteger := 11; //txt.Text := 'Преизбор на специалист за детско здравеопазване';
+      TNaprType(NaprMask_Podg_Telk): ibsql.ParamByName('napr_type_id').Asinteger := 12; //txt.Text := 'Подготовка за ТЕЛК';
+      TNaprType(NaprMask_Podg_LKK): ibsql.ParamByName('napr_type_id').Asinteger := 13; //txt.Text := 'Подготовка за ЛКК';
+    end;
+  end;
 
 
   ibsql.ParamByName('AMB_LISTN').AsInteger := preg.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_AMB_LISTN));
   ibsql.ParamByName('NRN').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NRN_LRN));
-  ibsql.ParamByName('NZIS_STATUS').AsInteger := preg.getWordMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NZIS_STATUS));
+  ibsql.ParamByName('NZIS_STATUS').AsInteger := 6;//zzzzzzzzzzzzzzzzz preg.getWordMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NZIS_STATUS));
   ibsql.ParamByName('START_DATE').AsDate := preg.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_DATE));
-  ibsql.ParamByName('START_TIME').AsTime := preg.getTimeMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_TIME));
-  ibsql.ParamByName('PACIENT_ID').AsInteger := preg.Fpatient.getIntMap(AdbHip.Buf, AdbHip.FPosData, word(PatientNew_ID));
+  ibsql.ParamByName('START_TIME').AsTime := 3 + preg.getTimeMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_TIME));
+  ibsql.ParamByName('PACIENT_ID').AsInteger := CollPreg.getIntMap(datapat.DataPos, word(PatientNew_ID));
   ibsql.ParamByName('ANAMN').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_ANAMN));
   ibsql.ParamByName('SYST').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_SYST));
   ibsql.ParamByName('IZSL').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_IZSL));
@@ -2825,7 +3017,7 @@ begin
   if PAY in logPreg then
     ibsql.ParamByName('PAY').AsString := 'Y'
   else
-    ibsql.ParamByName('PAY').AsString := 'N';
+    ibsql.ParamByName('PAY').AsString := 'Y';//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   if IS_RISK_GROUP in logPreg then
     ibsql.ParamByName('IS_RISK_GROUP').AsString := 'Y'
   else
@@ -2925,7 +3117,7 @@ begin
   if TLogicalPregledNew.IS_FORM_VALID in logPreg then
     ibsql.ParamByName('IS_FORM_VALID').AsString := 'Y'
   else
-    ibsql.ParamByName('IS_FORM_VALID').AsString := 'N';
+    ibsql.ParamByName('IS_FORM_VALID').AsString := 'Y';//zzzzzzzzzzzzzzzzzzzzzzz
   if IS_BABY_CARE in logPreg then
     ibsql.ParamByName('IS_BABY_CARE').AsString := 'Y'
   else
@@ -2937,7 +3129,11 @@ begin
     if TLogicalPregledNew.IS_PRIMARY  in logPreg then
       ibsql.ParamByName('AMB_PR').AsInteger := 1
     else
-      ibsql.ParamByName('AMB_PR').AsInteger := 2
+    begin
+      ibsql.ParamByName('AMB_PR').AsInteger := 2;
+      ibsql.ParamByName('SIMP_PRIMARY_AMBLIST_NRN').Asstring := CollPreg.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
+      ibsql.ParamByName('PrimNrn').Asstring := CollPreg.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
+    end;
   end
   else
   begin

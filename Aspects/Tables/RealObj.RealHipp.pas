@@ -25,7 +25,7 @@ uses
   SBX509;
 type
   TFullPorpuse = set of TlogicalPregledNew;
-
+  TNaprType = Cardinal;
 
 TCollectionForSort = class(TPersistent)
   private
@@ -83,8 +83,10 @@ TCollectionForSort = class(TPersistent)
     FDiagnosis: TList<TRealDiagnosisItem>;
     FExamAnals: TList<TRealExamAnalysisItem>;
     FLstMsgImportNzis: TList;
+    FNode: PVirtualNode;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
+    procedure AddNewDiag(index: integer; diagColl: TRealDiagnosisColl);
     property PregledID: Integer read FPregledID write FPregledID;
     property MainMkb: string read FMainMkb write SetMainMkb;
     property AddMkb: string read FAddMkb write SetAddMkb;
@@ -119,6 +121,8 @@ private
     FIsDeleted: Boolean;
     FNode: PVirtualNode;
     FMkbNode: PVirtualNode;
+    FPregNode: PVirtualNode;
+    //FPregDiag: TRealDiagnosisItem;
 
 
 public
@@ -132,7 +136,8 @@ public
   property IsDeleted: Boolean read FIsDeleted write FIsDeleted;
   property Node: PVirtualNode read FNode write FNode;
   property MkbNode: PVirtualNode read FMkbNode write FMkbNode;
-
+  property PregNode: PVirtualNode read FPregNode write FPregNode;
+  //property PregDiag: TRealDiagnosisItem read FPregDiag write FPregDiag;
 
 end;
 
@@ -146,6 +151,7 @@ public
   procedure SortByPregledId;
   procedure SortByMKB;
   procedure SortListNodesByMkb;
+  procedure SortByPregNode;
   procedure FillMkb(mkbColl: TMkbColl);
   property Items[Index: Integer]: TRealDiagnosisItem read GetItem write SetItem;
   class function GetClinicStatus(logSet: TlogicalDiagnosisSet): TLogicalDiagnosis;
@@ -681,6 +687,7 @@ TRealPregledNewColl = class(TPregledNewColl)
     procedure SortByDoctorID;
     procedure SortByOwnerDoctorID;
     procedure SortByMainMkb;
+    procedure SortByNode;
     procedure SortByProcedureCodeOpis;
     function GetItemsFromDataPos(dataPos: Cardinal):TRealPregledNewItem;
     function DisplayName(propIndex: Word): string; override;
@@ -734,6 +741,7 @@ TRealDoctorColl = class(TDoctorColl)
     procedure UpdateDoctors;
     procedure UpdateDoctorsTemp(doc: TRealDoctorItem);
     function FindDoctorFromDataPos(dataPos: cardinal): TRealDoctorItem;
+    function FindDoctorFromUinSpec(UinSpec: string): TRealDoctorItem;
 
     property Items[Index: Integer]: TRealDoctorItem read GetItem write SetItem;
     property MaxLenDoctorName: integer read FMaxLenDoctorName;
@@ -927,6 +935,8 @@ TRealUnfavColl = class(TUnfavColl)
     FICD_CODE_ADD: string;
     FICD_CODE3: string;
     FICD_CODE: string;
+    FNRN: string;
+    FPregledNRN: string;
     procedure SetICD_CODE_ADD(const Value: string);
     procedure SetICD_CODE2_ADD(const Value: string);
     procedure SetICD_CODE3_ADD(const Value: string);
@@ -935,6 +945,7 @@ TRealUnfavColl = class(TUnfavColl)
   public
     FDiagnosis2: TList<TRealDiagnosisItem>;
     FPregled: TRealPregledNewItem;
+    FLstMsgImportNzis: TList;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
 
@@ -948,6 +959,8 @@ TRealUnfavColl = class(TUnfavColl)
     property PregledID: Integer read FPregledID write FPregledID;
     property SpecNzis: string read FSpecNzis write FSpecNzis;
     property LinkNode: PVirtualNode read FLinkNode write FLinkNode;
+    property NRN: string read FNRN write FNRN;
+    property PregledNRN: string read FPregledNRN write FPregledNRN;
 
   end;
 
@@ -961,6 +974,7 @@ TRealUnfavColl = class(TUnfavColl)
     procedure Added(var Item: TCollectionItem); override;
     procedure SortByPregID;
     procedure SortBySpecNzis;
+    procedure SortByPregledNRN;
     procedure FillSpecNzisInMedNapr(CL006Coll: TCL006Coll);
     function GetItemsFromDataPos(dataPos: Cardinal):TRealBLANKA_MED_NAPRItem;
     property Items[Index: Integer]: TRealBLANKA_MED_NAPRItem read GetItem write SetItem;
@@ -977,6 +991,8 @@ TRealUnfavColl = class(TUnfavColl)
     FICD_CODE_ADD: string;
     FICD_CODE3: string;
     FICD_CODE: string;
+    FPregledNRN: string;
+    FNRN: string;
     procedure SetICD_CODE_ADD(const Value: string);
     procedure SetICD_CODE2_ADD(const Value: string);
     procedure SetICD_CODE3_ADD(const Value: string);
@@ -985,6 +1001,7 @@ TRealUnfavColl = class(TUnfavColl)
   public
     FDiagnosis2: TList<TRealDiagnosisItem>;
     FPregled: TRealPregledNewItem;
+    FLstMsgImportNzis: TList;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
 
@@ -998,6 +1015,8 @@ TRealUnfavColl = class(TUnfavColl)
     property PregledID: Integer read FPregledID write FPregledID;
     property SpecNzis: string read FSpecNzis write FSpecNzis;
     property LinkNode: PVirtualNode read FLinkNode write FLinkNode;
+    property NRN: string read FNRN write FNRN;
+    property PregledNRN: string read FPregledNRN write FPregledNRN;
 
   end;
 
@@ -1011,6 +1030,7 @@ TRealUnfavColl = class(TUnfavColl)
     procedure Added(var Item: TCollectionItem); override;
     procedure SortByPregID;
     procedure SortBySpecNzis;
+    procedure SortByPregledNRN;
     procedure FillSpecNzisInMedNapr3A(CL006Coll: TCL006Coll);
     function GetItemsFromDataPos(dataPos: Cardinal):TRealBLANKA_MED_NAPR_3AItem;
     property Items[Index: Integer]: TRealBLANKA_MED_NAPR_3AItem read GetItem write SetItem;
@@ -1026,14 +1046,19 @@ TRealUnfavColl = class(TUnfavColl)
     FICD_CODE: string;
     FAmbProc: string;
     FClinPath: string;
+    FPregledNRN: string;
+    FNRN: string;
     procedure SetICD_CODE(const Value: string);
     procedure SetICD_CODE_ADD(const Value: string);
     procedure SetICD_CODE2_ADD(const Value: string);
   public
     FDiagnosis2: TList<TRealDiagnosisItem>;
     FPregled: TRealPregledNewItem;
+    FLstMsgImportNzis: TList;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
+
+
 
     property ICD_CODE: string read FICD_CODE write SetICD_CODE;
     property ICD_CODE_ADD: string read FICD_CODE_ADD write SetICD_CODE_ADD;
@@ -1045,7 +1070,8 @@ TRealUnfavColl = class(TUnfavColl)
     property ClinPath: string read FClinPath write FClinPath;
     property AmbProc: string read FAmbProc write FAmbProc;
     property LinkNode: PVirtualNode read FLinkNode write FLinkNode;
-
+    property NRN: string read FNRN write FNRN;
+    property PregledNRN: string read FPregledNRN write FPregledNRN;
   end;
 
   TRealHOSPITALIZATIONColl = class(THOSPITALIZATIONColl)
@@ -1057,6 +1083,7 @@ TRealUnfavColl = class(TUnfavColl)
     FCollDiag: TRealDiagnosisColl;
     procedure Added(var Item: TCollectionItem); override;
     procedure SortByPregID;
+    procedure SortByPregledNRN;
     function GetItemsFromDataPos(dataPos: Cardinal):TRealHOSPITALIZATIONItem;
     property Items[Index: Integer]: TRealHOSPITALIZATIONItem read GetItem write SetItem;
   end;
@@ -1069,12 +1096,15 @@ TRealUnfavColl = class(TUnfavColl)
     FICD_CODE2: string;
     FICD_CODE_ADD: string;
     FICD_CODE: string;
+    FPregledNRN: string;
+    FNRN: string;
     procedure SetICD_CODE(const Value: string);
     procedure SetICD_CODE_ADD(const Value: string);
     procedure SetICD_CODE2_ADD(const Value: string);
   public
     FDiagnosis2: TList<TRealDiagnosisItem>;
     FPregled: TRealPregledNewItem;
+    FLstMsgImportNzis: TList;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
 
@@ -1086,6 +1116,8 @@ TRealUnfavColl = class(TUnfavColl)
 
     property PregledID: Integer read FPregledID write FPregledID;
     property LinkNode: PVirtualNode read FLinkNode write FLinkNode;
+    property NRN: string read FNRN write FNRN;
+    property PregledNRN: string read FPregledNRN write FPregledNRN;
 
   end;
 
@@ -1098,6 +1130,7 @@ TRealUnfavColl = class(TUnfavColl)
     FCollDiag: TRealDiagnosisColl;
     procedure Added(var Item: TCollectionItem); override;
     procedure SortByPregID;
+    procedure SortByPregledNRN;
     function GetItemsFromDataPos(dataPos: Cardinal):TRealEXAM_LKKItem;
     property Items[Index: Integer]: TRealEXAM_LKKItem read GetItem write SetItem;
   end;
@@ -1157,12 +1190,24 @@ TRealUnfavColl = class(TUnfavColl)
     FResultIndex: Integer;
     FBaseOn: string;
     FIncDoctorId: Integer;
+    FVISIT_TYPE_ID: Integer;
+    FSpec1: string;
+    FSpec4: string;
+    FSpec5: string;
+    FSpec2: string;
+    FSpec3: string;
+    FNAPR_TYPE_ID: Integer;
+    FIncDocUin: string;
+    FIncDocSpec: string;
+    FIncDocRcz: string;
     procedure SetICD_CODE(const Value: string);
     procedure SetICD_CODE_ADD(const Value: string);
     procedure SetICD_CODE2_ADD(const Value: string);
     procedure SetICD_CODE3_ADD(const Value: string);
     procedure SetICD_CODE2(const Value: string);
     procedure SetICD_CODE3(const Value: string);
+    procedure SetVISIT_TYPE_ID(const Value: Integer);
+    procedure SetNAPR_TYPE_ID(const Value: Integer);
   public
     FDiagnosis2: TList<TRealDiagnosisItem>;
     //FIncAnals;
@@ -1170,8 +1215,10 @@ TRealUnfavColl = class(TUnfavColl)
     FIncDoctor: TRealOtherDoctorItem;
     FPregledi: TList<TRealPregledNewItem>;
     FLstMsgImportNzis: TList;
+    FNode: PVirtualNode;
     constructor Create(Collection: TCollection); override;
     destructor destroy; override;
+
     property ICD_CODE: string read FICD_CODE write SetICD_CODE;
     property ICD_CODE_ADD: string read FICD_CODE_ADD write SetICD_CODE_ADD;
     property ICD_CODE2: string read FICD_CODE2 write SetICD_CODE2;
@@ -1187,6 +1234,17 @@ TRealUnfavColl = class(TUnfavColl)
     property msg: TObject read FMsg write FMsg;
     property ResultIndex: Integer read FResultIndex write FResultIndex;
     property IncDoctorId: Integer read FIncDoctorId write FIncDoctorId;
+    property VISIT_TYPE_ID: Integer read FVISIT_TYPE_ID write SetVISIT_TYPE_ID;
+    property NAPR_TYPE_ID: Integer read FNAPR_TYPE_ID write SetNAPR_TYPE_ID;
+    property Spec1: string read FSpec1 write FSpec1;
+    property Spec2: string read FSpec2 write FSpec2;
+    property Spec3: string read FSpec3 write FSpec3;
+    property Spec4: string read FSpec4 write FSpec4;
+    property Spec5: string read FSpec5 write FSpec5;
+    property IncDocUin: string read FIncDocUin write FIncDocUin;
+    property IncDocSpec: string read FIncDocSpec write FIncDocSpec;
+    property IncDocRcz: string read FIncDocRcz write FIncDocRcz;
+
   end;
 
   TRealINC_NAPRColl = class(TINC_NAPRColl)
@@ -1200,10 +1258,18 @@ TRealUnfavColl = class(TUnfavColl)
     procedure SortByPatEgn;
     procedure SortByNRN;
     procedure SortByIncDoc;
+    procedure SortBySpec1;
+    procedure SortBySpec2;
+    procedure SortBySpec3;
+    procedure SortBySpec4;
+    procedure SortBySpec5;
     procedure SortLstByNRN(list: TList<TRealINC_NAPRItem>);
     procedure SortLstByBaseOn(list: TList<TRealINC_NAPRItem>);
     procedure SortByNomer;
+    procedure SortListByIncDoctor(list: TList<TRealINC_NAPRItem>);
+    procedure FillNzisSpec(CL006Coll: TCL006Coll);
     function GetItemsFromDataPos(dataPos: Cardinal):TRealINC_NAPRItem;
+    function GetNaprCode_Quick(const NaprSet: TLogicalINC_NAPRSet): TNaprType; inline;
     property Items[Index: Integer]: TRealINC_NAPRItem read GetItem write SetItem;
   end;
 
@@ -1339,8 +1405,48 @@ TRealUnfavColl = class(TUnfavColl)
     procedure UpdateMkb;
     property Items[Index: Integer]: TMkbItem read GetItem write SetItem;
   end;
+  const
+  NaprMask_None            = 1 shl Ord(NZIS_STATUS_None);
+  NaprMask_Valid           = 1 shl Ord(NZIS_STATUS_Valid);
+  NaprMask_NoValid         = 1 shl Ord(NZIS_STATUS_NoValid);
+  NaprMask_Sended          = 1 shl Ord(NZIS_STATUS_Sended);
+  NaprMask_Err             = 1 shl Ord(NZIS_STATUS_Err);
+  NaprMask_Cancel          = 1 shl Ord(NZIS_STATUS_Cancel);
+  NaprMask_Edited          = 1 shl Ord(NZIS_STATUS_Edited);
+  NaprMask_Ostro           = 1 shl Ord(INC_MED_NAPR_Ostro);
+  NaprMask_Hron            = 1 shl Ord(INC_MED_NAPR_Hron);
+  NaprMask_Izbor           = 1 shl Ord(INC_MED_NAPR_Izbor);
+  NaprMask_Disp            = 1 shl Ord(INC_MED_NAPR_Disp);
+  NaprMask_Eksp            = 1 shl Ord(INC_MED_NAPR_Eksp);
+  NaprMask_Prof            = 1 shl Ord(INC_MED_NAPR_Prof);
+  NaprMask_Iskane_Telk     = 1 shl Ord(INC_MED_NAPR_Iskane_Telk);
+  NaprMask_Choice_Mother   = 1 shl Ord(INC_MED_NAPR_Choice_Mother);
+  NaprMask_Choice_Child    = 1 shl Ord(INC_MED_NAPR_Choice_Child);
+  NaprMask_PreChoice_Mother= 1 shl Ord(INC_MED_NAPR_PreChoice_Mother);
+  NaprMask_PreChoice_Child = 1 shl Ord(INC_MED_NAPR_PreChoice_Child);
+  NaprMask_Podg_Telk       = 1 shl Ord(INC_MED_NAPR_Podg_Telk);
+  NaprMask_Podg_LKK        = 1 shl Ord(INC_MED_NAPR_Podg_LKK);
+  NaprMask_R2              = 1 shl Ord(category_R2);
+  NaprMask_R3              = 1 shl Ord(category_R3);
+  NaprMask_R5              = 1 shl Ord(category_R5);
+
+
+  NaprGroup: TLogicalINC_NAPRSet = [
+    INC_MED_NAPR_Ostro,
+    INC_MED_NAPR_Hron,
+    INC_MED_NAPR_Izbor,
+    INC_MED_NAPR_Disp,
+    INC_MED_NAPR_Eksp,
+    INC_MED_NAPR_Prof,
+    INC_MED_NAPR_Iskane_Telk,
+    INC_MED_NAPR_Choice_Mother,
+    INC_MED_NAPR_Choice_Child,
+    INC_MED_NAPR_PreChoice_Mother,
+    INC_MED_NAPR_PreChoice_Child,
+    INC_MED_NAPR_Podg_Telk,
+    INC_MED_NAPR_Podg_LKK
+  ];
 implementation
-{ TRealPregledColl }
 
 
 
@@ -1596,6 +1702,46 @@ var
       repeat
         while (Items[I]).FMainMKB < (Items[P]).FMainMKB do Inc(I);
         while (Items[J]).FMainMKB > (Items[P]).FMainMKB do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealPregledNewColl.SortByNode;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while cardinal((Items[I]).FNode) < cardinal((Items[P]).FNode) do Inc(I);
+        while cardinal((Items[J]).FNode) > cardinal((Items[P]).FNode) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -3028,6 +3174,7 @@ begin
   FIsDeleted := False;
   FNode := nil;
   FMkbNode := nil;
+  //FPregDiag := nil;
 end;
 
 destructor TRealDiagnosisItem.destroy;
@@ -3238,12 +3385,86 @@ begin
   end;
 end;
 
+procedure TRealDiagnosisColl.SortByPregNode;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while cardinal((Items[I]).FPregNode) < cardinal((Items[P]).FPregNode) do Inc(I);
+        while cardinal((Items[J]).FPregNode) > cardinal((Items[P]).FPregNode) do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
 procedure TRealDiagnosisColl.SortListNodesByMkb;
 begin
  // Self.ListNodes
 end;
 
 { TRealMDNItem }
+
+procedure TRealMDNItem.AddNewDiag(index: integer; diagColl: TRealDiagnosisColl);
+var
+  diag: TRealDiagnosisItem;
+begin
+  Exit;
+  diag := Self.FDiagnosis[index];
+  diag.Collection := diagColl;
+  //diag.MainMkb := FMainMKB;
+//  diag.AddMkb := FAddMkb;
+//  diag.Rank := 0;
+
+  New(diag.PRecord);
+  diag.PRecord.setProp := [];
+  if FAddMkb <> '' then
+  begin
+    diag.PRecord.additionalCode_CL011 := FAddMkb;
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+  end;
+  if FMainMKB <> '' then
+  begin
+    diag.PRecord.code_CL011 := FMainMKB;
+    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
+  end;
+  diag.PRecord.rank := diag.Rank;
+  Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.InsertDiagnosis;
+  TRealMDNColl(Collection).FCollDiag.streamComm.Len := TRealMDNColl(Collection).FCollDiag.streamComm.Size;
+  TRealMDNColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealMDNColl(Collection).FCollDiag.streamComm, 0);
+
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+end;
 
 constructor TRealMDNItem.Create(Collection: TCollection);
 begin
@@ -3267,8 +3488,17 @@ var
   diag: TRealDiagnosisItem;
   diagColl: TRealDiagnosisColl;
 begin
+
   diagColl := TRealMDNColl(Collection).FCollDiag;
   FAddMkb := Value;
+
+  //diag := TRealDiagnosisItem.Create(nil);
+//  diag.MainMkb := FMainMKB;
+//  diag.AddMkb := FAddMkb;
+//  diag.Rank := 0;
+//  Self.FDiagnosis.Add(diag);
+//
+//  Exit;
   diag := TRealDiagnosisItem(diagColl.Add);
   diag.MainMkb := FMainMKB;
   diag.AddMkb := FAddMkb;
@@ -3667,6 +3897,26 @@ begin
   for i := 0 to Count - 1 do
   begin
     if dataPos = Items[i].DataPos then
+    begin
+      Result := Items[i];
+      Exit;
+    end;
+  end;
+end;
+
+function TRealDoctorColl.FindDoctorFromUinSpec(
+  UinSpec: string): TRealDoctorItem;
+var
+  i: Integer;
+  uin, spec: string;
+  dataPos: Cardinal;
+begin
+  Result := nil;
+  for i := 0 to Count - 1 do
+  begin
+    dataPos := Items[i].DataPos;
+    uin := Self.getAnsiStringMap(dataPos, word(Doctor_UIN));
+    if uin = UinSpec then
     begin
       Result := Items[i];
       Exit;
@@ -4701,6 +4951,46 @@ begin
   end;
 end;
 
+procedure TRealBLANKA_MED_NAPRColl.SortByPregledNRN;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FPregledNRN < (Items[P]).FPregledNRN do Inc(I);
+        while (Items[J]).FPregledNRN > (Items[P]).FPregledNRN do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
 { TReaNZIS_PLANNED_TYPEColl }
 
 function TRealNZIS_PLANNED_TYPEColl.GetItem(
@@ -4989,12 +5279,14 @@ end;
 constructor TRealBLANKA_MED_NAPRItem.Create(Collection: TCollection);
 begin
   inherited;
+  FLstMsgImportNzis := TList.create;
   FDiagnosis2 := TList<TRealDiagnosisItem>.Create;
 end;
 
 destructor TRealBLANKA_MED_NAPRItem.destroy;
 begin
   FreeAndNil(FDiagnosis2);
+  FreeAndNil(FLstMsgImportNzis);
   inherited;
 end;
 
@@ -5008,6 +5300,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE2_ADD := Value;
+  Exit;
   if FICD_CODE2 = '' then exit;
   if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
   begin
@@ -5019,7 +5312,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE2;
   diag.AddMkb := FICD_CODE2_ADD;
-  diag.Rank := 3;
+  diag.Rank := 1;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5050,6 +5343,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE3_ADD := Value;
+  Exit;
   if FICD_CODE3 = '' then exit;
   if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
   begin
@@ -5061,7 +5355,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE3;
   diag.AddMkb := FICD_CODE3_ADD;
-  diag.Rank := 4;
+  diag.Rank := 2;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5092,6 +5386,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE_ADD := Value;
+  Exit;
   if FICD_CODE = '' then exit;
   if TRealBLANKA_MED_NAPRColl(Collection).FCollDiag <> nil then
   begin
@@ -5103,7 +5398,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE;
   diag.AddMkb := FICD_CODE_ADD;
-  diag.Rank := 1;
+  diag.Rank := 0;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5275,11 +5570,13 @@ constructor TRealBLANKA_MED_NAPR_3AItem.Create(Collection: TCollection);
 begin
   inherited;
   FDiagnosis2 := TList<TRealDiagnosisItem>.Create;
+  FLstMsgImportNzis := TList.Create;;
 end;
 
 destructor TRealBLANKA_MED_NAPR_3AItem.destroy;
 begin
   FreeAndNil(FDiagnosis2);
+  FreeAndNil(FLstMsgImportNzis);
   inherited;
 end;
 
@@ -5293,6 +5590,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE2_ADD := Value;
+  Exit;
   if FICD_CODE2 = '' then exit;
   if TRealBLANKA_MED_NAPR_3AColl(Collection).FCollDiag <> nil then
   begin
@@ -5304,7 +5602,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE2;
   diag.AddMkb := FICD_CODE2_ADD;
-  diag.Rank := 2;
+  diag.Rank := 1;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5336,6 +5634,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE3_ADD := Value;
+  Exit;
   if FICD_CODE3 = '' then exit;
   if TRealBLANKA_MED_NAPR_3AColl(Collection).FCollDiag <> nil then
   begin
@@ -5347,7 +5646,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE3;
   diag.AddMkb := FICD_CODE3_ADD;
-  diag.Rank := 3;
+  diag.Rank := 2;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5378,6 +5677,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE_ADD := Value;
+  Exit;
   if FICD_CODE = '' then exit;
   if TRealBLANKA_MED_NAPR_3AColl(Collection).FCollDiag <> nil then
   begin
@@ -5389,7 +5689,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE;
   diag.AddMkb := FICD_CODE_ADD;
-  diag.Rank := 1;
+  diag.Rank := 0;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -5499,6 +5799,46 @@ var
       repeat
         while (Items[I]).FPregledID < (Items[P]).FPregledID do Inc(I);
         while (Items[J]).FPregledID > (Items[P]).FPregledID do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealBLANKA_MED_NAPR_3AColl.SortByPregledNRN;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FPregledNRN < (Items[P]).FPregledNRN do Inc(I);
+        while (Items[J]).FPregledNRN > (Items[P]).FPregledNRN do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -5706,12 +6046,14 @@ end;
 constructor TRealHOSPITALIZATIONItem.Create(Collection: TCollection);
 begin
   inherited;
+  FLstMsgImportNzis := TList.Create;
   FDiagnosis2 := TList<TRealDiagnosisItem>.Create;
 end;
 
 destructor TRealHOSPITALIZATIONItem.destroy;
 begin
   FreeAndNil(FDiagnosis2);
+  FreeAndNil(FLstMsgImportNzis);
   inherited;
 end;
 
@@ -5725,48 +6067,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE_ADD := Value;
-  if FICD_CODE = '' then exit;
-  if TRealHOSPITALIZATIONColl(Collection).FCollDiag <> nil then
-  begin
-    diag := TRealDiagnosisItem(TRealHOSPITALIZATIONColl(Collection).FCollDiag.Add);
-  end
-  else
-  begin
-    Exit;
-  end;
-  diag.MainMkb := FICD_CODE;
-  diag.AddMkb := FICD_CODE_ADD;
-  diag.Rank := 2;
-
-  New(diag.PRecord);
-  diag.PRecord.setProp := [];
-  if FICD_CODE_ADD <> '' then
-  begin
-    diag.PRecord.additionalCode_CL011 := FICD_CODE_ADD;
-    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
-  end;
-  if FICD_CODE <> '' then
-  begin
-    diag.PRecord.code_CL011 := FICD_CODE;
-    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
-  end;
-  diag.PRecord.rank := diag.Rank;
-  Include(diag.PRecord.setProp, Diagnosis_rank);
-
-  diag.InsertDiagnosis;
-  TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm.Len := TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm.Size;
-  TRealHOSPITALIZATIONColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm, 0);
-  Dispose(diag.PRecord);
-  diag.PRecord := nil;
-
-  Self.FDiagnosis2.Add(diag);
-end;
-
-procedure TRealHOSPITALIZATIONItem.SetICD_CODE_ADD(const Value: string);
-var
-  diag: TRealDiagnosisItem;
-begin
-  FICD_CODE_ADD := Value;
+  Exit;
   if FICD_CODE = '' then exit;
   if TRealHOSPITALIZATIONColl(Collection).FCollDiag <> nil then
   begin
@@ -5803,6 +6104,50 @@ begin
 
   Self.FDiagnosis2.Add(diag);
 end;
+
+procedure TRealHOSPITALIZATIONItem.SetICD_CODE_ADD(const Value: string);
+var
+  diag: TRealDiagnosisItem;
+begin
+  FICD_CODE_ADD := Value;
+  Exit;
+  if FICD_CODE = '' then exit;
+  if TRealHOSPITALIZATIONColl(Collection).FCollDiag <> nil then
+  begin
+    diag := TRealDiagnosisItem(TRealHOSPITALIZATIONColl(Collection).FCollDiag.Add);
+  end
+  else
+  begin
+    Exit;
+  end;
+  diag.MainMkb := FICD_CODE;
+  diag.AddMkb := FICD_CODE_ADD;
+  diag.Rank := 0;
+
+  New(diag.PRecord);
+  diag.PRecord.setProp := [];
+  if FICD_CODE_ADD <> '' then
+  begin
+    diag.PRecord.additionalCode_CL011 := FICD_CODE_ADD;
+    Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
+  end;
+  if FICD_CODE <> '' then
+  begin
+    diag.PRecord.code_CL011 := FICD_CODE;
+    Include(diag.PRecord.setProp, Diagnosis_code_CL011);
+  end;
+  diag.PRecord.rank := diag.Rank;
+  Include(diag.PRecord.setProp, Diagnosis_rank);
+
+  diag.InsertDiagnosis;
+  TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm.Len := TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm.Size;
+  TRealHOSPITALIZATIONColl(Collection).FCollDiag.cmdFile.CopyFrom(TRealHOSPITALIZATIONColl(Collection).FCollDiag.streamComm, 0);
+  Dispose(diag.PRecord);
+  diag.PRecord := nil;
+
+  Self.FDiagnosis2.Add(diag);
+end;
+
 
 
 { TRealHOSPITALIZATIONColl }
@@ -5882,6 +6227,46 @@ begin
 end;
 
 
+procedure TRealHOSPITALIZATIONColl.SortByPregledNRN;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FPregledNRN < (Items[P]).FPregledNRN do Inc(I);
+        while (Items[J]).FPregledNRN > (Items[P]).FPregledNRN do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
 { TRealEXAM_LKKColl }
 
 procedure TRealEXAM_LKKColl.Added(var Item: TCollectionItem);
@@ -5957,17 +6342,59 @@ begin
   end;
 end;
 
+procedure TRealEXAM_LKKColl.SortByPregledNRN;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FPregledNRN < (Items[P]).FPregledNRN do Inc(I);
+        while (Items[J]).FPregledNRN > (Items[P]).FPregledNRN do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
 { TRealEXAM_LKKItem }
 
 constructor TRealEXAM_LKKItem.Create(Collection: TCollection);
 begin
   inherited;
   FDiagnosis2 := TList<TRealDiagnosisItem>.Create;
+  FLstMsgImportNzis := TList.Create;
 end;
 
 destructor TRealEXAM_LKKItem.destroy;
 begin
   FreeAndNil(FDiagnosis2);
+  FreeAndNil(FLstMsgImportNzis);
   inherited;
 end;
 
@@ -5981,6 +6408,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE2_ADD := Value;
+  Exit;
   if FICD_CODE2 = '' then exit;
   if TRealEXAM_LKKColl(Collection).FCollDiag <> nil then
   begin
@@ -5992,7 +6420,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE2;
   diag.AddMkb := FICD_CODE2_ADD;
-  diag.Rank := 2;
+  diag.Rank := 1;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -6023,6 +6451,7 @@ var
   diag: TRealDiagnosisItem;
 begin
   FICD_CODE_ADD := Value;
+  Exit;
   if FICD_CODE = '' then exit;
   if TRealEXAM_LKKColl(Collection).FCollDiag <> nil then
   begin
@@ -6034,7 +6463,7 @@ begin
   end;
   diag.MainMkb := FICD_CODE;
   diag.AddMkb := FICD_CODE_ADD;
-  diag.Rank := 1;
+  diag.Rank := 0;
 
   New(diag.PRecord);
   diag.PRecord.setProp := [];
@@ -6043,9 +6472,9 @@ begin
     diag.PRecord.additionalCode_CL011 := FICD_CODE_ADD;
     Include(diag.PRecord.setProp, Diagnosis_additionalCode_CL011);
   end;
-  if FICD_CODE2 <> '' then
+  if FICD_CODE <> '' then
   begin
-    diag.PRecord.code_CL011 := FICD_CODE2;
+    diag.PRecord.code_CL011 := FICD_CODE;
     Include(diag.PRecord.setProp, Diagnosis_code_CL011);
   end;
   diag.PRecord.rank := diag.Rank;
@@ -6071,6 +6500,7 @@ begin
   FPregledi := TList<TRealPregledNewItem>.Create;
   FLinkNode := nil;
   FLstMsgImportNzis := TList.Create;
+  FNode := nil;
 end;
 
 destructor TRealINC_NAPRItem.destroy;
@@ -6102,6 +6532,60 @@ begin
   FICD_CODE_ADD := Value;
 end;
 
+procedure TRealINC_NAPRItem.SetNAPR_TYPE_ID(const Value: Integer);
+begin
+  FNAPR_TYPE_ID := Value;
+end;
+
+procedure TRealINC_NAPRItem.SetVISIT_TYPE_ID(const Value: Integer);
+begin
+  if Self.FPatientID = 33001 then
+    Self.FPatientID := 33001;
+  FVISIT_TYPE_ID := Value;
+  case FVISIT_TYPE_ID of
+    0:
+    begin
+      Include(Self.PRecord.Logical, category_R2); // Направление за консултация
+      case FNAPR_TYPE_ID of
+        1: Include(Self.PRecord.Logical, INC_MED_NAPR_Ostro);
+        2: Include(Self.PRecord.Logical, INC_MED_NAPR_Hron);
+        3: Include(Self.PRecord.Logical, INC_MED_NAPR_Izbor);
+        4: Include(Self.PRecord.Logical, INC_MED_NAPR_Disp);
+        6: Include(Self.PRecord.Logical, INC_MED_NAPR_Prof);
+        7: Include(Self.PRecord.Logical, INC_MED_NAPR_Choice_Mother);
+        8: Include(Self.PRecord.Logical, INC_MED_NAPR_Choice_Child);
+        9: Include(Self.PRecord.Logical, INC_MED_NAPR_PreChoice_Mother);
+       10: Include(Self.PRecord.Logical, INC_MED_NAPR_PreChoice_Child);
+       11: Include(Self.PRecord.Logical, INC_MED_NAPR_PreChoice_Child);
+
+      end;
+    end;
+    1:
+    begin
+      Include(Self.PRecord.Logical, category_R3); // Направление за високоспециализирани дейности
+      case FNAPR_TYPE_ID of
+        1: Include(Self.PRecord.Logical, INC_MED_NAPR_Ostro);
+        2: Include(Self.PRecord.Logical, INC_MED_NAPR_Hron);
+        3: Include(Self.PRecord.Logical, INC_MED_NAPR_Disp);
+        4: Include(Self.PRecord.Logical, INC_MED_NAPR_Eksp);
+        5: Include(Self.PRecord.Logical, INC_MED_NAPR_Prof);
+        6: Include(Self.PRecord.Logical, INC_MED_NAPR_Podg_Telk);
+      end;
+    end;
+
+    2:
+    begin
+      Include(Self.PRecord.Logical, category_R5); // lkk
+      case FNAPR_TYPE_ID of
+        1: Include(Self.PRecord.Logical, INC_MED_NAPR_Podg_LKK);
+        2: Include(Self.PRecord.Logical, INC_MED_NAPR_Eksp);
+        3: Include(Self.PRecord.Logical, INC_MED_NAPR_Iskane_Telk);
+        4: Include(Self.PRecord.Logical, INC_MED_NAPR_Podg_Telk);
+      end;
+    end;
+  end;
+end;
+
 procedure TRealINC_NAPRItem.SetICD_CODE2_ADD(const Value: string);
 begin
   FICD_COD2E_ADD := Value;
@@ -6118,6 +6602,125 @@ procedure TRealINC_NAPRColl.Added(var Item: TCollectionItem);
 begin
   inherited;
 
+end;
+
+procedure TRealINC_NAPRColl.FillNzisSpec(CL006Coll: TCL006Coll);
+var
+  icl006, imn: integer;
+  dataPosition: Cardinal;
+  pCardinalData: PCardinal;
+begin
+  CL006Coll.IndexValue(CL006_Key);
+  CL006Coll.SortByIndexAnsiString;
+  self.SortBySpec1;
+  icl006 := 0;
+  imn := 0;
+  while (icl006 < CL006Coll.Count) and (imn < self.Count) do
+  begin
+    if CL006Coll.Items[icl006].IndexAnsiStr1 = self.Items[imn].Spec1 then
+    begin
+      self.SetIntMap(self.Items[imn].DataPos, word(INC_NAPR_Spec1Pos), CL006Coll.Items[icl006].DataPos);
+      inc(imn);
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 > self.Items[imn].Spec1 then
+    begin
+      begin
+        inc(imn);
+      end;
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 < self.Items[imn].Spec1 then
+    begin
+      inc(icl006);
+    end;
+  end;
+
+   self.SortBySpec2;
+  icl006 := 0;
+  imn := 0;
+  while (icl006 < CL006Coll.Count) and (imn < self.Count) do
+  begin
+    if CL006Coll.Items[icl006].IndexAnsiStr1 = self.Items[imn].Spec2 then
+    begin
+      self.SetIntMap(self.Items[imn].DataPos, word(INC_NAPR_Spec2Pos), CL006Coll.Items[icl006].DataPos);
+      inc(imn);
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 > self.Items[imn].Spec2 then
+    begin
+      begin
+        inc(imn);
+      end;
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 < self.Items[imn].Spec2 then
+    begin
+      inc(icl006);
+    end;
+  end;
+
+  self.SortBySpec3;
+  icl006 := 0;
+  imn := 0;
+  while (icl006 < CL006Coll.Count) and (imn < self.Count) do
+  begin
+    if CL006Coll.Items[icl006].IndexAnsiStr1 = self.Items[imn].Spec3 then
+    begin
+      self.SetIntMap(self.Items[imn].DataPos, word(INC_NAPR_Spec3Pos), CL006Coll.Items[icl006].DataPos);
+      inc(imn);
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 > self.Items[imn].Spec3 then
+    begin
+      begin
+        inc(imn);
+      end;
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 < self.Items[imn].Spec3 then
+    begin
+      inc(icl006);
+    end;
+  end;
+
+  self.SortBySpec4;
+  icl006 := 0;
+  imn := 0;
+  while (icl006 < CL006Coll.Count) and (imn < self.Count) do
+  begin
+    if CL006Coll.Items[icl006].IndexAnsiStr1 = self.Items[imn].Spec4 then
+    begin
+      self.SetIntMap(self.Items[imn].DataPos, word(INC_NAPR_Spec4Pos), CL006Coll.Items[icl006].DataPos);
+      inc(imn);
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 > self.Items[imn].Spec4 then
+    begin
+      begin
+        inc(imn);
+      end;
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 < self.Items[imn].Spec4 then
+    begin
+      inc(icl006);
+    end;
+  end;
+
+  self.SortBySpec5;
+  icl006 := 0;
+  imn := 0;
+  while (icl006 < CL006Coll.Count) and (imn < self.Count) do
+  begin
+    if CL006Coll.Items[icl006].IndexAnsiStr1 = self.Items[imn].Spec5 then
+    begin
+      self.SetIntMap(self.Items[imn].DataPos, word(INC_NAPR_Spec5Pos), CL006Coll.Items[icl006].DataPos);
+      inc(imn);
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 > self.Items[imn].Spec5 then
+    begin
+      begin
+        inc(imn);
+      end;
+    end
+    else if CL006Coll.Items[icl006].IndexAnsiStr1 < self.Items[imn].Spec5 then
+    begin
+      inc(icl006);
+    end;
+  end;
 end;
 
 function TRealINC_NAPRColl.GetItem(Index: Integer): TRealINC_NAPRItem;
@@ -6139,6 +6742,17 @@ begin
       Break;
     end;
   end;
+end;
+
+function TRealINC_NAPRColl.GetNaprCode_Quick(
+  const NaprSet: TLogicalINC_NAPRSet): TNaprType;
+var
+  Intersection: TLogicalINC_NAPRSet;
+begin
+  Intersection := NaprGroup * NaprSet;
+  //Result := TNaprType(NaprGroup * NaprSet);
+  Result := TNaprType(NativeUInt(Intersection));
+  //result := 1 shr result;
 end;
 
 procedure TRealINC_NAPRColl.SetItem(Index: Integer;
@@ -6321,8 +6935,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while (Items[I]).FPatientID < (Items[P]).FPatientID do Inc(I);
-        while (Items[J]).FPatientID > (Items[P]).FPatientID do Dec(J);
+        while Items[I].FPatientID < Items[P].FPatientID do Inc(I);
+        while Items[J].FPatientID > Items[P].FPatientID do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -6344,6 +6958,265 @@ begin
   begin
     sc := TCollectionForSort(Self).FItems;
     QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortBySpec1;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FSpec1 < (Items[P]).FSpec1 do Inc(I);
+        while (Items[J]).FSpec1 > (Items[P]).FSpec1 do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortBySpec2;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FSpec2 < (Items[P]).FSpec2 do Inc(I);
+        while (Items[J]).FSpec2 > (Items[P]).FSpec2 do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortBySpec3;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FSpec3 < (Items[P]).FSpec3 do Inc(I);
+        while (Items[J]).FSpec3 > (Items[P]).FSpec3 do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortBySpec4;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FSpec4 < (Items[P]).FSpec4 do Inc(I);
+        while (Items[J]).FSpec4 > (Items[P]).FSpec4 do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortBySpec5;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while (Items[I]).FSpec5 < (Items[P]).FSpec5 do Inc(I);
+        while (Items[J]).FSpec5 > (Items[P]).FSpec5 do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealINC_NAPRColl.SortListByIncDoctor(list: TList<TRealINC_NAPRItem>);
+procedure QuickSort(L, R: Integer);
+  function conditionI(i, p: integer): Boolean;
+  begin
+    if  list[I].FIncDocUin <> list[P].FIncDocUin then
+      Result := list[i].FIncDocUin < list[P].FIncDocUin
+    else
+    if  list[I].FIncDocSpec <> list[P].FIncDocSpec then
+      Result := list[i].FIncDocSpec < list[P].FIncDocSpec
+    else
+      Result := list[i].FIncDocRcz < list[P].FIncDocRcz;
+  end;
+
+  function conditionJ(j, p: integer): Boolean;
+  begin
+    if list[j].FIncDocUin <> list[P].FIncDocUin then
+      Result := list[j].FIncDocUin > list[P].FIncDocUin
+    else
+    if list[j].FIncDocSpec <> list[P].FIncDocSpec then
+      Result := list[j].FIncDocSpec > list[P].FIncDocSpec
+    else
+      Result := list[j].FIncDocRcz > list[P].FIncDocRcz;
+  end;
+  var
+    I, J, P : Integer;
+    Save : TRealINC_NAPRItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while conditionI(i, p) do
+          Inc(i);
+        while conditionJ(j, p) do
+          Dec(J);
+        if I <= J then begin
+          Save := list[I];
+          list[I] := list[J];
+          list[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (list.count >1 ) then
+  begin
+    QuickSort(0,list.count-1);
   end;
 end;
 

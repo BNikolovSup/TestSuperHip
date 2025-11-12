@@ -14,6 +14,7 @@ type
   end;
 
   {$Z2}
+  TCheckBoxState = (cbUnchecked, cbChecked, cbGrayed);
   TEditTextNotify =  procedure (Sender:TObject; AValue:String) of object;
 
   TAsectTypeKind = (actNone, actAnsiString, actString,actAnsiString_L, actString_L, actInteger,
@@ -82,7 +83,7 @@ type
              vvPacket, vvPacketTemp, vvPacketIndex,
              vvFunctionaly,
              vvTables,
-             vvPatientRoot,
+             vvPatientNewRoot,
              vvPatient,
              vvPregled,
              vvNomenNzis,
@@ -503,8 +504,7 @@ type
     RL090Prev = '|C51|';
   var
     FUserDate: TDate = 0;
-
-
+    FS_Nzis: TFormatSettings;
 
 implementation
 
@@ -520,7 +520,13 @@ begin
   end;
 end;
 
-  
+initialization
+  FS_Nzis := TFormatSettings.Create;
+  FS_Nzis.DecimalSeparator := '.';
+  //FS_Nzis.ThousandSeparator := ',';
+  FS_Nzis.DateSeparator := '-';
+  FS_Nzis.ShortDateFormat := 'yyyy-mm-dd';
+  FS_Nzis.LongTimeFormat := 'hh:nn:ss';
 end.
 
 

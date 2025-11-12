@@ -1,8 +1,8 @@
-unit SuperHipp;  //import vtrPregledPat.real birthDate .fdm  WM_SIZE fillx001 е адб отговарящо на гдб-то birthDate
+unit SuperHipp;  //borderstyle vtrPregledPat.real screen .fdm  WM_SIZE fillx001 е адб отговарящо на гдб-то birthDate
 interface
 
   uses
-  Parnassus.FMXContainer, Parnassus.FMXContainerReg, MainRttiExpl,
+  Parnassus.FMXContainer, Parnassus.FMXContainerReg,
   FMX.Forms, FMX.Edit, FMX.StdCtrls, ProfForm, FmxWelcomeScreen,
   RolePanels, OptionsForm,
   Tokens, WalkFunctions, TitleBar, RoleBar, Vcl.ActnMan, Vcl.ActnCtrls, Vcl.ActnMenus,
@@ -10,12 +10,12 @@ interface
   Winapi.ActiveX, Winapi.ShellAPI,
   Vcl.Controls, Vcl.Dialogs, SynEditHighlighter, SynHighlighterXML, RoleButton,
   Vcl.ComCtrls, Vcl.StdCtrls, SynEdit, VCLTee.Control, VCLTee.Grid,
-  Vcl.OleCtrls, WMPLib_TLB, Vcl.ToolWin, Vcl.WinXCtrls, Vcl.Forms,
+  Vcl.OleCtrls, {WMPLib_TLB,} Vcl.ToolWin, Vcl.WinXCtrls, Vcl.Forms,
   VirtualStringTreeAspect, Vcl.Imaging.GIFImg, VirtualTrees,
   VirtualStringTreeHipp, Vcl.Buttons, System.Classes,
   JclDebug,System.Generics.Collections, Vcl.Graphics,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
-  system.Diagnostics, system.TimeSpan, System.Threading,
+  system.Diagnostics, system.TimeSpan,
   ThreadLoadDB, DM, system.Math, VTREditors,system.Types,
   HistoryThread, SearchThread, AspectPerformerThread, CertThread,
   System.Zip, frxRichEditor, frxRichEdit,
@@ -33,7 +33,7 @@ interface
 
   Aspects.Types, SuperObject, superxmlparser,
 
-  Table.Role, Vcl.Imaging.pngimage,
+  Table.Role,
   Nzis.Nomen.baseCL000,
   XBookComponent2, XLSBook2,
   Xc12Utils5, XLSUtils5, XLSCellMMU5, XLSNames5, XLSFormattedObj5,
@@ -49,11 +49,13 @@ interface
   Table.Mkb, Table.PregledNew, Table.PatientNew, Table.PatientNZOK,
   Table.Diagnosis, Table.MDN, Table.INC_MDN,
   Table.AnalsNew, Table.practica, Table.ExamAnalysis, table.ExamImmunization,
-  Table.INC_NAPR, Table.OtherDoctor,
+  Table.INC_NAPR, Table.OtherDoctor, Table.Addres,
   table.Procedures, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
   Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE,
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT,
   Table.Certificates, Table.KARTA_PROFILAKTIKA2017,
+  Table.EXAM_LKK, Table.HOSPITALIZATION,
+
 
   RealObj.NzisNomen, Aspects.Collections, RealObj.RealHipp, RealNasMesto,
 
@@ -75,10 +77,9 @@ interface
   SBBaseClasses, SBSocketClient, SBSocket, sbxcore,
   SBSimpleSSL, SBHTTPSClient, SBPKCS11Base, SBCustomCertStorage, SBConstants,
   SBPKCS11CertStorage, SBCertValidator, SBSSLCommon,SBLists,
-  SBXMLAdESIntf, SBStrUtils, SBSSLConstants, SBHTTPSConstants, CertHelper,
+  SBXMLAdESIntf, SBStrUtils, SBSSLConstants, SBHTTPSConstants, CertHelper, TempVtrHelper,
   Vcl.DBCtrls, System.Actions, Vcl.ActnList, Vcl.PlatformDefaultStyleActnCtrls,
-  WordBreakF, TempVtrHelper, uWVBrowserBase, uWVBrowser, uWVWinControl,
-  uWVWindowParent, uWVTypeLibrary, uWVLoader
+  WordBreakF, WMPLib_TLB
   ;
   const
   EM_GETZOOM = (WM_USER + 224);
@@ -324,7 +325,7 @@ type
     ComboBox4: TComboBox;
     Edit3: TEdit;
     CheckBox2: TCheckBox;
-    pnlTest: TPanel;
+    pnlProfMinaliPreg: TPanel;
     btnNzisProf: TButton;
     btnRemont142: TButton;
     pnlGridTool: TPanel;
@@ -398,8 +399,6 @@ type
     tsFmxRoleSelect: TTabSheet;
     fmxCntrRoleSelect: TFireMonkeyContainer;
     edt1: TEdit;
-    MainMenu1: TMainMenu;
-    mniwww1: TMenuItem;
     edtFilterTemp: TEdit;
     btnFilldiagInMkb: TButton;
     pnButtons: TPanel;
@@ -443,8 +442,6 @@ type
     mnFitWidth: TMenuItem;
     imgListPdf: TImageList;
     tsHtml: TTabSheet;
-    WVWindowParent1: TWVWindowParent;
-    WVBrowser1: TWVBrowser;
     btn4: TToolButton;
     btnOldHip: TToolButton;
     btnLoopXml: TButton;
@@ -453,6 +450,8 @@ type
     dlgOpenNZIS: TOpenDialog;
     tsNasMesta: TTabSheet;
     vtrLinkNasMesta: TVirtualStringTreeAspect;
+    Panel2: TPanel;
+    Button4: TButton;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -466,7 +465,9 @@ type
     procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
     procedure CMDialogKey(var Msg: TCMDialogKey); message CM_DIALOGKEY;
     procedure WMNCACTIVATE(var M: TWMNCACTIVATE); message WM_NCACTIVATE;
-    procedure FormCanResize(Sender: TObject; var NewWidth, NewHeight: Integer; var Resize: Boolean);
+    procedure WmGetMinMaxInfo(var Msg: TMessage); message WM_GETMINMAXINFO;
+    procedure WM_NCCALCSIZE(var Msg: TMessage); message WM_NCCALCSIZE;
+
     procedure CreateParams(var Params: TCreateParams); override;
     procedure FormCreate(Sender: TObject);
     procedure vtrPreglediChange_Patients(Sender: TBaseVirtualTree; ANode: PVirtualNode);
@@ -514,7 +515,7 @@ type
     procedure vtrRoleGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure rlbtn3Click(Sender: TObject);
     procedure Button3Click(Sender: TObject);
-    procedure btnHelpClick(Sender: TObject);
+   // procedure btnHelpClick(Sender: TObject);
     procedure btnManagerClick(Sender: TObject);
     procedure tsRoleDescrShow(Sender: TObject);
     procedure vtrHelpHipChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
@@ -964,6 +965,8 @@ type
     DiagTemp: TDiagnosisItem;
     MDNTemp: TMDNItem;
     MNTemp: TBLANKA_MED_NAPRItem;
+    MnLkkTemp: TRealEXAM_LKKItem;
+
     //ProfCardTemp: t
     ExamAnalTemp: TExamAnalysisItem;
     DoctorTemp: TDoctorItem;
@@ -1040,6 +1043,13 @@ type
     procedure mniNasMestoClick(Sender: TObject);
     procedure miListDoctorClick(Sender: TObject);
 
+    procedure ExportNzisToDb;
+    procedure RunInPat(patient: TRealPatientNewItem; isNew: Boolean);
+    procedure RunInIncMN(IncMn: TRealINC_NAPRItem; isNew: Boolean);
+    procedure RunInPregled(Preg: TRealPregledNewItem; isNew: Boolean);
+
+    procedure FindDiagInMDN;
+
 
   protected // TempVtr
     tmpVtr: TTempVtrHelper;
@@ -1107,6 +1117,8 @@ type
     CollPregledVtor: TList<TRealPregledNewItem>;
     CollPregledPrim: TList<TRealPregledNewItem>;
     CollPatient: TRealPatientNewColl;
+    LstPatForExportDB: TList<TRealPatientNewItem>;
+    LstPregForExportDB: TList<TRealPregledNewItem>;
     CollPregForSearch: TRealPregledNewColl;
     ListPatientForFDB: TList<TPatientNewItem>;
     CollPatPis: TRealPatientNZOKColl;
@@ -1355,6 +1367,10 @@ type
 
     procedure RoleBarOnProgres(Sender: TObject; var progres: integer);
     procedure RoleBarBtnRoleClick(Sender: TObject);
+    procedure CheckIncMN;
+    procedure CheckIncMNInPat;
+
+    procedure SetStyle;
 
 
     property FilterCountPregled: integer read FFilterCountPregled write FFilterCountPregled;
@@ -1373,6 +1389,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+   Vcl.Imaging.pngimage;
 
 
 function EnumChildren(hwnd: HWND; lParam: LPARAM): BOOL; stdcall;
@@ -1554,7 +1573,13 @@ var
   pCardinalData: PCardinal;
   node, nodePat: PVirtualNode;
   data: PAspRec;
+  collPatExport: TRealPatientNewColl;
 begin
+  FindDiagInMDN;
+  //ExportNzisToDb;
+  //CheckIncMN;
+  //CheckIncMNInPat;
+  Exit;
   InternalChangeWorkPage(tsFMXForm);
   if FmxImportNzisFrm = nil then
   begin
@@ -1632,7 +1657,7 @@ end;
 
 procedure TfrmSuperHip.btn5Click(Sender: TObject);
 begin
-  WVBrowser1.navigate('file:///C:/Users/Administrator1/Downloads/helppp 1.pdf');
+  //WVBrowser1.navigate('file:///C:/Users/Administrator1/Downloads/helppp 1.pdf');
   Exit;
   Stopwatch := TStopwatch.StartNew;
   //vtrPregledPat.IterateSubtree(vtrPregledPat.GetFirstSelected.Parent, FmxTest.IterateCalcDraw, vtrPregledPat.GetFirstSelected);
@@ -1973,12 +1998,22 @@ begin
  MPHip.controls.currentPosition := 2800.299;
 end;
 
-procedure TfrmSuperHip.btnHelpClick(Sender: TObject);
-begin
-  SendMessage(Handle, WM_SYSCOMMAND, SC_CONTEXTHELP, 0);
-  //Application.WM_HELP
-  //pgcRole.ActivePage := tsRoleDescr;
-end;
+//procedure TfrmSuperHip.btnHelpClick(Sender: TObject);
+//var
+//  res: CaptureResult;
+//  hashObj: Hash;
+//  hashAL: string;
+//begin
+//  hashAL := 'dddd';
+//  hashObj := CoHash.Create();
+//  hashObj.type_ := HashSHA256;
+//  hashObj.add(hashAL);
+//  res := sgctl1.Capture('Biser....', 'Подпис за: ....' , hashObj);
+//  Exit;
+//  SendMessage(Handle, WM_SYSCOMMAND, SC_CONTEXTHELP, 0);
+//  //Application.WM_HELP
+//  //pgcRole.ActivePage := tsRoleDescr;
+//end;
 
 procedure TfrmSuperHip.btnHistNavClick(Sender: TObject);
 var
@@ -3457,6 +3492,132 @@ begin
   end;
 end;
 
+procedure TfrmSuperHip.CheckIncMN;
+var
+  patNode: PVirtualNode;
+  run, runPreg: PVirtualNode;
+  dataRun, dataRunPreg, dataPat: PAspRec;
+  nrn, egn: string;
+  cntDB, cnt360: Integer;
+  prId: array[0..2] of Integer;
+begin
+  patNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
+  while patNode <> nil do
+  begin
+    dataPat := Pointer(PByte(patNode) + lenNode);
+    egn := CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
+
+    run := patNode.FirstChild;
+    while run <> nil do
+    begin
+      dataRun := Pointer(PByte(run) + lenNode);
+      cntDB:= 0;
+      cnt360 := 0;
+      if dataRun.vid = vvIncMN then
+      begin
+        nrn := CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
+        if nrn = '' then
+        begin
+          run := run.NextSibling;
+          Continue;
+        end;
+        if nrn = '22164C019A10' then
+          Caption := 'ddd';
+        Fdm.ibsqlCommand.Close;
+        Fdm.ibsqlCommand.SQL.Text := 'select Count(*) from pregled pr where pr.copied_from_nrn = :nrn';
+        Fdm.ibsqlCommand.Params[0].AsString := nrn;
+        Fdm.ibsqlCommand.ExecQuery;
+        cntDB := Fdm.ibsqlCommand.Fields[0].AsInteger;
+        cnt360 := 0;
+        prId[0] := -1;
+        prId[1] := -1;
+        prId[2] := -1;
+
+        runPreg := run.FirstChild;
+        while runPreg <> nil do
+        begin
+          dataRunPreg := Pointer(PByte(runPreg) + lenNode);
+          prId[cnt360] := CollPregled.getIntMap(dataRunPreg.DataPos, word(PregledNew_ID));
+          if dataRunPreg.vid = vvPregled then
+            inc(cnt360);
+
+          runPreg := runPreg.NextSibling;
+        end;
+      end;
+      if cntDB <> cnt360 then
+      begin
+        Fdm.ibsqlCommand.Close;
+        Fdm.ibsqlCommand.SQL.Text := 'update pregled  set copied_from_nrn = :NewNrn  where id in( :id, :id1, :id2 )';
+        Fdm.ibsqlCommand.ParamByName('NewNrn').AsString := nrn;
+        Fdm.ibsqlCommand.ParamByName('id').AsInteger := prId[0];
+        Fdm.ibsqlCommand.ParamByName('id1').AsInteger := prId[1];
+        Fdm.ibsqlCommand.ParamByName('id2').AsInteger := prId[2];
+        Fdm.ibsqlCommand.ExecQuery;
+
+        mmoTest.Lines.Add(Format('cntDB: %d    cnt360: %d -- nrn: %s ; egn: %s', [cntDB, cnt360, nrn, egn]));
+      end;
+      run := run.NextSibling;
+    end;
+    patNode := patNode.NextSibling;
+  end;
+  Fdm.ibsqlCommand.Transaction.CommitRetaining;
+end;
+
+procedure TfrmSuperHip.CheckIncMNInPat;
+var
+  patNode: PVirtualNode;
+  run, runPreg: PVirtualNode;
+  dataRun, dataRunPreg, dataPat: PAspRec;
+  nrn, egn: string;
+  IdPatDB, IdPat360: Integer;
+begin
+  patNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
+
+  while patNode <> nil do
+  begin
+    dataPat := Pointer(PByte(patNode) + lenNode);
+    egn := CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
+    run := patNode.FirstChild;
+    while run <> nil do
+    begin
+      dataRun := Pointer(PByte(run) + lenNode);
+      if dataRun.vid = vvIncMN then
+      begin
+        nrn := CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
+        if nrn = '' then
+        begin
+          run := run.NextSibling;
+          Continue;
+        end;
+
+        if nrn = '22164C019A10' then
+          Caption := 'ddd';
+        Fdm.ibsqlCommand.Close;
+        Fdm.ibsqlCommand.SQL.Text := 'select imn.pacient_id from inc_napr imn where imn.nrn = :nrn';
+        Fdm.ibsqlCommand.Params[0].AsString := nrn;
+        Fdm.ibsqlCommand.ExecQuery;
+        IdPatDB := Fdm.ibsqlCommand.Fields[0].AsInteger;
+        IdPat360 := CollPatient.getIntMap(dataPat.DataPos, word(PatientNew_ID));
+        //runPreg := run.FirstChild;
+//        while runPreg <> nil do
+//        begin
+//          dataRunPreg := Pointer(PByte(runPreg) + lenNode);
+//          if dataRunPreg.vid = vvPregled then
+//            inc(cnt360);
+//
+//          runPreg := runPreg.NextSibling;
+//        end;
+      end;
+      if IdPat360 <> IdPatDB then
+      begin
+        mmoTest.Lines.Add(Format('IdPatDB: %d    IdPat360: %d ------ nrn : %s; egn--- %s', [IdPatDB, IdPat360, nrn, egn]));
+      end;
+      run := run.NextSibling;
+    end;
+    patNode := patNode.NextSibling;
+  end;
+end;
+
 function TfrmSuperHip.CheckTokenFromCert: Boolean;
 var
   idCert: string;
@@ -3610,7 +3771,7 @@ end;
 procedure TfrmSuperHip.CreateParams(var Params: TCreateParams);
 begin
   inherited;
-  Params.Style := Params.Style  or WS_THICKFRAME;
+  //Params.Style := Params.Style  or WS_THICKFRAME;
 end;
 
 procedure TfrmSuperHip.Delete99;
@@ -4623,6 +4784,57 @@ begin
   vtrPregledPat.Repaint;
 end;
 
+procedure TfrmSuperHip.ExportNzisToDb;
+var
+  linkPos, FPosLinkData: Cardinal;
+  pCardinalData: PCardinal;
+  node, nodePat, RunNodeInPat: PVirtualNode;
+  data, dataInPat: PAspRec;
+  pat: TRealPatientNewItem;
+  //collPatExport: TRealPatientNewColl;
+begin
+  if LstPatForExportDB = nil then
+  begin
+    LstPatForExportDB := TList<TRealPatientNewItem>.Create;
+  end
+  else
+  begin
+    LstPatForExportDB.Clear;
+  end;
+  Stopwatch := TStopwatch.StartNew;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  FPosLinkData := pCardinalData^;
+  while linkPos < FPosLinkData do
+  begin
+    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    data := Pointer(PByte(node)+ lenNode);
+    if data.vid = vvPatient then
+    begin
+      pat := TRealPatientNewItem(CollPatient.Add);
+      pat.DataPos := data.DataPos;
+      pat.FNode := node;
+      if CollPatient.getintMap(data.DataPos, Word(PatientNew_ID)) = 0 then //now pacient
+      begin
+        //mmoTest.Lines.Add('нов пациент ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
+        LstPatForExportDB.Add(pat);
+        FDBHelper.SavePatientFDB(pat, Fdm.ibsqlCommand);
+        RunInPat(pat, true);
+      end
+      else
+      begin
+        RunInPat(pat, false);
+      end;
+
+    end;
+    inc(linkPos, LenData);
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'exportDB ' + FloatToStr(Elapsed.TotalMilliseconds));
+
+end;
+
 procedure TfrmSuperHip.FillAnalInExamAnal;
 var
   iCl022, iExamAnal, nextCl022: integer;
@@ -5001,6 +5213,19 @@ begin
   iPat := 0;
   while iMN < CollIncMN.Count do
   begin
+    if CollIncMN.Items[iMN].NRN = '2418760164D8' then
+    begin
+      Caption := 'ddd';
+    end;
+    if CollIncMN.Items[iMN].PatientID = 85386 then
+    begin
+      Caption := 'ddd';
+    end;
+    if CollPatient.Items[iPat].PatEGN = '5610312202' then
+    begin
+      Caption := 'ddd';
+    end;
+
     if CollIncMN.Items[iMN].PatientID = CollPatient.Items[iPat].PatID then
     begin
       CollPatient.Items[iPat].FIncMNs.Add(CollIncMN.Items[iMN]);
@@ -5066,6 +5291,7 @@ procedure TfrmSuperHip.FillIncMNInPRegNomer;
 var
   iMN, iPreg: integer;
 begin
+  Exit;
   CollIncMN.SortByNomer;
   CollPregled.SortByIncMNNomer;
   Stopwatch := TStopwatch.StartNew;
@@ -5073,6 +5299,8 @@ begin
   iPreg := 0;
   while iMN < CollIncMN.Count do
   begin
+    if CollIncMN.Items[iMN].NRN = '22152C02F1F8' then
+      Caption := 'ddd';
     if CollIncMN.Items[iMN].Nomer = CollPregled.Items[iPreg].IncNaprNom then
     begin
       CollPregled.Items[iPreg].FIncMN := CollIncMN.Items[iMN];
@@ -5104,13 +5332,20 @@ begin
   Stopwatch := TStopwatch.StartNew;
   iMN := 0;
   iPreg := 0;
-  while iMN < CollIncMN.Count do
+  while (iMN < CollIncMN.Count) and (iPreg < CollPregled.Count) do
   begin
+    if CollPregled.Items[iPreg].COPIED_FROM_NRN = '' then
+    begin
+      inc(iPreg);
+      Continue;
+    end;
+    if CollIncMN.Items[iMN].NRN = '2511870643E9' then
+      Caption := 'ddd';
     if CollIncMN.Items[iMN].NRN = CollPregled.Items[iPreg].COPIED_FROM_NRN then
     begin
       CollPregled.Items[iPreg].FIncMN := CollIncMN.Items[iMN];
       //CollIncMN.Items[iMN].FPregledi := CollPregled.Items[iPreg];
-      inc(iMN);
+      inc(iPreg);
     end
     else if CollIncMN.Items[iMN].NRN > CollPregled.Items[iPreg].COPIED_FROM_NRN then
     begin
@@ -5334,8 +5569,6 @@ begin
   CollMDN.SortByPregledId;
   imdn := 0;
   iPreg := 0;
-  // понеже няма как да има mdn без preg, очаква се първо да свършат mdn-тата или едновременно
-  // затова въртим всичко до изчерпване на mdn-тата
   while imdn < CollMDN.Count do
   begin
     if CollMDN.Items[imdn].PregledID = CollPregled.Items[iPreg].PregledID then
@@ -5343,12 +5576,15 @@ begin
       CollPregled.Items[iPreg].FMdns.Add(CollMDN.Items[imdn]);
       preg := CollPregled.Items[iPreg];
       mdn := CollMDN.Items[imdn];
+      //търся коя диагноза от прегледа е избрана за мдн-то
       diagMdn := mdn.FDiagnosis[0];
       for i := 0 to preg.FDiagnosis.Count - 1 do
       begin
         diagPreg := preg.FDiagnosis[i];
         if (diagMdn.MainMkb = diagPreg.MainMkb) and (diagMdn.AddMkb = diagPreg.AddMkb) then
         begin
+
+          //diagMdn.PregDiag := diagPreg;
           mdn.FDiagnosis.Clear;
           Break;
         end;
@@ -5916,32 +6152,32 @@ begin
 
   vNZOK_HIP := vtrTemp.AddChild(vRemontPL, nil);
   data := vtrTemp.GetNodeData(vNZOK_HIP);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 1;
 
   vNZOK := vtrTemp.AddChild(vRemontPL, nil);
   data := vtrTemp.GetNodeData(vNZOK);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 2;
 
   vHIP := vtrTemp.AddChild(vRemontPL, nil);
   data := vtrTemp.GetNodeData(vHIP);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 3;
 
   vHipNovi := vtrTemp.AddChild(vHIP, nil);
   data := vtrTemp.GetNodeData(vHipNovi);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 4;
 
   vHipOtpisani := vtrTemp.AddChild(vHIP, nil);
   data := vtrTemp.GetNodeData(vHipOtpisani);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 5;
 
   vHipZapisani := vtrTemp.AddChild(vHIP, nil);
   data := vtrTemp.GetNodeData(vHipZapisani);
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.index := - 6;
 
   //CollPatPis.IndexValue(TPatientNZOKItem.TPropertyIndex.PatientNZOK_EGN);
@@ -6142,7 +6378,7 @@ begin
 //    Dummy := DummyList.Items[0]; // Принуждава Delphi да задържи GetItem
   while (iPreg < msgColl.CollPreg.Count) and (iMsg < LstRIncMN.Count) do
   begin
-    if LstRIncMN.Items[iMsg].nrn = '25244A02FFD2' then
+    if LstRIncMN.Items[iMsg].nrn = '2511870643E9' then
       Caption := 'ddd';
     if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = '' then
     begin
@@ -6155,7 +6391,7 @@ begin
       LstRIncMN[iMsg].FPregledi.Add(msgColl.CollPreg.Items[iPreg]);
       msgColl.CollPreg.Items[iPreg].Fpatient.FIncMNs.Add(LstRIncMN.Items[iMsg]);
       msgColl.CollPreg.Items[iPreg].FIncMN := LstRIncMN[iMsg];
-      inc(iMsg);
+      inc(iPreg);
     end
     else if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN > LstRIncMN[iMsg].nrn then
     begin
@@ -6186,6 +6422,8 @@ begin
   // затова въртим всичко до изчерпване на ambs-тата
   while iamb < CollPregled.Count do
   begin
+    if CollPregled.Items[iamb].PatID = 85386  then
+      Caption := 'ddd';
     if CollPregled.Items[iamb].PatID = CollPatient.Items[iPac].PatID then
     begin
       CollPatient.Items[iPac].FPregledi.Add(CollPregled.Items[iamb]);
@@ -6387,17 +6625,18 @@ begin
   CollMedNapr.SortBySpecNzis;
   icl006 := 0;
   imn := 0;
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
+  //pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
+  //dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
   while (icl006 < CL006Coll.Count) and (imn < CollMedNapr.Count) do
   begin
     if CL006Coll.Items[icl006].IndexAnsiStr1 = CollMedNapr.Items[imn].SpecNzis then
     begin
-      New(CollMedNapr.Items[imn].PRecord);
-
-      CollMedNapr.Items[imn].PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
-      CollMedNapr.Items[imn].PRecord.SpecDataPos := CL006Coll.Items[icl006].DataPos;
-      CollMedNapr.Items[imn].SaveBLANKA_MED_NAPR(dataPosition);
+      CollMedNapr.SetIntMap(CollMedNapr.Items[imn].DataPos, word(BLANKA_MED_NAPR_SpecDataPos), CL006Coll.Items[icl006].DataPos);
+      //New(CollMedNapr.Items[imn].PRecord);
+//
+//      CollMedNapr.Items[imn].PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
+//      CollMedNapr.Items[imn].PRecord.SpecDataPos := CL006Coll.Items[icl006].DataPos;
+//      CollMedNapr.Items[imn].SaveBLANKA_MED_NAPR(dataPosition);
 
       inc(imn);
     end
@@ -6413,8 +6652,8 @@ begin
       inc(icl006);
     end;
   end;
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+  //pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
+  //pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
 end;
 
 //procedure TfrmSuperHip.FillPrimInSec;
@@ -6930,6 +7169,48 @@ begin
 
   end;
   WinStorage.Free;
+end;
+
+procedure TfrmSuperHip.FindDiagInMDN;
+var
+  data, dataParent: PAspRec;
+  linkPos, FPosLinkData: Cardinal;
+  pCardinalData: PCardinal;
+  bufLink: Pointer;
+  RunNode, parentNode: PVirtualNode;
+  diag: TRealDiagnosisItem;
+  cnt: Integer;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  bufLink := AspectsLinkPatPregFile.Buf;
+  linkPos := 100;
+  cnt := 0;
+  pCardinalData := pointer(PByte(bufLink));
+  FPosLinkData := pCardinalData^;
+  while linkpos < FPosLinkData do
+  begin
+    RunNode := pointer(PByte(bufLink) + linkpos);
+    data := pointer(PByte(RunNode) + lenNode);
+    case data.vid of
+      vvDiag:
+      begin
+        parentNode := RunNode.Parent;
+        dataParent := pointer(PByte(parentNode) + lenNode);
+        case dataParent.vid of
+          vvMDN:
+          begin
+            inc(cnt);
+            //vtrPregledPat.Selected[parentNode] := True;
+//            vtrPregledPat.FocusedNode := parentNode;
+//            Exit;
+          end;
+        end;
+      end;
+    end;
+    Inc(linkPos, LenData);
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('loopTree за %f',[Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.FindDoctor(Down: Boolean);
@@ -7762,13 +8043,6 @@ begin
   end;
 end;
 
-procedure TfrmSuperHip.FormCanResize(Sender: TObject; var NewWidth, NewHeight: Integer; var Resize: Boolean);
-begin
-  //fmxCntrRoleBar.Top := pnlTree.Top;// + 50;
-//  fmxCntrRoleBar.Height := pnlTree.Height-60;
-end;
-
-
 procedure TfrmSuperHip.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
 
@@ -8571,6 +8845,9 @@ begin
 
   CalcStatusDB;
   FDbHelper.CollPreg := CollPregled;
+  FDbHelper.CollPat := CollPatient;
+  FDbHelper.CollMdn := CollMDN;
+  FDbHelper.mkbColl := CollMkb;
   FDbHelper.CollDoctor := CollDoctor;
 
   FDbHelper.collCl022 := CL022Coll;
@@ -8594,7 +8871,13 @@ begin
   Adb_DM.CollPregled := CollPregled;
   Adb_DM.CollMDN := CollMDN;
   Adb_DM.CollMedNapr := CollMedNapr;
+  Adb_DM.CollMedNaprHosp := CollMedNaprHosp;
+  Adb_DM.CollMedNaprLkk := CollMedNaprLkk;
+  Adb_DM.CollIncMN := CollIncMN;
+  Adb_DM.CollOtherDoctor := CollOtherDoctor;
+
   Adb_DM.CollAnalsNew := CollAnalsNew;
+
 
   Adb_DM.CollExamAnal := CollExamAnal;
   Adb_DM.CollExamImun := CollExamImun;
@@ -9021,6 +9304,8 @@ begin
     FmxProfForm.ResDiagRepColl := CollNzis_RESULT_DIAGNOSTIC_REPORT;
     FmxProfForm.PlanedTypeColl := CollNZIS_PLANNED_TYPE;
     FmxProfForm.DiagColl := CollDiag;
+    FmxProfForm.IncNaprColl := CollIncMN;
+    FmxProfForm.CollOtherDoctor := CollOtherDoctor;
 
 
     //if Assigned(streamCmdFile) then
@@ -9508,8 +9793,7 @@ procedure TfrmSuperHip.FormCreate(Sender: TObject);
 var
   cntrCanvas: TControlCanvas;
 begin
-  //Exit;
-
+  Visible := False;
   edt1.Parent := grdSearch;
   edt1.SetBounds(0,0,1, 1);
 
@@ -9520,9 +9804,24 @@ begin
 
   FinderRec.LastFindedStr := '';
   //mmoTest.Lines.Add(IntToStr(mmMain.Handle));
-  pnlTest.Parent := vtrMinaliPregledi;
-  pnlTest.Align := alTop;
-  pnlTest.Height := vtrMinaliPregledi.DefaultNodeHeight - 2;
+  if True then //Fdm.IsGP then
+  begin
+    pnlProfMinaliPreg.Parent := vtrMinaliPregledi;
+    pnlProfMinaliPreg.Align := alTop;
+    pnlProfMinaliPreg.AlignWithMargins := True;
+    pnlProfMinaliPreg.Margins.Top := 0; ;
+    pnlProfMinaliPreg.Margins.Left := vtrMinaliPregledi.Header.Columns[0].Width ;
+    pnlProfMinaliPreg.Height := vtrMinaliPregledi.DefaultNodeHeight - 2;
+  end
+  else
+  begin
+    pnlProfMinaliPreg.Parent := vtrMinaliPregledi;
+    pnlProfMinaliPreg.Align := alTop;
+    pnlProfMinaliPreg.AlignWithMargins := True;
+    pnlProfMinaliPreg.Margins.Top := vtrMinaliPregledi.DefaultNodeHeight ;
+    pnlProfMinaliPreg.Margins.Left := vtrMinaliPregledi.Header.Columns[0].Width ;
+    pnlProfMinaliPreg.Height := vtrMinaliPregledi.DefaultNodeHeight - 2;
+  end;
   pnlGridSearch.Height := 1;
   tlb1.Realign;
   //SystemParametersInfo(SPI_SETKEYBOARDSPEED,30,0,0);
@@ -9591,7 +9890,17 @@ begin
   FNasMesto.LinkToColl;
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
-
+  //sgctl1.Licence :=
+//  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3YmM5Y2IxYWIxMGE0NmUxODI2N2E5MTJkYTA2' +
+//  'ZTI3NiIsImV4cCI6MjE0NzQ4MzY0NywiaWF0IjoxNTYwOTUwMjcyLCJyaWdodHMiOlsiU0lHX1NES19DT1JFI' +
+//  'iwiU0lHQ0FQVFhfQUNDRVNTIl0sImRldmljZXMiOlsiV0FDT01fQU5ZIl0sInR5cGUiOiJwcm9kIiwibGljX2' +
+//  '5hbWUiOiJTaWduYXR1cmUgU0RLIiwid2Fjb21faWQiOiI3YmM5Y2IxYWIxMGE0NmUxODI2N2E5MTJkYTA2ZTI' +
+//  '3NiIsImxpY191aWQiOiJiODUyM2ViYi0xOGI3LTQ3OGEtYTlkZS04NDlmZTIyNmIwMDIiLCJhcHBzX3dpbmRv' +
+//  'd3MiOltdLCJhcHBzX2lvcyI6W10sImFwcHNfYW5kcm9pZCI6W10sIm1hY2hpbmVfaWRzIjpbXX0.ONy3iYQ7l' +
+//  'C6rQhou7rz4iJT_OJ20087gWz7GtCgYX3uNtKjmnEaNuP3QkjgxOK_vgOrTdwzD-nm-ysiTDs2GcPlOdUPErS' +
+//  'p_bcX8kFBZVmGLyJtmeInAW6HuSp2-57ngoGFivTH_l1kkQ1KMvzDKHJbRglsPpd4nVHhx9WkvqczXyogldyg' +
+//  'vl0LRidyPOsS5H2GYmaPiyIp9In6meqeNQ1n9zkxSHo7B11mp_WXJXl0k1pek7py8XYCedCNW5qnLi4UCNlfT' +
+//  'd6Mk9qz31arsiWsesPeR9PN121LBJtiPi023yQU8mgb9piw_a-ccciviJuNsEuRDN3sGnqONG3dMSA';
 //  cntrCanvas := TControlCanvas.Create;
 //  cntrCanvas.Control := TControl(hntMain);
 //  cntrCanvas.Font.Size := 20;
@@ -9708,7 +10017,7 @@ end;
 procedure TfrmSuperHip.FormShow(Sender: TObject);
 begin
   //DynWinPanel1.Repaint;
-  Self.Menu := nil;
+  //Self.Menu := nil;
   PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
 end;
 
@@ -9975,9 +10284,9 @@ begin
     dataGraph.index := 0;
     pat.FNode := runPat;
     profGR.LoadVtrGraph(pat, i);
-    pnlTest.Caption := pat.NoteProf;
+    pnlProfMinaliPreg.Caption := pat.NoteProf;
     btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
-    pnlTest.Repaint;
+    pnlProfMinaliPreg.Repaint;
     runPat := runPat.NextSibling;
     Break;
   end;
@@ -10119,9 +10428,9 @@ begin
     end;
   end;
 
-  pnlTest.Caption := pat.NoteProf;
+  pnlProfMinaliPreg.Caption := pat.NoteProf;
   btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
-  pnlTest.Repaint;
+  pnlProfMinaliPreg.Repaint;
 
 end;
 
@@ -11389,7 +11698,7 @@ begin
 
   vPatImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
     vImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vImportNzis);
@@ -11536,7 +11845,7 @@ begin
 
     vPatImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
 
     vImportNzis := vtrTemp.AddChild(nil, nil);
@@ -11704,7 +12013,7 @@ begin
 
     vPatImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
 
     vImportNzis := vtrTemp.AddChild(nil, nil);
@@ -11892,7 +12201,7 @@ begin
 
     vPatImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
 
     vImportNzis := vtrTemp.AddChild(nil, nil);
@@ -12110,7 +12419,7 @@ begin
 
     vPatImportNzis := vtrTemp.AddChild(nil, nil);
     data := vtrTemp.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
 
     vImportNzis := vtrTemp.AddChild(nil, nil);
@@ -12433,8 +12742,8 @@ end;
 
 procedure TfrmSuperHip.LoadVtrMinaliPregledi(node: PVirtualNode; Apat: TRealPatientNewItem);
 var
-  dataNode, data: PAspRec;
-  vPregNode, vPreg: PVirtualNode;
+  dataNode, data, dataPregInMN: PAspRec;
+  vPregNode, vPreg, run: PVirtualNode;
 begin
   vtrMinaliPregledi.BeginUpdate;
   vtrMinaliPregledi.Clear;
@@ -12447,24 +12756,51 @@ begin
   while vPregNode <> nil  do
   begin
     dataNode := pointer(PByte(vPregNode) + lenNode);
-    if datanode.vid <> vvPregled then
-    begin
-      vPregNode := vPregNode.NextSibling;
-      Continue;
+    case datanode.vid of
+      vvPregled:
+      begin
+        vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+        data := vtrMinaliPregledi.GetNodeData(vPreg);
+        data.index := integer(vPregNode);
+        data.DataPos := dataNode.DataPos;
+        data.vid := vvPregled;
+      end;
+      vvIncMN:
+      begin
+        run := vPregNode.FirstChild;
+        while run <> nil do
+        begin
+          dataPregInMN := pointer(PByte(run) + lenNode);
+          case dataPregInMN.vid of
+            vvPregled:
+            begin
+              vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+              data := vtrMinaliPregledi.GetNodeData(vPreg);
+              data.index := integer(run);
+              data.DataPos := dataPregInMN.DataPos;
+              data.vid := vvPregled;
+            end;
+          end;
+          run := run.NextSibling;
+        end;
+      end;
     end;
-    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
-    data := vtrMinaliPregledi.GetNodeData(vPreg);
-    data.index := integer(vPregNode);
-    data.DataPos := dataNode.DataPos;
-    data.vid := vvPregled;
     vPregNode := vPregNode.NextSibling;
   end;
-  if Fdm.IsGP and (Apat <> nil) then
+  if {Fdm.IsGP and }(Apat <> nil) then
   begin
     vPreg := vtrMinaliPregledi.AddChild(nil, nil);
     data := vtrMinaliPregledi.GetNodeData(vPreg);
     data.DataPos := 0;
     data.vid := vvCl132;
+  end;
+  if (not Fdm.IsGP) and (Apat <> nil) then
+  begin
+    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+
+    data := vtrMinaliPregledi.GetNodeData(vPreg);
+    data.DataPos := 0;
+    data.vid := vvIncMN;
   end;
 
   vtrMinaliPregledi.EndUpdate;
@@ -12756,7 +13092,7 @@ begin
   TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
   data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
   data.index := MAXDWORD;
-  data.vid := vvPatientRoot;
+  data.vid := vvPatientNewRoot;
   data.DataPos := 0;
   TreeLink.Index := 0;
   inc(linkpos, LenData);
@@ -12776,6 +13112,8 @@ begin
   for I := 0 to CollPatient.Count - 1 do
   begin
     pat := CollPatient.Items[i];
+    if pat.PatID = 85386 then
+        Caption := 'ddd';
     TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
     data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
     data.DataPos := pat.DataPos;
@@ -12846,7 +13184,7 @@ begin
       TreeLink.NodeHeight := 27;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
-      TreeLink.Dummy := j mod 255;
+      //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vpat,
                       vtr, amAddChildFirst, streamCmdFile);
@@ -12856,6 +13194,8 @@ begin
     end;
     for j := 0 to pat.FIncMNs.Count - 1 do
     begin
+      if pat.FIncMNs[j].NRN = '2418760164D8' then
+        Caption := 'ddd';
       IncMn := TRealINC_NAPRItem(pat.FIncMNs[j]);
       TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
       data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
@@ -12869,7 +13209,7 @@ begin
       TreeLink.NodeHeight := 27;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
-      TreeLink.Dummy := j mod 255;
+      //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vpat,
                       vtr, amAddChildFirst, streamCmdFile);
@@ -12887,20 +13227,22 @@ begin
       TreeLink.NodeHeight := 27;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
-      TreeLink.Dummy := j mod 255;
+      //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vIncMN,
                       vtr, amAddChildFirst, streamCmdFile);
 
       IncMn.LinkNode := vIncMN;
-      if IncMn.NRN = '22157700253F' then
-        Caption := pat.PatEGN;
+      //if IncMn.NRN = '22157700253F' then
+//        Caption := pat.PatEGN;
     end;
 
 
     for j := 0 to pat.FPregledi.Count - 1 do
     begin
       preg := TRealPregledNewItem(pat.FPregledi[j]);
+      if preg.PatID = 85386 then
+        Caption := 'ddd';
       TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
       data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
       data.DataPos := preg.DataPos;
@@ -12913,7 +13255,7 @@ begin
       TreeLink.NodeHeight := 27;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
-      TreeLink.Dummy := j mod 255;
+      //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       //vtr.InternalConnectNode_cmd(TreeLink, vpat,
 //                        vtr, amAddChildFirst, streamCmdFile);
@@ -12926,14 +13268,14 @@ begin
       begin
         if preg.FIncMN.LinkNode <> nil then
         begin
-          vtr.InternalConnectNode_cmd(TreeLink, preg.FIncMN.LinkNode,
-                          vtr, amAddChildFirst, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink,  preg.FIncMN.LinkNode,
+                          vtr, amAddChildLast, streamCmdFile);
         end
         else
         begin
           vtr.InternalConnectNode_cmd(TreeLink, vpat,
                         vtr, amAddChildFirst, streamCmdFile);//zzzzzzzzzzzzzzzzzz  да се отбележи, че не е добре
-          Caption := pat.PatEGN;
+          //Caption := pat.PatEGN;
         end;
       end;
 
@@ -13047,7 +13389,7 @@ begin
         TreeLink.NodeHeight := 27;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
-        TreeLink.Dummy := k mod 255;
+        //TreeLink.Dummy := k mod 255;
         vtr.InitNode(TreeLink);
         vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
 
@@ -13056,6 +13398,12 @@ begin
         for m := 0 to mdn.FDiagnosis.Count -1 do
         begin
           diag := mdn.FDiagnosis[m];
+          //if diag.PregDiag <> nil then
+//          begin
+//            Caption := 'ddd';
+//            Continue;// zzzzzzzzzzzzzzzzzz  да се сложи коя диагноза от прегледа е...
+//          end;
+          mdn.AddNewDiag(m, CollDiag);
           TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
           data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
@@ -13529,7 +13877,7 @@ end;
 procedure TfrmSuperHip.MenuTitleProfGrafClick(Sender: TObject);
 var
   i: Integer;
-  MyThreadPool: TThreadPool;
+  //MyThreadPool: TThreadPool;
   MinWorkerThreads: integer;
   MaxWorkerThreads: integer;
 
@@ -13994,7 +14342,8 @@ end;
 procedure TfrmSuperHip.MouseTitleDown(Sender: TObject);
 begin
   ReleaseCapture;
-  SendMessage(self.Handle, WM_SYSCOMMAND, 61458, 0) ;
+  Perform(WM_NCLBUTTONDOWN, HTCAPTION, 0);
+  //SendMessage(self.Handle, WM_SYSCOMMAND, 61458, 0) ;
 end;
 
 procedure TfrmSuperHip.OfLinePregX013(pregNode: PVirtualNode);
@@ -14274,6 +14623,182 @@ begin
   pnlRoleView.Roles.ActivePanel := RolPnlNomen;
 end;
 
+procedure TfrmSuperHip.RunInIncMN(IncMn: TRealINC_NAPRItem; isNew: Boolean);
+var
+  RunNodeInIncMN: PVirtualNode;
+  IncMnNode: PVirtualNode;
+  dataIncMN, dataInIncMn: PAspRec;
+  IncMnNrn, PregledNRN: string;
+  preg: TRealPregledNewItem;
+  patNode: PVirtualNode;
+begin
+  IncMnNode := IncMn.FNode;
+  RunNodeInIncMN := IncMnNode.FirstChild;
+  while RunNodeInIncMN <> nil do
+  begin
+    dataInIncMn := Pointer(PByte(RunNodeInIncMN)+ lenNode);
+    case dataInIncMn.vid of
+      vvPregled:
+      begin
+        preg := TRealPregledNewItem(CollPregled.Add);
+        preg.DataPos := dataInIncMn.DataPos;
+        preg.FNode := RunNodeInIncMN;
+        //preg.Fpatient := patient;
+        //patient.FPregledi.Add(preg);
+
+        if CollPregled.getIntMap(dataInIncMn.DataPos, word(PregledNew_ID)) = 0 then
+        begin
+          FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
+          dataIncMN := Pointer(PByte(IncMnNode)+ lenNode);
+
+          PregledNRN := CollPregled.getAnsiStringMap(dataInIncMn.DataPos, Word(PregledNew_NRN_LRN));
+          IncMnNrn := CollIncMN.getAnsiStringMap(dataIncMN.DataPos, Word(INC_NAPR_NRN));
+          if isNew then
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+          end
+          else
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+          end;
+          RunInPregled(preg, true);
+        end;
+      end;
+    end;
+    RunNodeInIncMN := RunNodeInIncMN.NextSibling;
+  end;
+end;
+
+procedure TfrmSuperHip.RunInPat(patient: TRealPatientNewItem; isNew: Boolean);
+var
+  RunNodeInPat, patNode: PVirtualNode;
+  dataPat, dataInPat: PAspRec;
+  patEgn, IncMNNRN, PregledNRN: string;
+  incMN: TRealINC_NAPRItem;
+  preg: TRealPregledNewItem;
+begin
+  patNode := patient.FNode;
+  RunNodeInPat := patNode.FirstChild;
+  while RunNodeInPat <> nil do
+  begin
+    dataInPat := Pointer(PByte(RunNodeInPat)+ lenNode);
+    case dataInPat.vid of
+      vvIncMN:
+      begin
+        incMN := TRealINC_NAPRItem(CollIncMN.Add);
+        incMN.FNode := RunNodeInPat;
+        incMN.FPatient := patient;
+        patient.FIncMNs.Add(incMn);
+        if CollIncMN.getIntMap(dataInPat.DataPos, word(INC_NAPR_ID)) = 0 then
+        begin
+          dataPat := Pointer(PByte(patNode)+ lenNode);
+
+          IncMNNRN := CollIncMN.getAnsiStringMap(dataInPat.DataPos, Word(INC_NAPR_NRN));
+          patEgn := CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
+          if isNew then
+          begin
+            //mmoTest.Lines.Add(format('ново вх. напр.: %s  в нов пациент: %s ', [IncMNNRN, patEgn] ));
+          end
+          else
+          begin
+            //mmoTest.Lines.Add(format('ново вх. напр.: %s  в стар пациент: %s ', [IncMNNRN, patEgn] ));
+          end;
+          RunInIncMN(incMN, true);
+        end
+        else
+        begin
+          RunInIncMN(incMN, false);
+        end;
+      end;
+      vvPregled:
+      begin
+        preg := TRealPregledNewItem(CollPregled.Add);
+        preg.DataPos := dataInPat.DataPos;
+        preg.FNode := RunNodeInPat;
+        preg.Fpatient := patient;
+        patient.FPregledi.Add(preg);
+        if CollPregled.getIntMap(dataInPat.DataPos, word(PregledNew_ID)) = 0 then
+        begin
+          FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
+          dataPat := Pointer(PByte(patNode)+ lenNode);
+
+          PregledNRN := CollPregled.getAnsiStringMap(dataInPat.DataPos, Word(PregledNew_NRN_LRN));
+          patEgn := CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
+          if isNew then
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+          end
+          else
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+          end;
+          RunInPregled(preg, true);
+        end
+        else
+        begin
+          RunInPregled(preg, false);
+        end;
+
+      end;
+    end;
+    RunNodeInPat := RunNodeInPat.NextSibling;
+  end;
+end;
+
+procedure TfrmSuperHip.RunInPregled(Preg: TRealPregledNewItem; isNew: Boolean);
+var
+  RunNodeInPregled: PVirtualNode;
+  PregNode: PVirtualNode;
+  dataMDN, dataInPreg, dataPreg: PAspRec;
+  MdnNrn, PregledNRN: string;
+  mdn: TRealMDNItem;
+  k: integer;
+  anal: TRealExamAnalysisItem;
+begin
+  PregNode := preg.FNode;
+  RunNodeInPregled := PregNode.FirstChild;
+  while RunNodeInPregled <> nil do
+  begin
+    dataInPreg := Pointer(PByte(RunNodeInPregled)+ lenNode);
+    dataPreg := Pointer(PByte(PregNode)+ lenNode);
+    case dataInPreg.vid of
+      vvmdn:
+      begin
+        mdn := TRealMDNItem(CollMDN.add);
+        mdn.FNode := RunNodeInPregled;
+        mdn.DataPos :=dataInPreg.DataPos;
+        mdn.PregledID := CollPregled.getIntMap(dataPreg.DataPos, Word(PregledNew_ID));;
+        mdn.FPregled := preg;
+        preg.FMdns.Add(mdn);
+        if CollMDN.getIntMap(dataInPreg.DataPos, word(MDN_ID)) = 0 then
+        begin
+          dataMDN := Pointer(PByte(mdn.FNode)+ lenNode);
+
+          PregledNRN := CollPregled.getAnsiStringMap(dataInPreg.DataPos, Word(PregledNew_NRN_LRN));
+          MdnNrn := CollMdn.getAnsiStringMap(dataMDN.DataPos, Word(MDN_NRN));
+          FDBHelper.SaveMdn(mdn, Fdm.ibsqlCommand);
+          for k :=  mdn.FExamAnals.Count - 1 downto 0 do
+          begin
+            anal := mdn.FExamAnals[k];
+            anal.FMdn := mdn;
+            FDBHelper.SaveExamAnals(anal, Fdm.ibsqlCommand);
+            //mdn.FExamAnals.Delete(k);
+          end;
+          if isNew then
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+          end
+          else
+          begin
+            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+          end;
+        end;
+      end;
+    end;
+    RunNodeInPregled := RunNodeInPregled.NextSibling;
+  end;
+end;
+
 //procedure TfrmSuperHip.ScaleDyn(sender: TObject);
 //begin
 //  fmxCntrDyn.Width := Max(Round(FmxFormDyn.scldlyt1.Width), scrlbx1.Width);
@@ -14345,6 +14870,20 @@ begin
 end;
 
 
+
+procedure TfrmSuperHip.SetStyle;
+var
+  Style: LongInt;
+begin
+  Style := GetWindowLong(Handle, GWL_STYLE);
+   Style := (Style or WS_THICKFRAME or WS_SYSMENU or WS_MINIMIZEBOX or WS_MAXIMIZEBOX)
+           and not WS_CAPTION;
+  SetWindowLong(Handle, GWL_STYLE, Style);
+
+  // Приложи промените
+  SetWindowPos(Handle, 0, 0, 0, 0, 0,
+    SWP_NOZORDER or SWP_NOMOVE or SWP_NOSIZE or SWP_FRAMECHANGED);
+end;
 
 procedure TfrmSuperHip.ShowHint;
 begin
@@ -15063,10 +15602,10 @@ end;
 procedure TfrmSuperHip.sizeMove(var msg: TWMSize);
 begin
   inherited;
-  if (msg.SizeType = SIZE_MAXIMIZED)then
-  begin
-    Self.Height := Screen.WorkAreaHeight;
-  end;
+  //if (msg.SizeType = SIZE_MAXIMIZED)then
+//  begin
+//    Self.Height := Screen.WorkAreaHeight;
+//  end;
 end;
 
 procedure TfrmSuperHip.SortListString(list: TList<TString>);
@@ -15715,6 +16254,7 @@ end;
 
 procedure TfrmSuperHip.RestoreApp(Sender: TObject; var txt: string);
 begin
+ // Exit;
   if Self.WindowState = wsMaximized then
   begin
     postmessage(handle,WM_SYSCOMMAND,SC_RESTORE,0);
@@ -15724,9 +16264,10 @@ begin
   begin
     //postmessage(handle,WM_SYSCOMMAND,SC_MAXIMIZE,0);
     Self.WindowState := wsMaximized;
-    Self.BorderStyle := bsSizeable;
+    //Self.BorderStyle := bsSizeable;
     txt := '2';
-    Self.BorderStyle := bsNone;
+    //Self.BorderStyle := bsNone;
+    //SetStyle;
   end;
 end;
 
@@ -16319,8 +16860,8 @@ begin
   diag.PRecord.MkbPos := DataPosMkb;
   if DataPosMkb = 100 then
   begin
-    tmpVtr.FindMkbDataPosFromCode(cl011, indexMkb);
-    diag.PRecord.MkbPos := CollMkb.Items[indexMkb].DataPos;
+    if tmpVtr.FindMkbDataPosFromCode(cl011, indexMkb) then
+      diag.PRecord.MkbPos := CollMkb.Items[indexMkb].DataPos;
     //for i := 0 to CollMkb.Count - 1 do
 //    begin
 //      if CollMkb.getAnsiStringMap( CollMkb.Items[i].DataPos, word(Diagnosis_code_CL011)) = cl011 then
@@ -17697,6 +18238,7 @@ procedure TfrmSuperHip.StartHistoryThread(dbName: string);
 begin
   //Exit;
   thrHistPerf := THistoryThread.Create(True, FdbName);
+  thrHistPerf.FCollPatient.NasMesto := FNasMesto;
   thrHistPerf.FreeOnTerminate := True;
   thrHistPerf.Buf := AspectsHipFile.Buf;
   thrHistPerf.BufLink := AspectsLinkPatPregFile.Buf;
@@ -18054,31 +18596,41 @@ end;
 
 
 procedure TfrmSuperHip.mniImportNzisClick(Sender: TObject);
+var
+  fileName: string;
 begin
-  FmxTitleBar.p1.IsOpen := False;
-  ImpNzis := TNzisImport.create;
-  impNzis.VtrImport := vtrTemp;
-	impNzis.mmoTest := mmoTest;
-	impNzis.FmxRoleBar := FmxRoleBar;
-	impNzis.AspectsHipFile := AspectsHipFile;
-	impNzis.AspectsLinkPatPregFile := AspectsLinkPatPregFile;
-	impNzis.CollOtherDoctor := CollOtherDoctor;
-  impNzis.syndtNzisReq := syndtNzisReq;
-  impNzis.syndtNzisResp := syndtNzisResp;
-  impNzis.FmxImportNzisFrm := FmxImportNzisFrm;
-  impNzis.fmxCntrDyn := fmxCntrDyn;
-  impNzis.tsFMXForm := tsFMXForm;
-  impNzis.ProcChangeWorkTS := InternalChangeWorkPage;
-  impNzis.ProcAddNewPat := Adb_DM.AddNewImportNzisPat;
-  impNzis.NasMesto := FNasMesto;
+  if dlgOpenNZIS.Execute then
+  begin
+    fileName := dlgOpenNZIS.FileName;
+    FmxTitleBar.p1.IsOpen := False;
+    ImpNzis := TNzisImport.create;
+    impNzis.VtrImport := vtrTemp;
+    impNzis.mmoTest := mmoTest;
+    impNzis.FmxRoleBar := FmxRoleBar;
+    impNzis.AspectsHipFile := AspectsHipFile;
+    impNzis.AspectsLinkPatPregFile := AspectsLinkPatPregFile;
+    impNzis.CollOtherDoctor := CollOtherDoctor;
+    impNzis.syndtNzisReq := syndtNzisReq;
+    impNzis.syndtNzisResp := syndtNzisResp;
+    impNzis.FmxImportNzisFrm := FmxImportNzisFrm;
+    impNzis.fmxCntrDyn := fmxCntrDyn;
+    impNzis.tsFMXForm := tsFMXForm;
+    impNzis.ProcChangeWorkTS := InternalChangeWorkPage;
+    impNzis.ProcAddNewPat := Adb_DM.AddNewImportNzisPat;
+    impNzis.NasMesto := FNasMesto;
+    impNzis.CollPractica := CollPractica;
+    impNzis.CollDoctor := CollDoctor;
+    impNzis.Adb_DM := Adb_DM;
+    Adb_DM.CollMkb := CollMkb;
 
-  ImpNzis.ImportNzis('');
-  ImpNzis.LoopPat;
+    ImpNzis.ImportNzis(fileName);
+    ImpNzis.LoopPat;
 
-  pgcTree.ActivePage := tsTempVTR;
-  pnlNzisMessages.Visible := True;
-  pnlNzisMessages.Height := pnlWork.Height - 30;
-  pnlTree.Width := 580;
+    pgcTree.ActivePage := tsTempVTR;
+    pnlNzisMessages.Visible := True;
+    pnlNzisMessages.Height := pnlWork.Height - 30;
+    pnlTree.Width := 580;
+  end;
 
 
   //Exit;
@@ -18144,6 +18696,7 @@ end;
 
 procedure TfrmSuperHip.tmr1Timer(Sender: TObject);
 begin
+  Exit;
   if not Self.Visible then Exit;
 
   tmr1.Enabled := False;
@@ -18202,11 +18755,12 @@ end;
 
 procedure TfrmSuperHip.tsHtmlShow(Sender: TObject);
 begin
-  if GlobalWebView2Loader.InitializationError then
-    showmessage(GlobalWebView2Loader.ErrorMessage)
-   else
-    if GlobalWebView2Loader.Initialized then
-      WVBrowser1.CreateBrowser(WVWindowParent1.Handle);
+
+  //if GlobalWebView2Loader.InitializationError then
+//    showmessage(GlobalWebView2Loader.ErrorMessage)
+//   else
+//    if GlobalWebView2Loader.Initialized then
+//      WVBrowser1.CreateBrowser(WVWindowParent1.Handle);
      //else
       //Timer1.Enabled := True;
 
@@ -18495,7 +19049,7 @@ var
 begin
   data := Sender.GetNodeData(node);
   case data.vid of
-    vvPatientRoot:
+    vvPatientNewRoot:
     begin
       case Column of
         0:
@@ -18844,7 +19398,7 @@ begin
 
 
   case data.vid of
-    vvPatientRoot:
+    vvPatientNewRoot:
     begin
       case data.index of
         -6:
@@ -19207,7 +19761,7 @@ begin
  // Exit;
   data := vtrTemp.GetNodeData(node);
   case data.vid of
-    vvPatientRoot:
+    vvPatientNewRoot:
     begin
       case data.index of
         -6:
@@ -19377,7 +19931,7 @@ begin
             ImageIndex := 103;
           end;
         end;
-        vvPatientRoot:
+        vvPatientNewRoot:
         begin
           ImageIndex := 24;
         end;
@@ -19471,7 +20025,7 @@ begin
           vvExamImun: CellText := 'Имунизации';
           vvHosp: CellText := 'Хоспитализации';
           vvNomenNzis: CellText := 'Общи';
-          vvPatientRoot: CellText := 'Пациенти от импорта';
+          vvPatientNewRoot: CellText := 'Пациенти от импорта';
           vvPatient:
           begin
             CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
@@ -19754,7 +20308,7 @@ begin
           vvExamImun: CellText := 'Имунизации';
           vvHosp: CellText := 'Хоспитализации';
           vvNomenNzis: CellText := 'Общи';
-          vvPatientRoot: CellText := 'Пациенти от импорта';
+          vvPatientNewRoot: CellText := 'Пациенти от импорта';
           vvPatient:
           begin
             CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
@@ -20257,12 +20811,9 @@ begin
     end;
     PREGLED:
     begin
-      //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      //CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregled);
-      CollPregled.FillListLinks(AspectsLinkPatPregFile, vvPregled);
-      CollPregled.ShowLinksGrid(grdNom);
-      //CollPregled.ShowListNodesGrid(grdNom);
+      CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregled);
+      CollPregled.ShowListNodesGrid(grdNom);
     end;
     PRACTICA:
     begin
@@ -21432,7 +21983,7 @@ begin
           dataParent := Pointer(PByte(Node.Parent.parent) + lenNode);
           case dataParent.vid of
             vvPregledRoot: CellText := CollPregled.DisplayName(node.Dummy);
-            vvPatientRoot: CellText := CollPatient.DisplayName(node.Dummy);
+            vvPatientNewRoot: CellText := CollPatient.DisplayName(node.Dummy);
           end;
 
         end
@@ -22688,7 +23239,7 @@ begin
 
   bufLink := AspectsLinkPatPregFile.Buf;
   dataAction := pointer(PByte(node) + lenNode);
-  if dataAction.vid = vvPatientRoot then Exit;
+  if dataAction.vid = vvPatientNewRoot then Exit;
   vtrPregledPat.OnCollapsed := nil;
   vtrPregledPat.BeginUpdate;
 
@@ -23063,7 +23614,7 @@ begin
   if (GetKeyState(VK_CONTROL) >= 0) then Exit;
   bufLink := AspectsLinkPatPregFile.Buf;
   dataAction := pointer(PByte(node) + lenNode);
-  if dataAction.vid = vvPatientRoot then  Exit;
+  if dataAction.vid = vvPatientNewRoot then  Exit;
 
   vtrPregledPat.OnExpanded := nil;
   vtrPregledPat.BeginUpdate;
@@ -23248,8 +23799,8 @@ begin
 end;
 
 procedure TfrmSuperHip.vtrPregledPatGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
-var
-  data, dataPat, dataEvn: PAspRec;
+var //perf
+  data, dataPat, dataEvn, dataParent: PAspRec;
   NodePat: PVirtualNode;
   preg: TPregledNewItem;
   pat: TPatientNewItem;
@@ -23270,6 +23821,7 @@ var
   anal: TRealExamAnalysisItem;
   p: PCardinal;
   ofset: Cardinal;
+  nasMestoPos: Cardinal;
 begin
   if node = nil then  Exit;
   if AspectsHipFile = nil then Exit;
@@ -23303,7 +23855,7 @@ begin
         begin
           CellText := 'zamestnik ' ;
         end;
-        vvPatientRoot:
+        vvPatientNewRoot:
           CellText := 'Пациенти ' ;
         vvPatient:
         begin
@@ -23351,9 +23903,10 @@ begin
           dateBrd := CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
           dateIncNapr := CollIncMN.getDateMap(Data.DataPos, word(INC_NAPR_ISSUE_DATE));
           PatAge := PatientTemp.CalcAge(dateIncNapr, dateBrd);
-          CellText := 'Консулт. ' + CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+          CellText := 'Консулт. ' + CollIncMn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
           CellText := CellText + '  ' + IntToStr(PatAge) + ' год.';
         end;
+
         vvOtherDoctor:
         begin
           CellText := 'Изпр. ' + CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
@@ -23373,7 +23926,18 @@ begin
           begin
             if Data.DataPos <> 0 then
             begin
-              NodePat := Node.Parent;
+              dataParent :=  pointer(PByte(Node.Parent) + lenNode);
+              case dataParent.vid of
+                vvPatient:
+                begin
+                  NodePat := Node.Parent;
+                end;
+                vvIncMN:
+                begin
+                  NodePat := Node.Parent.parent;
+                end;
+              end;
+
               if Sender = vtrPregledPat then
               begin
                 DataPat := pointer(PByte(nodePat) + lenNode);
@@ -23534,6 +24098,14 @@ begin
           MNTemp.DataPos := Data.DataPos;
           CellText := 'МН ' + inttostr(MNTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(BLANKA_MED_NAPR_NUMBER)));
         end;
+        vvMedNaprLkk:
+        begin
+          CellText := 'МН_ЛКК ' +  CollMedNaprLkk.getAnsiStringMap(Data.DataPos, word(EXAM_LKK_NRN));
+        end;
+        vvMedNaprHosp:
+        begin
+          CellText := 'МН_Hosp ' +  CollMedNaprHosp.getAnsiStringMap(Data.DataPos, word(HOSPITALIZATION_NRN));
+        end;
         vvProfCard:
         begin
           CellText := 'Проф. карта ' + IntToStr(CollCardProf.getIntMap(Data.DataPos, Word(KARTA_PROFILAKTIKA2017_NOMER)));
@@ -23590,7 +24162,7 @@ begin
           DoctorTemp.DataPos := Data.DataPos;
           CellText := DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_SNAME));
         end;
-        vvPatientRoot:
+        vvPatientNewRoot:
           CellText := IntToStr(CollPatient.CntInADB) ;
         vvPatient:
         begin
@@ -23616,6 +24188,7 @@ begin
           //ofset := p^ + CollPatient.posData;
           CellText := 'НРН ' + CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN))  + ' от ' + DateToStr(CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
         end;
+        
         vvNZIS_PLANNED_TYPE:
         begin
           startDate := CollNZIS_PLANNED_TYPE.getDateMap( data.DataPos, word(NZIS_PLANNED_TYPE_StartDate));
@@ -23760,6 +24333,18 @@ begin
         vvPatientRevision:
         begin
           CellText := IntToStr(data.index);
+        end;
+
+        vvAddres:
+        begin
+          nasMestoPos := FNasMesto.addresColl.getCardMap(data.DataPos, word(Addres_LinkPos));
+          CellText := 'EKATTE: ' + FNasMesto.nasMestoColl.getAnsiStringMap(nasMestoPos, word(NasMesto_EKATTE));
+        end;
+
+        vvIncMN:
+        begin
+
+          CellText := 'NRN ' + CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
         end;
       end;
     end;
@@ -23931,7 +24516,7 @@ begin
         begin
           CellText := 'zamestnik ' ;
         end;
-        vvPatientRoot:
+        vvPatientNewRoot:
           CellText := 'Пациенти ' ;
         vvPatient:
         begin
@@ -24271,6 +24856,7 @@ begin
   FillPatInDoctor;
   FillPregledInPat;
   FillIncMdnInPat;
+  CollIncMN.FillNzisSpec(CL006Coll);
   FillIncMNInPat;
   FillOtherDocInIncMN;
   FillIncMNInPRegNrn;
@@ -24432,6 +25018,8 @@ begin
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('WmAfterShow  за %f',[ Elapsed.TotalMilliseconds]));
   Self.BorderStyle := bsNone;
+  SetStyle;
+  Visible := True;
 end;
 
 procedure TfrmSuperHip.WMCertStorage(var Msg: TMessage);
@@ -24451,6 +25039,24 @@ begin
  // case
 //    //tcolt(MSG.LParam
 //  end;
+end;
+
+procedure TfrmSuperHip.WmGetMinMaxInfo(var Msg: TMessage);
+var
+  WorkArea: TRect;
+  Info: PMinMaxInfo;
+begin
+  Info := PMinMaxInfo(Msg.LParam);
+
+  // Взимаме работната област (без taskbar)
+  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
+
+  Info^.ptMaxPosition.X := WorkArea.Left;
+  Info^.ptMaxPosition.Y := WorkArea.Top;
+  Info^.ptMaxSize.X := WorkArea.Right - WorkArea.Left;
+  Info^.ptMaxSize.Y := WorkArea.Bottom - WorkArea.Top;
+
+  Msg.Result := 0;
 end;
 
 procedure TfrmSuperHip.WMHelp(var Msg: TWMHelp);
@@ -24774,20 +25380,35 @@ end;
 
 procedure TfrmSuperHip.WMSuperResize(var Msg: TMessage);
 begin
-  Self.SetBounds(0, 0, Msg.WParam, Msg.LParam);
+  //Self.SetBounds(0, 0, Msg.WParam, Msg.LParam);
+end;
+
+procedure TfrmSuperHip.WM_NCCALCSIZE(var Msg: TMessage);
+begin
+  // Когато прозорецът е максимизиран, махни системните рамки (просвета)
+  if Msg.WParam <> 0 then
+  begin
+    if WindowState = wsMaximized then
+    begin
+      // Зануляваме всички отстъпи – така формата заема целия WorkArea
+      Msg.Result := 0;
+      Exit;
+    end;
+  end;
+  inherited;
 end;
 
 procedure TfrmSuperHip.WVBrowser1AfterCreated(Sender: TObject);
 begin
-  WVWindowParent1.UpdateSize;
-  //Caption := 'MiniBrowser';
-
-  // We need to a filter to enable the TWVBrowser.OnWebResourceRequested event
-  WVBrowser1.AddWebResourceRequestedFilterWithRequestSourceKinds('*', COREWEBVIEW2_WEB_RESOURCE_CONTEXT_IMAGE, COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL);
-  WVBrowser1.AddWebResourceRequestedFilterWithRequestSourceKinds('*', COREWEBVIEW2_WEB_RESOURCE_CONTEXT_MEDIA, COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL);
-
-  WVBrowser1.CoreWebView2PrintSettings.HeaderTitle := 'Tituloooooo';
-  WVBrowser1.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter := True;
+  //WVWindowParent1.UpdateSize;
+//  //Caption := 'MiniBrowser';
+//
+//  // We need to a filter to enable the TWVBrowser.OnWebResourceRequested event
+//  WVBrowser1.AddWebResourceRequestedFilterWithRequestSourceKinds('*', COREWEBVIEW2_WEB_RESOURCE_CONTEXT_IMAGE, COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL);
+//  WVBrowser1.AddWebResourceRequestedFilterWithRequestSourceKinds('*', COREWEBVIEW2_WEB_RESOURCE_CONTEXT_MEDIA, COREWEBVIEW2_WEB_RESOURCE_REQUEST_SOURCE_KINDS_ALL);
+//
+//  WVBrowser1.CoreWebView2PrintSettings.HeaderTitle := 'Tituloooooo';
+//  WVBrowser1.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter := True;
 end;
 
 { TNomenNzisRec }
@@ -24838,11 +25459,10 @@ initialization
   // Initialize Exception tracking
   JclStartExceptionTracking;
 
-
-  GlobalWebView2Loader                := TWVLoader.Create(nil);
-  GlobalWebView2Loader.UserDataFolder := ExtractFileDir(Application.ExeName) + '\CustomCache';
-  GlobalWebView2Loader.RemoteDebuggingPort := 9999;
-  GlobalWebView2Loader.RemoteAllowOrigins := '*';
+  //GlobalWebView2Loader                := TWVLoader.Create(nil);
+//  GlobalWebView2Loader.UserDataFolder := ExtractFileDir(Application.ExeName) + '\CustomCache';
+//  GlobalWebView2Loader.RemoteDebuggingPort := 9999;
+//  GlobalWebView2Loader.RemoteAllowOrigins := '*';
 
   // Set GlobalWebView2Loader.BrowserExecPath if you don't want to use the evergreen version of WebView Runtime
   //GlobalWebView2Loader.BrowserExecPath := 'c:\WVRuntime';
@@ -24851,9 +25471,8 @@ initialization
   //GlobalWebView2Loader.DebugLog       := TWV2DebugLog.dlEnabled;
   //GlobalWebView2Loader.DebugLogLevel  := TWV2DebugLogLevel.dllInfo;
 
-  GlobalWebView2Loader.AreBrowserExtensionsEnabled := True;
-
-  GlobalWebView2Loader.StartWebView2;
+  //GlobalWebView2Loader.AreBrowserExtensionsEnabled := True;
+//  GlobalWebView2Loader.StartWebView2;
 finalization
 
   // Uninitialize Exception tracking

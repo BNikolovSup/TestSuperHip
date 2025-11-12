@@ -74,6 +74,10 @@ TNzisReqRespItem = class(TBaseItem)
     FMdn: TRealMDNItem;
     F: TRealINC_NAPRItem;
     FIncMN: TRealINC_NAPRItem;
+    FMN: TRealBLANKA_MED_NAPRItem;
+    FMN3: TRealBLANKA_MED_NAPR_3AItem;
+    FMNHosp: TRealHOSPITALIZATIONItem;
+    FMNLkk: TRealEXAM_LKKItem;
 
   public
     FIncMns: TList<TRealINC_NAPRItem>;
@@ -96,6 +100,10 @@ TNzisReqRespItem = class(TBaseItem)
   property Preg: TRealPregledNewItem read FPreg write FPreg;
   property Mdn: TRealMDNItem read FMdn write FMdn;
   property IncMN: TRealINC_NAPRItem read FIncMN write FIncMN;
+  property MN: TRealBLANKA_MED_NAPRItem read FMN write FMN;
+  property MN3: TRealBLANKA_MED_NAPR_3AItem read FMN3 write FMN3;
+  property MNHosp: TRealHOSPITALIZATIONItem read FMNHosp write FMNHosp;
+  property MNLkk: TRealEXAM_LKKItem read FMNLkk write FMNLkk;
   end;
 
 
@@ -109,9 +117,15 @@ TNzisReqRespItem = class(TBaseItem)
     procedure SetSearchingValue(const Value: string);
   public
     CollPat: TRealPatientNewColl;
+    CollDoctor: TRealDoctorColl;
     collAddres: TRealAddresColl;
     CollPreg: TRealPregledNewColl;
+    collDiag: TRealDiagnosisColl;
     CollMdn: TRealMDNColl;
+    CollMN: TRealBLANKA_MED_NAPRColl;
+    CollMN3: TRealBLANKA_MED_NAPR_3AColl;
+    CollMnExpert: TRealEXAM_LKKColl;
+    CollMnHosp: TRealHOSPITALIZATIONColl;
     CollIncMN: TRealINC_NAPRColl;
     CollIncDoc: TRealOtherDoctorColl;
 
@@ -150,6 +164,7 @@ TNzisReqRespItem = class(TBaseItem)
   procedure SortByPatEgn;
   procedure SortByNrn;
   procedure SortListByNRN(lst: TList<TNzisReqRespItem>);
+  //procedure SortListBy
   procedure SortLstNrn(lst: TList<string>);
   procedure SortListByEGN(lst: TList<TNzisReqRespItem>);
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
@@ -429,11 +444,17 @@ begin
     ArrayPropOrderSearchOptions[i] := i;
   end;
   CollPat := TRealPatientNewColl.Create(TRealPatientNewItem);
+  //CollDoctor := TRealDoctorColl.Create(TRealDoctorItem);
   collAddres := TRealAddresColl.Create(TRealAddresItem);
   CollPreg := TRealPregledNewColl.Create(TRealPregledNewItem);
   CollMdn := TRealMDNColl.Create(TRealMDNItem);
   CollIncMN := TRealINC_NAPRColl.Create(TRealINC_NAPRItem);
-  CollIncDoc := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);;
+  CollIncDoc := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);
+  collDiag := TRealDiagnosisColl.Create(TRealDiagnosisItem);
+  CollMN := TRealBLANKA_MED_NAPRColl.create(TRealBLANKA_MED_NAPRItem);
+  CollMN3 := TRealBLANKA_MED_NAPR_3AColl.Create(TRealBLANKA_MED_NAPR_3AItem);
+  CollMnExpert := TRealEXAM_LKKColl.Create(TRealEXAM_LKKItem);
+  CollMnHosp := TRealHOSPITALIZATIONColl.Create(TRealHOSPITALIZATIONItem);
 end;
 
 destructor TNzisReqRespColl.destroy;
@@ -442,11 +463,18 @@ begin
   FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   FreeAndNil(CollPat);
+  //FreeAndNil(CollDoctor);
   FreeAndNil(collAddres);
   FreeAndNil(CollPreg);
   FreeAndNil(CollMdn);
   FreeAndNil(CollIncMN);
   FreeAndNil(CollIncDoc);
+  FreeAndNil(collDiag);
+  FreeAndNil(CollMN);
+  FreeAndNil(CollMN3);
+  FreeAndNil(CollMnExpert);
+  FreeAndNil(CollMnHosp);
+
   Dispose(PRecordSearch);
   PRecordSearch := nil;
 

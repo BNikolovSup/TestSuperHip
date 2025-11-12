@@ -57,6 +57,8 @@ type
     procedure ibsqlCommandSQLChanging(Sender: TObject);
     procedure DataModuleCreate(Sender: TObject);
     procedure DBMainAfterConnect(Sender: TObject);
+    procedure ibscrpt1ExecuteError(Sender: TObject; Error, SQLText: string;
+      LineIndex: Integer; var Ignore: Boolean);
   private
     FIsGP: Boolean;
 
@@ -65,6 +67,7 @@ type
     FGuidDB: TList<TGUID>;
     procedure InitDb(DBName: string);
     function GetDoctorNameFromDB(uin: string): string;
+    procedure SetIndex;
     procedure InsertDiag(posData, posDataPreg: cardinal; collDiag: TRealDiagnosisColl; collPreg: TRealPregledNewColl);
     property IsGP: Boolean read FIsGP;
 
@@ -96,6 +99,7 @@ end;
 
 procedure TDUNzis.DBMainAfterConnect(Sender: TObject);
 begin
+
   ibscrpt1.ExecuteScript;
 end;
 
@@ -118,6 +122,12 @@ begin
   ibsqlCommand.ParamByName('UIN').AsString := uin;
   ibsqlCommand.ExecQuery;
   Result := ibsqlCommand.Fields[0].AsString;
+end;
+
+procedure TDUNzis.ibscrpt1ExecuteError(Sender: TObject; Error, SQLText: string;
+  LineIndex: Integer; var Ignore: Boolean);
+begin
+  Ignore := True;
 end;
 
 procedure TDUNzis.ibsqlCommandSQLChanging(Sender: TObject);
@@ -150,6 +160,7 @@ begin
   self.traMain.Commit;
   self.traMain.Active := True;
   FGuidDB.Clear;
+  SetIndex;
   ibsqlCommand.Close;
   ibsqlCommand.SQL.Text :=
        'select ini.ini_value from ini where ini.ini_section =  ''Version'' and ini.ini_key = ''ProgramName'' ;';
@@ -203,6 +214,27 @@ begin
 
 
   ibsqlDiag.ExecQuery;
+
+end;
+
+procedure TDUNzis.SetIndex;
+var
+  IndexName, SQLCmd: string;
+begin
+  IndexName := 'IDX_COPIED_FROM_NRN';
+  ibsqlCommand.Close;
+  ibsqlCommand.SQL.Text :=
+      'SELECT 1 FROM RDB$INDICES WHERE UPPER(RDB$INDEX_NAME) = UPPER(:IDX)';
+  ibsqlCommand.ParamByName('IDX').AsString := IndexName;
+  ibsqlCommand.ExecQuery;
+
+  if ibsqlCommand.IsEmpty then
+  begin
+    ibsqlCommand.Close;
+    ibsqlCommand.SQL.Text := Format('CREATE INDEX %s ON %s (%s)', [IndexName, 'PREGLED', 'COPIED_FROM_NRN']);
+    ibsqlCommand.ExecQuery;
+    ibsqlCommand.Transaction.CommitRetaining;
+  end;
 
 end;
 

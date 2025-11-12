@@ -32,12 +32,16 @@ TLogicalBLANKA_MED_NAPR = (
     NZIS_STATUS_Edited,
     MED_NAPR_Ostro,
     MED_NAPR_Hron,
+    MED_NAPR_Izbor,
     MED_NAPR_Disp,
     MED_NAPR_Eksp,
     MED_NAPR_Prof,
     MED_NAPR_Iskane_Telk,
-    MED_NAPR_Mother,
-    MED_NAPR_Child);
+    MED_NAPR_Choice_Mother,
+    MED_NAPR_Choice_Child,
+    MED_NAPR_PreChoice_Mother,
+    MED_NAPR_PreChoice_Child,
+    MED_NAPR_Podg_Telk);
 TlogicalBLANKA_MED_NAPRSet = set of TLogicalBLANKA_MED_NAPR;
 
 

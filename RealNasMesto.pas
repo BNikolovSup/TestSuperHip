@@ -84,6 +84,7 @@ type
     procedure SortListByEkatte;
     function FindNasMestFromDataPos(datapos: Integer): TRealNasMestoItem;
     function FindNasMestFromEkatte(ekatte: string): TRealNasMestoItem;
+    function FindNasMestFromNasMesto(nasMst: string): TRealNasMestoItem;
     property MemoTest: TMemo read FMemotest write FMemotest;
   end;
 
@@ -839,6 +840,12 @@ begin
     end;
   end;
   result := LstNasMestoEkatte[L];
+end;
+
+function TRealNasMestoAspects.FindNasMestFromNasMesto(
+  nasMst: string): TRealNasMestoItem;
+begin
+
 end;
 
 procedure TRealNasMestoAspects.LinkToColl;

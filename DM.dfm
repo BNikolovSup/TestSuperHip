@@ -1339,8 +1339,13 @@ object DUNzis: TDUNzis
       '  set hu.comp_name = hu.comp_name;'
       'end'
       '^'
+      'SET TERM ; ^'
       ''
-      'SET TERM ; ^')
+      ''
+      ''
+      ''
+      '')
+    OnExecuteError = ibscrpt1ExecuteError
     Left = 704
     Top = 112
   end
@@ -1561,10 +1566,12 @@ object DUNzis: TDUNzis
       ''
       'from inc_napr incMN'
       'left join speciality sp on sp.id = incMN.SPECIALITY_ID'
-      'left join speciality sp2 on sp.id = incMN.SPECIALITY_ID_2'
-      'left join speciality sp3 on sp.id = incMN.SPECIALITY_ID_3'
-      'left join speciality sp4 on sp.id = incMN.SPECIALITY_ID_4'
-      'left join speciality sp5 on sp.id = incMN.SPECIALITY_ID_5')
+      'left join speciality sp2 on sp2.id = incMN.SPECIALITY_ID_2'
+      'left join speciality sp3 on sp3.id = incMN.SPECIALITY_ID_3'
+      'left join speciality sp4 on sp4.id = incMN.SPECIALITY_ID_4'
+      'left join speciality sp5 on sp5.id = incMN.SPECIALITY_ID_5'
+      ''
+      'order by incMN.nrn')
     Transaction = traMain
     Left = 623
     Top = 432

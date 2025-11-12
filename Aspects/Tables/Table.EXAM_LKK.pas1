@@ -45,11 +45,6 @@ TEXAM_LKKItem = class(TBaseItem)
        , EXAM_LKK_ID
        , EXAM_LKK_NRN
        , EXAM_LKK_NUMBER
-       , EXAM_LKK_Spec1Pos
-       , EXAM_LKK_Spec2Pos
-       , EXAM_LKK_Spec3Pos
-       , EXAM_LKK_Spec4Pos
-       , EXAM_LKK_Spec5Pos
        , EXAM_LKK_Logical
        );
 	  
@@ -61,11 +56,6 @@ TEXAM_LKKItem = class(TBaseItem)
         ID: integer;
         NRN: AnsiString;
         NUMBER: integer;
-        Spec1Pos: integer;
-        Spec2Pos: integer;
-        Spec3Pos: integer;
-        Spec4Pos: integer;
-        Spec5Pos: integer;
         Logical: TlogicalEXAM_LKKSet;
         setProp: TSetProp;
       end;
@@ -85,9 +75,6 @@ TEXAM_LKKItem = class(TBaseItem)
     procedure SaveEXAM_LKK(var dataPosition: Cardinal)overload;
 	procedure SaveEXAM_LKK(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
-	function GetPRecord: Pointer; override;
-    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
-    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -133,7 +120,6 @@ TEXAM_LKKItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
-	function RankSortOption(propIndex: Word): cardinal; override;
     function FindRootCollOptionNode(): PVirtualNode;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
@@ -152,8 +138,6 @@ TEXAM_LKKItem = class(TBaseItem)
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
     procedure OnSetTextSearchLog(Log: TlogicalEXAM_LKKSet);
-	procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
-    procedure CheckForSave(var cnt: Integer);
   end;
 
 implementation
@@ -170,35 +154,6 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
-end;
-
-procedure TEXAM_LKKItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
-var
-  paramField: TParamProp;
-  setPropPat: TSetProp;
-  i: Integer;
-  PropertyIndex: TPropertyIndex;
-begin
-  i := 0;
-  for paramField in SetOfProp do
-  begin
-    PropertyIndex := TPropertyIndex(byte(paramField));
-    Include(Self.PRecord.setProp, PropertyIndex);
-    //case PropertyIndex of
-      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
-    //end;
-    inc(i);
-  end;
-end;
-
-function TEXAM_LKKItem.GetCollType: TCollectionsType;
-begin
-  Result := ctEXAM_LKK;
-end;
-
-function TEXAM_LKKItem.GetPRecord: Pointer;
-begin
-  result := Pointer(PRecord);
 end;
 
 procedure TEXAM_LKKItem.InsertEXAM_LKK;
@@ -242,11 +197,6 @@ begin
             EXAM_LKK_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NUMBER: SaveData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec1Pos: SaveData(PRecord.Spec1Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec2Pos: SaveData(PRecord.Spec2Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec3Pos: SaveData(PRecord.Spec3Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec4Pos: SaveData(PRecord.Spec4Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec5Pos: SaveData(PRecord.Spec5Pos, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -284,11 +234,6 @@ begin
             EXAM_LKK_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(EXAM_LKK_ID), cot);
             EXAM_LKK_NRN: Result := IsFinded(ATempItem.PRecord.NRN, buf, FPosDataADB, word(EXAM_LKK_NRN), cot);
             EXAM_LKK_NUMBER: Result := IsFinded(ATempItem.PRecord.NUMBER, buf, FPosDataADB, word(EXAM_LKK_NUMBER), cot);
-            EXAM_LKK_Spec1Pos: Result := IsFinded(ATempItem.PRecord.Spec1Pos, buf, FPosDataADB, word(EXAM_LKK_Spec1Pos), cot);
-            EXAM_LKK_Spec2Pos: Result := IsFinded(ATempItem.PRecord.Spec2Pos, buf, FPosDataADB, word(EXAM_LKK_Spec2Pos), cot);
-            EXAM_LKK_Spec3Pos: Result := IsFinded(ATempItem.PRecord.Spec3Pos, buf, FPosDataADB, word(EXAM_LKK_Spec3Pos), cot);
-            EXAM_LKK_Spec4Pos: Result := IsFinded(ATempItem.PRecord.Spec4Pos, buf, FPosDataADB, word(EXAM_LKK_Spec4Pos), cot);
-            EXAM_LKK_Spec5Pos: Result := IsFinded(ATempItem.PRecord.Spec5Pos, buf, FPosDataADB, word(EXAM_LKK_Spec5Pos), cot);
             EXAM_LKK_Logical: Result := IsFinded(TLogicalData16(ATempItem.PRecord.Logical), buf, FPosDataADB, word(EXAM_LKK_Logical), cot);
       end;
     end;
@@ -330,11 +275,6 @@ begin
             EXAM_LKK_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NUMBER: SaveData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec1Pos: SaveData(PRecord.Spec1Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec2Pos: SaveData(PRecord.Spec2Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec3Pos: SaveData(PRecord.Spec3Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec4Pos: SaveData(PRecord.Spec4Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec5Pos: SaveData(PRecord.Spec5Pos, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -370,11 +310,6 @@ begin
             EXAM_LKK_ID: UpdateData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NRN: UpdateData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             EXAM_LKK_NUMBER: UpdateData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec1Pos: UpdateData(PRecord.Spec1Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec2Pos: UpdateData(PRecord.Spec2Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec3Pos: UpdateData(PRecord.Spec3Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec4Pos: UpdateData(PRecord.Spec4Pos, PropPosition, metaPosition, dataPosition);
-            EXAM_LKK_Spec5Pos: UpdateData(PRecord.Spec5Pos, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -442,71 +377,6 @@ begin
   end;  
 end;
 
-procedure TEXAM_LKKColl.CheckForSave(var cnt: Integer);
-var
-  i: Integer;
-  tempItem: TEXAM_LKKItem;
-begin
-  for i := 0 to Self.Count - 1 do
-  begin
-    tempItem := Items[i];
-    if tempItem.PRecord <> nil then
-    begin
-	  if (EXAM_LKK_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(EXAM_LKK_DATA))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_ID))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(EXAM_LKK_NRN))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_NUMBER))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec1Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec1Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec1Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec2Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec2Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec2Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec3Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec3Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec3Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec4Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec4Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec4Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec5Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec5Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec5Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-      //    if (EXAM_LKK_Logical in tempItem.PRecord.setProp) and (tempItem.PRecord.Logical <> Self.getLogical16Map(tempItem.DataPos, word(EXAM_LKK_Logical))) then
-//      begin
-//      inc(cnt);
-//      exit;
-//      end;
-    end;
-  end;
-end;
-
-
 constructor TEXAM_LKKColl.Create(ItemClass: TCollectionItemClass);
 var
   i: Integer;
@@ -545,11 +415,6 @@ begin
     EXAM_LKK_ID: Result := 'ID';
     EXAM_LKK_NRN: Result := 'NRN';
     EXAM_LKK_NUMBER: Result := 'NUMBER';
-    EXAM_LKK_Spec1Pos: Result := 'Spec1Pos';
-    EXAM_LKK_Spec2Pos: Result := 'Spec2Pos';
-    EXAM_LKK_Spec3Pos: Result := 'Spec3Pos';
-    EXAM_LKK_Spec4Pos: Result := 'Spec4Pos';
-    EXAM_LKK_Spec5Pos: Result := 'Spec5Pos';
     EXAM_LKK_Logical: Result := 'Logical';
   end;
 end;
@@ -596,7 +461,7 @@ end;
 function TEXAM_LKKColl.FieldCount: Integer; 
 begin
   inherited;
-  Result := 10;
+  Result := 5;
 end;
 
 function TEXAM_LKKColl.FindRootCollOptionNode(): PVirtualNode;
@@ -768,11 +633,6 @@ begin
     EXAM_LKK_ID: str := inttostr(EXAM_LKK.PRecord.ID);
     EXAM_LKK_NRN: str := (EXAM_LKK.PRecord.NRN);
     EXAM_LKK_NUMBER: str := inttostr(EXAM_LKK.PRecord.NUMBER);
-    EXAM_LKK_Spec1Pos: str := inttostr(EXAM_LKK.PRecord.Spec1Pos);
-    EXAM_LKK_Spec2Pos: str := inttostr(EXAM_LKK.PRecord.Spec2Pos);
-    EXAM_LKK_Spec3Pos: str := inttostr(EXAM_LKK.PRecord.Spec3Pos);
-    EXAM_LKK_Spec4Pos: str := inttostr(EXAM_LKK.PRecord.Spec4Pos);
-    EXAM_LKK_Spec5Pos: str := inttostr(EXAM_LKK.PRecord.Spec5Pos);
     EXAM_LKK_Logical: str := EXAM_LKK.Logical16ToStr(TLogicalData16(EXAM_LKK.PRecord.Logical));
   else
     begin
@@ -873,11 +733,6 @@ begin
     EXAM_LKK_ID: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
     EXAM_LKK_NRN: str :=  EXAM_LKK.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     EXAM_LKK_NUMBER: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
-    EXAM_LKK_Spec1Pos: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
-    EXAM_LKK_Spec2Pos: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
-    EXAM_LKK_Spec3Pos: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
-    EXAM_LKK_Spec4Pos: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
-    EXAM_LKK_Spec5Pos: str :=  inttostr(EXAM_LKK.getIntMap(Self.Buf, Self.posData, propIndex));
     EXAM_LKK_Logical: str :=  EXAM_LKK.Logical16ToStr(EXAM_LKK.getLogical16Map(Self.Buf, Self.posData, propIndex));
   else
     begin
@@ -915,11 +770,6 @@ begin
           TempItem.IndexAnsiStr1 := '';
       end;
       EXAM_LKK_NUMBER: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      EXAM_LKK_Spec1Pos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      EXAM_LKK_Spec2Pos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      EXAM_LKK_Spec3Pos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      EXAM_LKK_Spec4Pos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      EXAM_LKK_Spec5Pos: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -954,12 +804,6 @@ begin
   end;
 end;
 
-procedure TEXAM_LKKColl.OnSetTextSearchDateEdt(date: TDate; field: Word;
-  Condition: TConditionSet);
-begin
-
-end;
-
 procedure TEXAM_LKKColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 begin
   if Text = '' then
@@ -974,16 +818,15 @@ begin
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
   if cotSens in Condition then
   begin
-    //case TEXAM_LKKItem.TPropertyIndex(Field) of
-    //  EXAM_LKK_EGN: ListForFinder[0].PRecord.EGN  := Text;
-    //  
-    //end;
+    case TEXAM_LKKItem.TPropertyIndex(Field) of
+      EXAM_LKK_NRN: ListForFinder[0].PRecord.NRN  := Text;
+    end;
   end
   else
   begin
-    //case TEXAM_LKKItem.TPropertyIndex(Field) of
-    //  EXAM_LKK_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
-    //end;
+    case TEXAM_LKKItem.TPropertyIndex(Field) of
+      EXAM_LKK_NRN: ListForFinder[0].PRecord.NRN  := AnsiUpperCase(Text);
+    end;
   end;
 end;
 
@@ -1022,20 +865,10 @@ begin
     EXAM_LKK_ID: Result := actinteger;
     EXAM_LKK_NRN: Result := actAnsiString;
     EXAM_LKK_NUMBER: Result := actinteger;
-    EXAM_LKK_Spec1Pos: Result := actinteger;
-    EXAM_LKK_Spec2Pos: Result := actinteger;
-    EXAM_LKK_Spec3Pos: Result := actinteger;
-    EXAM_LKK_Spec4Pos: Result := actinteger;
-    EXAM_LKK_Spec5Pos: Result := actinteger;
     EXAM_LKK_Logical: Result := actLogical;
   else
     Result := actNone;
   end
-end;
-
-function TEXAM_LKKColl.RankSortOption(propIndex: Word): cardinal;
-begin
-  //
 end;
 
 procedure TEXAM_LKKColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1061,11 +894,6 @@ begin
     EXAM_LKK_ID: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     EXAM_LKK_NRN: isOld :=  EXAM_LKK.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     EXAM_LKK_NUMBER: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    EXAM_LKK_Spec1Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    EXAM_LKK_Spec2Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    EXAM_LKK_Spec3Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    EXAM_LKK_Spec4Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    EXAM_LKK_Spec5Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -1085,11 +913,6 @@ begin
     EXAM_LKK_ID: EXAM_LKK.PRecord.ID := StrToInt(AValue);
     EXAM_LKK_NRN: EXAM_LKK.PRecord.NRN := AValue;
     EXAM_LKK_NUMBER: EXAM_LKK.PRecord.NUMBER := StrToInt(AValue);
-    EXAM_LKK_Spec1Pos: EXAM_LKK.PRecord.Spec1Pos := StrToInt(AValue);
-    EXAM_LKK_Spec2Pos: EXAM_LKK.PRecord.Spec2Pos := StrToInt(AValue);
-    EXAM_LKK_Spec3Pos: EXAM_LKK.PRecord.Spec3Pos := StrToInt(AValue);
-    EXAM_LKK_Spec4Pos: EXAM_LKK.PRecord.Spec4Pos := StrToInt(AValue);
-    EXAM_LKK_Spec5Pos: EXAM_LKK.PRecord.Spec5Pos := StrToInt(AValue);
     EXAM_LKK_Logical: EXAM_LKK.PRecord.Logical := tlogicalEXAM_LKKSet(EXAM_LKK.StrToLogical16(AValue));
   end;
 end;
@@ -1115,11 +938,6 @@ begin
     EXAM_LKK_ID: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     EXAM_LKK_NRN: isOld :=  EXAM_LKK.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     EXAM_LKK_NUMBER: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    EXAM_LKK_Spec1Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    EXAM_LKK_Spec2Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    EXAM_LKK_Spec3Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    EXAM_LKK_Spec4Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    EXAM_LKK_Spec5Pos: isOld :=  EXAM_LKK.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -1139,11 +957,6 @@ begin
     EXAM_LKK_ID: EXAM_LKK.PRecord.ID := StrToInt(AFieldText);
     EXAM_LKK_NRN: EXAM_LKK.PRecord.NRN := AFieldText;
     EXAM_LKK_NUMBER: EXAM_LKK.PRecord.NUMBER := StrToInt(AFieldText);
-    EXAM_LKK_Spec1Pos: EXAM_LKK.PRecord.Spec1Pos := StrToInt(AFieldText);
-    EXAM_LKK_Spec2Pos: EXAM_LKK.PRecord.Spec2Pos := StrToInt(AFieldText);
-    EXAM_LKK_Spec3Pos: EXAM_LKK.PRecord.Spec3Pos := StrToInt(AFieldText);
-    EXAM_LKK_Spec4Pos: EXAM_LKK.PRecord.Spec4Pos := StrToInt(AFieldText);
-    EXAM_LKK_Spec5Pos: EXAM_LKK.PRecord.Spec5Pos := StrToInt(AFieldText);
     EXAM_LKK_Logical: EXAM_LKK.PRecord.Logical := tlogicalEXAM_LKKSet(EXAM_LKK.StrToLogical16(AFieldText));
   end;
 end;
@@ -1177,41 +990,6 @@ begin
         end;
       end;
       EXAM_LKK_NUMBER: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListEXAM_LKKSearch.Add(self.Items[i]);
-        end;
-      end;
-      EXAM_LKK_Spec1Pos: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListEXAM_LKKSearch.Add(self.Items[i]);
-        end;
-      end;
-      EXAM_LKK_Spec2Pos: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListEXAM_LKKSearch.Add(self.Items[i]);
-        end;
-      end;
-      EXAM_LKK_Spec3Pos: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListEXAM_LKKSearch.Add(self.Items[i]);
-        end;
-      end;
-      EXAM_LKK_Spec4Pos: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListEXAM_LKKSearch.Add(self.Items[i]);
-        end;
-      end;
-      EXAM_LKK_Spec5Pos: 
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -1430,11 +1208,6 @@ begin
     EXAM_LKK_ID: SortByIndexInt;
       EXAM_LKK_NRN: SortByIndexAnsiString;
       EXAM_LKK_NUMBER: SortByIndexInt;
-      EXAM_LKK_Spec1Pos: SortByIndexInt;
-      EXAM_LKK_Spec2Pos: SortByIndexInt;
-      EXAM_LKK_Spec3Pos: SortByIndexInt;
-      EXAM_LKK_Spec4Pos: SortByIndexInt;
-      EXAM_LKK_Spec5Pos: SortByIndexInt;
   end;
 end;
 

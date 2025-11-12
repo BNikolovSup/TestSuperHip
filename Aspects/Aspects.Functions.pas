@@ -7,8 +7,10 @@ uses
 
   function ASPDateToStr(dat: TDate): string;
   function ASPStrToDate(str: string): TDate;
+  function ASPStrToDateTime(str: string): TDateTime;
 
 implementation
+uses Aspects.Types, System.DateUtils;
   function ASPDateToStr(dat: TDate): string;
   begin
     if dat = 0 then
@@ -22,13 +24,13 @@ implementation
   end;
 
   function ASPStrToDate(str: string): TDate;
-  var
-    fs: TFormatSettings;
   begin
-    fs := TFormatSettings.Create();
-    fs.DateSeparator := '-';
-    fs.ShortDateFormat := 'YYYY-MM-DD';
-
-    result := StrToDate(str, fs);
+    result := StrToDate(str, FS_Nzis);
   end;
+
+  function ASPStrToDateTime(str: string): TDateTime;
+  begin
+    Result := ISO8601ToDate(str, true);
+  end;
+
 end.

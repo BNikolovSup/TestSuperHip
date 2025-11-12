@@ -1,4 +1,4 @@
-unit Nzis.NzisImport;
+unit Nzis.NzisImport; //find
 
 interface
 uses
@@ -13,7 +13,9 @@ uses
   msgX001, msgX002, msgX003, msgX013, msgR001, msgR002, msgR016, x014,
   Aspects.Types, Aspects.Collections,
   Table.NzisReqResp, Table.PatientNew, Table.PregledNew, Table.Diagnosis,
-  Table.MDN, Table.INC_NAPR, Table.OtherDoctor
+  Table.MDN, Table.INC_NAPR, Table.OtherDoctor, Table.Practica,
+  Table.BLANKA_MED_NAPR, Table.BLANKA_MED_NAPR_3A, Table.HOSPITALIZATION,
+  table.exam_Lkk, ADB_DataUnit
   ;
 type
   TPatImportNzisNodes = class
@@ -64,6 +66,10 @@ type
     FNasMesto: TRealNasMestoAspects;
     FProcChangeTreeTS: TProc<TTabSheet>;
     FProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode>;
+    FCollPractica: TPracticaColl;
+    FRCZSelf: string;
+    FCollDoctor: TRealDoctorColl;
+    //FProcAddNewPreg: TProc<TRealPregledNewItem, PVirtualNode>;
     procedure AddNzisImport(FileName: TFileName);
     procedure FillRespInReq;
     procedure FillADBInMsgColl;
@@ -72,6 +78,9 @@ type
     procedure Delete99;
     procedure FillMsgXXXInPregled;
     procedure FillMsgRIncMNInIncMN;
+    procedure FillIncDoctorInIncNapr;
+    procedure AddNewIncDoctorMDN;
+    procedure AddNewIncDoctorMN;
     procedure AddNewPreg;
     procedure FillPregInPat;
     procedure FillAddrInPat;
@@ -79,7 +88,17 @@ type
     procedure FillPregledInIncMN;
     procedure FillMsgRMdnInMdn;
     procedure AddNewMdn;
+    procedure AddNewMN;
+    procedure AddNewMN3;
+    procedure AddNewMNHosp;
+    procedure AddNewMNExpert;
     procedure FillReferalMdnInPreg;
+    procedure FillReferalMnInPreg;
+    procedure FillReferalMn3InPreg;
+    procedure FillReferalMnHospInPreg;
+    procedure FillReferalMnExpertInPreg;
+    procedure FillDiagInPreg;
+
     procedure LoadTempVtrMSG4;
 
     procedure vtrTempGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
@@ -87,12 +106,16 @@ type
     procedure vtrTempChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure SetVtrImport(const Value: TVirtualStringTreeHipp);
     procedure SetNasMesto(const Value: TRealNasMestoAspects);
+    procedure SetCollPractica(const Value: TPracticaColl);
+    procedure SetCollDoctor(const Value: TRealDoctorColl);
   public
     FnzisXml: TNzisXMLHelper;
+    Adb_DM: TADBDataModule;
     constructor create;
     destructor destroy;
     procedure ImportNzis(FileName: TFileName);
     procedure LoopPat;
+    procedure ExportNzisToDB;
     property VtrImport: TVirtualStringTreeHipp read FVtrImport write SetVtrImport;
     property mmoTest: TMemo read FmmoTest write FmmoTest;
     property FmxRoleBar: TfrmRolebar read FFmxRoleBar write FFmxRoleBar;
@@ -107,12 +130,79 @@ type
     property ProcChangeWorkTS: TProc<TTabSheet> read FProcChangeWorkTS write FProcChangeWorkTS;
     property ProcChangeTreeTS: TProc<TTabSheet> read FProcChangeTreeTS write FProcChangeTreeTS;
     property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
+    //property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
+    //property ProcAddNewPreg: TProc<TRealPregledNewItem, PVirtualNode> read FProcAddNewPreg write FProcAddNewPreg;
     property NasMesto: TRealNasMestoAspects read FNasMesto write SetNasMesto;
+    property CollPractica: TPracticaColl read FCollPractica write SetCollPractica;
+    property CollDoctor: TRealDoctorColl read FCollDoctor write SetCollDoctor;
+    property RCZSelf: string read FRCZSelf;
   end;
 
 implementation
 
 { TNzisImport }
+
+procedure TNzisImport.AddNewIncDoctorMDN;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMdn: TRealMDNItem;
+begin
+  msgColl.SortListByNRN(LstRMDN);
+  CurrentNrn := '';
+  for i := 0 to LstRMDN.Count - 1 do
+  begin
+    msg := LstRMDN[i];
+    if msg.Mdn = nil then
+    begin
+       if CurrentNrn <> LstRMDN[i].PRecord.NRN then
+       begin
+         currentMdn := TRealMDNItem(msgColl.CollMdn.Add);
+         CurrentNrn := LstRMDN[i].PRecord.NRN;
+         currentMdn.FLstMsgImportNzis.Add(msg);
+         currentMdn.NRN := CurrentNrn;
+         currentMdn.PregledNRN := LstRMDN[i].PRecord.BaseOn;
+         LstRMDN[i].Mdn := currentMdn;
+       end
+       else
+       begin
+         currentMdn.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
+
+procedure TNzisImport.AddNewIncDoctorMN;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMn: TRealBLANKA_MED_NAPRItem;
+begin
+  msgColl.SortListByNRN(LstRMN);
+  CurrentNrn := '';
+  for i := 0 to LstRMN.Count - 1 do
+  begin
+    msg := LstRMN[i];
+    if msg.Mdn = nil then
+    begin
+       if CurrentNrn <> LstRMN[i].PRecord.NRN then
+       begin
+         currentMn := TRealBLANKA_MED_NAPRItem(msgColl.CollMN.Add);
+         CurrentNrn := LstRMN[i].PRecord.NRN;
+         currentMn.FLstMsgImportNzis.Add(msg);
+         currentMn.NRN := CurrentNrn;
+         currentMn.PregledNRN := LstRMN[i].PRecord.BaseOn;
+         LstRMN[i].Mn := currentMn;
+       end
+       else
+       begin
+         currentMn.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
 
 procedure TNzisImport.AddNewMdn;
 var
@@ -145,6 +235,131 @@ begin
   end;
 end;
 
+procedure TNzisImport.AddNewMN;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMN: TRealBLANKA_MED_NAPRItem;
+begin
+  msgColl.SortListByNRN(LstRMN);
+  CurrentNrn := '';
+  for i := 0 to LstRMN.Count - 1 do
+  begin
+    msg := LstRMN[i];
+    if msg.MN = nil then
+    begin
+       if CurrentNrn <> LstRMN[i].PRecord.NRN then
+       begin
+         currentMN := TRealBLANKA_MED_NAPRItem(msgColl.CollMN.Add);
+         CurrentNrn := LstRMN[i].PRecord.NRN;
+         currentMN.FLstMsgImportNzis.Add(msg);
+         currentMN.NRN := CurrentNrn;
+         currentMN.PregledNRN := LstRMN[i].PRecord.BaseOn;
+         LstRMN[i].Mn := currentMN;
+       end
+       else
+       begin
+         currentMN.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
+
+procedure TNzisImport.AddNewMN3;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMN3: TRealBLANKA_MED_NAPR_3AItem;
+begin
+  msgColl.SortListByNRN(lstRVSD);
+  CurrentNrn := '';
+  for i := 0 to lstRVSD.Count - 1 do
+  begin
+    msg := lstRVSD[i];
+    if msg.MN3 = nil then
+    begin
+       if CurrentNrn <> lstRVSD[i].PRecord.NRN then
+       begin
+         currentMN3 := TRealBLANKA_MED_NAPR_3AItem(msgColl.CollMN.Add);
+         CurrentNrn := lstRVSD[i].PRecord.NRN;
+         currentMN3.FLstMsgImportNzis.Add(msg);
+         currentMN3.NRN := CurrentNrn;
+         currentMN3.PregledNRN := lstRVSD[i].PRecord.BaseOn;
+         lstRVSD[i].Mn3 := currentMN3;
+       end
+       else
+       begin
+         currentMN3.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
+
+procedure TNzisImport.AddNewMNExpert;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMNExpert: TRealEXAM_LKKItem;
+begin
+  msgColl.SortListByNRN(lstRMedExpert);
+  CurrentNrn := '';
+  for i := 0 to lstRMedExpert.Count - 1 do
+  begin
+    msg := lstRMedExpert[i];
+    mmoTest.Lines.Add(lstRMedExpert[i].PRecord.NRN);
+    if msg.MNLkk = nil then
+    begin
+       if CurrentNrn <> lstRMedExpert[i].PRecord.NRN then
+       begin
+         currentMNExpert := TRealEXAM_LKKItem(msgColl.CollMnExpert.Add);
+         CurrentNrn := lstRMedExpert[i].PRecord.NRN;
+         currentMNExpert.FLstMsgImportNzis.Add(msg);
+         currentMNExpert.NRN := CurrentNrn;
+         currentMNExpert.PregledNRN := lstRMedExpert[i].PRecord.BaseOn;
+         lstRMedExpert[i].MNLkk := currentMNExpert;
+       end
+       else
+       begin
+         currentMNExpert.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
+
+procedure TNzisImport.AddNewMNHosp;
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+  currentMNHosp: TRealHOSPITALIZATIONItem;
+begin
+  msgColl.SortListByNRN(lstRHosp);
+  CurrentNrn := '';
+  for i := 0 to lstRHosp.Count - 1 do
+  begin
+    msg := lstRHosp[i];
+    if msg.MNHosp = nil then
+    begin
+       if CurrentNrn <> lstRHosp[i].PRecord.NRN then
+       begin
+         currentMNHosp := TRealHOSPITALIZATIONItem(msgColl.CollMnHosp.Add);
+         CurrentNrn := lstRHosp[i].PRecord.NRN;
+         currentMNHosp.FLstMsgImportNzis.Add(msg);
+         currentMNHosp.NRN := CurrentNrn;
+         currentMNHosp.PregledNRN := lstRHosp[i].PRecord.BaseOn;
+         lstRHosp[i].MNHosp := currentMNHosp;
+       end
+       else
+       begin
+         currentMNHosp.FLstMsgImportNzis.Add(msg);
+       end;
+    end;
+  end;
+end;
+
 procedure TNzisImport.AddNewPatXXX;
 var
   i: Integer;
@@ -169,6 +384,7 @@ begin
       if CurrentEgn <> preg.PatEgn then
       begin
         pat := TRealPatientNewItem(msgColl.CollPat.Add);
+        pat.DataPos := 0;
         addr := TRealAddresItem.Create(nil);
         addr.DataPos := 0;
         pat.FAdresi.Add(addr);
@@ -274,7 +490,7 @@ begin
     lstMsgType := TStringList.Create;
     //fileName := 'C:\Users\Administrator1\Downloads\За възстановяване на данни по предоставен xml от НЗИС\За възстановяване на данни по предоставен xml от НЗИС\attachments-katerinanikolova66mailbg-inbox-29131\Приложение 1\';
     //fileName := fileName + '1900000356org.txt';
-    fileName := 'D:\HaknatFerdow\0200000824.txt';
+    //fileName := 'D:\HaknatFerdow\0200000824.txt';
     //fileName := dlgOpenNZIS.FileName;
     List.LoadFromFile(fileName);
 
@@ -309,7 +525,7 @@ begin
       SetLength(Arrstr[i], pEnd);
       New(msg.PRecord);
       msg.PRecord.setProp := [NzisReqResp_REQ, NzisReqResp_messageId, NzisReqResp_msgNom, NzisReqResp_Logical];
-      msg.PRecord.REQ := Arrstr[i];
+      msg.PRecord.REQ := '<?xml version="1.0" encoding="UTF-8"?>' + #13#10 +  Arrstr[i];
       msg.PRecord.messageId := Copy(arrstr[i],p2, 36);
       msg.PRecord.msgNom := XNom1;
       case arrstr[i][p1] of
@@ -337,6 +553,7 @@ begin
   FnzisXml := Nzis.XMLHelper.TNzisXMLHelper.Create;
 
   msgColl := TNzisReqRespColl.Create(TNzisReqRespItem);
+  FnzisXml.msgColl := msgColl;
   LstXXXX := TList<TNzisReqRespItem>.Create;
   LstRMDN := TList<TNzisReqRespItem>.Create;
   LstRMN := TList<TNzisReqRespItem>.Create;
@@ -359,6 +576,43 @@ begin
   FreeAndNil(lstRVSD);
   FreeAndNil(lstRHosp);
   FreeAndNil(lstRMedExpert);
+end;
+
+procedure TNzisImport.ExportNzisToDB;
+var
+  linkPos, FPosLinkData: Cardinal;
+  pCardinalData: PCardinal;
+  node, nodePat: PVirtualNode;
+  data: PAspRec;
+  collPatExport: TRealPatientNewColl;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  FPosLinkData := pCardinalData^;
+  collPatExport := TRealPatientNewColl.Create(TRealPatientNewItem);
+  collPatExport.Buf := AspectsHipFile.Buf;
+  collPatExport.posData := AspectsHipFile.FPosData;
+  while linkPos < FPosLinkData do
+  begin
+    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    data := Pointer(PByte(node)+ lenNode);
+    if data.vid = vvPatient then
+    begin
+      if collPatExport.getintMap(data.DataPos, Word(PatientNew_ID)) = 0 then //now pacient
+      begin
+        mmoTest.Lines.Add('нов пациент ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
+      end
+      else
+      begin
+
+      end;
+    end;
+    inc(linkPos, LenData);
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'exportDB ' + FloatToStr(Elapsed.TotalMilliseconds));
+
 end;
 
 procedure TNzisImport.Delete99;
@@ -390,6 +644,7 @@ var
   pat: TRealPatientNewItem;
   addr: TRealAddresItem;
   preg: TRealPregledNewItem;
+  diag: TRealDiagnosisItem;
   mdn: TRealMDNItem;
   IncMN: TRealINC_NAPRItem;
 
@@ -433,12 +688,26 @@ begin
           if msgColl.CollPreg.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
           begin
             dataPat := pointer(PByte(RunNode.Parent) + lenNode);
+            if dataPat.vid = vvIncMN then
+              dataPat := pointer(PByte(RunNode.Parent.Parent) + lenNode);
+
 
             preg := TRealPregledNewItem(msgColl.CollPreg.Add);
             preg.DataPos := Data.DataPos;
             preg.nrn := msgColl.CollPreg.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
             preg.PatEGN := msgColl.CollPat.getAnsiStringMap(DataPat.DataPos, word(PatientNew_EGN));
             preg.FNode := RunNode;
+          end;
+        end;
+        vvDiag:
+        begin
+          //if msgColl.collDiag.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
+          begin
+            datapreg := pointer(PByte(RunNode.Parent) + lenNode);
+            diag := TRealDiagnosisItem(msgColl.collDiag.Add);
+            diag.DataPos := Data.DataPos;
+            diag.Node := RunNode;
+            diag.PregNode := RunNode.Parent;
           end;
         end;
         vvmdn:
@@ -515,6 +784,42 @@ begin
   mmotest.Lines.Add( 'fillAddrXXX ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
+procedure TNzisImport.FillDiagInPreg;
+var
+  iDiag, iAmb: integer;
+begin
+  msgColl.CollPreg.SortByNode;
+  msgColl.collDiag.SortByPregNode;
+  Stopwatch := TStopwatch.StartNew;
+  iDiag := 0;
+  iAmb := 0;
+  while (iDiag < msgColl.collDiag.Count) and (iAmb < msgColl.CollPreg.Count) do
+  begin
+    if msgColl.collDiag.Items[iDiag].PregNode = msgColl.CollPreg.Items[iAmb].FNode then
+    begin
+      //if msgColl.collDiag.Items[iDiag].FLstMsgImportNzis.Count > 0 then
+      begin
+        msgColl.CollPreg.Items[iAmb].FDiagnosis.Add(msgColl.collDiag.Items[iDiag]);
+        //msgColl.collDiag.Items[iDiag].FPregled := msgColl.CollPreg.Items[iAmb];
+      end;
+      inc(iDiag);
+    end
+    else if Cardinal(msgColl.collDiag.Items[iDiag].PregNode) > Cardinal(msgColl.CollPreg.Items[iAmb].FNode) then
+    begin
+      begin
+        inc(iAmb);
+
+      end;
+    end
+    else if Cardinal(msgColl.collDiag.Items[iDiag].PregNode) < Cardinal(msgColl.CollPreg.Items[iAmb].FNode) then
+    begin
+      inc(iDiag);
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'fillPregXXX ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
 procedure TNzisImport.FillIncDoctor;
 var
   i: Integer;
@@ -525,6 +830,11 @@ begin
     incDoc := TRealOtherDoctorItem(msgColl.CollIncDoc.Add);
     incDoc.DataPos := CollOtherDoctor.Items[i].DataPos;
   end;
+end;
+
+procedure TNzisImport.FillIncDoctorInIncNapr;
+begin
+
 end;
 
 procedure TNzisImport.FillMsgRIncMNInIncMN;
@@ -542,16 +852,16 @@ begin
   iMsg := 0;
   while (iIncMN < msgColl.CollIncMN.Count) and (iMsg < LstRIncMN.Count) do
   begin
-    if msgColl.CollIncMN.Items[iIncMN].NRN = '25244A02FFD2' then
+    if LstRIncMN[iMsg].NRN = '25244A01E0B6' then
     begin
-
+      LstRIncMN[iMsg].NRN := '25244A01E0B6'
     end;
     if msgColl.CollIncMN.Items[iIncMN].NRN = LstRIncMN[iMsg].NRN then
     begin
       msg := TNzisReqRespItem (LstRIncMN[iMsg].msg);
       msg.IncMN := msgColl.CollIncMN.Items[iIncMN];
       msgColl.CollIncMN.Items[iIncMN].FLstMsgImportNzis.Add(msg);
-      inc(iMsg);
+      inc(iIncMN);
     end
     else if msgColl.CollIncMN.Items[iIncMN].NRN > LstRIncMN[iMsg].NRN then
     begin
@@ -671,10 +981,6 @@ begin
     begin
       if msgColl.CollPreg.Items[iamb].FLstMsgImportNzis.Count > 0 then
       begin
-        if msgColl.CollPreg.Items[iamb].NRN = '252462095FD4' then
-        begin
-
-        end;
         msgColl.CollPat.Items[iPac].FPregledi.Add(msgColl.CollPreg.Items[iamb]);
         msgColl.CollPreg.Items[iamb].FPatient := msgColl.CollPat.Items[iPac];
         //msgColl.CollPreg.Items[iamb].FPatient
@@ -717,9 +1023,9 @@ begin
 //    Dummy := DummyList.Items[0]; // Принуждава Delphi да задържи GetItem
   while (iPreg < msgColl.CollPreg.Count) and (iMsg < LstRIncMN.Count) do
   begin
-    if LstRIncMN.Items[iMsg].nrn = '25244A02FFD2' then
+    if LstRIncMN.Items[iMsg].nrn = '25244905918D' then
     begin
-
+      LstRIncMN.Items[iMsg].nrn := '25244905918D';
     end;
     if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = '' then
     begin
@@ -784,6 +1090,150 @@ begin
   end;
   Elapsed := Stopwatch.Elapsed;
   mmotest.Lines.Add( 'fillPregXXX ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TNzisImport.FillReferalMn3InPreg;
+var
+  iMn3, iAmb: integer;
+begin
+  msgColl.CollPreg.SortByNrn;
+  msgColl.CollMN3.SortByPregledNRN;
+  Stopwatch := TStopwatch.StartNew;
+  iMn3 := 0;
+  iAmb := 0;
+  while (iMn3 < msgColl.CollMN3.Count) and (iAmb < msgColl.CollPreg.Count) do
+  begin
+    if msgColl.CollMN3.Items[iMn3].PregledNRN = msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      if msgColl.CollMN3.Items[iMn3].FLstMsgImportNzis.Count > 0 then
+      begin
+        msgColl.CollPreg.Items[iAmb].FMNs3A.Add(msgColl.CollMN3.Items[iMn3]);
+        msgColl.CollMN3.Items[iMn3].FPregled := msgColl.CollPreg.Items[iAmb];
+      end;
+      inc(iMn3);
+    end
+    else if msgColl.CollMN3.Items[iMn3].PregledNRN > msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      begin
+        inc(iAmb);
+
+      end;
+    end
+    else if msgColl.CollMN3.Items[iMn3].PregledNRN < msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      inc(iMn3);
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'fillMN3 ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TNzisImport.FillReferalMnExpertInPreg;
+var
+  iMnLKK, iAmb: integer;
+begin
+  msgColl.CollPreg.SortByNrn;
+  msgColl.CollMnExpert.SortByPregledNRN;
+  Stopwatch := TStopwatch.StartNew;
+  iMnLKK := 0;
+  iAmb := 0;
+  while (iMnLKK < msgColl.CollMnExpert.Count) and (iAmb < msgColl.CollPreg.Count) do
+  begin
+    if msgColl.CollMnExpert.Items[iMnLKK].PregledNRN = msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      if msgColl.CollMnExpert.Items[iMnLKK].FLstMsgImportNzis.Count > 0 then
+      begin
+        msgColl.CollPreg.Items[iAmb].FMNsLKK.Add(msgColl.CollMnExpert.Items[iMnLKK]);
+        msgColl.CollMnExpert.Items[iMnLKK].FPregled := msgColl.CollPreg.Items[iAmb];
+      end;
+      inc(iMnLKK);
+    end
+    else if msgColl.CollMnExpert.Items[iMnLKK].PregledNRN > msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      begin
+        inc(iAmb);
+
+      end;
+    end
+    else if msgColl.CollMnExpert.Items[iMnLKK].PregledNRN < msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      inc(iMnLKK);
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'fillMNLKK ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TNzisImport.FillReferalMnHospInPreg;
+var
+  iMnHosp, iAmb: integer;
+begin
+  msgColl.CollPreg.SortByNrn;
+  msgColl.CollMnHosp.SortByPregledNRN;
+  Stopwatch := TStopwatch.StartNew;
+  iMnHosp := 0;
+  iAmb := 0;
+  while (iMnHosp < msgColl.CollMnHosp.Count) and (iAmb < msgColl.CollPreg.Count) do
+  begin
+    if msgColl.CollMnHosp.Items[iMnHosp].PregledNRN = msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      if msgColl.CollMnHosp.Items[iMnHosp].FLstMsgImportNzis.Count > 0 then
+      begin
+        msgColl.CollPreg.Items[iAmb].FMNsHosp.Add(msgColl.CollMnHosp.Items[iMnHosp]);
+        msgColl.CollMnHosp.Items[iMnHosp].FPregled := msgColl.CollPreg.Items[iAmb];
+      end;
+      inc(iMnHosp);
+    end
+    else if msgColl.CollMnHosp.Items[iMnHosp].PregledNRN > msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      begin
+        inc(iAmb);
+
+      end;
+    end
+    else if msgColl.CollMnHosp.Items[iMnHosp].PregledNRN < msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      inc(iMnHosp);
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'fillMN3 ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TNzisImport.FillReferalMnInPreg;
+var
+  iMn, iAmb: integer;
+begin
+  msgColl.CollPreg.SortByNrn;
+  msgColl.CollMN.SortByPregledNRN;
+  Stopwatch := TStopwatch.StartNew;
+  iMn := 0;
+  iAmb := 0;
+  while (iMn < msgColl.CollMN.Count) and (iAmb < msgColl.CollPreg.Count) do
+  begin
+    if msgColl.CollMN.Items[iMn].PregledNRN = msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      if msgColl.CollMN.Items[iMn].FLstMsgImportNzis.Count > 0 then
+      begin
+        msgColl.CollPreg.Items[iAmb].FMNs.Add(msgColl.CollMN.Items[iMn]);
+        msgColl.CollMN.Items[iMn].FPregled := msgColl.CollPreg.Items[iAmb];
+      end;
+      inc(iMn);
+    end
+    else if msgColl.CollMN.Items[iMn].PregledNRN > msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      begin
+        inc(iAmb);
+
+      end;
+    end
+    else if msgColl.CollMN.Items[iMn].PregledNRN < msgColl.CollPreg.Items[iAmb].NRN then
+    begin
+      inc(iMn);
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'fillMN ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
 procedure TNzisImport.FillRespInReq;
@@ -857,6 +1307,7 @@ begin
 
 
   FillPregInPat;// след това нещо, може да са останали прегледи на пациенти, които ги няма в базата
+  FillDiagInPreg;
 
   //FillIncMnInPatImport;// след това нещо, може да са останали прегледи на пациенти, които ги няма в базата
   AddNewPatXXX;// търсим новите
@@ -865,8 +1316,15 @@ begin
 
   FillMsgRMdnInMdn; // попълва старите, които са в базата
   AddNewMdn;
+  AddNewMN;
+  AddNewMN3;
+  AddNewMNHosp;
+  AddNewMNExpert;
   FillReferalMdnInPreg; // мдн-тата в прегледите
-
+  FillReferalMnInPreg; // мн-тата в прегледите
+  FillReferalMn3InPreg; // мн3-тата в прегледите
+  FillReferalMnHospInPreg; // мн-тата в прегледите
+  FillReferalMnExpertInPreg; // мн3-тата в прегледите
 
   LoadTempVtrMSG4;
 
@@ -881,13 +1339,18 @@ var
   msgID: string;
   i, j, k, m, CurrentI: Integer;
   pyrvi, wtori: Integer;
-  vReq, vResp, vpat, vMsg, vPreg, vRun, vMdn, vIncMN, vIncDoc, vAddr: PVirtualNode;
+  vReq, vResp, vpat, vMsg, vPreg, vRun, vMdn, vIncMN, vIncDoc, vAddr, vdiag, vMn, vMn3, vMnHosp, vMnLkk: PVirtualNode;
   data, dataRun: PAspRec;
   msg: TNzisReqRespItem;
   pat: TRealPatientNewItem;
   preg: TRealPregledNewItem;
   IncMN: TRealINC_NAPRItem;
   mdn: TRealMDNItem;
+  mn: TRealBLANKA_MED_NAPRItem;
+  mn3: TRealBLANKA_MED_NAPR_3AItem;
+  mnHosp: TRealHOSPITALIZATIONItem;
+  mnLkk: TRealEXAM_LKKItem;
+  diag: TRealDiagnosisItem;
   //patNodes: TPatNodes;
   Dublikat: Boolean;
 begin
@@ -898,7 +1361,7 @@ begin
 
     vPatImportNzis := VtrImport.AddChild(nil, nil);
     data := VtrImport.GetNodeData(vPatImportNzis);
-    data.vid := vvPatientRoot;
+    data.vid := vvPatientNewRoot;
     data.index := -1;
 
     vImportNzis := VtrImport.AddChild(nil, nil);
@@ -1003,6 +1466,21 @@ begin
         data.index := k;
         msg.Node := vMsg;
       end;
+
+      for k := 0 to preg.FDiagnosis.Count - 1 do
+      begin
+        diag := preg.FDiagnosis[k];
+        vdiag := VtrImport.AddChild(vPreg, nil);
+        data := VtrImport.GetNodeData(vdiag);
+        data.vid := vvDiag;
+        data.DataPos := diag.DataPos;
+        data.index := k;
+        if diag.DataPos = 0 then
+        begin
+          //Self.Tag := Integer(vMdn);
+          //Caption := 'ddd';
+        end;
+      end;
       for k := 0 to preg.FMdns.Count - 1 do
       begin
         mdn := preg.FMdns[k];
@@ -1013,6 +1491,7 @@ begin
         data.index := k;
         if mdn.DataPos = 0 then
         begin
+          mdn.LinkNode := vMdn;
           //Self.Tag := Integer(vMdn);
           //Caption := 'ddd';
         end;
@@ -1027,7 +1506,100 @@ begin
           msg.Node := vMsg;
         end;
       end;
+      for k := 0 to preg.FMns.Count - 1 do
+      begin
+        mn := preg.FMns[k];
+        vMn := VtrImport.AddChild(vPreg, nil);
+        data := VtrImport.GetNodeData(vMn);
+        data.vid := vvMedNapr;
+        data.DataPos := mn.DataPos;
+        data.index := k;
+        if mn.DataPos = 0 then
+        begin
+          mn.LinkNode := vMn;
+          //Self.Tag := Integer(vMdn);
+          //Caption := 'ddd';
+        end;
 
+        for m := 0 to mn.FLstMsgImportNzis.Count - 1 do
+        begin
+          msg := mn.FLstMsgImportNzis[m];
+          vMsg := VtrImport.AddChild(vMn, nil);
+          data := VtrImport.GetNodeData(vMsg);
+          data.vid := vvNzisMessages;
+          data.index := m;
+          msg.Node := vMsg;
+        end;
+      end;
+      for k := 0 to preg.FMNs3A.Count - 1 do
+      begin
+        mn3 := preg.FMNs3A[k];
+        vMn3 := VtrImport.AddChild(vPreg, nil);
+        data := VtrImport.GetNodeData(vMn3);
+        data.vid := vvMedNapr3A;
+        data.DataPos := mn3.DataPos;
+        data.index := k;
+        if mn3.DataPos = 0 then
+        begin
+          mn3.LinkNode := vMn3;
+        end;
+
+        for m := 0 to mn3.FLstMsgImportNzis.Count - 1 do
+        begin
+          msg := mn3.FLstMsgImportNzis[m];
+          vMsg := VtrImport.AddChild(vMn3, nil);
+          data := VtrImport.GetNodeData(vMsg);
+          data.vid := vvNzisMessages;
+          data.index := m;
+          msg.Node := vMsg;
+        end;
+      end;
+      for k := 0 to preg.FMNsHosp.Count - 1 do
+      begin
+        mnHosp := preg.FMNsHosp[k];
+        vMnHosp := VtrImport.AddChild(vPreg, nil);
+        data := VtrImport.GetNodeData(vMnHosp);
+        data.vid := vvMedNaprHosp;
+        data.DataPos := mnHosp.DataPos;
+        data.index := k;
+        if mnHosp.DataPos = 0 then
+        begin
+          mnHosp.LinkNode := vMnHosp;
+        end;
+
+        for m := 0 to mnHosp.FLstMsgImportNzis.Count - 1 do
+        begin
+          msg := mnHosp.FLstMsgImportNzis[m];
+          vMsg := VtrImport.AddChild(vMnHosp, nil);
+          data := VtrImport.GetNodeData(vMsg);
+          data.vid := vvNzisMessages;
+          data.index := m;
+          msg.Node := vMsg;
+        end;
+      end;
+      for k := 0 to preg.FMNsLKK.Count - 1 do
+      begin
+        mnLkk := preg.FMNsLKK[k];
+        vMnLkk := VtrImport.AddChild(vPreg, nil);
+        data := VtrImport.GetNodeData(vMnLkk);
+        data.vid := vvMedNaprLkk;
+        data.DataPos := mnLkk.DataPos;
+        data.index := k;
+        if mnLkk.DataPos = 0 then
+        begin
+          mnLkk.LinkNode := vMnLkk;
+        end;
+
+        for m := 0 to mnLkk.FLstMsgImportNzis.Count - 1 do
+        begin
+          msg := mnLkk.FLstMsgImportNzis[m];
+          vMsg := VtrImport.AddChild(vMnLkk, nil);
+          data := VtrImport.GetNodeData(vMsg);
+          data.vid := vvNzisMessages;
+          data.index := m;
+          msg.Node := vMsg;
+        end;
+      end;
     end;
   end;
 
@@ -1039,12 +1611,14 @@ end;
 
 procedure TNzisImport.LoopPat;
 var
-  RunPat, runInPat, runInMN, runMsg : PVirtualNode;
-  dataPat, dataMsg, dataInPat, dataInMN: PAspRec;
+  i: Integer;
+  RunPat, runInPat, runInIncMN, runMsg, runInMDN, runInMN : PVirtualNode;
+  dataPat, dataMsg, dataInPat, dataInIncMN, dataPreg, dataInMdn, dataInMN: PAspRec;
   pat: TRealPatientNewItem;
   preg: TRealPregledNewItem;
   incMN: TRealINC_NAPRItem;
   msg: TNzisReqRespItem;
+  diag: TRealDiagnosisItem;
   treeLink: PVirtualNode;
 begin
   Stopwatch := TStopwatch.StartNew;
@@ -1067,11 +1641,16 @@ begin
         vvPregled:
         begin
           preg := pat.FPregledi[dataInPat.index];
+          dataPreg := VtrImport.GetNodeData(runInPat);
           runMsg := runInPat.FirstChild;
           while runMsg <> nil do
           begin
             dataMsg := VtrImport.GetNodeData(runMsg);
             case dataMsg.vid of
+              vvMDN:
+              begin
+
+              end;
               vvNzisMessages:
               begin
                 msg := preg.FLstMsgImportNzis[dataMsg.index];
@@ -1081,7 +1660,19 @@ begin
                     if dataPat.DataPos = 0 then
                     begin
                       FnzisXml.FillX001InPat(msg, pat);
-                      ProcAddNewPat(pat, treeLink);
+                      FnzisXml.FillX001InPreg(msg, preg);
+                    end
+                    else
+                    if dataPreg.DataPos = 0 then
+                    begin
+                      FnzisXml.FillX001InPreg(msg, preg);
+                    end;
+                  end;
+                  3: // x003
+                  begin
+                    if dataPreg.DataPos = 0 then
+                    begin
+                      FnzisXml.FillX003InPreg(msg, preg);
                     end;
                   end;
                   13:  // x013
@@ -1089,27 +1680,126 @@ begin
                     if dataPat.DataPos = 0 then
                     begin
                       FnzisXml.FillX013InPat(msg, pat);
-                      ProcAddNewPat(pat, treeLink);
+                    end
+                    else
+                    if dataPreg.DataPos = 0 then
+                    begin
+                      FnzisXml.FillX013InPreg(msg, preg);
                     end;
+
                   end;
                 end;
               end;
             end;
             runMsg := runMsg.NextSibling
           end;
+          for i := 0 to  preg.FMdns.Count - 1 do
+          begin
+            runInMDN := preg.FMdns[i].LinkNode.FirstChild;
+            while runInMDN <> nil do
+            begin
+              dataInMdn := VtrImport.GetNodeData(runInMDN);
+              case dataInMdn.vid of
+                vvNzisMessages:
+                begin
+                  msg := preg.FMdns[i].FLstMsgImportNzis[dataInMdn.index];
+                  case msg.PRecord.msgNom of
+                    1:// R001
+                    begin
+                      FnzisXml.FillR001InMDN(msg, preg.FMdns[i]);
+                      FnzisXml.FillR002InMDN(msg, preg.FMdns[i]);
+                    end;
+
+                  end;
+                end;
+              end;
+              runInMDN := runInMDN.NextSibling;
+            end;
+          end;
+          for i := 0 to  preg.FMNs.Count - 1 do
+          begin
+            runInMN := preg.FMNs[i].LinkNode.FirstChild;
+            while runInMN <> nil do
+            begin
+              dataInMN := VtrImport.GetNodeData(runInMN);
+              case dataInMN.vid of
+                vvNzisMessages:
+                begin
+                  msg := preg.FMNs[i].FLstMsgImportNzis[dataInMN.index];
+                  case msg.PRecord.msgNom of
+                    1:// R001
+                    begin
+                      FnzisXml.FillR001InMN(msg, preg.FMns[i]);
+                      FnzisXml.FillR002InMN(msg, preg.FMns[i]);
+                    end;
+
+                  end;
+                end;
+              end;
+              runInMN := runInMN.NextSibling;
+            end;
+          end;
+          for i := 0 to  preg.FMNsHosp.Count - 1 do
+          begin
+            runInMN := preg.FMNsHosp[i].LinkNode.FirstChild;
+            while runInMN <> nil do
+            begin
+              dataInMN := VtrImport.GetNodeData(runInMN);
+              case dataInMN.vid of
+                vvNzisMessages:
+                begin
+                  msg := preg.FMNsHosp[i].FLstMsgImportNzis[dataInMN.index];
+                  case msg.PRecord.msgNom of
+                    1:// R001
+                    begin
+                      FnzisXml.FillR001InMNHosp(msg, preg.FMNsHosp[i]);
+                      FnzisXml.FillR002InMNHosp(msg, preg.FMNsHosp[i]);
+                    end;
+
+                  end;
+                end;
+              end;
+              runInMN := runInMN.NextSibling;
+            end;
+          end;
+
+          for i := 0 to  preg.FMNsLKK.Count - 1 do
+          begin
+            runInMN := preg.FMNsLKK[i].LinkNode.FirstChild;
+            while runInMN <> nil do
+            begin
+              dataInMN := VtrImport.GetNodeData(runInMN);
+              case dataInMN.vid of
+                vvNzisMessages:
+                begin
+                  msg := preg.FMNsLKK[i].FLstMsgImportNzis[dataInMN.index];
+                  case msg.PRecord.msgNom of
+                    1:// R001
+                    begin
+                      FnzisXml.FillR001InMNLkk(msg, preg.FMNsLKK[i]);
+                      FnzisXml.FillR002InMNLkk(msg, preg.FMNsLKK[i]);
+                    end;
+
+                  end;
+                end;
+              end;
+              runInMN := runInMN.NextSibling;
+            end;
+          end;
         end;
         vvIncMN:
         begin
           incMN := pat.FIncMNs[dataInPat.index];
-          runInMN := runInPat.FirstChild;
-          while runInMN <> nil do
+          runInIncMN := runInPat.FirstChild;
+          while runInIncMN <> nil do
           begin
-            dataInMN := VtrImport.GetNodeData(runInMN);
-            case dataInMN.vid of
+            dataInIncMN := VtrImport.GetNodeData(runInIncMN);
+            case dataInIncMN.vid of
               vvPregled:
               begin
-                preg := pat.FPregledi[dataInMN.index];
-                runMsg := runInMN.FirstChild;
+                preg := pat.FPregledi[dataInIncMN.index];
+                dataPreg := VtrImport.GetNodeData(runInIncMN);
+                runMsg := runInIncMN.FirstChild;
                 while runMsg <> nil do
                 begin
                   dataMsg := VtrImport.GetNodeData(runMsg);
@@ -1123,7 +1813,20 @@ begin
                           if dataPat.DataPos = 0 then
                           begin
                             FnzisXml.FillX001InPat(msg, pat);
-                            ProcAddNewPat(pat, treeLink);
+                            FnzisXml.FillX001InPreg(msg, preg);
+                          end
+                          else
+                          if dataPreg.DataPos = 0 then
+                          begin
+                            FnzisXml.FillX001InPreg(msg, preg);
+                          end;
+                        end;
+                        3: // x003
+                        begin
+                          if dataPreg.DataPos = 0 then
+                          begin
+                            FnzisXml.FillX003InPreg(msg, preg);
+
                           end;
                         end;
                         13:  // x013
@@ -1131,7 +1834,12 @@ begin
                           if dataPat.DataPos = 0 then
                           begin
                             FnzisXml.FillX013InPat(msg, pat);
-                            ProcAddNewPat(pat, treeLink);
+                            FnzisXml.FillX013InPreg(msg, preg);
+                          end
+                          else
+                          if dataPreg.DataPos = 0 then
+                          begin
+                            FnzisXml.FillX013InPreg(msg, preg);
                           end;
                         end;
                       end;
@@ -1139,15 +1847,109 @@ begin
                   end;
                   runMsg := runMsg.NextSibling
                 end;
+                for i := 0 to  preg.FMdns.Count - 1 do
+                begin
+                  runInMDN := preg.FMdns[i].LinkNode.FirstChild;
+                  while runInMDN <> nil do
+                  begin
+                    dataInMdn := VtrImport.GetNodeData(runInMDN);
+                    case dataInMdn.vid of
+                      vvNzisMessages:
+                      begin
+                        msg := preg.FMdns[i].FLstMsgImportNzis[dataInMdn.index];
+                        case msg.PRecord.msgNom of
+                          1:// R001
+                          begin
+                            FnzisXml.FillR001InMDN(msg, preg.FMdns[i]);
+                            FnzisXml.FillR002InMDN(msg, preg.FMdns[i]);
+                          end;
+
+                        end;
+                      end;
+                    end;
+                    runInMDN := runInMDN.NextSibling;
+                  end;
+                end;
+                for i := 0 to  preg.FMNs.Count - 1 do
+                begin
+                  runInMN := preg.FMNs[i].LinkNode.FirstChild;
+                  while runInMN <> nil do
+                  begin
+                    dataInMN := VtrImport.GetNodeData(runInMN);
+                    case dataInMN.vid of
+                      vvNzisMessages:
+                      begin
+                        msg := preg.FMNs[i].FLstMsgImportNzis[dataInMN.index];
+                        case msg.PRecord.msgNom of
+                          1:// R001
+                          begin
+                            FnzisXml.FillR001InMN(msg, preg.FMns[i]);
+                            FnzisXml.FillR002InMN(msg, preg.FMns[i]);
+                          end;
+
+                        end;
+                      end;
+                    end;
+                    runInMN := runInMN.NextSibling;
+                  end;
+                end;
+                for i := 0 to  preg.FMNsHosp.Count - 1 do
+                begin
+                  runInMN := preg.FMNsHosp[i].LinkNode.FirstChild;
+                  while runInMN <> nil do
+                  begin
+                    dataInMN := VtrImport.GetNodeData(runInMN);
+                    case dataInMN.vid of
+                      vvNzisMessages:
+                      begin
+                        msg := preg.FMNsHosp[i].FLstMsgImportNzis[dataInMN.index];
+                        case msg.PRecord.msgNom of
+                          1:// R001
+                          begin
+                            FnzisXml.FillR001InMNHosp(msg, preg.FMNsHosp[i]);
+                            FnzisXml.FillR002InMNHosp(msg, preg.FMNsHosp[i]);
+                          end;
+
+                        end;
+                      end;
+                    end;
+                    runInMN := runInMN.NextSibling;
+                  end;
+                end;
+
+                for i := 0 to  preg.FMNsLKK.Count - 1 do
+                begin
+                  runInMN := preg.FMNsLKK[i].LinkNode.FirstChild;
+                  while runInMN <> nil do
+                  begin
+                    dataInMN := VtrImport.GetNodeData(runInMN);
+                    case dataInMN.vid of
+                      vvNzisMessages:
+                      begin
+                        msg := preg.FMNsLKK[i].FLstMsgImportNzis[dataInMN.index];
+                        case msg.PRecord.msgNom of
+                          1:// R001
+                          begin
+                            FnzisXml.FillR001InMNLkk(msg, preg.FMNsLKK[i]);
+                            FnzisXml.FillR002InMNLkk(msg, preg.FMNsLKK[i]);
+                          end;
+
+                        end;
+                      end;
+                    end;
+                    runInMN := runInMN.NextSibling;
+                  end;
+                end;
               end;
             end;
-            runInMN := runInMN.NextSibling;
+            runInIncMN := runInIncMN.NextSibling;
           end;
         end;
       end;
+      //
       runInPat := runInPat.NextSibling;
     end;
-
+    ProcAddNewPat(pat, treeLink);
     RunPat := RunPat.NextSibling;
   end;
   Elapsed := Stopwatch.Elapsed;
@@ -1172,7 +1974,7 @@ var
   StringStream: TStringStream;
   cnt: Integer;
   IncMn: TRealINC_NAPRItem;
-  UinRCZSpec: string;
+  UinRCZSpec, rcz: string;
 begin
   Stopwatch := TStopwatch.StartNew;
   cnt := 0;
@@ -1194,8 +1996,9 @@ begin
           begin
             inc(cnt);
             AmsgX001 := FnzisXml.FmsgX001(msg);
+            rcz := AmsgX001.Contents.Performer.PracticeNumber.Value;
             msg.PRecord.patEgn := AmsgX001.Contents.Subject.Identifier.Value;
-            if string(msg.PRecord.RESP).Contains('<nhis:messageType value="X002"') then
+            if (FRCZSelf = rcz) and string(msg.PRecord.RESP).Contains('<nhis:messageType value="X002"') then
             begin
 
               oXml := TXMLDocument.Create(nil);
@@ -1210,11 +2013,6 @@ begin
               AmsgX002 := msgX002.Getmessage(oXml);
               msg.PRecord.LRN := AmsgX002.Contents.Lrn.Value;
               msg.PRecord.NRN := AmsgX002.Contents.NrnExamination.Value;
-
-              if msg.PRecord.NRN = '251909005065' then
-              begin
-
-              end;
 
               LstXXXX.Add(msg);
               if oXml.Active then
@@ -1306,7 +2104,9 @@ begin
             end;
             oXml.Encoding := 'UTF-8';
             AmsgX013 := msgX013.Getmessage(oXml);
+            rcz := AmsgX013.Contents.Performer.PracticeNumber.Value;
             msg.PRecord.patEgn := AmsgX013.Contents.Subject.Identifier.Value;
+            msg.PRecord.BaseOn := AmsgX013.Contents.Examination.BasedOn.Value;
 
             if oXml.Active then
             begin
@@ -1315,7 +2115,7 @@ begin
             end;
             oxml := nil;
 
-            if string(msg.PRecord.RESP).Contains('<nhis:messageType value="X014"') then
+            if (FRCZSelf = rcz) and string(msg.PRecord.RESP).Contains('<nhis:messageType value="X014"') then
             begin
 
               oXml := TXMLDocument.Create(nil);
@@ -1448,18 +2248,58 @@ begin
                 end;
 
                 New(IncMn.PRecord);
-                IncMn.PRecord.setProp := [];
+                IncMn.PRecord.setProp := [INC_NAPR_AMB_LIST_NRN, INC_NAPR_ISSUE_DATE, INC_NAPR_NRN, INC_NAPR_Logical];
                 IncMn.PRecord.Logical := [];
                 IncMn.PRecord.AMB_LIST_NRN := AmsgR016.Contents.Results[j].Referral.BasedOn.Value;
+                IncMn.PRecord.ISSUE_DATE := StrToDate(AmsgR016.Contents.Results[j].Referral.AuthoredOn.Value, FS_Nzis);
+                IncMn.PRecord.NRN := AmsgR016.Contents.Results[j].Referral.NrnReferral.Value;
                 case AmsgR016.Contents.Results[j].Referral.Category.Value[2] of
-                  '1': include(IncMn.PRecord.Logical, category_R1);
-                  '2': include(IncMn.PRecord.Logical, category_R2);
-                  '3': include(IncMn.PRecord.Logical, category_R3);
-                  '4': include(IncMn.PRecord.Logical, category_R4);
+                  //'1': include(IncMn.PRecord.Logical, category_R1);
+                  '2':
+                  begin
+                    include(IncMn.PRecord.Logical, category_R2);
+                    case AmsgR016.Contents.Results[j].Referral.Type_.Value of
+                      1: include(IncMn.PRecord.Logical, INC_MED_NAPR_Ostro); 	//Остро заболяване или състояние извън останалите типове
+                      2: include(IncMn.PRecord.Logical, INC_MED_NAPR_Hron); 	//Хронично заболяване, неподлежащо на диспансерно наблюдение
+                      3: include(IncMn.PRecord.Logical, INC_MED_NAPR_Izbor);	//Избор на специалист за диспансерно наблюдение
+                      4: include(IncMn.PRecord.Logical, INC_MED_NAPR_Disp);	//Диспансерно наблюдение
+                      6: include(IncMn.PRecord.Logical, INC_MED_NAPR_Eksp);	//	Медицинска експертиза
+                      7: include(IncMn.PRecord.Logical, INC_MED_NAPR_Prof);	//	Профилактика нa пълнолетни лица
+                      8: include(IncMn.PRecord.Logical, INC_MED_NAPR_Iskane_Telk);	//	По искане на ТЕЛК (НЕЛК)
+                      9: include(IncMn.PRecord.Logical, INC_MED_NAPR_Choice_Mother);	//	Избор на специалист за майчино здравеопазване
+                     10: include(IncMn.PRecord.Logical, INC_MED_NAPR_Choice_Child);	//	Избор на специалист за детско здравеопазване
+                     11: include(IncMn.PRecord.Logical, INC_MED_NAPR_PreChoice_Mother);	//	Преизбор на специалист за майчино здравеопазване
+                     12: include(IncMn.PRecord.Logical, INC_MED_NAPR_PreChoice_Child);	//	Преизбор на специалист за детско здравеопазване
+                     13: include(IncMn.PRecord.Logical, INC_MED_NAPR_Podg_Telk);	//	Подготовка за ТЕЛК
+                     //14:	Скрийнинг
+                    end;
+                  end;
+                  '3':
+                  begin
+                    include(IncMn.PRecord.Logical, category_R3);
+                    case AmsgR016.Contents.Results[j].Referral.Type_.Value of
+                       1: include(IncMn.PRecord.Logical, INC_MED_NAPR_Ostro); 	//Остро заболяване или състояние извън останалите типове
+                      2: include(IncMn.PRecord.Logical, INC_MED_NAPR_Hron); 	//Хронично заболяване, неподлежащо на диспансерно наблюдение
+                      3: include(IncMn.PRecord.Logical, INC_MED_NAPR_Izbor);	//Избор на специалист за диспансерно наблюдение
+                      4: include(IncMn.PRecord.Logical, INC_MED_NAPR_Disp);	//Диспансерно наблюдение
+                      6: include(IncMn.PRecord.Logical, INC_MED_NAPR_Eksp);	//	Медицинска експертиза
+                      7: include(IncMn.PRecord.Logical, INC_MED_NAPR_Prof);	//	Профилактика нa пълнолетни лица
+                      8: include(IncMn.PRecord.Logical, INC_MED_NAPR_Iskane_Telk);	//	По искане на ТЕЛК (НЕЛК)
+                      9: include(IncMn.PRecord.Logical, INC_MED_NAPR_Choice_Mother);	//	Избор на специалист за майчино здравеопазване
+                     10: include(IncMn.PRecord.Logical, INC_MED_NAPR_Choice_Child);	//	Избор на специалист за детско здравеопазване
+                     11: include(IncMn.PRecord.Logical, INC_MED_NAPR_PreChoice_Mother);	//	Преизбор на специалист за майчино здравеопазване
+                     12: include(IncMn.PRecord.Logical, INC_MED_NAPR_PreChoice_Child);	//	Преизбор на специалист за детско здравеопазване
+                     13: include(IncMn.PRecord.Logical, INC_MED_NAPR_Podg_Telk);	//	Подготовка за ТЕЛК
+                     //14:	Скрийнинг
+                    end;
+                  end;
+                  //'4': include(IncMn.PRecord.Logical, category_R4);
                   '5': include(IncMn.PRecord.Logical, category_R5);
                 end;
                 IncMn.PatEgn := AmsgR016.Contents.Results[j].Subject.Identifier.Value;
                 IncMn.nrn := AmsgR016.Contents.Results[j].Referral.NrnReferral.Value;
+                if IncMn.nrn = '25244A01E0B6' then
+                  IncMn.nrn := '25244A01E0B6';
                 IncMn.BaseOn := AmsgR016.Contents.Results[j].Referral.BasedOn.Value;
                 LstRIncMN.Add(IncMn);
                 IncMn.msg := msg;
@@ -1498,6 +2338,21 @@ begin
   mmoTest.Lines.Add(Format('LoopXml  кое какво е за %f ', [Elapsed.TotalMilliseconds]));
 end;
 
+procedure TNzisImport.SetCollDoctor(const Value: TRealDoctorColl);
+begin
+  FCollDoctor := Value;
+  msgColl.CollDoctor := FCollDoctor;
+end;
+
+procedure TNzisImport.SetCollPractica(const Value: TPracticaColl);
+var
+  dataPos: Cardinal;
+begin
+  FCollPractica := Value;
+  dataPos := FCollPractica.Items[0].DataPos;
+  FRCZSelf := FCollPractica.getAnsiStringMap(dataPos, word(Practica_NOMER_LZ));
+end;
+
 procedure TNzisImport.SetNasMesto(const Value: TRealNasMestoAspects);
 begin
   FNasMesto := Value;
@@ -1515,12 +2370,16 @@ end;
 procedure TNzisImport.vtrTempChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
-  data, dataPat, dataPreg, dataMdn, dataParent, dataRun: PAspRec;
+  data, dataPat, dataPreg, dataMdn, dataParent, dataRun, dataMn, dataMnHosp, dataMnLkk: PAspRec;
   msg: TNzisReqRespItem;
   vReq, vResp, run: PVirtualNode;
   pat: TRealPatientNewItem;
   preg: TRealPregledNewItem;
   mdn: TRealMDNItem;
+  mn: TRealBLANKA_MED_NAPRItem;
+  mn3: TRealBLANKA_MED_NAPR_3AItem;
+  mnHosp: TRealHOSPITALIZATIONItem;
+  mnLKK: TRealEXAM_LKKItem;
   incMn: TRealINC_NAPRItem;
 begin
   if node = nil then Exit;
@@ -1613,6 +2472,63 @@ begin
           syndtNzisReq.Lines.Text := msg.PRecord.REQ;
           syndtNzisResp.Lines.Text := msg.PRecord.RESP;
         end;
+        vvMedNapr:
+        begin
+          dataPat := sender.GetNodeData(node.Parent.parent.parent);
+          if dataPat.vid = vvIncMN then
+            dataPat := sender.GetNodeData(node.Parent.parent.parent.parent);
+          dataPreg := sender.GetNodeData(node.Parent.parent);
+          dataMn := sender.GetNodeData(node.Parent);
+          pat := msgColl.CollPat.Items[dataPat.index];
+          preg := pat.FPregledi[dataPreg.index];
+          mn := preg.FMns[dataMn.index];
+          msg := TNzisReqRespItem(mn.FLstMsgImportNzis[data.index]);
+          syndtNzisReq.Lines.Text := msg.PRecord.REQ;
+          syndtNzisResp.Lines.Text := msg.PRecord.RESP;
+        end;
+        vvMedNapr3A:
+        begin
+          dataPat := sender.GetNodeData(node.Parent.parent.parent);
+          if dataPat.vid = vvIncMN then
+            dataPat := sender.GetNodeData(node.Parent.parent.parent.parent);
+          dataPreg := sender.GetNodeData(node.Parent.parent);
+          dataMn := sender.GetNodeData(node.Parent);
+          pat := msgColl.CollPat.Items[dataPat.index];
+          preg := pat.FPregledi[dataPreg.index];
+          mn3 := preg.FMNs3A[dataMn.index];
+          msg := TNzisReqRespItem(mn3.FLstMsgImportNzis[data.index]);
+          syndtNzisReq.Lines.Text := msg.PRecord.REQ;
+          syndtNzisResp.Lines.Text := msg.PRecord.RESP;
+        end;
+        vvMedNaprHosp:
+        begin
+          dataPat := sender.GetNodeData(node.Parent.parent.parent);
+          if dataPat.vid = vvIncMN then
+            dataPat := sender.GetNodeData(node.Parent.parent.parent.parent);
+          dataPreg := sender.GetNodeData(node.Parent.parent);
+          dataMnHosp := sender.GetNodeData(node.Parent);
+          pat := msgColl.CollPat.Items[dataPat.index];
+          preg := pat.FPregledi[dataPreg.index];
+          mnHosp := preg.FMNsHosp[dataMnHosp.index];
+          msg := TNzisReqRespItem(mnHosp.FLstMsgImportNzis[data.index]);
+          syndtNzisReq.Lines.Text := msg.PRecord.REQ;
+          syndtNzisResp.Lines.Text := msg.PRecord.RESP;
+        end;
+        vvMedNaprLkk:
+        begin
+          dataPat := sender.GetNodeData(node.Parent.parent.parent);
+          if dataPat.vid = vvIncMN then
+            dataPat := sender.GetNodeData(node.Parent.parent.parent.parent);
+          dataPreg := sender.GetNodeData(node.Parent.parent);
+          dataMnLkk := sender.GetNodeData(node.Parent);
+          pat := msgColl.CollPat.Items[dataPat.index];
+          preg := pat.FPregledi[dataPreg.index];
+          mnLKK := preg.FMNsLKK[dataMnLkk.index];
+          msg := TNzisReqRespItem(mnLKK.FLstMsgImportNzis[data.index]);
+          syndtNzisReq.Lines.Text := msg.PRecord.REQ;
+          syndtNzisResp.Lines.Text := msg.PRecord.RESP;
+        end;
+
       end;
 
     end;
@@ -1623,7 +2539,7 @@ procedure TNzisImport.vtrTempGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
   var CellText: string);
 var
-  data, dataPat, dataPreg, dataMdn, DataParent, dataIncMN: PAspRec;
+  data, dataPat, dataPreg, dataMdn, DataParent, dataIncMN, dataMN, dataMN3, dataMNHosp, dataMNLkk: PAspRec;
   msg: TNzisReqRespItem;
   patLogical: TlogicalPatientNewSet;
   pat: TRealPatientNewItem;
@@ -1631,6 +2547,10 @@ var
   preg: TRealPregledNewItem;
   incMN: TRealINC_NAPRItem;
   mdn: TRealMDNItem;
+  mn: TRealBLANKA_MED_NAPRItem;
+  mn3: TRealBLANKA_MED_NAPR_3AItem;
+  mnHosp: TRealHOSPITALIZATIONItem;
+  mnLkk: TRealEXAM_LKKItem;
 begin
   data := Sender.GetNodeData(node);
   case Column of
@@ -1645,7 +2565,7 @@ begin
           vvExamImun: CellText := 'Имунизации';
           vvHosp: CellText := 'Хоспитализации';
           vvNomenNzis: CellText := 'Общи';
-          vvPatientRoot: CellText := 'Пациенти от импорта';
+          vvPatientNewRoot: CellText := 'Пациенти от импорта';
           vvPatient:
           begin
             CellText := 'ЕГН ' + msgColl.CollPat.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
@@ -1702,6 +2622,158 @@ begin
               else
               begin
                 CellText := 'Ново МДН ' + mdn.NRN;
+              end;
+            end;
+          end;
+          vvMedNapr:
+          begin
+            dataPat := sender.GetNodeData(node.parent.parent);
+
+            if dataPat.vid = vvPatient then
+            begin
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMN := Sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mn := preg.FMns[dataMN.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMN.getAnsiStringMap(Data.DataPos, word(BLANKA_MED_NAPR_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МН ' + mn.NRN;
+              end;
+            end
+            else
+            begin
+              dataPat := sender.GetNodeData(node.parent.parent.parent);
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMn := sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mn := preg.FMns[dataMn.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMn.getAnsiStringMap(Data.DataPos, word(BLANKA_MED_NAPR_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МН ' + mn.NRN;
+              end;
+            end;
+          end;
+          vvMedNapr3A:
+          begin
+            dataPat := sender.GetNodeData(node.parent.parent);
+
+            if dataPat.vid = vvPatient then
+            begin
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMN3 := Sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mn3 := preg.FMNs3A[dataMN3.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMN3.getAnsiStringMap(Data.DataPos, word(BLANKA_MED_NAPR_3A_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МН3333 ' + mn3.NRN;
+              end;
+            end
+            else
+            begin
+              dataPat := sender.GetNodeData(node.parent.parent.parent);
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMn3 := sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mn := preg.FMns[dataMn3.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMN3.getAnsiStringMap(Data.DataPos, word(BLANKA_MED_NAPR_3A_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МН3333 ' + mn3.NRN;
+              end;
+            end;
+          end;
+          vvMedNaprHosp:
+          begin
+            dataPat := sender.GetNodeData(node.parent.parent);
+
+            if dataPat.vid = vvPatient then
+            begin
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMNHosp := Sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mnHosp := preg.FMNsHosp[dataMNHosp.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMnHosp.getAnsiStringMap(Data.DataPos, word(HOSPITALIZATION_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МНHosp ' + mnHosp.NRN;
+              end;
+            end
+            else
+            begin
+              dataPat := sender.GetNodeData(node.parent.parent.parent);
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMNHosp := sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mnHosp := preg.FMNsHosp[dataMNHosp.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMnHosp.getAnsiStringMap(Data.DataPos, word(HOSPITALIZATION_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МНHosp ' + mnHosp.NRN;
+              end;
+            end;
+          end;
+          vvMedNaprLkk:
+          begin
+            dataPat := sender.GetNodeData(node.parent.parent);
+
+            if dataPat.vid = vvPatient then
+            begin
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMNLkk := Sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mnLkk := preg.FMNsLKK[dataMNLkk.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMnExpert.getAnsiStringMap(Data.DataPos, word(EXAM_LKK_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МНLKK ' + mnLkk.NRN;
+              end;
+            end
+            else
+            begin
+              dataPat := sender.GetNodeData(node.parent.parent.parent);
+              dataPreg := sender.GetNodeData(node.parent);
+              dataMNLkk := sender.GetNodeData(node);
+              pat := msgColl.CollPat.Items[dataPat.index];
+              preg := pat.FPregledi[dataPreg.index];
+              mnLkk := preg.FMNsLKK[dataMNLkk.index];
+              if Data.DataPos > 0 then
+              begin
+                CellText := msgColl.CollMnExpert.getAnsiStringMap(Data.DataPos, word(EXAM_LKK_NRN));
+              end
+              else
+              begin
+                CellText := 'Ново МНLKK ' + mnLkk.NRN;
               end;
             end;
           end;
@@ -1846,6 +2918,113 @@ begin
                   preg := pat.FPregledi[dataPreg.index];
                   mdn := preg.FMdns[dataMdn.index];
                   msg := TNzisReqRespItem(mdn.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end;
+              end;
+
+              vvMedNapr:
+              begin
+                dataPat := sender.GetNodeData(node.parent.parent.parent);
+                if dataPat.vid = vvPatient then
+                begin
+
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMn := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mn := preg.FMns[dataMn.index];
+                  msg := TNzisReqRespItem(mn.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end
+                else
+                begin
+                  dataPat := sender.GetNodeData(node.parent.parent.parent.parent);
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMn := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mn := preg.FMns[dataMn.index];
+                  msg := TNzisReqRespItem(mn.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end;
+              end;
+              vvMedNapr3A:
+              begin
+                dataPat := sender.GetNodeData(node.parent.parent.parent);
+                if dataPat.vid = vvPatient then
+                begin
+
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMN3 := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mn3 := preg.FMNs3A[dataMN3.index];
+                  msg := TNzisReqRespItem(mn3.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end
+                else
+                begin
+                  dataPat := sender.GetNodeData(node.parent.parent.parent.parent);
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMN3 := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mn3 := preg.FMNs3A[dataMN3.index];
+                  msg := TNzisReqRespItem(mn3.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end;
+              end;
+
+              vvMedNaprHosp:
+              begin
+                dataPat := sender.GetNodeData(node.parent.parent.parent);
+                if dataPat.vid = vvPatient then
+                begin
+
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMNHosp := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mnHosp := preg.FMNsHosp[dataMNHosp.index];
+                  msg := TNzisReqRespItem(mnHosp.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end
+                else
+                begin
+                  dataPat := sender.GetNodeData(node.parent.parent.parent.parent);
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMNHosp := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mnHosp := preg.FMNsHosp[dataMNHosp.index];
+                  msg := TNzisReqRespItem(mnHosp.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end;
+              end;
+
+              vvMedNaprLkk:
+              begin
+                dataPat := sender.GetNodeData(node.parent.parent.parent);
+                if dataPat.vid = vvPatient then
+                begin
+
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMNLkk := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mnLkk := preg.FMNsLKK[dataMNLkk.index];
+                  msg := TNzisReqRespItem(mnLkk.FLstMsgImportNzis[data.index]);
+                  CellText := Format('R%.3d', [msg.PRecord.msgNom]);
+                end
+                else
+                begin
+                  dataPat := sender.GetNodeData(node.parent.parent.parent.parent);
+                  dataPreg := sender.GetNodeData(node.parent.Parent);
+                  dataMNLkk := sender.GetNodeData(node.parent);
+                  pat := msgColl.CollPat.Items[dataPat.index];
+                  preg := pat.FPregledi[dataPreg.index];
+                  mnLkk := preg.FMNsLKK[dataMNLkk.index];
+                  msg := TNzisReqRespItem(mnLkk.FLstMsgImportNzis[data.index]);
                   CellText := Format('R%.3d', [msg.PRecord.msgNom]);
                 end;
               end;

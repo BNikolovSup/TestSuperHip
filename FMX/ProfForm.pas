@@ -1,5 +1,5 @@
 unit ProfForm;
-//TDateEdit 'err  f12  cursor resource минали    wheel  ne e towa  calc
+//tpatnodes
 
 interface
 uses
@@ -11,7 +11,8 @@ uses
    Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT,
    Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.Doctor,
    Table.Mkb, Table.Addres, Table.NasMesto, Table.Oblast, Table.Obshtina,
-   Table.BLANKA_MED_NAPR, Table.ExamImmunization, table.cl006,
+   Table.BLANKA_MED_NAPR, Table.ExamImmunization, table.cl006, Table.INC_NAPR,
+   Table.OtherDoctor,
 
    rtti, VirtualTrees, VirtualStringTreeHipp, VirtualStringTreeAspect,
    RealObj.RealHipp, RealObj.NzisNomen, ProfGraph, ADB_DataUnit, RealNasMesto,
@@ -206,15 +207,9 @@ type
     lytbottom: TLayout;
     lytLeft: TLayout;
     slctnpnt3: TSelectionPoint;
-    expndrCL132: TExpander;
-    Rectangle1: TRectangle;
-    flwlyt2: TFlowLayout;
     cbb1: TComboBox;
     p1: TPopup;
-    lst1: TListBox;
     lstItemNomen: TListBoxItem;
-    shdwfct1: TShadowEffect;
-    mmoCL132: TMemo;
     rctBlanka: TRectangle;
     xpdrPatient: TExpander;
     lblAddres: TLabel;
@@ -222,10 +217,6 @@ type
     xpdrVisitFor: TExpander;
     flwlytVizitFor: TFlowLayout;
     txtAmbList: TText;
-    txt1: TText;
-    cbbMulti: TComboBox;
-    edtCl132: TEdit;
-    btnMulti: TSpeedButton;
     btnTest: TButton;
     flwlytMulti: TFlowLayout;
     rct2: TRectangle;
@@ -236,39 +227,14 @@ type
     FloatAnimation1: TFloatAnimation;
     FloatAnimation2: TFloatAnimation;
     FloatAnimation3: TFloatAnimation;
-    Layout1: TLayout;
-    rctBtnSaveLst: TRectangle;
-    FloatAnimation4: TFloatAnimation;
-    FloatAnimation6: TFloatAnimation;
-    rctBtnCancelLst: TRectangle;
-    FloatAnimation7: TFloatAnimation;
-    FloatAnimation8: TFloatAnimation;
-    FloatAnimation9: TFloatAnimation;
-    dtdtCl132: TDateEdit;
-    dtdtStartDate: TDateEdit;
     lyt2: TLayout;
     txtDocuments: TText;
-    lytMdn: TLayout;
-    edtMdn: TEdit;
-    GridLayout1: TGridLayout;
-    edtMdn1: TEdit;
     expndrMdns: TExpander;
     Rectangle3: TRectangle;
     FloatAnimation5: TFloatAnimation;
     FloatAnimation10: TFloatAnimation;
     lyt1: TLayout;
     lytMdnExp: TLayout;
-    lytMdnLeft: TLayout;
-    edtMdn2: TEdit;
-    edtMdn3: TEdit;
-    edtMdn4: TEdit;
-    edtMdn5: TEdit;
-    edtMdn6: TEdit;
-    edtMdn7: TEdit;
-    edtMdn8: TEdit;
-    Rectangle4: TRectangle;
-    FloatAnimation11: TFloatAnimation;
-    cbb2: TComboBox;
     p2: TPopup;
     lbMdnType: TListBox;
     shdwfct2: TShadowEffect;
@@ -305,10 +271,6 @@ type
     txtSpec: TText;
     rctMN: TRectangle;
     edtAmbList: TEdit;
-    lytMemo: TLayout;
-    mmoDyn: TMemo;
-    chkMemoDyn: TCheckBox;
-    rctCheckDyn: TRectangle;
     rctBackGround: TRectangle;
     lytExpDoctor: TLayout;
     lytPatient: TLayout;
@@ -324,42 +286,7 @@ type
     txtDoctorUin: TText;
     edtDoctorUin: TEdit;
     lytDoctorUin: TLayout;
-    lytDate: TLayout;
-    chkDateDyn: TCheckBox;
-    rctIsNullDate: TRectangle;
-    Rectangle7: TRectangle;
-    FloatAnimation15: TFloatAnimation;
-    edtDateRaw: TEdit;
-    linSaver: TLine;
-    lytEdit: TLayout;
-    chkEditDyn: TCheckBox;
-    rctIsNullEdit: TRectangle;
-    Line1: TLine;
-    edtCl132Sup: TEdit;
-    lin1: TLine;
-    txtUnit: TText;
-    lytMultiCombo: TLayout;
-    chkMultiComboDyn: TCheckBox;
-    Rectangle8: TRectangle;
-    Line2: TLine;
-    flwlytMultiCombo: TFlowLayout;
-    rctBtnMulti: TRectangle;
-    FloatAnimation16: TFloatAnimation;
-    rctMulti: TRectangle;
-    lytButtonCombo: TLayout;
     txtEndOfLeft: TText;
-    crcDelete: TCircle;
-    lytDeleteMulti: TLayout;
-    chkMemoDynOne: TCheckBox;
-    Rectangle9: TRectangle;
-    txtDelBtnMulti: TText;
-    fltnmtn1: TFloatAnimation;
-    lytComboDyn: TLayout;
-    chkComboDyn: TCheckBox;
-    Rectangle10: TRectangle;
-    Line3: TLine;
-    cbb3: TComboBox;
-    txtComboOne: TText;
     linStatusNRN: TLine;
     animNrnStatus: TFloatAnimation;
     lytVisitFor: TLayout;
@@ -368,21 +295,9 @@ type
     txtNzisStatus: TText;
     rctBtnNzisErr: TRectangle;
     FloatAnimation20: TFloatAnimation;
-    txtErr: TText;
-    anim4: TFloatAnimation;
     pmNzisAction: TPopupMenu;
     mniX013: TMenuItem;
     mniAnulPreg: TMenuItem;
-    rctAnsw: TRectangle;
-    rctAnsw1: TRectangle;
-    lytAnswMemo: TLayout;
-    Layout6: TLayout;
-    Rectangle11: TRectangle;
-    Rectangle12: TRectangle;
-    Layout7: TLayout;
-    Rectangle13: TRectangle;
-    Layout8: TLayout;
-    Rectangle14: TRectangle;
     brshPregled: TBrushObject;
     lbSourceAnsw: TListBox;
     lstSourceAnswOther: TListBoxItem;
@@ -425,7 +340,6 @@ type
     brshKonsult: TBrushObject;
     brshImun: TBrushObject;
     brshNotPregled: TBrushObject;
-    rctTestMdn: TRectangle;
     FloatAnimation13: TFloatAnimation;
     expndrImun: TExpander;
     Layout5: TLayout;
@@ -471,7 +385,6 @@ type
     Edit4: TEdit;
     Rectangle22: TRectangle;
     FloatAnimation31: TFloatAnimation;
-    edtSpecMN: TEdit;
     edtSpec: TEdit;
     mmoAddres: TMemo;
     PopupMenu1: TPopupMenu;
@@ -579,6 +492,32 @@ type
     Rectangle32: TRectangle;
     rct3: TRectangle;
     txtRczR: TText;
+    lytIncMN: TLayout;
+    dtdtStartDateTime: TDateEdit;
+    Rectangle33: TRectangle;
+    FloatAnimation45: TFloatAnimation;
+    Rectangle39: TRectangle;
+    Layout3: TLayout;
+    Text10: TText;
+    txtSpecMN: TText;
+    txtIsPrimary: TText;
+    txtNaprType: TText;
+    edtNrnInkNapr: TEdit;
+    txtNrnIncNapr: TText;
+    edtDateIncNapr: TEdit;
+    Text11: TText;
+    edtAmbListIncNapr: TEdit;
+    Text12: TText;
+    Edit11: TEdit;
+    Text13: TText;
+    Edit12: TEdit;
+    Text14: TText;
+    Edit13: TEdit;
+    Text15: TText;
+    Edit14: TEdit;
+    Text16: TText;
+    Rectangle43: TRectangle;
+    FloatAnimation49: TFloatAnimation;
     procedure scrlbx1MouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure scrlbx1Resize(Sender: TObject);
     procedure slctnpnt1Track(Sender: TObject; var X, Y: Single);
@@ -600,10 +539,10 @@ type
     procedure BtnMultiMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure cbbOnePregMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure cbbDiagStatusMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-    procedure lst1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+    procedure lbComboOneKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     procedure p1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     procedure cbb1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
-    procedure lst1KeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+    procedure lbComboOneKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     //procedure cbb1PregApplyStyleLookup(Sender: TObject);
     //procedure chk1ApplyStyleLookup(Sender: TObject);
     procedure flwlyt2Resize(Sender: TObject);
@@ -614,14 +553,14 @@ type
     procedure mmo1ChangeTracking(Sender: TObject);
     //procedure mmoCL132KeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     procedure lstItemNomenClick(Sender: TObject);
-    procedure lst1Change(Sender: TObject);
+    procedure lbComboOneChange(Sender: TObject);
     procedure lstOneChange(Sender: TObject);
    // procedure lst1Click(Sender: TObject);
     procedure lstOneClick(Sender: TObject);
     procedure xpdrVisitForResize(Sender: TObject);
     procedure rctBlankaDblClick(Sender: TObject);
-    procedure lst1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
-    procedure lst1MouseLeave(Sender: TObject);
+    procedure lbComboOneMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
+    procedure lbComboOneMouseLeave(Sender: TObject);
     procedure scrlbx1ViewportPositionChange(Sender: TObject;
       const OldViewportPosition, NewViewportPosition: TPointF;
       const ContentSizeChanged: Boolean);
@@ -864,6 +803,31 @@ type
     procedure lblAddresPainting(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
     procedure edtEGNValidating(Sender: TObject; var Text: string);
+    procedure Text10Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure txtIsPrimaryPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure xpdrDoctorPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure xpdrDoctorClick(Sender: TObject);
+    procedure txtNaprTypePainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure edtNrnInkNaprPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure edtDateIncNaprPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure edtAmbListIncNaprPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure Edit11Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure Edit12Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure Edit13Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure Edit14Painting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure txtMkbMdnPainting(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
 
     
 
@@ -979,6 +943,7 @@ type
     FSourceAnswerDefault: TSourceAnsw;
     FPlanedTypeColl: TRealNZIS_PLANNED_TYPEColl;
     patNodes: TPatNodes;
+    pregNodes: TPregledNodes;
     FAdb_dm: TADBDataModule;
     ListPlaneds: TList<TRealNZIS_PLANNED_TYPEItem>;
     FprofGR: TProfGraph;
@@ -998,6 +963,8 @@ type
     FOnSelectMkb: TNotifyEvent;
     FTmpVtr: Tobject;
     FNasMesto: TRealNasMestoAspects;
+    FIncNaprColl: TRealINC_NAPRColl;
+    FCollOtherDoctor: TRealOtherDoctorColl;
 
 
 
@@ -1124,6 +1091,8 @@ type
   property PlanedTypeColl: TRealNZIS_PLANNED_TYPEColl read FPlanedTypeColl write FPlanedTypeColl;
   property DiagColl: TRealDiagnosisColl read FDiagColl write FDiagColl;
   property MKBColl: TMkbColl read FMkbColl write FMkbColl;
+  property IncNaprColl: TRealINC_NAPRColl read FIncNaprColl write FIncNaprColl;
+  property CollOtherDoctor: TRealOtherDoctorColl read FCollOtherDoctor write FCollOtherDoctor;
   property NasMesto: TRealNasMestoAspects read FNasMesto write FNasMesto;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;
   property MaxRightLytHeight: Single read FMaxRightLytHeight write FMaxRightLytHeight;
@@ -1182,7 +1151,7 @@ var
   TempBtnMulti: TSpeedButton; //circle1style
   crc: TCircle;
 begin
-  TempBtnMulti := TSpeedButton(btnMulti.Clone(self));
+  TempBtnMulti := TSpeedButton(frmFmxControls.btnMulti.Clone(self));
   ComboLabel.MultiBtns.Add(TempBtnMulti);
   TempBtnMulti.Visible := True;
   txtCalcEdit.MaxSize := PointF(100000, 19);
@@ -1221,7 +1190,7 @@ begin
   flwlyt := ExpndrLayout;
   if (LstChecksSup.Count - 1) < idxListCheckSup then
   begin
-    TempCheck := TCheckBox(chkMemoDynOne.Clone(self));
+    TempCheck := TCheckBox(frmFmxControls.chkMemoDynOne.Clone(self));
     TempCheckLYT := TLayoutCheck.Create;
     TempCheckLYT.node := RunNode;
     TempCheckLYT.rctNull := WalkChildrenRect(TempCheck);
@@ -1304,7 +1273,7 @@ begin
   flwlyt := ExpndrLayout;
   if (LstOneCombosLYT.Count - 1) < idxListCombo then
   begin
-    TempComboLYT := TLayout(lytComboDyn.Clone(self));
+    TempComboLYT := TLayout(frmFmxControls.lytComboDyn.Clone(self));
     TempComboLabel := TComboOneLabel.Create;
 
     TempComboLabel.chk := WalkChildrenCheck(TempComboLYT);
@@ -1479,7 +1448,7 @@ begin
   flwlyt := ExpndrLayout;
   if (LstMultiCombosLYT.Count - 1) < idxListCombo then
   begin
-    TempComboLYT := TLayout(lytMultiCombo.Clone(self));
+    TempComboLYT := TLayout(frmFmxControls.lytMultiCombo.Clone(self));
     TempComboLabel := TComboMultiLabel.Create;
     TempComboLabel.chk := WalkChildrenCheck(TempComboLYT);
     TempComboLabel.rctNull := WalkChildrenRect(TempComboLabel.chk);
@@ -1632,7 +1601,7 @@ var
 begin
   if (LstDateEditsLyt.Count - 1) < idxListDateEdits then
   begin
-    TempDateEditLyt := TLayout(lytDate.Clone(self));
+    TempDateEditLyt := TLayout(frmFmxControls.lytDate.Clone(self));
     TempDateEditLabel := TDateEditLabel.Create;
     TempDateEditLabel.DatEdt := WalkChildrenDate(TempDateEditLyt);
     TempDateEditLabel.edtDat := WalkChildrenEdit(TempDateEditLabel.DatEdt);
@@ -1886,7 +1855,7 @@ var
 begin
   if (LstEditsLyt.Count - 1) < idxListEdits then
   begin
-    TempEditLYT := TLayout(lytEdit.Clone(self));
+    TempEditLYT := TLayout(frmFmxControls.lytEdit.Clone(self));
 
     TempEditLabel := TEditLabel.Create;
     TempEditLabel.chk :=  WalkChildrenCheck(TempEditLYT);
@@ -1997,9 +1966,9 @@ begin
     LstItemsLst.Add(TempLstItem);
     TempLstItem := LstItemsLst[idxListItemLst];
     TempLstItem.Position.Point := PointF(TempLstItem.Position.Point.X, 0);
-    TempLstItem.Parent := lst1;
-    TempLstItem.Width := lst1.Width;
-    txtCalcMemo.MaxSize := PointF(lst1.Width -22, 100000);
+    TempLstItem.Parent := frmFmxControls.lbComboOne;
+    TempLstItem.Width := frmFmxControls.lbComboOne.Width;
+    txtCalcMemo.MaxSize := PointF(frmFmxControls.lbComboOne.Width -22, 100000);
     txtCalcMemo.Text := str;
     TempLstItem.Text := str;
     TempLstItem.Height := txtCalcMemo.Height + 14;
@@ -2013,9 +1982,9 @@ begin
     TempLstItem := LstItemsLst[idxListItemLst];
     TempLstItem.Position.Point := PointF(TempLstItem.Position.Point.X, 0);
     //TempLstItem.Width := flwlyt1.Width ;
-    TempLstItem.Parent := lst1;
-    TempLstItem.Width := lst1.Width;
-    txtCalcMemo.MaxSize := PointF(lst1.Width -22, 100000);
+    TempLstItem.Parent := frmFmxControls.lbComboOne;
+    TempLstItem.Width := frmFmxControls.lbComboOne.Width;
+    txtCalcMemo.MaxSize := PointF(frmFmxControls.lbComboOne.Width -22, 100000);
     txtCalcMemo.Text := str;
     TempLstItem.Text := txtCalcMemo.Text;
     TempLstItem.Height := txtCalcMemo.Height + 14;
@@ -2091,7 +2060,7 @@ begin
   end;
   if (LstExpanders.Count - 1) < idxListExpander then
   begin
-    TempExpndr := TExpander(expndrCL132.Clone(self));
+    TempExpndr := TExpander(frmFmxControls.expndrCL132.Clone(self));
     //TempExpndr.Padding.Left := PadingLeft;
     TempExpndr.Visible := True;
     TempExpndr.Width := flwlytVizitFor.Width ;
@@ -2132,7 +2101,7 @@ var
 begin
   if (LstMemosLYT.Count - 1) < idxListMemosLyt then
   begin
-    TempMemoLYT := TLayout(lytMemo.Clone(self));
+    TempMemoLYT := TLayout(frmFmxControls.lytMemo.Clone(self));
     TempMemoLabel := TMemoLabel.Create;
     TempMemoLabel.chk := WalkChildrenCheck(TempMemoLYT);
     TempMemoLabel.chk.HitTest := False;
@@ -2217,7 +2186,7 @@ begin
   capt := capt + '   ' + PlanedTypeColl.getAnsiStringMap(data.DataPos, word(PR001_CL132));
   if (LstMemosLYT.Count - 1) < idxListMemosLyt then
   begin
-    TempMemoLYT := TLayout(lytMemo.Clone(self));
+    TempMemoLYT := TLayout(frmFmxControls.lytMemo.Clone(self));
     TempMemoLabel := TMemoLabel.Create;
     TempMemoLabel.chk := WalkChildrenCheck(TempMemoLYT);
     TempMemoLabel.chk.HitTest := False;
@@ -2516,7 +2485,7 @@ var
   vScrol: TScrollBar;
   grdLyt: TGridLayout;
 begin
-  lst1.Items[100000].Parse(1);
+  frmFmxControls.lbComboOne.Items[100000].Parse(1);
   btn1.HelpContext := 222;
   //Rectangle13.Fill.Assign(brshbjct1.Brush);
   //lytRightResize(nil);
@@ -2561,7 +2530,7 @@ begin
   node := TempComboLabel.node;
   data := Pointer(PByte(node) + lenNode);
   AbsH := 5;
-  lst1.OnChange := nil;
+  frmFmxControls.lbComboOne.OnChange := nil;
   for idxListItemLst := 0 to LstItemsLst.Count - 1 do
   begin
     LstItemsLst[idxListItemLst].Parent := nil;
@@ -2615,25 +2584,25 @@ begin
     end;
   end;
 
-  lst1.Height := AbsH;
-  lst1.ShowCheckboxes := true;
-  lst1.OnClick := nil;
-  rctBtnSaveLst.Visible := True;
-  for i := 0 to lst1.items.Count - 1 do
-    lst1.ListItems[i].IsChecked := false;
+  frmFmxControls.lbComboOne.Height := AbsH;
+  frmFmxControls.lbComboOne.ShowCheckboxes := true;
+  frmFmxControls.lbComboOne.OnClick := nil;
+  frmFmxControls.rctBtnSaveLst.Visible := True;
+  for i := 0 to frmFmxControls.lbComboOne.items.Count - 1 do
+    frmFmxControls.lbComboOne.ListItems[i].IsChecked := false;
   for i := 0 to TempComboLabel.MultiBtns.Count - 1 do
   begin
-    for j := 0 to lst1.items.Count - 1 do
+    for j := 0 to frmFmxControls.lbComboOne.items.Count - 1 do
     begin
-      if lst1.Items[j].Contains(TempComboLabel.MultiBtns[i].Text) then
+      if frmFmxControls.lbComboOne.Items[j].Contains(TempComboLabel.MultiBtns[i].Text) then
       begin
-        lst1.ListItems[j].IsChecked := true;
+        frmFmxControls.lbComboOne.ListItems[j].IsChecked := true;
         Break;
       end;
     end;
   end;
-  rctBtnCancelLst.Opacity := 0.3;
-  rctBtnSaveLst.Opacity := 0.3;
+  frmFmxControls.rctBtnCancelLst.Opacity := 0.3;
+  frmFmxControls.rctBtnSaveLst.Opacity := 0.3;
 
   p1.Height := AbsH;
   p1.Popup();
@@ -2814,21 +2783,21 @@ begin
     end;
   end;
 
-  lst1.Height := AbsH;
+  frmFmxControls.lbComboOne.Height := AbsH;
   if TempComboLabel.IsMulti then
   begin
-    lst1.ShowCheckboxes := true;
-    lst1.OnClick := nil;
-    rctBtnSaveLst.Visible := True;
-    for i := 0 to lst1.items.Count - 1 do
-      lst1.ListItems[i].IsChecked := false;
+    frmFmxControls.lbComboOne.ShowCheckboxes := true;
+    frmFmxControls.lbComboOne.OnClick := nil;
+    frmFmxControls.rctBtnSaveLst.Visible := True;
+    for i := 0 to frmFmxControls.lbComboOne.items.Count - 1 do
+      frmFmxControls.lbComboOne.ListItems[i].IsChecked := false;
     for i := 0 to TempComboLabel.MultiBtns.Count - 1 do
     begin
-      for j := 0 to lst1.items.Count - 1 do
+      for j := 0 to frmFmxControls.lbComboOne.items.Count - 1 do
       begin
-        if lst1.Items[j].Contains(TempComboLabel.MultiBtns[i].Text) then
+        if frmFmxControls.lbComboOne.Items[j].Contains(TempComboLabel.MultiBtns[i].Text) then
         begin
-          lst1.ListItems[j].IsChecked := true;
+          frmFmxControls.lbComboOne.ListItems[j].IsChecked := true;
           Break;
         end;
       end;
@@ -2836,12 +2805,12 @@ begin
   end
   else
   begin
-    lst1.ShowCheckboxes := false;
+    frmFmxControls.lbComboOne.ShowCheckboxes := false;
     //lst1.OnClick := lst1Click;
-    rctBtnSaveLst.Visible := false;
+    frmFmxControls.rctBtnSaveLst.Visible := false;
   end;
-  rctBtnCancelLst.Opacity := 0.3;
-  rctBtnSaveLst.Opacity := 0.3;
+  frmFmxControls.rctBtnCancelLst.Opacity := 0.3;
+  frmFmxControls.rctBtnSaveLst.Opacity := 0.3;
   p1.Height := AbsH;
   p1.Popup();
 end;
@@ -3054,14 +3023,14 @@ begin
     end;
   end;
 
-  lst1.Height := AbsH;
+  frmFmxControls.lbComboOne.Height := AbsH;
 
-  lst1.ShowCheckboxes := false;
-  lst1.OnClick := lstOneClick;
-  lst1.OnChange := lstOneChange;
-  rctBtnSaveLst.Visible := false;
-  rctBtnCancelLst.Opacity := 0.3;
-  rctBtnSaveLst.Opacity := 0.3;
+  frmFmxControls.lbComboOne.ShowCheckboxes := false;
+  frmFmxControls.lbComboOne.OnClick := lstOneClick;
+  frmFmxControls.lbComboOne.OnChange := lstOneChange;
+  frmFmxControls.rctBtnSaveLst.Visible := false;
+  frmFmxControls.rctBtnCancelLst.Opacity := 0.3;
+  frmFmxControls.rctBtnSaveLst.Opacity := 0.3;
   p1.Height := AbsH;
   p1.Popup();
 end;
@@ -3177,6 +3146,12 @@ var
   i: Integer;
   TempComboLabel: TComboOneLabel;
 begin
+  if dtdtStartDateTime.IsPickerOpened then
+  begin
+    dtdtStartDateTime.OnClosePicker := nil;
+    dtdtStartDateTime.ClosePicker;
+    dtdtStartDateTime.OnClosePicker := dtdtStartDateClosePicker;
+  end;
   Self.Focused := nil;
   //rctSelector.Parent := nil;
   for i := 0 to LstExpanders.Count - 1 do
@@ -4379,7 +4354,7 @@ begin
   fs.ShortDateFormat := 'DD.MM.YYYY';
   fs.TimeSeparator := ':';
   fs.ShortTimeFormat := 'hh:mm';
-  ambStartDateTime := StrToDateTime(dtdtStartDate.Text);
+  ambStartDateTime := StrToDateTime(dtdt.Text);
   ambStartDate := Floor(ambStartDateTime);
   ambStartTime := ambStartDateTime - ambStartDate;
   PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
@@ -4400,7 +4375,7 @@ begin
   fs.ShortDateFormat := 'DD.MM.YYYY';
   fs.TimeSeparator := ':';
   fs.ShortTimeFormat := 'hh:mm';
-  ambStartDateTime := StrToDateTime(dtdtStartDate.Text);
+  ambStartDateTime := StrToDateTime(dtdt.Text);
   ambStartDate := Floor(ambStartDateTime);
   PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
 end;
@@ -4422,9 +4397,87 @@ begin
 
 end;
 
+procedure TfrmProfFormFMX.Edit11Painting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  edt: TEdit;
+  dataRequester: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NOMER_LZ));
+end;
+
+procedure TfrmProfFormFMX.Edit12Painting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  edt: TEdit;
+  dataRequester: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_UIN));
+end;
+
+procedure TfrmProfFormFMX.Edit13Painting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  edt: TEdit;
+  dataRequester: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NZOK_NOMER));
+end;
+
+procedure TfrmProfFormFMX.Edit14Painting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  edt: TEdit;
+  dataRequester: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+  edt.Text := IntToStr(CollOtherDoctor.getIntMap(dataRequester.DataPos, Word(OtherDoctor_SPECIALITY)));
+end;
+
+procedure TfrmProfFormFMX.edtNrnInkNaprPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  edt: TEdit;
+  dataInkNapr: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+  edt.Text := IncNaprColl.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_NRN));
+end;
+
 procedure TfrmProfFormFMX.edt1Popup(Sender: TObject);
 begin
   //
+end;
+
+procedure TfrmProfFormFMX.edtAmbListIncNaprPainting(Sender: TObject;
+  Canvas: TCanvas; const ARect: TRectF);
+var
+  edt: TEdit;
+  dataInkNapr: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+  edt.Text := IncNaprColl.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_AMB_LIST_NRN));
 end;
 
 procedure TfrmProfFormFMX.edtAmbListPainting(Sender: TObject; Canvas: TCanvas;
@@ -5426,6 +5479,19 @@ begin
   end;
 end;
 
+procedure TfrmProfFormFMX.edtDateIncNaprPainting(Sender: TObject;
+  Canvas: TCanvas; const ARect: TRectF);
+var
+  edt: TEdit;
+  dataInkNapr: PAspRec;
+begin
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  edt := TEdit(sender);
+  dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+  edt.Text := FormatDateTime('DD.MM.YYYY г.', IncNaprColl.getDateMap(dataInkNapr.DataPos, Word(INC_NAPR_ISSUE_DATE)));
+end;
+
 procedure TfrmProfFormFMX.edtDateRawPainting(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 var
@@ -5499,18 +5565,21 @@ procedure TfrmProfFormFMX.edtDoctorNamePainting(Sender: TObject;
 var
   dataDoctor: PAspRec;
 begin
-
-  if patNodes.docNode <> nil then
-  begin
-    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
-    edtDoctorName.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_FNAME)) +  ' ' +
-                       DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_SNAME)) +  ' ' +
-                       DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_LNAME));
-  end
-  else
-  begin
-
-  end;
+  dataDoctor := Pointer(PByte(pregNodes.perfNode) + lenNode);
+  edtDoctorName.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_FNAME)) +  ' ' +
+                     DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_SNAME)) +  ' ' +
+                     DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_LNAME));
+  //if patNodes.docNode <> nil then
+//  begin
+//    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
+//    edtDoctorName.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_FNAME)) +  ' ' +
+//                       DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_SNAME)) +  ' ' +
+//                       DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_LNAME));
+//  end
+//  else
+//  begin
+//
+//  end;
 end;
 
 procedure TfrmProfFormFMX.edtDoctorUinPainting(Sender: TObject; Canvas: TCanvas;
@@ -5518,15 +5587,18 @@ procedure TfrmProfFormFMX.edtDoctorUinPainting(Sender: TObject; Canvas: TCanvas;
 var
   dataDoctor: PAspRec;
 begin
-  if patNodes.docNode <> nil then
-  begin
-    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
-    edtDoctorUin.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_UIN));
-  end
-  else
-  begin
 
-  end;
+  dataDoctor := Pointer(PByte(pregNodes.perfNode) + lenNode);
+  edtDoctorUin.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_UIN));
+  //if patNodes.docNode <> nil then
+//  begin
+//    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
+//    edtDoctorUin.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_UIN));
+//  end
+//  else
+//  begin
+//
+//  end;
 end;
 
 procedure TfrmProfFormFMX.edtEGNPainting(Sender: TObject; Canvas: TCanvas;
@@ -6270,7 +6342,7 @@ begin
   //expTxt.Text := 'namerih te';
   if (LstMdns.Count - 1) < idxListMdns then
   begin
-    TempLyt := TLayout(lytMdn.Clone(self));
+    TempLyt := TLayout(frmFmxControls.lytMdn.Clone(self));
     TempMdnsLabel := TMdnsLabel.Create;
     TempLyt.Tag := LstMdns.Add(TempLyt);
     TempLyt.TagObject := TempMdnsLabel;
@@ -6365,6 +6437,8 @@ begin
     //TempMdnsLabel.btnDel.OnMouseEnter := Rectangle4MouseEnter;
     //TempMdnsLabel.GridLayoutAnals.OnResize := GridLayout1Resize;
     TempMdnsLabel.EdtNrn.OnChangeTracking := edtMdnChangeTracking;
+    TempMdnsLabel.EdtMainMkb.OnPainting := txtMkbMdnPainting;
+
 end;
 
 procedure TfrmProfFormFMX.FillExpanderMNs1(Layout: TLayout; idxListMns: integer;
@@ -6889,7 +6963,8 @@ var
   tempFLYT: TFlowLayout;
   run: PVirtualNode;
   nodePreg, RunPlanedType, RunNodeCL132, RunNodePR001, nodeValue: PVirtualNode;
-  dataPreg, dataPr001, dataCL132, dataRunPr001, dataAnswVal, dataDiagRep, dataPlan: PAspRec;
+  dataPreg, dataPr001, dataCL132, dataRunPr001, dataAnswVal,
+  dataDiagRep, dataPlan, dataParent: PAspRec;
   cl132: TRealCl132Item;
   cl134: TCL134Item;
   cl142: TRealCl142Item;
@@ -6907,6 +6982,7 @@ var
   dataPosition: Cardinal;
   pCardinalData: PCardinal;
   imun: TRealExamImmunizationItem;
+  logPreg: TlogicalPregledNewSet;
 begin
   Stopwatch := TStopwatch.StartNew;
   //scldlyt1.BeginUpdate;
@@ -6918,8 +6994,36 @@ begin
   begin
     FreeAndNil(patNodes);
   end;
-  patNodes := Adb_dm.GetPatNodes(nodePreg.Parent);// нещата на пациента
+  If PregNodes <> nil then
+  begin
+    FreeAndNil(PregNodes);
+  end;
+  pregNodes := Adb_dm.GetPregNodes(nodePreg);
+  dataParent := pointer(PByte(nodePreg.Parent) + lenNode);
+  case dataParent.vid of
+    vvPatient:
+    begin
+      patNodes := Adb_dm.GetPatNodes(nodePreg.Parent);// нещата на пациента
+      lytIncMN.Height := 3;
+    end;
+    vvIncMN:
+    begin
+      lytIncMN.Height := 150;
+      patNodes := Adb_dm.GetPatNodes(nodePreg.Parent.parent);// нещата на пациента
+    end;
+  end;
+
   dataPreg := pointer(PByte(nodePreg) + lenNode);
+  logPreg := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, word(PregledNew_Logical)));
+  if IS_PRIMARY in logPreg then
+  begin
+    Caption := 'ddd';
+  end
+  else
+  begin
+    Caption := 'ddd';
+  end;
+
   RunPlanedType := nodePreg.FirstChild;
   cl132.DataPos := 0;
   while RunPlanedType <> nil do
@@ -7335,35 +7439,16 @@ begin
   FOtherPregleds := TList<PVirtualNode>.Create;
   scaleDyn := 1;
   IsFirstActivate := True;
-  expndrCL132.Visible  := False;
-  mmoCL132.Visible := False;
   cbb1.Visible := False;
   lstItemNomen.Visible := False;
-  txt1.Visible := False;
-  cbbMulti.Visible := False;
-  edtCl132.Visible := False;
-  btnMulti.Visible := False;
-  lytMdn.Visible := False;
-  lytMultiCombo.Visible := False;
-  lytMemo.Visible := False;
-  lytEdit.Visible := False;
-  lytDate.Visible := False;
+  //cbbMulti.Visible := False;
   lytMN.Visible := False;
   lytMN.Parent := nil;
   lytImun.Visible := False;
   lytImun.Parent := nil;
-  cbb2.Visible := False;
-  lytComboDyn.Visible := False;
   Memo1.Visible := False;
   cbbVisitFor := nil;
   rctBackGround.Visible := False;
-  //edt1.Visible := False;
-  //lst1.Visible := False;
-  lytMemo.Visible := False;
-  lytDate.Visible := False;
-  //expndrMdns.Visible := False;
-  //expndrMNs.Visible := False;
-  chkMemoDynOne.Visible := False;
   rctBKPlanetTypeItem.Visible := False;
   rctBKPlanetTypeItem.Parent := nil;
 
@@ -7392,9 +7477,9 @@ begin
   ListVacantPregIndex := TList<integer>.Create;
 
 
-  p1.BoundsRect := lst1.BoundsRect;
-  lst1.Parent := p1;
-  lst1.Align := TAlignLayout.Client;
+  p1.BoundsRect := frmFmxControls.lbComboOne.BoundsRect;
+  frmFmxControls.lbComboOne.Parent := p1;
+  frmFmxControls.lbComboOne.Align := TAlignLayout.Client;
 
   //lst2.Height := InnerChildrenRect(lst2).Height + 2;
   p2.BoundsRect := lbMdnType.BoundsRect;
@@ -7432,6 +7517,8 @@ begin
   FCheckKep := True;
   FSourceAnswerDefault := TSourceAnsw.saPatient;
   ListPlaneds := TList<TRealNZIS_PLANNED_TYPEItem>.create;
+  frmFmxControls.rctBtnSaveLst.OnClick := rctBtnSaveLstClickSup;
+  frmFmxControls.rctBtnCancelLst.OnClick := rctBtnCancelLstClick;
 end;
 
 procedure TfrmProfFormFMX.FormDestroy(Sender: TObject);
@@ -7716,7 +7803,7 @@ begin
   p3.IsOpen := False;
 end;
 
-procedure TfrmProfFormFMX.lst1Change(Sender: TObject);
+procedure TfrmProfFormFMX.lbComboOneChange(Sender: TObject);
 var
   cbb: TComboBox;//text1style
   //TempComboLabel: TComboLabel;
@@ -7731,7 +7818,7 @@ begin
     if cbb.FindStyleResource<TText>('text1style', txt) then
     begin
       //TempComboLabel.canValidate := False;
-      txt.Text := lst1.ListItems[lst1.ItemIndex].Text;
+      txt.Text := frmFmxControls.lbComboOne.ListItems[frmFmxControls.lbComboOne.ItemIndex].Text;
       //TempComboLabel.canValidate := true;
       //TListBoxItem(sender).Height := txt.Height;
     end;
@@ -7957,22 +8044,22 @@ end;
 //  end;
 //end;
 
-procedure TfrmProfFormFMX.lst1KeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+procedure TfrmProfFormFMX.lbComboOneKeyDown(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
 begin
   //btn1.Text := DateTimeToStr(now);
 end;
 
-procedure TfrmProfFormFMX.lst1KeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+procedure TfrmProfFormFMX.lbComboOneKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
 begin
   //
 end;
 
-procedure TfrmProfFormFMX.lst1MouseLeave(Sender: TObject);
+procedure TfrmProfFormFMX.lbComboOneMouseLeave(Sender: TObject);
 var
   cbb: TComboBox;//text1style
   txt: TText;
 begin
-  lst1.ItemIndex := -1;
+  frmFmxControls.lbComboOne.ItemIndex := -1;
   if p1.PlacementTarget is TComboBox then
   begin
     cbb := TComboBox(p1.PlacementTarget);
@@ -7984,7 +8071,7 @@ begin
   end;
 end;
 
-procedure TfrmProfFormFMX.lst1MouseMove(Sender: TObject; Shift: TShiftState; X,
+procedure TfrmProfFormFMX.lbComboOneMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Single);
 var
   TempItem: TListBoxItem;
@@ -8066,7 +8153,7 @@ begin
 //    TempComboLabel := LstCombos[cbb.Tag];
 //    cbb.ItemIndex := TListBoxItem(Sender).Index;
 //  end;
-  if not lst1.ShowCheckboxes then  Exit;
+  if not frmFmxControls.lbComboOne.ShowCheckboxes then  Exit;
   TListBoxItem(Sender).IsChecked := not TListBoxItem(Sender).IsChecked;
   //cbb := TComboBox(p1.PlacementTarget);
 //  TempComboLabel := TComboLabel(cbb.Parent.TagObject);
@@ -8082,7 +8169,7 @@ begin
   if sender = nil then Exit;
   cbb := TComboBox(p1.PlacementTarget);
   TempComboLabel := TComboOneLabel(cbb.Parent.TagObject);
-  TempComboLabel.txt.Text := lst1.ListItems[lst1.ItemIndex].Text;
+  TempComboLabel.txt.Text := frmFmxControls.lbComboOne.ListItems[frmFmxControls.lbComboOne.ItemIndex].Text;
   //if (p1.PlacementTarget.ClassName = 'TComboBox') then
 //  begin
 //
@@ -8138,7 +8225,7 @@ begin
           case answTemp.cl028 of
             2: //номенклатура
             begin
-              AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);// '06.05 | Средно-специално образование
+              AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);// '06.05 | Средно-специално образование
               AnswValue.PRecord.ID := 0;
               AnswValue.PRecord.QUESTIONNAIRE_ANSWER_ID := 0;
               AnswValue.PRecord.CL028 := 2;
@@ -8172,7 +8259,7 @@ begin
           case ResDiagRep.cl028 of
             2: //номенклатура
             begin
-              ResDiagRep.PRecord.VALUE_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);;
+              ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);;
               ResDiagRep.PRecord.ID := 0;
               ResDiagRep.PRecord.DIAGNOSTIC_REPORT_ID := 0;
               ResDiagRep.PRecord.CL028_VALUE_SCALE := 2;
@@ -8212,7 +8299,7 @@ begin
                 2:
                 begin
                   AnswValue.PRecord.setProp := [];
-                  AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                  AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
                   AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
@@ -8226,7 +8313,7 @@ begin
                 2:
                 begin
                   AnswValue.PRecord.setProp := [];
-                  AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                  AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
                   AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
@@ -8246,7 +8333,7 @@ begin
               2:
               begin
                 AnswValue.PRecord.setProp := [];
-                AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                 Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
                 AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                 Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
@@ -8268,7 +8355,7 @@ begin
                 2:
                 begin
                   ResDiagRep.PRecord.setProp := [];
-                  ResDiagRep.PRecord.VALUE_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                  ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
                   ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
@@ -8282,7 +8369,7 @@ begin
                 2:
                 begin
                   ResDiagRep.PRecord.setProp := [];
-                  ResDiagRep.PRecord.VALUE_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                  ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
                   ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
@@ -8300,7 +8387,7 @@ begin
               2:
               begin
                 ResDiagRep.PRecord.setProp := [];
-                ResDiagRep.PRecord.VALUE_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);
+                ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                 Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
                 ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                 Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
@@ -8390,7 +8477,7 @@ end;
 procedure TfrmProfFormFMX.lytLeftMouseMove(Sender: TObject; Shift: TShiftState;
   X, Y: Single);
 begin
-  txt1.Text := FloatToStr(y);
+  //txt1.Text := FloatToStr(y);
 end;
 
 procedure TfrmProfFormFMX.lytLeftPainting(Sender: TObject; Canvas: TCanvas;
@@ -8480,7 +8567,7 @@ begin
   lytLeft.Height := TotalH - lytLeft.Position.y;
   scldlyt1.OriginalHeight :=TotalH;
   scldlyt1.Height := scldlyt1.OriginalHeight * FScaleDyn;
-
+  lytbottom.Height := lytLeft.Height + 20;
 
 
   //lytbottom.Height := TotalH; //- lytTop.Height - rct1.Height ;
@@ -9987,16 +10074,16 @@ begin
 
   if (p1.PlacementTarget.ClassName = 'TComboBox') and (p1.PlacementTarget.StyleName = '') then
   begin
-    rctBtnSaveLst.Visible := true;
-    rctBtnCancelLst.Visible := true;
+    frmFmxControls.rctBtnSaveLst.Visible := true;
+    frmFmxControls.rctBtnCancelLst.Visible := true;
     cbb := TComboBox(p1.PlacementTarget);
     TempComboLabel := TComboOneLabel(cbb.parent.TagObject);
     TempComboLabel.canValidate := False;
   end;
   if (p1.PlacementTarget.ClassName = 'TRectangle') then
   begin
-    rctBtnSaveLst.Visible := false;
-    rctBtnCancelLst.Visible := false;
+    frmFmxControls.rctBtnSaveLst.Visible := false;
+    frmFmxControls.rctBtnCancelLst.Visible := false;
     idxListItemLst := 0;
     AbsH := 5;
     str := 'test';
@@ -10195,8 +10282,8 @@ var
 begin
   p1 := pointf(0, lytLeft.Position.Point.y);
   p2 := pointf(0, InnerChildrenRect(lytLeft).Bottom);
-  txt1.Text := FloatToStr(scldlyt1.LocalToAbsolute(PointF(0, 0)).y);
-  txt1.Text := txt1.Text +#13#10 + FloatToStr(lytLeft.LocalToAbsolute(InnerChildrenRect(lytLeft).BottomRight).y);
+  //txt1.Text := FloatToStr(scldlyt1.LocalToAbsolute(PointF(0, 0)).y);
+  //txt1.Text := txt1.Text +#13#10 + FloatToStr(lytLeft.LocalToAbsolute(InnerChildrenRect(lytLeft).BottomRight).y);
   if scrlbx1.ViewportPosition.y > 0 then
   begin
     totalH := p1.Distance(p2) + p1.y + scrlbx1.ViewportPosition.y;
@@ -11299,9 +11386,9 @@ begin
   p1.IsOpen := False;
   TempComboLabel := TComboMultiLabel(p1.TagObject);
   data := Pointer(PByte(TempComboLabel.node) + lenNode);
-  for i := 0 to lst1.Items.Count - 1 do
+  for i := 0 to frmFmxControls.lbComboOne.Items.Count - 1 do
   begin
-    lstItem := lst1.ListItems[i];
+    lstItem := frmFmxControls.lbComboOne.ListItems[i];
     if lstItem.IsChecked then  // ако е избрано
     begin
       nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, AnswValuesColl);
@@ -11350,7 +11437,7 @@ begin
         FAspLink.MarkDeletedNode(nodeValue);// махам го от дървото
         for j := 0 to TempComboLabel.MultiBtns.Count - 1 do
         begin
-          if lst1.Items[i].Contains(TempComboLabel.MultiBtns[j].Text) then
+          if frmFmxControls.lbComboOne.Items[i].Contains(TempComboLabel.MultiBtns[j].Text) then
           begin
             TempComboLabel.MultiBtns[j].Parent := nil;
             TempComboLabel.MultiBtns.Delete(j);
@@ -11646,6 +11733,10 @@ begin
     p2.IsOpen := False;
   p2.Scale.x := scaleDyn;
   p2.Scale.y := scaleDyn;
+
+  if dtdtStartDateTime.IsPickerOpened then
+    dtdtStartDateTime.ClosePicker;
+
   PositionPopup;
 end;
 
@@ -11667,7 +11758,7 @@ begin
   //p0 := (Self.ClientRect.TopLeft).MidPoint(Self.ClientRect.BottomRight);
   p1 := vScrol.AbsoluteToLocal(PointF(0, (vScrol.Height) /2/scaleDyn + vScrol.Value/scaleDyn - lytbottom.Position.y/scaleDyn));
   slctnpnt3.Position.Point := PointF(slctnpnt3.Position.X ,p1.y);
-  txt1.Text := Format('%f,   %f',  [NewViewportPosition.y, p1.y]);
+  //txt1.Text := Format('%f,   %f',  [NewViewportPosition.y, p1.y]);
   //slctnpnt3.Position := scrlbx1.con
   //txtTest.Text := Format('%f',  [mmoAddres.Position.y * scaleDyn]);
 end;
@@ -11853,6 +11944,27 @@ begin
   scldlyt1.Width := x * FScaleDyn;
 end;
 
+procedure TfrmProfFormFMX.Text10Painting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  txt: TText;
+  IncNaprlog: TlogicalINC_NAPRSet;
+  dataInkNapr: PAspRec;
+begin
+  txt := TText(sender);
+  dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+  IncNaprlog := TlogicalINC_NAPRSet(IncNaprColl.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
+  if category_R2 in IncNaprlog then
+    txt.Text := 'Бланка 3'
+  else
+  if category_R3 in IncNaprlog then
+    txt.Text := 'Бланка 3A'
+  else
+  if category_R5 in IncNaprlog then
+    txt.Text := 'Бланка 6'
+  else
+end;
+
 procedure TfrmProfFormFMX.TextClinicStatusPainting(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 var
@@ -11922,6 +12034,27 @@ begin
   //dtdtStartDate.Position.Point := PointF(txtAmbList.BoundsRect.Right + 10, 5);
 end;
 
+procedure TfrmProfFormFMX.txtIsPrimaryPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  txt: TText;
+  Preglog: TlogicalPregledNewSet;
+  dataPreg: PAspRec;
+  vtorNRN: string;
+begin
+  txt := TText(sender);
+
+  dataPreg := Pointer(PByte(pregNodes.pregNode) + lenNode);
+  Preglog := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
+  if TLogicalPregledNew.IS_PRIMARY in Preglog then
+    txt.Text := 'Първичен'
+  else
+  begin
+    vtorNRN := PregledColl.getAnsiStringMap(dataPreg.DataPos, Word(PregledNew_COPIED_FROM_NRN));
+    txt.Text := 'Вторичен: ' + vtorNRN;
+  end;
+end;
+
 procedure TfrmProfFormFMX.txtMainDiagDragDrop(Sender: TObject;
   const Data: TDragObject; const Point: TPointF);
 begin
@@ -11938,6 +12071,80 @@ procedure TfrmProfFormFMX.txtMainDiagDragOver(Sender: TObject;
   const Data: TDragObject; const Point: TPointF; var Operation: TDragOperation);
 begin
   Operation := TDragOperation.Move;
+end;
+
+procedure TfrmProfFormFMX.txtMkbMdnPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  TempLyt: TLayout;
+  TempMdnsLabel: TMdnsLabel;
+  run, runDiag: PVirtualNode;
+  dataRun: PAspRec;
+
+begin
+  TempLyt := TLayout(TEdit(Sender).Parent.Parent);
+  TempMdnsLabel := TMdnsLabel(TempLyt.TagObject);
+  runDiag := nil;
+  if TempMdnsLabel.LinkMdn = nil then
+  begin
+    TEdit(Sender).Text := '';
+    Exit;
+  end;
+
+  run := TempMdnsLabel.LinkMdn.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := Pointer(PByte(run) + lenNode);
+    if dataRun.vid = vvDiag then
+    begin
+      runDiag := run;
+      Break;
+    end;
+    run := run.NextSibling;
+  end;
+  if runDiag <> nil then
+  begin
+    TEdit(Sender).Text := DiagColl.getAnsiStringMap(dataRun.DataPos, word(Diagnosis_code_CL011));
+  end
+  else
+  begin
+    TEdit(Sender).Text := IntToStr(TempMdnsLabel.LinkMdn.Dummy);
+  end;
+end;
+
+procedure TfrmProfFormFMX.txtNaprTypePainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  txt: TText;
+  IncNaprlog: TlogicalINC_NAPRSet;
+  dataInkNapr: PAspRec;
+  intSet: TNaprType;
+begin
+
+  if pregNodes.incNaprNode = nil  then Exit;
+
+  txt := TText(sender);
+  dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
+  IncNaprlog := TlogicalINC_NAPRSet(IncNaprColl.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
+  //intSet := IncNaprColl.GetNaprCode_Quick(IncNaprlog);
+  intSet := NativeUInt(NaprGroup * IncNaprLog);
+  case intSet of
+    TNaprType(NaprMask_Ostro): txt.Text := 'Остро заболяване или състояние извън останалите типове';
+    TNaprType(NaprMask_Hron): txt.Text := 'Хронично заболяване, неподлежащо на диспансерно наблюдение';
+    TNaprType(NaprMask_Izbor): txt.Text := 'Избор на специалист за диспансерно наблюдение';
+    TNaprType(NaprMask_Disp): txt.Text := 'Диспансерно наблюдение';
+    TNaprType(NaprMask_Eksp): txt.Text := 'Медицинска експертиза';
+    TNaprType(NaprMask_Prof): txt.Text := 'Профилактика нa пълнолетни лица';
+    TNaprType(NaprMask_Iskane_Telk): txt.Text := 'По искане на ТЕЛК (НЕЛК)';
+    TNaprType(NaprMask_Choice_Mother): txt.Text := 'Избор на специалист за майчино здравеопазване';
+    TNaprType(NaprMask_Choice_Child): txt.Text := 'Избор на специалист за детско здравеопазване';
+    TNaprType(NaprMask_PreChoice_Mother): txt.Text := 'Преизбор на специалист за майчино здравеопазване';
+    TNaprType(NaprMask_PreChoice_Child): txt.Text := 'Преизбор на специалист за детско здравеопазване';
+    TNaprType(NaprMask_Podg_Telk): txt.Text := 'Подготовка за ТЕЛК';
+    TNaprType(NaprMask_Podg_LKK): txt.Text := 'Подготовка за ЛКК';
+  else
+    txt.Text := 'Непознат тип';
+  end;
 end;
 
 procedure TfrmProfFormFMX.txtNzisStatusPainting(Sender: TObject;
@@ -12208,6 +12415,27 @@ begin
     lytDiagFrame.Height := xpdrDiagn.Height + 30;
     RecalcBlankaRect1;
   end;
+end;
+
+procedure TfrmProfFormFMX.xpdrDoctorClick(Sender: TObject);
+begin
+  //
+end;
+
+procedure TfrmProfFormFMX.xpdrDoctorPainting(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+var
+  //txt: TText;
+  Preglog: TlogicalPregledNewSet;
+  dataPreg: PAspRec;
+begin
+  //txt := TText(xpdrDoctor.Text);
+  dataPreg := Pointer(PByte(pregNodes.pregNode) + lenNode);
+  Preglog := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
+  if TLogicalPregledNew.IS_EXPERTIZA in Preglog then
+    xpdrDoctor.Text := 'ЛКК'
+  else
+    xpdrDoctor.Text := 'Лекар';
 end;
 
 procedure TfrmProfFormFMX.xpdrPatientExpanded(Sender: TObject);

@@ -9,8 +9,10 @@ uses
   Aspects.Types, Table.PatientNew, Table.Doctor, Table.Mkb, table.mdn,
   Table.PregledNew, Table.Unfav, Table.Practica, Table.AnalsNew,
   Table.ExamImmunization, Table.Procedures,Table.CL142, Table.KARTA_PROFILAKTIKA2017,
-  Table.INC_MDN, Table.INC_NAPR, Table.Addres,
+  Table.INC_MDN, Table.INC_NAPR, Table.Addres, Table.BLANKA_MED_NAPR,
+  Table.HOSPITALIZATION, Table.EXAM_LKK,
   RealObj.RealHipp, RealObj.NzisNomen, DbHelper, Aspects.Collections,
+
   RealNasMesto
   //DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr
 
@@ -146,7 +148,8 @@ begin
   begin
     TempItem := TRealBLANKA_MED_NAPRItem(MedNaprColl.Add);
     New(TempItem.PRecord);
-    TempItem.PRecord.setProp := [];
+    TempItem.PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
+    TempItem.PRecord.SpecDataPos := 0;
     FDBHelper.InsertMedNaprField(ibsqMedNapr, TempItem); // otdeleno
     if (ibsqMedNapr.RecordCount mod 1000) = 0 then
     begin
@@ -238,7 +241,8 @@ begin
   begin
     TempItem := TRealHOSPITALIZATIONItem(MedNaprHospColl.Add);
     New(TempItem.PRecord);
-    TempItem.PRecord.setProp := [];
+    TempItem.PRecord.setProp := [HOSPITALIZATION_Logical];
+     TempItem.PRecord.Logical := [];
     FDBHelper.InsertMedNaprHospField(ibsqMedNaprHosp, TempItem); // otdeleno
     if (ibsqMedNaprHosp.RecordCount mod 1000) = 0 then
     begin
@@ -561,17 +565,41 @@ var
   pCardinalData: ^Cardinal;
   FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
   ibsqIncNapr: TIBSQL;
+  exIncMN: TRealINC_NAPRItem;
 begin
   if  Fdm.IsGP then  Exit;
-
+  exIncMN := nil;
   Stopwatch := TStopwatch.StartNew;
   ibsqIncNapr := Fdm.ibsqlIncMN;
   ibsqIncNapr.ExecQuery;
   while not ibsqIncNapr.Eof do
   begin
+    if exIncMN <> nil then
+    begin
+      if (exIncMN.NRN <> '') and (ibsqIncNapr.Fields[7].AsString = exIncMN.NRN) then
+      begin
+        if exIncMN.Spec2 = '' then
+          exIncMN.Spec2 := ibsqIncNapr.Fields[34].AsString;
+        if exIncMN.Spec3 = '' then
+          exIncMN.Spec3 := ibsqIncNapr.Fields[34].AsString;
+        if exIncMN.Spec4 = '' then
+          exIncMN.Spec4 := ibsqIncNapr.Fields[34].AsString;
+        if exIncMN.Spec5 = '' then
+          exIncMN.Spec5 := ibsqIncNapr.Fields[34].AsString;
+        ibsqIncNapr.Next;
+        Continue;
+      end;
+    end;
     TempItem := TRealINC_NAPRItem(IncMNColl.Add);
+    exIncMN := TempItem;
     New(TempItem.PRecord);
-    TempItem.PRecord.setProp := [];
+    TempItem.PRecord.setProp := [INC_NAPR_Logical, INC_NAPR_Spec1Pos, INC_NAPR_Spec2Pos, INC_NAPR_Spec3Pos, INC_NAPR_Spec4Pos, INC_NAPR_Spec5Pos];
+    TempItem.PRecord.Spec1Pos := 0;
+    TempItem.PRecord.Spec2Pos := 0;
+    TempItem.PRecord.Spec3Pos := 0;
+    TempItem.PRecord.Spec4Pos := 0;
+    TempItem.PRecord.Spec5Pos := 0;
+    TempItem.PRecord.Logical := [];
     FDBHelper.InsertIncMNField(ibsqIncNapr, TempItem); // otdeleno
     if (ibsqIncNapr.RecordCount mod 1000) = 0 then
     begin
@@ -580,6 +608,8 @@ begin
         FOnProgres(Self, Integer(INC_NAPR), ibsqIncNapr.RecordCount);
       Sleep(1);
     end;
+
+
     TempItem.InsertINC_NAPR;
 
     IncMNColl.streamComm.Len := IncMNColl.streamComm.Size;

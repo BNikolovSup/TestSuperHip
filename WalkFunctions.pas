@@ -84,6 +84,7 @@ interface
     LstAnals: TList<TMdnAnals>;
     LinkMdn: PVirtualNode;
     anim: TFloatAnimation;
+    EdtMainMkb: TEdit;
   public
     constructor create;
     destructor destroy; override;
@@ -103,7 +104,7 @@ interface
     GridLayoutMkb: TLayout;
     EdtNrn: TEdit;
     edtSpec: TEdit;
-    edtSpecName: TEdit;
+    edtSpecName: TText;
     btnDel: TRectangle;
     mn: TRealBLANKA_MED_NAPRItem;
     LstMkbs: TList<TMnDiag>;
@@ -152,6 +153,7 @@ interface
   function WalkChildrenExpander(Parent: TFmxObject): Texpander;
   function WalkChildrenLyt(Parent: TFmxObject): TLayout;
   function WalkChildrenLytStyle(Parent: TFmxObject; styleName: string): TLayout;
+  function WalkChildrenGridStyle(Parent: TFmxObject; styleName: string): TGridLayout;
 
   function WalkChildrenOptionObject(Parent: TFmxObject;var LstOfObject: TList<TOptionObject>; buf: pointer): TOptionObject;
   //function WalkChildrenMenu(Parent: TFmxObject): TmenuItem;
@@ -428,7 +430,7 @@ begin
       WalkChildrenEdtMdn(Child, MdnLabel);
     end
     else
-    if (Child is TRectangle) then
+    if (Child is TRectangle) and (Child.StyleName = 'btnDel') then
     begin
       MdnLabel.btnDel := TRectangle(Child);
       WalkChildrenEdtMdn(Child, MdnLabel);
@@ -446,9 +448,15 @@ begin
       MdnLabel.LstAnals.Add(AnalLabel);
     end
     else
-    if (Child is Tedit)then
+    if (Child is Tedit) and (Child.StyleName = 'edtNRN')then
     begin
       MdnLabel.EdtNrn := TEdit(Child);
+      WalkChildrenEdtMdn(Child, MdnLabel);
+    end
+    else
+    if (Child is Tedit) and (Child.StyleName = 'edtMainMkb') then
+    begin
+      MdnLabel.EdtMainMkb := Tedit(Child);
       WalkChildrenEdtMdn(Child, MdnLabel);
     end
     else
@@ -506,9 +514,9 @@ begin
       WalkChildrenEdtMn(Child, MnLabel);
     end
     else
-    if (Child is Tedit) and (Child.StyleName = 'edtSpecName' ) then
+    if (Child is TText) and (Child.StyleName = 'edtSpecName' ) then
     begin
-      MnLabel.edtSpecName := Tedit(Child);
+      MnLabel.edtSpecName := TText(Child);
       WalkChildrenEdtMn(Child, MnLabel);
     end
     else
@@ -818,6 +826,28 @@ begin
   end;
 end;
 
+function WalkChildrenGridStyle(Parent: TFmxObject; styleName: string): TGridLayout;
+var
+  i: Integer;
+  Child: TFmxObject;
+begin
+  Result := nil;
+  for i := 0 to Parent.ChildrenCount-1 do
+  begin
+    Child := Parent.Children[i];
+    if (Child is TGridLayout) and (Child.StyleName = styleName) then
+    begin
+      Result := TGridLayout(Child);
+      Exit;
+    end
+    else
+    begin
+      Result := WalkChildrenGridStyle(Child, styleName);
+      if Result <> nil then
+        Exit;
+    end;
+  end;
+end;
 
 
 function InnerChildrenRect(control: TControl): TRectF;
@@ -844,6 +874,7 @@ begin
   btnDel := nil;
   EdtNrn := nil;
   LinkMdn := nil;
+  EdtMainMkb := nil;
 end;
 
 destructor TMdnsLabel.destroy;

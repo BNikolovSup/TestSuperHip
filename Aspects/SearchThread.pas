@@ -1,5 +1,5 @@
 unit SearchThread;
-           //showmess
+           //showmess   condi
 interface
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.StdCtrls, Winapi.Messages,
@@ -197,9 +197,9 @@ var
   FPosDataADB: Cardinal;
   data: PAspRec;
 
-  node, patNode, pregNode, mkbNode: PVirtualNode;
+  node, patNode, pregNode, mkbNode, pregInIncNaprNode: PVirtualNode;
   FindedPregNode: PVirtualNode;
-  dataPat, dataRunPreg, dataDiag: PAspRec;
+  dataPat, dataRunPreg, dataDiag, dataRunPregInIncNapr: PAspRec;
   dataPreg, dataTest: PAspRec;
   tempPat: TPatientNewItem;
   temppreg: TRealPregledNewItem;
@@ -260,6 +260,38 @@ begin
         dataRunPreg := pointer(PByte(pregNode) + lenNode);
         dataPreg := nil;
         case dataRunPreg.vid of
+          vvIncMN:
+          begin
+            pregInIncNaprNode := pregNode.FirstChild;
+
+            while pregInIncNaprNode <> nil do
+            begin
+              dataRunPregInIncNapr := pointer(PByte(pregInIncNaprNode) + lenNode);
+              case dataRunPregInIncNapr.vid of
+                vvPregled:
+                begin
+                  FindedPregNode := pregInIncNaprNode;
+                  if FCollPat.Tag < 0 then
+                  begin
+                    FCollPat.Tag := 0;
+                  end;
+                  dataPreg := dataRunPregInIncNapr;
+                  temppreg.DataPos := dataRunPregInIncNapr.DataPos;
+                  if temppreg.IsFullFinded(Self.BufADB, FPosDataADB, FcollPreg) then
+                  begin
+                    AcntImunInPreg := 0;
+                    mkbNode := pregInIncNaprNode.FirstChild;
+
+                  end
+                  else
+                  begin
+                    FindedPregNode := nil;
+                  end;
+                end;
+              end;
+              pregInIncNaprNode := pregInIncNaprNode.NextSibling;
+            end;
+          end;
           vvPregled:   // ако е преглед
           begin
             FindedPregNode := pregNode;

@@ -262,7 +262,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin

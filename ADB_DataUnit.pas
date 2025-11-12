@@ -10,7 +10,8 @@ uses
   Table.Practica, Table.CL132, Table.NZIS_PLANNED_TYPE, Table.NZIS_QUESTIONNAIRE_RESPONSE,
   Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.CL139,
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
-  Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto,
+  Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto, Table.BLANKA_MED_NAPR,
+  Table.INC_NAPR,
   ProfGraph, RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
   , SBxCertificateStorage;
@@ -61,11 +62,12 @@ uses
     docNode: PVirtualNode;
     diags: TListNodes;
     mkbs: TListNodes;
-    //addrs: TListNodes;
     Planeds: TListNodes;
     Quests: TList<TQuests>;
     DiagReps: TList<TDiagRep>;
     SourceAnsw: TSourceAnsw;
+    incNaprNode: PVirtualNode;
+    ReqesterNode: PVirtualNode;
     log: string;
     constructor create;
     destructor destroy; override;
@@ -129,17 +131,22 @@ uses
     listLog: TStringList;
     CollPrac: TPracticaColl;
     CollPatient: TRealPatientNewColl;
+    CollAddres: TRealAddresColl;
     CollDoc: TRealDoctorColl;
     CollCert: TCertificatesColl;
     CollPregled: TRealPregledNewColl;
     CollMDN: TRealMDNColl;
     CollMedNapr: TRealBLANKA_MED_NAPRColl;
+    CollMedNaprHosp: TRealHOSPITALIZATIONColl;
+    CollMedNaprLkk: TRealEXAM_LKKColl;
     CollExamAnal: TRealExamAnalysisColl;
     CollExamImun: TRealExamImmunizationColl;
     CollEbl: TRealExam_boln_listColl;
     CollDiag: TRealDiagnosisColl;
     CollMkb: TMkbColl;
     CollAnalsNew: TAnalsNewColl;
+    CollIncMN: TRealINC_NAPRColl;
+    CollOtherDoctor: TRealOtherDoctorColl;
 
     CollNZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEColl;
     CollNZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEColl;
@@ -164,6 +171,8 @@ uses
     ListPrimDocuments: TList<TBaseCollection>;
 
     procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer; DataPosMkb: cardinal);
+    procedure AddNewPreg(OldPreg: TRealPregledNewItem; ParentNode: PVirtualNode;
+         var treeLink: PVirtualNode; linkPos: Cardinal);
     procedure AddNewImportNzisPat(Pat: TRealPatientNewItem; treeLink: PVirtualNode);
 
     //XmlStream: TXmlStream;
@@ -294,24 +303,258 @@ end;
 procedure TADBDataModule.AddNewImportNzisPat(Pat: TRealPatientNewItem; treeLink: PVirtualNode);
 var
   newPat: TRealPatientNewItem;
+  newAddres: TRealAddresItem;
+  newIncMN: TRealINC_NAPRItem;
+  newIncDoctor: TRealOtherDoctorItem;
+  newPreg: TRealPregledNewItem;
+
   linkPos: Cardinal;
+  PatNode, incMNNode, IncDocNode: PVirtualNode;
+  i, j: Integer;
 begin
+  if Pat.DataPos <> 0 then
+  begin
+    for i := 0 to Pat.FIncMNs.Count - 1 do
+    begin
+      if Pat.FIncMNs[i].DataPos <> 0 then
+        Continue;
+      newIncMN := TRealINC_NAPRItem(CollIncMN.Add);
+      newIncMN.FIncDoctor := Pat.FIncMNs[i].FIncDoctor;
+      newIncMN.PRecord := Pat.FIncMNs[i].PRecord;
+      newIncMN.InsertINC_NAPR;
+      Dispose(newIncMN.PRecord);
+      newIncMN.PRecord := nil;
+      Pat.FIncMNs[i].DataPos := newIncMN.DataPos;
+      AdbLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
+
+      if newIncMN.FIncDoctor.DataPos = 0 then
+      begin
+        newIncDoctor := TRealOtherDoctorItem(CollOtherDoctor.Add);
+        newIncDoctor.PRecord := newIncMN.FIncDoctor.PRecord;
+        newIncDoctor.InsertOtherDoctor;
+        Dispose(newIncDoctor.PRecord);
+        newIncDoctor.PRecord := nil;
+        AdbLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+      end
+      else
+      begin
+        AdbLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+      end;
+
+      for j := 0 to Pat.FIncMNs[i].FPregledi.Count - 1 do
+      begin
+        AddNewPreg(Pat.FIncMNs[i].FPregledi[j], incMNNode, treeLink, linkPos);
+      end;
+    end;
+
+    for i := 0 to Pat.FPregledi.Count - 1 do
+    begin
+      AddNewPreg(Pat.FPregledi[i], Pat.FNode, treeLink, linkPos);
+    end;
+    Exit;
+  end;
   newPat := TRealPatientNewItem(CollPatient.add);
   New(newPat.PRecord);
   newPat.PRecord.setProp :=
-     [PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME, PatientNew_SNAME, PatientNew_LNAME, PatientNew_Logical];
+     [PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME, PatientNew_SNAME, PatientNew_LNAME, PatientNew_Logical, PatientNew_ID];
   newPat.PRecord.EGN := Pat.PRecord.EGN;
   newPat.PRecord.BIRTH_DATE := Pat.PRecord.BIRTH_DATE;
   newPat.PRecord.FNAME := Pat.PRecord.FNAME;
   newPat.PRecord.SNAME := Pat.PRecord.SNAME;
   newPat.PRecord.LNAME := Pat.PRecord.LNAME;
+  newPat.PRecord.ID := 0;
   newPat.PRecord.Logical := Pat.PRecord.Logical;
   newPat.InsertPatientNew;
   Dispose(newPat.PRecord);
   newPat.PRecord := nil;
+  Pat.DataPos := newPat.DataPos;
+  AdbLink.AddNewNode(vvPatient, newPat.DataPos, AdbLink.FVTR.RootNode.FirstChild, amAddChildFirst, patnode, linkPos);
+  Pat.FNode := patnode;
 
-  AdbLink.AddNewNode(vvPatient, newPat.DataPos, AdbLink.FVTR.RootNode.FirstChild, amAddChildFirst, treeLink, linkPos);
+  newAddres := TRealAddresItem(NasMesto.addresColl.Add);
+  New(newAddres.PRecord);
+  newAddres.PRecord.setProp :=
+     [Addres_LinkPos];
+  newAddres.PRecord.LinkPos := Pat.FAdresi[0].LinkNasMesto;
+  newAddres.InsertAddres;
+  Dispose(newAddres.PRecord);
+  newAddres.PRecord := nil;
+  AdbLink.AddNewNode(vvAddres, newAddres.DataPos, PatNode, amAddChildFirst, treeLink, linkPos);
 
+  for i := 0 to Pat.FIncMNs.Count - 1 do
+  begin
+    if Pat.FIncMNs[i].DataPos <> 0 then
+      Continue;
+    newIncMN := TRealINC_NAPRItem(CollIncMN.Add);
+    newIncMN.FIncDoctor := Pat.FIncMNs[i].FIncDoctor;
+    newIncMN.PRecord := Pat.FIncMNs[i].PRecord;
+    newIncMN.InsertINC_NAPR;
+    Dispose(newIncMN.PRecord);
+    newIncMN.PRecord := nil;
+    Pat.FIncMNs[i].DataPos := newIncMN.DataPos;
+    AdbLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
+
+    if newIncMN.FIncDoctor.DataPos = 0 then
+    begin
+      newIncDoctor := TRealOtherDoctorItem(CollOtherDoctor.Add);
+      newIncDoctor.PRecord := newIncMN.FIncDoctor.PRecord;
+      newIncDoctor.InsertOtherDoctor;
+      Dispose(newIncDoctor.PRecord);
+      newIncDoctor.PRecord := nil;
+      AdbLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+    end
+    else
+    begin
+      AdbLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+    end;
+
+    for j := 0 to Pat.FIncMNs[i].FPregledi.Count - 1 do
+    begin
+      AddNewPreg(Pat.FIncMNs[i].FPregledi[j], incMNNode, treeLink, linkPos);
+    end;
+  end;
+
+  for i := 0 to Pat.FPregledi.Count - 1 do
+  begin
+    if Pat.FPregledi[i].DataPos <> 0 then
+      Continue;
+    if Pat.FPregledi[i].PRecord = nil then
+    begin
+      Continue;
+    end;
+    AddNewPreg(Pat.FPregledi[i], Pat.FNode, treeLink, linkPos);
+
+  end;
+end;
+
+procedure TADBDataModule.AddNewPreg(OldPreg: TRealPregledNewItem;
+  ParentNode: PVirtualNode; var treeLink: PVirtualNode; linkPos: Cardinal);
+var
+  newPreg: TRealPregledNewItem;
+  newMdn: TRealMDNItem;
+  newMN: TRealBLANKA_MED_NAPRItem;
+  newMNHosp: TRealHOSPITALIZATIONItem;
+  newMNLkk: TRealEXAM_LKKItem;
+  newDiagMdn: TRealDiagnosisItem;
+  newAnal: TRealExamAnalysisItem;
+  i, j: Integer;
+  diag: TRealDiagnosisItem;
+  pregNode, mdnNode, diagNode: PVirtualNode;
+begin
+  if OldPreg.DataPos <> 0 then
+    exit;
+  newPreg := TRealPregledNewItem(CollPregled.Add);
+  newPreg.PRecord := OldPreg.PRecord;
+  newPreg.FDoctor := OldPreg.FDoctor;
+  //newPreg.FDiagnosis
+  newPreg.InsertPregledNew;
+  Dispose(newPreg.PRecord);
+  newPreg.PRecord := nil;
+  OldPreg.DataPos := newPreg.DataPos;
+  AdbLink.AddNewNode(vvPregled, newPreg.DataPos, ParentNode, amAddChildFirst, pregNode, linkPos);
+  AdbLink.AddNewNode(vvPerformer, newPreg.FDoctor.DataPos, pregNode, amAddChildFirst, treeLink, linkPos);
+
+  for i := 0 to OldPreg.FDiagnosis.Count - 1 do
+  begin
+    diag := OldPreg.FDiagnosis[i];
+    //newPreg.FDiagnosis.Add(diag);
+    AddNewDiag(pregNode, diag.MainMkb, diag.AddMkb, diag.Rank, 100);
+  end;
+
+  for i := 0 to OldPreg.FMdns.Count - 1 do
+  begin
+    try
+      newMdn := TRealMDNItem(CollMDN.Add);
+      newMdn.PRecord := OldPreg.FMdns[i].PRecord;
+      if newMdn.PRecord = nil then
+        Continue;
+      newMdn.InsertMDN;
+      Dispose(newMdn.PRecord);
+      newMdn.PRecord := nil;
+      OldPreg.FMdns[i].DataPos := newMdn.DataPos;
+
+      AdbLink.AddNewNode(vvMDN, newMdn.DataPos, pregNode, amAddChildlast, mdnNode, linkPos);
+      newDiagMdn := TRealDiagnosisItem(CollDiag.Add); //OldPreg.FMdns[i].FDiagnosis[0];
+      New(newDiagMdn.PRecord);
+      newDiagMdn.PRecord.setProp := [Diagnosis_code_CL011];
+      newDiagMdn.PRecord.code_CL011 := OldPreg.FMdns[i].FDiagnosis[0].MainMkb;
+      newDiagMdn.InsertDiagnosis;
+      Dispose(newDiagMdn.PRecord);
+      newDiagMdn.PRecord := nil;
+      AdbLink.AddNewNode(vvdiag, newDiagMdn.DataPos, mdnNode, amAddChildlast, diagNode, linkPos);
+
+      for j := 0 to OldPreg.FMdns[i].FExamAnals.Count - 1 do
+      begin
+        newAnal := TRealExamAnalysisItem(CollExamAnal.Add);
+        newAnal.PRecord := OldPreg.FMdns[i].FExamAnals[j].PRecord;
+        newAnal.InsertExamAnalysis;
+        Dispose(newAnal.PRecord);
+        newAnal.PRecord := nil;
+        OldPreg.FMdns[i].FExamAnals[j].DataPos := newAnal.DataPos;
+        AdbLink.AddNewNode(vvExamAnal, newAnal.DataPos, mdnNode, amAddChildlast, treeLink, linkPos);
+      end;
+    except
+      Dispose(newMdn.PRecord);
+      newMdn.PRecord := nil;
+    end;
+  end;
+
+  for i := 0 to OldPreg.FMNs.Count - 1 do
+  begin
+    try
+      newMN := TRealBLANKA_MED_NAPRItem(CollMedNapr.Add);
+      newMN.PRecord := OldPreg.FMNs[i].PRecord;
+      if newMN.PRecord = nil then
+        Continue;
+      newMN.InsertBLANKA_MED_NAPR;
+      Dispose(newMN.PRecord);
+      newMN.PRecord := nil;
+      OldPreg.FMns[i].DataPos := newMN.DataPos;
+
+      AdbLink.AddNewNode(vvMedNapr, newMN.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+    except
+      Dispose(newMN.PRecord);
+      newMN.PRecord := nil;
+    end;
+  end;
+
+  for i := 0 to OldPreg.FMNsHosp.Count - 1 do
+  begin
+    try
+      newMNHosp := TRealHOSPITALIZATIONItem(CollMedNaprHosp.Add);
+      newMNHosp.PRecord := OldPreg.FMNsHosp[i].PRecord;
+      if newMNHosp.PRecord = nil then
+        Continue;
+      newMNHosp.InsertHOSPITALIZATION;
+      Dispose(newMNHosp.PRecord);
+      newMNHosp.PRecord := nil;
+      OldPreg.FMNsHosp[i].DataPos := newMNHosp.DataPos;
+
+      AdbLink.AddNewNode(vvMedNaprHosp, newMNHosp.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+    except
+      Dispose(newMNHosp.PRecord);
+      newMNHosp.PRecord := nil;
+    end;
+  end;
+
+  for i := 0 to OldPreg.FMNsLKK.Count - 1 do
+  begin
+    try
+      newMNLkk := TRealEXAM_LKKItem(CollMedNaprLkk.Add);
+      newMNLkk.PRecord := OldPreg.FMNsLKK[i].PRecord;
+      if newMNLkk.PRecord = nil then
+        Continue;
+      newMNLkk.InsertEXAM_LKK;
+      Dispose(newMNLkk.PRecord);
+      newMNLkk.PRecord := nil;
+      OldPreg.FMNsLKK[i].DataPos := newMNLkk.DataPos;
+
+      AdbLink.AddNewNode(vvMedNaprLkk, newMNLkk.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+    except
+      Dispose(newMNLkk.PRecord);
+      newMNLkk.PRecord := nil;
+    end;
+  end;
 end;
 
 procedure TADBDataModule.AddTagToStream(XmlStream: TXmlStream; NameTag, ValueTag: string; amp: Boolean; Node: PVirtualNode);
@@ -1687,7 +1930,8 @@ var
   run, vPlaned, runPlaned, runQuest, runAnsw: PVirtualNode;
   runDiagRep: PVirtualNode;
   runPregled: PVirtualNode;
-  data, docData, dataRunPlaned, dataRunQuest, dataRunAnsw: PAspRec;
+  runIncNapr: PVirtualNode;
+  data, docData, dataRunPlaned, dataRunQuest, dataRunAnsw, dataParent, dataSender: PAspRec;
   datarunPregled: PAspRec;
   i, idxQuest: Integer;
   doc, tempDoc: TRealDoctorItem;
@@ -1775,7 +2019,28 @@ begin
     end;
     run := run.NextSibling;
   end;
-  Result.patNode := PregNode.Parent;
+  dataParent := pointer(PByte(PregNode.Parent) + lenNode);
+  case dataParent.vid of
+    vvPatient: Result.patNode := PregNode.Parent;
+    vvIncMN:
+    begin
+      Result.incNaprNode := PregNode.Parent;
+      Result.patNode := PregNode.Parent.parent;
+      runIncNapr := Result.incNaprNode.FirstChild;
+      while runIncNapr <> nil do
+      begin
+        dataSender := pointer(PByte(runIncNapr) + lenNode);
+        case dataSender.vid of
+          vvOtherDoctor:
+          begin
+            Result.ReqesterNode := runIncNapr;
+          end;
+        end;
+        runIncNapr := runIncNapr.NextSibling;
+      end;
+    end;
+  end;
+
   run := Result.patNode.FirstChild;// обикалям нещата в пациента
   while run <> nil do
   begin
@@ -2224,6 +2489,7 @@ begin
   Planeds := TList<PVirtualNode>.Create;
   Quests := TList<TQuests>.Create;
   DiagReps := TList<TDiagRep>.Create;
+  incNaprNode := nil;
 end;
 
 destructor TPregledNodes.destroy;
