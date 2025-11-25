@@ -1,8 +1,8 @@
-unit SuperHipp;  //borderstyle vtrPregledPat.real screen .fdm  WM_SIZE fillx001 е адб отговарящо на гдб-то birthDate
+п»їunit SuperHipp;  //prac
 interface
 
   uses
-  Parnassus.FMXContainer, Parnassus.FMXContainerReg,
+  Parnassus.FMXContainer, Parnassus.FMXContainerReg, uVSTSyncHelper,
   FMX.Forms, FMX.Edit, FMX.StdCtrls, ProfForm, FmxWelcomeScreen,
   RolePanels, OptionsForm,
   Tokens, WalkFunctions, TitleBar, RoleBar, Vcl.ActnMan, Vcl.ActnCtrls, Vcl.ActnMenus,
@@ -13,6 +13,7 @@ interface
   Vcl.OleCtrls, {WMPLib_TLB,} Vcl.ToolWin, Vcl.WinXCtrls, Vcl.Forms,
   VirtualStringTreeAspect, Vcl.Imaging.GIFImg, VirtualTrees,
   VirtualStringTreeHipp, Vcl.Buttons, System.Classes,
+  
   JclDebug,System.Generics.Collections, Vcl.Graphics,
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   system.Diagnostics, system.TimeSpan,
@@ -26,7 +27,7 @@ interface
   ProfGraph, Options,Vcl.Clipbrd,
 
 
-  GR32_Image, PDFium.Frame,
+  GR32_Image, PDFium.Frame, FastSearch,
 
   system.DateUtils,
   NzisThreadFull, System.IOUtils,
@@ -108,17 +109,10 @@ interface
   WM_Cert_Storage = WM_USER + 601;
 
 type
+
   TSortPat = (spNone, spEgn, spAge, spStartPreg);
 
-  TNomenNzisRec = class
-  public
-    Cl000Coll: TCL000EntryCollection;
-    xmlStream: TMemoryStream;
-    AspColl: TBaseCollection;
-    nomenNzis: TNomenNzisItem;
-    constructor Create;
-    destructor Destroy;  override;
-  end;
+
 
   TString = class(TObject)
     str: string;
@@ -133,7 +127,7 @@ type
     ACol: TColumnIndex;
   end;
 
-  TPregledPlanedInfo = record  //  за стария Хипократ
+  TPregledPlanedInfo = record  //  Р·Р° СЃС‚Р°СЂРёСЏ РҐРёРїРѕРєСЂР°С‚
     PregledID: Integer;
     IsDone: LongBool;
     Cl132: string[50];
@@ -277,7 +271,6 @@ type
     btn5: TButton;
     dlgOpenPL: TOpenDialog;
     tsVtrSearch: TTabSheet;
-    vtrSearch: TVirtualStringTreeHipp;
     tsExpression: TTabSheet;
     mmoIn: TMemo;
     mmoOut: TMemo;
@@ -452,6 +445,7 @@ type
     vtrLinkNasMesta: TVirtualStringTreeAspect;
     Panel2: TPanel;
     Button4: TButton;
+    vtrSearch: TVirtualStringTreeAspect;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -833,6 +827,15 @@ type
     procedure btnLoopXmlClick(Sender: TObject);
     procedure btnXmlInPatClick(Sender: TObject);
     procedure btnX007Click(Sender: TObject);
+    procedure vtrLinkOptionsChecking(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; var NewState: TCheckState; var Allowed: Boolean);
+    procedure vtrSearchDrawButton(sender: TVirtualStringTreeAspect;
+      node: PVirtualNode; var ButonVisible: Boolean; const numButton: Integer;
+      var imageIndex: Integer);
+    procedure vtrSearchShowHintButton(sender: TVirtualStringTreeAspect;
+      node: PVirtualNode; const numButton: Integer; r: TRect);
+    procedure vtrSearchButtonClick(sender: TVirtualStringTreeAspect;
+      node: PVirtualNode; const numButton: Integer);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -925,10 +928,11 @@ type
    procedure OpenLinkNomenHipAnals;
    procedure InitVTRs;
    procedure LoadLinkOptions;
-   procedure InitColl;
-   procedure FreeColl;
+   procedure LoadLinkFilter;
+   //procedure InitColl;
+   //procedure FreeColl;
    procedure FreeFMXDin;
-   procedure ClearColl;
+   //procedure ClearColl;
    procedure InitAdb;
    procedure InitExpression;
    procedure InitFMXDyn;
@@ -962,29 +966,29 @@ type
     PregledTemp: TPregledNewItem;
     preg1, preg2: TPregledNewItem;
 
-    DiagTemp: TDiagnosisItem;
+    //DiagTemp: TDiagnosisItem;
     MDNTemp: TMDNItem;
     MNTemp: TBLANKA_MED_NAPRItem;
     MnLkkTemp: TRealEXAM_LKKItem;
 
     //ProfCardTemp: t
     ExamAnalTemp: TExamAnalysisItem;
-    DoctorTemp: TDoctorItem;
+    //DoctorTemp: TDoctorItem;
     AnalTemp: TAnalsNewItem;
     Cl022temp: TCL022Item;
     CL132Temp: TRealCl132Item;
     PR001Temp: TRealPR001Item;
     CL088Temp: TRealCl088Item;
     ProcTemp: TRealProceduresItem;
-    FPatientTemp: TRealPatientNewItem;
+    //FPatientTemp: TRealPatientNewItem;
     NZIS_PLANNED_TYPETemp: TRealNZIS_PLANNED_TYPEItem;
     NZIS_QUESTIONNAIRE_RESPONSETemp: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
     NZIS_QUESTIONNAIRE_ANSWERTemp: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
     NZIS_ANSWER_VALUETemp: TRealNZIS_ANSWER_VALUEItem;
     NZIS_DIAGNOSTIC_REPORTTemp: TRealNZIS_DIAGNOSTIC_REPORTItem;
     NZIS_Result_DIAGNOSTIC_REPORTTemp: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
-    procedure SetPatientTemp(const Value: TRealPatientNewItem);
-    property PatientTemp: TRealPatientNewItem read FPatientTemp write SetPatientTemp;
+   // procedure SetPatientTemp(const Value: TRealPatientNewItem);
+   // property PatientTemp: TRealPatientNewItem read FPatientTemp write SetPatientTemp;
 
 
   protected
@@ -1049,6 +1053,9 @@ type
     procedure RunInPregled(Preg: TRealPregledNewItem; isNew: Boolean);
 
     procedure FindDiagInMDN;
+    procedure TestMagicIndex;
+    procedure TestMagicIndex1;
+    procedure DumpAdbPathIndex;
 
 
   protected // TempVtr
@@ -1106,54 +1113,10 @@ type
   public
     scale: Double;
     HipHandle: THandle;
-    CollPregled: TRealPregledNewColl;
-    CollPractica: TPracticaColl;
-
-    ListPregledForFDB: TList<TPregledNewItem>;
-    CollDoctor: TRealDoctorColl;
-    ListDoctorForFDB: TList<TDoctorItem>;
-    ListPregledLinkForInsert: TList<PVirtualNode>;
-    CollUnfav: TRealUnfavColl;
-    CollPregledVtor: TList<TRealPregledNewItem>;
-    CollPregledPrim: TList<TRealPregledNewItem>;
-    CollPatient: TRealPatientNewColl;
-    LstPatForExportDB: TList<TRealPatientNewItem>;
-    LstPregForExportDB: TList<TRealPregledNewItem>;
-    CollPregForSearch: TRealPregledNewColl;
-    ListPatientForFDB: TList<TPatientNewItem>;
-    CollPatPis: TRealPatientNZOKColl;
-    AcollpatFromDoctor: TRealPatientNewColl;
-    ACollPatFDB: TRealPatientNewColl;
-    ACollNovozapisani: TRealPatientNewColl;
-    CollDiag: TRealDiagnosisColl;
-    CollMDN: TRealMDNColl;
-    CollEbl: TRealExam_boln_listColl;
-    CollExamAnal: TRealExamAnalysisColl;
-    CollExamImun: TRealExamImmunizationColl;
-    CollProceduresNomen: TRealProceduresColl;
-    CollProceduresPreg: TRealProceduresColl;
-    CollCardProf: TRealKARTA_PROFILAKTIKA2017Coll;
-    CollMedNapr: TRealBLANKA_MED_NAPRColl;
-    CollMedNapr3A: TRealBLANKA_MED_NAPR_3AColl;
-    CollMedNaprHosp: TRealHOSPITALIZATIONColl;
-    CollMedNaprLkk: TRealEXAM_LKKColl;
-    CollIncMdn: TRealINC_MDNColl;
-    CollIncMN: TRealINC_NAPRColl;
-    CollOtherDoctor: TRealOtherDoctorColl;
-    CollNZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEColl;
-    CollNZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEColl;
-    CollNZIS_QUESTIONNAIRE_ANSWER: TRealNZIS_QUESTIONNAIRE_ANSWERColl;
-    CollNZIS_ANSWER_VALUE: TRealNZIS_ANSWER_VALUEColl;
-    CollNZIS_DIAGNOSTIC_REPORT: TRealNZIS_DIAGNOSTIC_REPORTColl;
-    CollNzis_RESULT_DIAGNOSTIC_REPORT: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
-
-    CollNzisToken: TNzisTokenColl;
-    CollCertificates: TCertificatesColl;
-
-    CollMkb: TRealMkbColl;
+    
     AZipHelpFile: TZipFile;
     DownloadedStream: TStream;
-    ListNomenNzisNames: TList<TNomenNzisRec>;
+    //ListNomenNzisNames: TList<TNomenNzisRec>;
     ActiveMainButton: TRoleButton;
     ActiveSubButton: TRoleButton;
     StreamData: TMemoryStream;
@@ -1165,33 +1128,14 @@ type
 
     AspectsNomFile : TMappedFile;
     AspectsNomHipFile : TMappedFile;
-    AspectsHipFile : TMappedFile;
+    //AspectsHipFile : TMappedFile;
     AspectsLinkPatPregFile : TMappedLinkFile;
     AspectsLinkNomenHipAnalFile : TMappedFile;
     AspectsOptionsLinkFile: TMappedLinkFile;
-
-
-    CollAnalsNew: TAnalsNewColl;
-    CL006Coll: TRealCL006Coll;
-    CL022Coll: TRealCL022Coll;
-    CL024Coll: TRealCL024Coll;
-    CL037Coll: TRealCL037Coll;
-    CL038Coll: TRealCL038Coll;
-    CL050Coll: TCL050Coll;
-    CL088Coll: TRealCL088Coll;
-    CL132Coll: TRealCL132Coll;
-    CL134Coll: TRealCL134Coll;
-    CL139Coll: TRealCL139Coll;
-    CL142Coll: TRealCL142Coll;
-    CL144Coll: TRealCl144Coll;
-
-    PR001Coll: TRealPR001Coll;
-    NomenNzisColl: TNomenNzisColl;
-    msgColl: TNzisReqRespColl;
+    AspectsFilterLinkFile: TMappedLinkFile;
 
     profGR: TProfGraph;
-    CollPatGR: TRealPatientNewColl;
-    lstPatGraph: TList<TRealPatientNewItem>;
+
     streamCmdFile: TFileCmdStream;
     streamCmdFileTemp: TFileCmdStream;
     streamCmdFileNomenNzis: TFileCmdStream;
@@ -1229,6 +1173,7 @@ type
     procedure LoadVtrMinaliPregledi(node: PVirtualNode; Apat: TRealPatientNewItem = nil);
     procedure LoadVtrSpisyciNeblUsl;
     procedure SortListString(list: TList<TString>);
+    procedure SortListCollType(list: TList<word>);
     //procedure ImportPatFromPIS;
     procedure FillPatListPisInPatDB(uin: string; Acolpat: TRealPatientNewColl);
     procedure CopyNodesFromAspectToTempVtr(vtrAspect: TVirtualStringTreeAspect; nodeAspect: PVirtualNode);
@@ -1245,7 +1190,7 @@ type
 
     procedure prepareHeaders(Sender: TObject; Headers: TStringList);
     procedure OnDataNzis(Sender: TObject; Buffer: Pointer; Size: Integer);
-    procedure FillXmlC001(NomenID: string);//номенклатура
+    procedure FillXmlC001(NomenID: string);//РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
     procedure NzisOnSended(Sender: TObject);
     procedure OpenExcels;
     procedure OpenBufNomenNzis(FileName: string);
@@ -1275,7 +1220,7 @@ type
     procedure StartSaver;
     procedure StartInserter;
     procedure FindOldItemsForInsert;
-    function FindPatientByDataPos(datapos: cardinal): PVirtualNode;// от линк-а
+    function FindPatientByDataPos(datapos: cardinal): PVirtualNode;// РѕС‚ Р»РёРЅРє-Р°
     procedure SignDocumentHipNzis(DokumentType: TDokumentSignType; posdata: cardinal);
     procedure SignX000All(pregledId, senderID: Integer; CertNom: string; NzisStatus: THipPregledStatus);
     procedure TerminateNzisX000(Sender: TObject);
@@ -1293,6 +1238,7 @@ type
       var Reason: TSBCertificateValidityReason);
     procedure httpNZISPreparedHeaders(Sender: TObject; Headers: TElStringList);virtual;
     procedure InternalChangeWorkPage(Sheet: TTabSheet);
+    procedure InternalChangeTreePage(Sheet: TTabSheet);
     procedure LoadVtrDoctor;
     procedure FillCertInDoctors;
     procedure FillDiagInMkb;
@@ -1372,6 +1318,24 @@ type
 
     procedure SetStyle;
 
+    function GetRootForNode(Node: PVirtualNode): PVirtualNode;
+    function GetCollectionFromRoot(Root: PVirtualNode): TBaseCollection;
+
+    function GetCollectionByType(ACollType: Word): TBaseCollection;
+    function GetADBBuffer: Pointer;
+    procedure SearchTest;
+    procedure SearchTesCRC_equ;
+    procedure SearchTesBMH_contain;
+    procedure SearchTesStartsWith;
+    procedure SearchTesStartsWith_CI;
+
+
+    procedure OnAddNewNodeFilter(NewNode, adbNode: PVirtualNode);
+    procedure AddOperatorNodes(FieldNode: PVirtualNode; Coll: TBaseCollection; PropIndex: Integer);
+    function ConditionToStr(c: TConditionType): string;
+    procedure CreateFieldGroup(FieldNode: PVirtualNode);
+
+    procedure Adb_DMOnClearColl(Sender: TObject);
 
     property FilterCountPregled: integer read FFilterCountPregled write FFilterCountPregled;
     property SearchTextSpisyci: string read FSearchTextSpisyci write SetSearchTextSpisyci;
@@ -1391,7 +1355,8 @@ implementation
 {$R *.dfm}
 
 uses
-   Vcl.Imaging.pngimage;
+   Vcl.Imaging.pngimage, uGridHelpers, uFilterTreeGenerator2, uFilterTreeLoader,
+   Aspects.Functions, uFilterMagicIndex, uMagicQueryRunner;
 
 
 function EnumChildren(hwnd: HWND; lParam: LPARAM): BOOL; stdcall;
@@ -1492,30 +1457,68 @@ procedure TfrmSuperHip.btn11Click(Sender: TObject);
 var
   linkPos, FPosLinkData: Cardinal;
   pCardinalData: PCardinal;
-  node, nodePat: PVirtualNode;
-  data: PAspRec;
+  node, nodePat, run: PVirtualNode;
+  data, dataRun: PAspRec;
+  collType: word;
+  PCollType: ^word;
+  lstObjectTYpe: TList<word>;
+  i: integer;
+  lst: TList<PVirtualNode>;
+  prop4: Word;
 begin
-  Stopwatch := TStopwatch.StartNew;
-  linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
-  FPosLinkData := pCardinalData^;
-  while linkPos < FPosLinkData do
-  begin
-    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-    data := Pointer(PByte(node)+ lenNode);
-    if data.vid = vvDoctor then
-    begin
-      if data.DataPos <> 123456 then
-      begin
-        nodePat := node.Parent;
-        //
-
-      end;
-    end;
-    inc(linkPos, LenData);
-  end;
-  Elapsed := Stopwatch.Elapsed;
-  mmotest.Lines.Add( 'patlist ' + FloatToStr(Elapsed.TotalMilliseconds));
+  SearchTesStartsWith_CI;
+  Exit;
+  //Stopwatch := TStopwatch.StartNew;
+//  node := vtrSearch.GetFirstSelected();
+//  data := Pointer(PByte(node)+ lenNode);
+//  prop4 := word(PregledNew_NRN_LRN)*4;
+//  for i := 0 to AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count - 1 do
+//  begin
+//    run := AspectsLinkPatPregFile.JoinResult[Data.index].AdbList[i];
+//    dataRun := Pointer(PByte(run)+ lenNode);
+//    if Adb_DM.CollPregled.getAnsiStringMap4(dataRun.DataPos, prop4) = '111111111111111' then
+//      break ;
+//  end;
+//  Elapsed := Stopwatch.Elapsed;
+//  mmotest.Lines.Add( 'loop ' + FloatToStr(Elapsed.TotalMilliseconds));//loop 87.5099
+//
+//
+//  Exit;
+//  lstObjectTYpe := TList<word>.Create;
+//  lstObjectTYpe.Capacity := vtrPregledPat.TotalCount + 10;
+//  Stopwatch := TStopwatch.StartNew;
+//
+//
+//  linkPos := 100;
+//  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+//  FPosLinkData := pCardinalData^;
+//  while linkPos < FPosLinkData do
+//  begin
+//    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+//    data := Pointer(PByte(node)+ lenNode);
+//    if data.DataPos > 0 then
+//    begin
+//      PCollType := Pointer(PByte(AspectsHipFile.Buf) + data.DataPos - 4);
+//      lstObjectTYpe.Add(PCollType^);
+//    end;
+//    inc(linkPos, LenData);
+//  end;
+//  Elapsed := Stopwatch.Elapsed;
+//  mmotest.Lines.Add( 'lstObjectTYpe ' + FloatToStr(Elapsed.TotalMilliseconds));
+//  Stopwatch := TStopwatch.StartNew;
+//  SortListCollType(lstObjectTYpe);
+//  Elapsed := Stopwatch.Elapsed;
+//  mmotest.Lines.Add( 'SortListCollType ' + FloatToStr(Elapsed.TotalMilliseconds));
+//  collType := 0;
+//  for i := 0 to lstObjectTYpe.Count - 1 do
+//  begin
+//    if lstObjectTYpe[i] = collType then Continue;
+//    collType := lstObjectTYpe[i];
+//    //TCollectionsType
+//    mmotest.Lines.Add(IntToStr(collType) + '   ' + TRttiEnumerationType.GetName(TCollectionsType(collType)) );
+//
+//  end;
+//  lstObjectTYpe.Free;
 end;
 
 procedure TfrmSuperHip.btn12Click(Sender: TObject);
@@ -1575,11 +1578,13 @@ var
   data: PAspRec;
   collPatExport: TRealPatientNewColl;
 begin
-  FindDiagInMDN;
+  TestMagicIndex1;
+  //FindDiagInMDN;
   //ExportNzisToDb;
   //CheckIncMN;
   //CheckIncMNInPat;
   Exit;
+
   InternalChangeWorkPage(tsFMXForm);
   if FmxImportNzisFrm = nil then
   begin
@@ -1598,7 +1603,7 @@ begin
     data := Pointer(PByte(node)+ lenNode);
     if data.vid = vvPregled then
     begin
-      CollPregled.getIntMap(data.DataPos, Word(PregledNew_ID));
+      Adb_DM.CollPregled.getIntMap(data.DataPos, Word(PregledNew_ID));
       //if CollPregled.getIntMap(data.DataPos, Word(PregledNew_ID)) = 736130 then
 //      begin
 //        nodePat := node.Parent;
@@ -1816,7 +1821,7 @@ begin
   bindExpr.Source := mmoIn.Lines.Text;
   pat.DataPos := 23456;
   //CollPatient.GetCellFromRecord(6, );
-  BindExpr.Compile([TBindingAssociation.Create(collpatient, 'patient')]);
+  BindExpr.Compile([TBindingAssociation.Create(Adb_DM.collpatient, 'patient')]);
   mmoOut.Lines.Add (BindExpr.Evaluate.GetValue.ToString);
   Dispose(pat.PRecord);
   pat.PRecord := nil;
@@ -1870,32 +1875,25 @@ begin
 //  frmFilter.Show;
 //  Exit;
   LoadVtrSearch;
-  CollPregled.IndexValue(PregledNew_ANAMN); // за забързване на търсенето (предизвиква операционната система да кешира ...)
-  CollPregled.Clear;
+  Adb_DM.CollPregled.IndexValue(PregledNew_ANAMN); // Р·Р° Р·Р°Р±СЉСЂР·РІР°РЅРµ РЅР° С‚СЉСЂСЃРµРЅРµС‚Рѕ (РїСЂРµРґРёР·РІРёРєРІР° РѕРїРµСЂР°С†РёРѕРЅРЅР°С‚Р° СЃРёСЃС‚РµРјР° РґР° РєРµС€РёСЂР° ...)
+  Adb_DM.CollPregled.Clear;
 
-  CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN_LRN, PregledNew_ANAMN];
-  //CollPatient.ArrPropSearch := [PatientNew_ID, PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME];
+  Adb_DM.CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN_LRN, PregledNew_ANAMN];
 
   thrSearch := TSearchThread.Create(true);
-  thrSearch.CollForFind := CollPregled;
-  thrSearch.CollPat := CollPatient;
-  thrSearch.collPreg := CollPregled;
-  thrSearch.CollExamImun := CollExamImun;
-  //thrSearch.collPatForSearch := CollPatient.CollForSearch;
-  //thrSearch.collPregForSearch := CollPregForSearch;
+  thrSearch.CollForFind := Adb_DM.CollPregled;
 
   thrSearch.vtr := vtrPregledPat;
   thrSearch.bufLink := AspectsLinkPatPregFile.Buf;
-  thrSearch.BufADB := AspectsHipFile;
   pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
   FPosLinkData := pCardinalData^;
-  thrSearch.FPosData := FPosLinkData;
-  thrSearch.BufADB := AspectsHipFile.Buf;
+  //thrSearch.FPosData := FPosLinkData;
+  //thrSearch.BufADB := AspectsHipFile.Buf;
 
 
   thrSearch.grdSearch := grdSearch;
   thrSearch.OnShowGrid := OnShowGridSearch;
-  grdSearch.Tag := word(vvPatient);
+  grdSearch.Tag := Cardinal(Adb_DM.CollPatient);
 
   thrSearch.Resume;
   //Panel1.Visible := False;
@@ -1906,7 +1904,7 @@ begin
 
 
   Stopwatch := TStopwatch.StartNew;
-  CollPregled.ListDataPos.Clear;
+  Adb_DM.CollPregled.ListDataPos.Clear;
   linkPos := 100;
   pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
   FPosLinkData := pCardinalData^;
@@ -1923,7 +1921,7 @@ begin
 //    begin
 //      PregledTemp.DataPos := data.DataPos;
 //      PAnsBuf := PregledTemp.getPAnsiStringMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_ANAMN), len);
-//      if System.SysUtils.AnsiStrPos(PAnsBuf, 'пияница') <> nil then
+//      if System.SysUtils.AnsiStrPos(PAnsBuf, 'РїРёСЏРЅРёС†Р°') <> nil then
 //      begin
 //        CollPregled.ListDataPos.Add(data);
 //      end;
@@ -1934,9 +1932,9 @@ begin
 //      grdSearch.Repaint;
 //    end;
   end;
-  if CollPregled.ListDataPos.Count > 0 then
+  if Adb_DM.CollPregled.ListDataPos.Count > 0 then
   begin
-    CollPregled.ShowLinksGrid(grdSearch);
+    Adb_DM.CollPregled.ShowLinksGrid(grdSearch);
   end;
   Elapsed := Stopwatch.Elapsed;
   mmotest.Lines.Add( 'tgdyg ' + FloatToStr(Elapsed.TotalMilliseconds));
@@ -1984,7 +1982,7 @@ var
   selStart: Integer;
   selLength: Integer;
 begin
-  selStart := frRTF.FindText('ЗОЛ с повишен риск от ',1, -1, [TRichSearchType.stMatchCase] );
+  selStart := frRTF.FindText('Р—РћР› СЃ РїРѕРІРёС€РµРЅ СЂРёСЃРє РѕС‚ ',1, -1, [TRichSearchType.stMatchCase] );
   frRTF.SelStart := selStart;
   frRTF.SelLength := 10;
   frRTF.SetFocus;
@@ -2008,7 +2006,7 @@ end;
 //  hashObj := CoHash.Create();
 //  hashObj.type_ := HashSHA256;
 //  hashObj.add(hashAL);
-//  res := sgctl1.Capture('Biser....', 'Подпис за: ....' , hashObj);
+//  res := sgctl1.Capture('Biser....', 'РџРѕРґРїРёСЃ Р·Р°: ....' , hashObj);
 //  Exit;
 //  SendMessage(Handle, WM_SYSCOMMAND, SC_CONTEXTHELP, 0);
 //  //Application.WM_HELP
@@ -2029,10 +2027,10 @@ begin
   FmxProfForm.ZoomToWidth(fmxCntrDyn.Width);
   Exit;
   LstMkb := TList<TMkbItem>.Create;
-  for i := 0 to CollMkb.Count - 1 do
+  for i := 0 to Adb_DM.CollMkb.Count - 1 do
   begin
-    mkb := CollMkb.Items[i];
-    mkbstr := CollMkb.getAnsiStringMap(mkb.DataPos, word(Mkb_NAME));
+    mkb := Adb_DM.CollMkb.Items[i];
+    mkbstr := Adb_DM.CollMkb.getAnsiStringMap(mkb.DataPos, word(Mkb_NAME));
     if mkbstr.StartsWith('F') then
     begin
       wb := TWordBreakF.create(canvas);
@@ -2067,9 +2065,9 @@ var
   mkb: string;
 begin
   Stopwatch := TStopwatch.StartNew;
-  for i := 0 to CollMkb.Count - 1 do
+  for i := 0 to Adb_DM.CollMkb.Count - 1 do
   begin
-    mkb := CollMkb.getAnsiStringMap(CollMkb.Items[i].DataPos, Word(Mkb_CODE));
+    mkb := Adb_DM.CollMkb.getAnsiStringMap(Adb_DM.CollMkb.Items[i].DataPos, Word(Mkb_CODE));
     if mkb.StartsWith('M43.98') then
       Break;
   end;
@@ -2080,7 +2078,7 @@ begin
   //data := pointer(PByte(runNode) + lenNode);
   if false then
   begin
-    data := CollPregled.ListNodes[grdNom.Selected.Row];
+    data := Adb_DM.CollPregled.ListNodes[grdNom.Selected.Row];
     node := Pointer(PByte(data) - lenNode);
     vtrPregledPat.Selected[node] := True;
     vtrPregledPat.FocusedNode := node;
@@ -2103,9 +2101,9 @@ var
   cnt: Integer;
 begin
   cnt := 0;
-  for i := 0 to msgColl.Count - 1 do
+  for i := 0 to Adb_DM.AmsgColl.Count - 1 do
   begin
-    msg := msgColl.Items[i];
+    msg := Adb_DM.AmsgColl.Items[i];
     case byte(msg.PRecord.Logical) of
       1: // X
       begin
@@ -2152,9 +2150,9 @@ end;
 
 procedure TfrmSuperHip.btnNextClick(Sender: TObject);
 begin
-  if CollUnfav.CurrentYear < 2032 then
+  if Adb_DM.CollUnfav.CurrentYear < 2032 then
   begin
-    CollUnfav.CurrentYear := CollUnfav.CurrentYear + 1;
+    Adb_DM.CollUnfav.CurrentYear := Adb_DM.CollUnfav.CurrentYear + 1;
   end;
 end;
 
@@ -2198,9 +2196,9 @@ end;
 
 procedure TfrmSuperHip.btnPrevOtcetPeriodClick(Sender: TObject);
 begin
-  if CollUnfav.CurrentYear > 2024 then
+  if Adb_DM.CollUnfav.CurrentYear > 2024 then
   begin
-    CollUnfav.CurrentYear := CollUnfav.CurrentYear - 1;
+    Adb_DM.CollUnfav.CurrentYear := Adb_DM.CollUnfav.CurrentYear - 1;
   end;
 end;
 
@@ -2213,7 +2211,6 @@ var
   idx: Integer;
   XmlStream: TXmlStream;
 begin
-  Adb_DM.CollPrac := CollPractica;
   XmlStream := TXmlStream.Create;
   Adb_DM.FillXmlStreamI001(XmlStream, vtrPregledPat.GetFirstSelected());
   edtUrl.Text := Adb_DM.GetURLFromMsgType(I001, true);
@@ -2265,8 +2262,8 @@ begin
 //  grdNom.Grid.Selected.Row := 1;
 //  grdNom.Grid.Selected.Row := oldRow;
 //  CL088Coll.UpdateCL088;
-    CL022Coll.UpdateCL022;
-    CL024Coll.UpdateCL024;
+//    CL022Coll.UpdateCL022;
+//    CL024Coll.UpdateCL024;
 //  CL139Coll.UpdateCL139;
 //  CL132Coll.UpdateCL132;
 //  CL038Coll.UpdateCL038;
@@ -2363,19 +2360,19 @@ begin
   nzisThr := TNzisThread.Create(true);
   nzisThr.FreeOnTerminate := True;
   nzisThr.IsTestNZIS := False;
-  if NomenNzisColl.items[data.index].PRecord = nil then
+  if Adb_DM.NomenNzisColl.items[data.index].PRecord = nil then
   begin
-    nzisThr.NomenID := NomenNzisColl.items[data.index].getAnsiStringMap(NomenNzisColl.Buf, NomenNzisColl.posData, word(NomenNzis_NomenID));
+    nzisThr.NomenID := Adb_DM.NomenNzisColl.items[data.index].getAnsiStringMap(Adb_DM.NomenNzisColl.Buf, Adb_DM.NomenNzisColl.posData, word(NomenNzis_NomenID));
   end
   else
   begin
-    nzisThr.NomenID := NomenNzisColl.items[data.index].PRecord.NomenID;
+    nzisThr.NomenID := Adb_DM.NomenNzisColl.items[data.index].PRecord.NomenID;
   end;
   nzisThr.OnSended := NzisOnSended;
   nzisThr.HndSuperHip := Self.Handle;
   nzisThr.Node := node;
   nzisThr.MsgType := TNzisMsgType.C001;
-  nzisThr.StreamData := ListNomenNzisNames[data.index].xmlStream;
+  nzisThr.StreamData :=  Adb_DM.ListNomenNzisNames[data.index].xmlStream;
   nzisThr.token := '';
   nzisThr.Resume;
 end;
@@ -2405,19 +2402,19 @@ begin
   nzisThr := TNzisThread.Create(true);
   nzisThr.FreeOnTerminate := True;
   nzisThr.IsTestNZIS := False;
-  if NomenNzisColl.items[data.index].PRecord = nil then
+  if Adb_DM.NomenNzisColl.items[data.index].PRecord = nil then
   begin
-    nzisThr.NomenID := NomenNzisColl.items[data.index].getAnsiStringMap(NomenNzisColl.Buf, NomenNzisColl.posData, word(NomenNzis_NomenID));
+    nzisThr.NomenID := Adb_DM.NomenNzisColl.items[data.index].getAnsiStringMap(Adb_DM.NomenNzisColl.Buf, Adb_DM.NomenNzisColl.posData, word(NomenNzis_NomenID));
   end
   else
   begin
-    nzisThr.NomenID := NomenNzisColl.items[data.index].PRecord.NomenID;
+    nzisThr.NomenID := Adb_DM.NomenNzisColl.items[data.index].PRecord.NomenID;
   end;
   nzisThr.OnSended := NzisOnSended;
   nzisThr.HndSuperHip := Self.Handle;
   nzisThr.Node := vUpdateNom;
   nzisThr.MsgType := TNzisMsgType.C001;
-  nzisThr.StreamData := ListNomenNzisNames[data.index].xmlStream;
+  nzisThr.StreamData :=  Adb_DM.ListNomenNzisNames[data.index].xmlStream;
   nzisThr.token := '';
   nzisThr.Resume;
 end;
@@ -2501,15 +2498,15 @@ begin
   btnCancel.Enabled := False;
   btnSaveUnfav.Enabled := False;
   vtrSpisyci.Header.Columns.Clear;
-  CollUnfav.CurrentYear := CurrentYear;
+  Adb_DM.CollUnfav.CurrentYear := CurrentYear;
   //Exit;
   //initDB;
 
   //AddDoctor;
 
   //AddUnfav;
-  CollDoctor.ClearUnfav;
-  CollUnfav.ClearReal;
+  Adb_DM.CollDoctor.ClearUnfav;
+  Adb_DM.CollUnfav.ClearReal;
   FillUnfavInDoctor;
   //CollDoctor.ClearUnfav;
   for i := 0 to 13 do
@@ -2519,7 +2516,7 @@ begin
     case  i  of
       0:
       begin
-        ACol.Text := format('Лекари' + #13#10 + 'За %d г. по месеци', [collunfav.CurrentYear]);
+        ACol.Text := format('Р›РµРєР°СЂРё' + #13#10 + 'Р—Р° %d Рі. РїРѕ РјРµСЃРµС†Рё', [Adb_DM.CollUnfav.CurrentYear]);
 
         //ACol.Width := CollDoctor.MaxWidth(vtrSpisyci.Canvas) + vtrSpisyci.Indent + 10;
         ACol.Options := [coAllowClick,coEnabled,coParentBidiMode,coParentColor, coFixed,
@@ -2527,7 +2524,7 @@ begin
       end;
       1:
       begin
-        ACol.Text := format('Специалност', [collunfav.CurrentYear]);
+        ACol.Text := format('РЎРїРµС†РёР°Р»РЅРѕСЃС‚', [Adb_DM.CollUnfav.CurrentYear]);
 
         ACol.Width := 120;
         ACol.Options := [coAllowClick,coEnabled,coParentBidiMode,coParentColor, coFixed,
@@ -2546,7 +2543,7 @@ begin
   LoadVtrSpisyciNeblUsl;
   vtrSpisyci.Sort(vtrSpisyci.RootNode, 0, sdAscending, false);
   r := vtrSpisyci.GetDisplayRect(vtrSpisyci.RootNode.FirstChild, 0, true);
-  vtrSpisyci.Header.Columns[0].Width := CollDoctor.MaxWidth(vtrSpisyci.Canvas) + r.Left + 20; //vtrSpisyci.GetMaxColumnWidth(0, true);
+  vtrSpisyci.Header.Columns[0].Width := Adb_DM.CollDoctor.MaxWidth(vtrSpisyci.Canvas) + r.Left + 20; //vtrSpisyci.GetMaxColumnWidth(0, true);
  // pgcWork.ActivePage := tsSpisaci;
   InternalChangeWorkPage(tsSpisaci);
 end;
@@ -2694,8 +2691,8 @@ begin
   Exit;
   nodePat := PVirtualNode(vtrMinaliPregledi.Tag);
   dataPat := pointer(PByte(nodePat) + lenNode);
-  PatientTemp.DataPos := dataPat.DataPos;
-  patEgn := PatientTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+  //PatientTemp.DataPos := dataPat.DataPos;
+  patEgn := Adb_DM.CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
   fileName := Format('%s\X006\%s.xml', [GetCurrentDir, patEgn]);
   if not FileExists(fileName) then Exit;
 
@@ -2708,7 +2705,7 @@ begin
       Continue;
     exam := resExam.Examination;
 
-    preg := TRealPregledNewItem(CollPregled.Add);
+    preg := TRealPregledNewItem(Adb_DM.CollPregled.Add);
     New(preg.PRecord);
     preg.PRecord.setProp := [PregledNew_NRN_LRN];
     preg.PRecord.Logical := [];
@@ -2756,7 +2753,7 @@ begin
     end;
     Include(preg.PRecord.setProp, PregledNew_IZSL);
 
-    diag := TRealDiagnosisItem(CollDiag.Add);
+    diag := TRealDiagnosisItem(Adb_DM.CollDiag.Add);
     New(diag.PRecord);
     diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_additionalCode_CL011];
     diag.PRecord.code_CL011 := exam.Diagnosis.Code.Value;
@@ -2768,7 +2765,7 @@ begin
 
     for j := 0 to exam.Comorbidity.Count - 1 do
     begin
-      diag := TRealDiagnosisItem(CollDiag.Add);
+      diag := TRealDiagnosisItem(Adb_DM.CollDiag.Add);
       New(diag.PRecord);
       diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_additionalCode_CL011];
       diag.PRecord.code_CL011 := exam.Comorbidity[j].Code.Value;
@@ -2807,9 +2804,9 @@ begin
   data := vtrTemp.GetNodeData(node);
   if data.vid <> vvPatient then
     Exit;
-  pat := msgColl.CollPat.Items[Data.index];
+  pat := Adb_DM.AmsgColl.CollPat.Items[Data.index];
 
-  newPat := TRealPatientNewItem(CollPatient.add);
+  newPat := TRealPatientNewItem(Adb_DM.CollPatient.add);
   New(newPat.PRecord);
   newPat.PRecord.setProp :=
      [PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME, PatientNew_SNAME, PatientNew_LNAME, PatientNew_Logical];
@@ -2819,7 +2816,7 @@ begin
   newPat.PRecord.SNAME := Pat.PRecord.SNAME;
   newPat.PRecord.LNAME := Pat.PRecord.LNAME;
   newPat.PRecord.Logical := Pat.PRecord.Logical;
- // newPat.GRAJD := 'българско';
+ // newPat.GRAJD := 'Р±СЉР»РіР°СЂСЃРєРѕ';
  // newPat.PAT_KIND := 1;
   newPat.InsertPatientNew;
   Dispose(newPat.PRecord);
@@ -2833,14 +2830,14 @@ begin
   vtrTemp.Selected[PVirtualNode(Self.tag)] := true;
   vtrTemp.FocusedNode := PVirtualNode(Self.tag);
   Exit;
-  if btnX007.tag > msgColl.Count - 1 then
+  if btnX007.tag > Adb_DM.AmsgColl.Count - 1 then
     btnX007.tag := 0;
-  for i := btnX007.tag to msgColl.Count - 1 do
+  for i := btnX007.tag to Adb_DM.AmsgColl.Count - 1 do
   begin
     //pat := msgColl.CollPat.Items[i];
     //for j := 0 to pat.FLstMsgImportNzis.Count - 1 do
     begin
-      msg := msgColl.Items[i]; // TNzisReqRespItem(pat.FLstMsgImportNzis[j]);
+      msg := Adb_DM.AmsgColl.Items[i]; // TNzisReqRespItem(pat.FLstMsgImportNzis[j]);
       if msg.PRecord.NRN = '25188B073967' then
       //if (msg.PRecord.msgNom = 7) and (byte(msg.PRecord.Logical) = 1)  then//  (msg.PRecord.msgNom = 7) and  (msg.PRecord.NRN = '25153D04122B')
       begin
@@ -2866,8 +2863,8 @@ var
 
   pat: TRealPatientNewItem;
 begin
-  msgColl.CollPat.posData := AspectsHipFile.FPosData;
-  msgColl.CollPat.buf := AspectsHipFile.Buf;
+  //Adb_DM.AmsgColl.CollPat.posData := AspectsHipFile.FPosData;
+  //Adb_DM.AmsgColl.CollPat.buf := AspectsHipFile.Buf;
   bufLink := AspectsLinkPatPregFile.Buf;
   begin
     linkPos := 100;
@@ -2880,7 +2877,7 @@ begin
       case data.vid of
         vvPatient:
         begin
-          pat := TRealPatientNewItem(msgColl.CollPat.Add);
+          pat := TRealPatientNewItem(Adb_DM.AmsgColl.CollPat.Add);
           pat.DataPos := Data.DataPos;
         end;
       end;
@@ -2938,14 +2935,14 @@ begin
       data := vtrNomenNzis.GetNodeData(node);
       if data.index< 0 then exit;
 
-      FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
-      UpdateRoot(FRoot, ListNomenNzisNames[data.index].Cl000Coll);
+      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
 
-      ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
-      mmoTest.Lines.Assign( ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
-      ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
       node.Dummy := 78;
       vtrNomenNzis.RepaintNode(node);
     end;
@@ -2953,17 +2950,17 @@ begin
     begin
       idnom := data.index;
       case idNom of
-        6:  ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(CL006Coll);
-        22: ListNomenNzisNames[data.index].Cl000Coll.ImportCl022(CL022Coll);
-        24: ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(CL024Coll);
-        37: ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(CL037Coll);
-        38: ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(CL038Coll);
-        88: ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(CL088Coll);
-        132: ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(CL132Coll);
-        134: ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(CL134Coll);
-        139:ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(CL139Coll);
-        142:ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(CL142Coll);
-        144:ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(CL144Coll);
+        6:  Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(Adb_DM.CL006Coll);
+        22: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl022(Adb_DM.CL022Coll);
+        24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
+        37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
+        38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
+        88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
+        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
+        139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
+        142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
+        144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
 
       end;
       caption := '';
@@ -2986,37 +2983,37 @@ begin
       data := vtrNomenNzis.GetNodeData(node);
       if data.index< 0 then exit;
 
-      FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
-      UpdateRoot(FRoot, ListNomenNzisNames[data.index].Cl000Coll);
+      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
 
-      ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
-      mmoTest.Lines.Assign( ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
-      ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
       node.Dummy := 78;
       vtrNomenNzis.RepaintNode(node);
     end;
     80:
     begin
       data := vtrNomenNzis.GetNodeData(node);
-      FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
-      UpdateRoot(FRoot, ListNomenNzisNames[data.index].Cl000Coll);
+      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
 
-      ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
-      mmoTest.Lines.Assign( ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
       idnom := data.index;
       case idNom of
-        24: ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(CL024Coll);
-        38: ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(CL038Coll);
-        88: ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(CL088Coll);
-        132: ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(CL132Coll);
-        134: ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(CL134Coll);
-        139:ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(CL139Coll);
-        142:ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(CL142Coll);
-        144:ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(CL144Coll);
+        24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
+        38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
+        88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(Adb_DM.CL088Coll);
+        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
+        139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
+        142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
+        144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
 
       end;
       caption := '';
@@ -3027,23 +3024,23 @@ begin
     77:
     begin
       data := vtrNomenNzis.GetNodeData(node);
-      FRoot := XMLParseStream(ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
-      UpdateRoot(FRoot, ListNomenNzisNames[data.index].Cl000Coll);
+      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
 
-      ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
-      mmoTest.Lines.Assign( ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
       idnom := data.index;
       case idNom of
-        24: ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(CL024Coll);
-        38: ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(CL038Coll);
-        88: ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(CL088Coll);
-        132: ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(CL132Coll);
-        134: ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(CL134Coll);
-        139:ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(CL139Coll);
-        142:ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(CL142Coll);
-        144:ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(CL144Coll);
+        24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
+        38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
+        88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(Adb_DM.CL088Coll);
+        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
+        139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
+        142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
+        144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
 
       end;
       caption := '';
@@ -3145,20 +3142,9 @@ begin
     profGR := TProfGraph.create;
 
     profGR := TProfGraph.create;
-    profGR.CL006Coll := CL006Coll;
-    profGR.CL022Coll := CL022Coll;
-    profGR.CL037Coll := CL037Coll;
-    profGR.CL038Coll := CL038Coll;
-    profGR.CL050Coll := CL050Coll;
-    profGR.CL132Coll := CL132Coll;
-    profGR.CL134Coll := CL134Coll;
-    profGR.CL142Coll := CL142Coll;
-    profGR.CL144Coll := CL144Coll;
-    profGR.CL088Coll := CL088Coll;
-    profGR.PR001Coll := PR001Coll;
     profGR.BufNomen := AspectsNomFile.Buf;
-    profGR.BufADB := AspectsHipFile.Buf;
-    profGR.posDataADB := AspectsHipFile.FPosData;
+    //profGR.BufADB := AspectsHipFile.Buf;
+    //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
     profGR.Adb_DM := Adb_DM;
   end;
@@ -3171,19 +3157,19 @@ begin
     dataGraph := vtrGraph.GetNodeData(vRootGraph);
     dataGraph.vid := vvNone;
     dataGraph.index := 0;
-  CollPatGR.Clear;
-  CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+  Adb_DM.ACollPatGR.Clear;
+  Adb_DM.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
 
-  for i := 0 to CollPatient.ListNodes.Count - 1 do
+  for i := 0 to Adb_DM.CollPatient.ListNodes.Count - 1 do
   begin
     //node := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
-    pat := TRealPatientNewItem(CollPatGR.Add);
+    pat := TRealPatientNewItem(Adb_DM.ACollPatGR.Add);
     //pat := TRealPatientNewItem.Create(nil);
-    pat.DataPos := CollPatient.ListNodes[i].DataPos;
-    pat.FNode := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
+    pat.DataPos := Adb_DM.CollPatient.ListNodes[i].DataPos;
+    pat.FNode := pointer(PByte(Adb_DM.CollPatient.ListNodes[i]) - lenNode);
     //pat := CollPatient.Items[i];
-    dat := CollPatient.getDateMap(CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(CollPatient.getLogical40Map(CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
+    dat := Adb_DM.CollPatient.getDateMap(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
+    log := TlogicalPatientNewSet(Adb_DM.CollPatient.getLogical40Map(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
     profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
     profGR.CurrDate := dat;
     profGR.GeneratePeriod(pat);
@@ -3200,7 +3186,7 @@ begin
   //vtrGraph.Clear;
   //CollPatGR.Clear;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('%d nodes за  проф: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
+  mmoTest.lines.add(Format('%d nodes Р·Р°  РїСЂРѕС„: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
 end;
 
 
@@ -3227,7 +3213,7 @@ begin
     if (data.vid = vvDiag) and (dataPreg.vid = vvPregled) then
     begin
       inc(i);
-      Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, CollDiag, CollPregled);
+      Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, Adb_DM.CollDiag, Adb_DM.CollPregled);
     end;
     Inc(linkPos, LenData);
   end;
@@ -3310,7 +3296,7 @@ begin
   while node <> nil do
   begin
     data := vtrSpisyci.GetNodeData(node);
-    doc := CollDoctor.Items[data.index];
+    doc := Adb_DM.CollDoctor.Items[data.index];
     if AnsiUpperCase(doc.FullName).Contains(AnsiUpperCase(SearchTextSpisyci)) then
     begin
       ButtonedEdit1.Tag := Integer(node);
@@ -3339,17 +3325,17 @@ procedure TfrmSuperHip.CalcStatusDB;
 var
   k: Double;
 begin
-  if AspectsHipFile = nil then exit;
+  if Adb_DM.AdbMain = nil then exit;
 
-  lblGuidDb.caption := 'GUID: ' + AspectsHipFile.GUID.ToString;
-  lblSizeCMD.Caption := 'Размер на файла: ' + inttostr(AspectsHipFile.Size);
-  k := pnlStatusDB.Width / AspectsHipFile.Size;
-  pnlMetaDataDB.Left := Round(AspectsHipFile.FposMetaData * k);
-  pnlMetaDataDB.Width := Round(AspectsHipFile.GetLenMetaData * k);
-  pnlMetaDataDB.Caption := IntToStr(Round(AspectsHipFile.GetLenMetaData/1024/1024));
-  pnlDataDB.Left := Round(AspectsHipFile.FPosData * k);
-  pnlDataDB.Width := Round(AspectsHipFile.GetLenData * k);
-  pnlDataDB.Caption := IntToStr(Round(AspectsHipFile.GetLenData/1024/1024));
+  lblGuidDb.caption := 'GUID: ' + Adb_DM.AdbMain.GUID.ToString;
+  lblSizeCMD.Caption := 'Р Р°Р·РјРµСЂ РЅР° С„Р°Р№Р»Р°: ' + inttostr(Adb_DM.AdbMain.Size);
+  k := pnlStatusDB.Width / Adb_DM.AdbMain.Size;
+  pnlMetaDataDB.Left := Round(Adb_DM.AdbMain.FposMetaData * k);
+  pnlMetaDataDB.Width := Round(Adb_DM.AdbMain.GetLenMetaData * k);
+  pnlMetaDataDB.Caption := IntToStr(Round(Adb_DM.AdbMain.GetLenMetaData/1024/1024));
+  pnlDataDB.Left := Round(Adb_DM.AdbMain.FPosData * k);
+  pnlDataDB.Width := Round(Adb_DM.AdbMain.GetLenData * k);
+  pnlDataDB.Caption := IntToStr(Round(Adb_DM.AdbMain.GetLenData/1024/1024));
 
   pnlMetaDataDB.Visible := True;
   pnlDataDB.Visible := True;
@@ -3385,43 +3371,43 @@ var
 begin
   Stopwatch := TStopwatch.StartNew;
   cnt := 0;
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to Adb_DM.CollDoctor.Count - 1 do
   begin
-    doc := CollDoctor.Items[i];
+    doc := Adb_DM.CollDoctor.Items[i];
     if doc.PRecord <> nil then
     begin
       inc(cnt);
     end;
   end;
 
-  for i := 0 to CL132Coll.Count - 1 do
+  for i := 0 to Adb_DM.CL132Coll.Count - 1 do
   begin
-    cl132 := CL132Coll.Items[i];
+    cl132 := Adb_DM.CL132Coll.Items[i];
     if cl132.PRecord <> nil then
     begin
       inc(cnt);
     end;
   end;
 
-  for i := 0 to CollMDN.Count - 1 do
+  for i := 0 to Adb_DM.CollMDN.Count - 1 do
   begin
-    mdn := CollMDN.Items[i];
+    mdn := Adb_DM.CollMDN.Items[i];
     if mdn.PRecord <> nil then
     begin
       inc(cnt);
     end;
   end;
 
-  for i := 0 to CollExamAnal.Count - 1 do
+  for i := 0 to Adb_DM.CollExamAnal.Count - 1 do
   begin
-    anal := CollExamAnal.Items[i];
+    anal := Adb_DM.CollExamAnal.Items[i];
     if anal.PRecord <> nil then
     begin
       inc(cnt);
     end;
   end;
 
-  CollPatient.checkforSave(cnt);
+  Adb_DM.CollPatient.checkforSave(cnt);
   //for i := 0 to CollPatient.Count - 1 do
 //  begin
 //    if CollPatient.items[i].PRecord <> nil then
@@ -3430,7 +3416,7 @@ begin
 //    end;
 //  end;
 
-  btnSaveAll.Enabled := (cnt > 0) or (ListPregledLinkForInsert.Count > 0);
+  btnSaveAll.Enabled := (cnt > 0) or (Adb_DM.ListPregledLinkForInsert.Count > 0);
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add('CheckCollForSave  ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
@@ -3449,9 +3435,9 @@ var
   MastUpdate: Boolean;
 begin
   MastUpdate := False;
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to Adb_DM.CollDoctor.Count - 1 do
   begin
-    doc := CollDoctor.Items[i];
+    doc := Adb_DM.CollDoctor.Items[i];
     for j := 0 to doc.FListUnfav.Count - 1 do
     begin
       mnt := (j mod 12) ;
@@ -3505,7 +3491,7 @@ begin
   while patNode <> nil do
   begin
     dataPat := Pointer(PByte(patNode) + lenNode);
-    egn := CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
+    egn := Adb_DM.CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
 
     run := patNode.FirstChild;
     while run <> nil do
@@ -3515,7 +3501,7 @@ begin
       cnt360 := 0;
       if dataRun.vid = vvIncMN then
       begin
-        nrn := CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
+        nrn := Adb_DM.CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
         if nrn = '' then
         begin
           run := run.NextSibling;
@@ -3537,7 +3523,7 @@ begin
         while runPreg <> nil do
         begin
           dataRunPreg := Pointer(PByte(runPreg) + lenNode);
-          prId[cnt360] := CollPregled.getIntMap(dataRunPreg.DataPos, word(PregledNew_ID));
+          prId[cnt360] := Adb_DM.CollPregled.getIntMap(dataRunPreg.DataPos, word(PregledNew_ID));
           if dataRunPreg.vid = vvPregled then
             inc(cnt360);
 
@@ -3576,14 +3562,14 @@ begin
   while patNode <> nil do
   begin
     dataPat := Pointer(PByte(patNode) + lenNode);
-    egn := CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
+    egn := Adb_DM.CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
     run := patNode.FirstChild;
     while run <> nil do
     begin
       dataRun := Pointer(PByte(run) + lenNode);
       if dataRun.vid = vvIncMN then
       begin
-        nrn := CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
+        nrn := Adb_DM.CollIncMN.getAnsiStringMap(datarun.DataPos, word(INC_NAPR_NRN));
         if nrn = '' then
         begin
           run := run.NextSibling;
@@ -3597,7 +3583,7 @@ begin
         Fdm.ibsqlCommand.Params[0].AsString := nrn;
         Fdm.ibsqlCommand.ExecQuery;
         IdPatDB := Fdm.ibsqlCommand.Fields[0].AsInteger;
-        IdPat360 := CollPatient.getIntMap(dataPat.DataPos, word(PatientNew_ID));
+        IdPat360 := Adb_DM.CollPatient.getIntMap(dataPat.DataPos, word(PatientNew_ID));
         //runPreg := run.FirstChild;
 //        while runPreg <> nil do
 //        begin
@@ -3626,13 +3612,13 @@ var
 begin
   Result := False;
   idCert := BuildHexString(CertForThread.SerialNumber);
-  for i := 0 to CollNzisToken.Count - 1 do
+  for i := 0 to Adb_DM.CollNzisToken.Count - 1 do
   begin
-    NzisToken := CollNzisToken.Items[i];
-    if Now > NzisToken.getDateMap(CollNzisToken.Buf, CollNzisToken.posData, word(NzisToken_ToDatTime)) then
+    NzisToken := Adb_DM.CollNzisToken.Items[i];
+    if Now > NzisToken.getDateMap(Adb_DM.CollNzisToken.Buf, Adb_DM.CollNzisToken.posData, word(NzisToken_ToDatTime)) then
       Continue;
     Result := True;
-    edtToken.Text := NzisToken.getAnsiStringMap(CollNzisToken.Buf, CollNzisToken.posData, word(NzisToken_Bearer));
+    edtToken.Text := NzisToken.getAnsiStringMap(Adb_DM.CollNzisToken.Buf, Adb_DM.CollNzisToken.posData, word(NzisToken_Bearer));
     Exit;
   end;
 end;
@@ -3653,7 +3639,7 @@ begin
   end;
   Stopwatch := TStopwatch.StartNew;
   vtrTemp.BeginUpdate;
-  vtrTemp.Header.Columns.Items[0].Text := 'Изследвания';
+  vtrTemp.Header.Columns.Items[0].Text := 'РР·СЃР»РµРґРІР°РЅРёСЏ';
   vtrTemp.Header.Columns.Items[0].Tag := Integer(vvAnal);
   vtrTemp.Clear;
   vtrTemp.NodeDataSize := sizeof(TAspRec);
@@ -3688,36 +3674,36 @@ begin
   //
 end;
 
-procedure TfrmSuperHip.ClearColl;
-begin
-  CollDoctor.clear;
-  ListDoctorForFDB.Clear;
-  CollUnfav.clear;
-  CollUnfav.clear;
-  CollMkb.clear;
-  CollPregled.clear;
-  ListPregledForFDB.Clear;
-  CollPatient.clear;
-  ListPatientForFDB.Clear;
-  CollPatPis.clear;
-  CollDiag.clear;
-  CollMDN.clear;
-
-  CollDoctor.CntInADB := 0;
-  CollUnfav.CntInADB := 0;
-  CollUnfav.CntInADB := 0;
-  CollMkb.CntInADB := 0;
-  CollPregled.CntInADB := 0;
-  CollPatient.CntInADB := 0;
-  CollPatPis.CntInADB := 0;
-  CollDiag.CntInADB := 0;
-  CollMDN.CntInADB := 0;
-
-
-  //CollPregledVtor := Tlist<TRealPregledNewItem>.Create;
-//  CollPregledPrim := Tlist<TRealPregledNewItem>.Create;
-//  AnalsNewColl := TAnalsNewColl.Create(TAnalsNewItem);
-end;
+//procedure TfrmSuperHip.ClearColl;
+//begin
+//  CollDoctor.clear;
+//  ListDoctorForFDB.Clear;
+//  CollUnfav.clear;
+//  CollUnfav.clear;
+//  CollMkb.clear;
+//  CollPregled.clear;
+//  ListPregledForFDB.Clear;
+//  CollPatient.clear;
+//  ListPatientForFDB.Clear;
+//  CollPatPis.clear;
+//  CollDiag.clear;
+//  CollMDN.clear;
+//
+//  CollDoctor.CntInADB := 0;
+//  CollUnfav.CntInADB := 0;
+//  CollUnfav.CntInADB := 0;
+//  CollMkb.CntInADB := 0;
+//  CollPregled.CntInADB := 0;
+//  CollPatient.CntInADB := 0;
+//  CollPatPis.CntInADB := 0;
+//  CollDiag.CntInADB := 0;
+//  CollMDN.CntInADB := 0;
+//
+//
+//  //CollPregledVtor := Tlist<TRealPregledNewItem>.Create;
+////  CollPregledPrim := Tlist<TRealPregledNewItem>.Create;
+////  AnalsNewColl := TAnalsNewColl.Create(TAnalsNewItem);
+//end;
 
 procedure TfrmSuperHip.CloseApp(Sender: TObject);
 begin
@@ -3746,8 +3732,6 @@ begin
   nzisThr.MsgType := TNzisMsgType.X003;
   nzisThr.token := '';//edtToken.Text;
   //nzisThr.CurrentCert := CertForThread;
-  nzisThr.PregColl := CollPregled;
-  nzisThr.CollNzisToken := CollNzisToken;
   nzisThr.Resume;
 end;
 
@@ -3762,10 +3746,81 @@ begin
   //
 end;
 
+function TfrmSuperHip.ConditionToStr(c: TConditionType): string;
+begin
+  case c of
+    cotEqual: result := '=';
+    cotNotEqual:  result := '<>';
+    cotBigger:  result := '>';
+    cotSmaller:  result := '<';
+    cotBiggerEqual:  result := '>=';
+    cotSmallerEqual:  result := '<=';
+    cotIsNull:  result := 'IS NULL';
+    cotNotIsNull:  result := 'IS NOT NULL';
+    cotAny:  result := '*';
+    cotContain:  result := 'CONTAINS';
+    cotNotContain:  result := 'NOT CONTAINS';
+    cotStarting:  result := 'STARTS WITH';
+    cotNotStarting:  result := 'NOT STARTS WITH';
+    cotEnding:  result := 'ENDS WITH';
+    cotNotEnding:  result := 'NOT ENDS WITH';
+    cotIn:  result := 'IN';
+    cotNotIn:  result := 'NOT IN';
+    cotBetween:  result := 'BETWEEN';
+    cotSens:  result := 'CASE SENSITIVE';
+    cotNotSmaller:  result := ' РЅРµ РїРѕ-РјР°Р»РєРѕ';
+    cotNotBigger:  result := 'РЅРµ РїРѕ-РіРѕР»СЏРјРѕ';
+    cotNotSmallerEqual:  result := 'РЅРµ РїРѕ-РјР°Р»РєРѕ РёР»Рё СЂР°РІРЅРѕ';
+    cotNotBiggerEqual:  result := 'РЅРµ РїРѕ-РіРѕР»СЏРјРѕ РёР»Рё СЂР°РІРЅРѕ';
+
+  else
+    Result := '??';
+  end;
+end;
+
+
 procedure TfrmSuperHip.CopyNodesFromAspectToTempVtr(
   vtrAspect: TVirtualStringTreeAspect; nodeAspect: PVirtualNode);
 begin
   vtrAspect.CopyTo(nodeAspect, vtrTemp, amInsertAfter, False);
+end;
+
+procedure TfrmSuperHip.CreateFieldGroup(FieldNode: PVirtualNode);
+var
+  FieldOrGroupNode, newNode, objectNode: PVirtualNode;
+  linkPos: Cardinal;
+  dataObjNode: PAspRecFilter;
+  dataFieldNode, dataNew, dataGroup : PAspRec;
+  coll: TBaseCollection;
+  CollType: TCollectionsType;
+begin
+  objectNode := FieldNode.Parent;
+  dataObjNode := Pointer(PByte(objectNode) + lenNode);
+  dataFieldNode := Pointer(PByte(FieldNode) + lenNode);
+
+  // 1. СЃСЉР·РґР°Р№ РіСЂСѓРїРѕРІ РІСЉР·РµР»
+  AspectsFilterLinkFile.AddNewNode(vvFieldOrGroup, 0, FieldNode, amInsertBefore, FieldOrGroupNode, linkPos);
+  FieldOrGroupNode.Dummy := FieldNode.Dummy;
+
+  // 2. РїСЂРµРјРµСЃС‚Рё СѓСЃР»РѕРІРёРµС‚Рѕ РІСЉС‚СЂРµ РІ РіСЂСѓРїР°С‚Р°
+  vtrSearch.MoveTo(FieldNode, FieldOrGroupNode, amAddChildLast, false);
+
+  // 3. СЃСЉР·РґР°Р№ РЅРѕРІРѕ РїСЂР°Р·РЅРѕ СѓСЃР»РѕРІРёРµ
+  AspectsFilterLinkFile.AddNewNode(vvFieldFilter, 0, FieldOrGroupNode, amAddChildLast, newNode, linkPos);
+  dataNew := Pointer(PByte(newNode) + lenNode);
+  dataNew.index := dataFieldNode.index;
+  dataNew.DataPos := dataFieldNode.DataPos;
+  newNode.Dummy := FieldNode.Dummy;
+  newNode.CheckType := ctCheckBox;
+  newNode.CheckState := csCheckedNormal;
+
+
+  //CollType := TCollectionsType(dataObjNode.DataPos);
+//  coll := GetCollectionByType(Word(CollType));
+  coll := Adb_DM.lstColl[ord(dataObjNode.CollType)];
+  AddOperatorNodes(newNode, coll, newNode.Dummy);
+
+  vtrSearch.Expanded[FieldOrGroupNode] := True;
 end;
 
 procedure TfrmSuperHip.CreateParams(var Params: TCreateParams);
@@ -3778,16 +3833,16 @@ procedure TfrmSuperHip.Delete99;
 var
   i: Integer;
 begin
-  for i := msgColl.Count - 1 downto 0 do
+  for i := Adb_DM.AmsgColl.Count - 1 downto 0 do
   begin
     if (i mod 300) = 0 then
     begin
-      FmxRoleBar.rctProgres.Width := FmxRoleBar.rctButton.Width * (i/msgColl.Count);
+      FmxRoleBar.rctProgres.Width := FmxRoleBar.rctButton.Width * (i/Adb_DM.AmsgColl.Count);
       FmxRoleBar.rctProgres.EndUpdate;
       Application.ProcessMessages;
     end;
-    if string(msgColl.Items[i].PRecord.RESP).Contains('<nhis:messageType value="X099"') then
-      msgColl.Delete(i);
+    if string(Adb_DM.AmsgColl.Items[i].PRecord.RESP).Contains('<nhis:messageType value="X099"') then
+      Adb_DM.AmsgColl.Delete(i);
   end;
 end;
 
@@ -3805,15 +3860,15 @@ end;
 procedure TfrmSuperHip.DeleteDiag(sender: tobject; var PregledLink,
   DiagLink: PVirtualNode; var TempItem: TRealDiagnosisItem);
 begin
-  CollPregled.streamComm.Size := 0;
-  CollPregled.streamComm.OpType := toDeleteNode;
-  CollPregled.streamComm.Size := 12 + 4;
-  CollPregled.streamComm.Ver := 0;
-  CollPregled.streamComm.Vid := ctLink;
-  CollPregled.streamComm.DataPos := Cardinal(DiagLink);
-  CollPregled.streamComm.Propertys := [];
-  CollPregled.streamComm.Len := CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(CollPregled.streamComm, 0);
+  Adb_DM.CollPregled.streamComm.Size := 0;
+  Adb_DM.CollPregled.streamComm.OpType := toDeleteNode;
+  Adb_DM.CollPregled.streamComm.Size := 12 + 4;
+  Adb_DM.CollPregled.streamComm.Ver := 0;
+  Adb_DM.CollPregled.streamComm.Vid := ctLink;
+  Adb_DM.CollPregled.streamComm.DataPos := Cardinal(DiagLink);
+  Adb_DM.CollPregled.streamComm.Propertys := [];
+  Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
+  streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
   RemoveDiag(PregledLink, TempItem);
 end;
 
@@ -3824,22 +3879,22 @@ var
   data: PAspRec;
 
 begin
-  pregLink := CollPregled.GetNodeFromID(AspectsLinkPatPregFile.Buf, vvPregled, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
+  pregLink := Adb_DM.CollPregled.GetNodeFromID(AspectsLinkPatPregFile.Buf, vvPregled, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
   if pregLink = nil then Exit;
 
   vtrPregledPat.InternalDisconnectNode(pregLink, false);
   vtrPregledPat.Repaint;
   Include(pregLink.States, vsDeleting);
 
-  CollPregled.streamComm.Size := 0;
-  CollPregled.streamComm.OpType := toDeleteNode;
-  CollPregled.streamComm.Size := 12 + 4;
-  CollPregled.streamComm.Ver := 0;
-  CollPregled.streamComm.Vid := ctLink;
-  CollPregled.streamComm.DataPos := Cardinal(pregLink);
-  CollPregled.streamComm.Propertys := [];
-  CollPregled.streamComm.Len := CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(CollPregled.streamComm, 0);
+  Adb_DM.CollPregled.streamComm.Size := 0;
+  Adb_DM.CollPregled.streamComm.OpType := toDeleteNode;
+  Adb_DM.CollPregled.streamComm.Size := 12 + 4;
+  Adb_DM.CollPregled.streamComm.Ver := 0;
+  Adb_DM.CollPregled.streamComm.Vid := ctLink;
+  Adb_DM.CollPregled.streamComm.DataPos := Cardinal(pregLink);
+  Adb_DM.CollPregled.streamComm.Propertys := [];
+  Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
+  streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
 end;
 
 procedure TfrmSuperHip.DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode; var mdn: TRealMDNItem);
@@ -4346,7 +4401,7 @@ end;
 //      begin
 //        CollPregled.GetFieldText(Sender, ctrl.ColIndex, Data.index, FieldText);
 //        //PregledTemp.DataPos := Data.DataPos;
-////        FieldText := 'от ' + DateToStr(PregledTemp.getDateMap(bufNew, PregledColl.posData, word(Pregled_START_DATE)));
+////        FieldText := 'РѕС‚ ' + DateToStr(PregledTemp.getDateMap(bufNew, PregledColl.posData, word(Pregled_START_DATE)));
 //      end;
 //      vvPatientRoot:
 //      begin
@@ -4418,7 +4473,7 @@ end;
 //      begin
 //        CollPregled.GetFieldText(Sender, ctrl.ColIndex, Data.index, FieldText);
 //        //PregledTemp.DataPos := Data.DataPos;
-////        FieldText := 'от ' + DateToStr(PregledTemp.getDateMap(bufNew, PregledColl.posData, word(Pregled_START_DATE)));
+////        FieldText := 'РѕС‚ ' + DateToStr(PregledTemp.getDateMap(bufNew, PregledColl.posData, word(Pregled_START_DATE)));
 //      end;
 //      vvPatientRoot:
 //      begin
@@ -4646,8 +4701,6 @@ begin
   //nzisThr.StreamData := preg.FStreamNzis;
   nzisThr.token := '';
   nzisThr.CurrentCert := nil;
-  nzisThr.PregColl := CollPregled;
-  nzisThr.CollNzisToken := CollNzisToken;
   nzisThr.Resume;
 end;
 
@@ -4685,15 +4738,15 @@ begin
 //  CollPatient.PRecordSearch.setProp := [PatientNew_EGN];
 //  CollPatient.PRecordSearch.EGN := edtFilter.Text;
  ////////////////////////////////////////////////////////////////////////////////////
-  thrSearch.RunItem.ClassForFind := TPregledNewItem;
-  thrSearch.RunItem.RuningType := vvPregled;
-  thrSearch.RunItem.CollForRuning := CollPregled;
-  thrSearch.CollForFind := CollPregled;
-  thrSearch.RunItem.childVid := vvNone;
-  thrSearch.RunItem.parentVid := vvNone;
-
-  CollPregled.PRecordSearch.setProp := [PregledNew_ANAMN];//, PregledNew_ANAMN];//, PregledNew_AMB_LISTN];
-  CollPregled.PRecordSearch.ANAMN := edtFilter.Text;
+  //thrSearch.RunItem.ClassForFind := TPregledNewItem;
+//  thrSearch.RunItem.RuningType := vvPregled;
+//  thrSearch.RunItem.CollForRuning := CollPregled;
+//  thrSearch.CollForFind := CollPregled;
+//  thrSearch.RunItem.childVid := vvNone;
+//  thrSearch.RunItem.parentVid := vvNone;
+//
+//  CollPregled.PRecordSearch.setProp := [PregledNew_ANAMN];//, PregledNew_ANAMN];//, PregledNew_AMB_LISTN];
+//  CollPregled.PRecordSearch.ANAMN := edtFilter.Text;
   //CollPregled.PRecordSearch.AMB_LISTN := 2936;
 ///////////////////////////////////////////////////////////
 
@@ -4716,9 +4769,9 @@ end;
 procedure TfrmSuperHip.edtFilterEnter(Sender: TObject);
 begin
   Stopwatch := TStopwatch.StartNew;
-  CollPregled.FindedRes.DataPos := 0;
-  CollPregled.FindedRes.PropIndex := word(PregledNew_ANAMN);
-  CollPregled.IndexValue(TPregledNewItem.TPropertyIndex(CollPregled.FindedRes.PropIndex));
+  //CollPregled.FindedRes.DataPos := 0;
+//  CollPregled.FindedRes.PropIndex := word(PregledNew_ANAMN);
+//  CollPregled.IndexValue(TPregledNewItem.TPropertyIndex(CollPregled.FindedRes.PropIndex));
   Elapsed := Stopwatch.Elapsed;
   mmotest.Lines.Add( 'enterFind ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
@@ -4732,13 +4785,13 @@ begin
   begin
     FinderRecMKB.strSearch := edtFilterTemp.Text;
     FinderRecMKB.LastFindedStr := '';
-    vtrPregledPat.Repaint;//zzzzzzz може само ноде
+    vtrPregledPat.Repaint;//zzzzzzz РјРѕР¶Рµ СЃР°РјРѕ РЅРѕРґРµ
     Exit;
   end;
 
   FinderRecMKB.strSearch := edtFilterTemp.Text;
 
-  if not FindNodevtrTemp(dfnone, FinderRecMKB.ACol) then // трябва да изтрие последно въведените
+  if not FindNodevtrTemp(dfnone, FinderRecMKB.ACol) then // С‚СЂСЏР±РІР° РґР° РёР·С‚СЂРёРµ РїРѕСЃР»РµРґРЅРѕ РІСЉРІРµРґРµРЅРёС‚Рµ
   begin
     edtFilterTemp.Text := FinderRecMKB.LastFindedStr;
     edtFilterTemp.SelStart := Length(edtFilterTemp.Text);
@@ -4765,13 +4818,13 @@ begin
   begin
     FinderRec.strSearch := edtSearhTree.Text;
     FinderRec.LastFindedStr := '';
-    vtrPregledPat.Repaint;//zzzzzzz може само ноде
+    vtrPregledPat.Repaint;//zzzzzzz РјРѕР¶Рµ СЃР°РјРѕ РЅРѕРґРµ
     Exit;
   end;
 
   FinderRec.strSearch := edtSearhTree.Text;
 
-  if not FindNodevtrPreg(dfnone, FinderRec.ACol) then // трябва да изтрие последно въведените
+  if not FindNodevtrPreg(dfnone, FinderRec.ACol) then // С‚СЂСЏР±РІР° РґР° РёР·С‚СЂРёРµ РїРѕСЃР»РµРґРЅРѕ РІСЉРІРµРґРµРЅРёС‚Рµ
   begin
     edtSearhTree.Text := FinderRec.LastFindedStr;
     edtSearhTree.SelStart := Length(edtSearhTree.Text);
@@ -4793,13 +4846,13 @@ var
   pat: TRealPatientNewItem;
   //collPatExport: TRealPatientNewColl;
 begin
-  if LstPatForExportDB = nil then
+  if Adb_DM.LstPatForExportDB = nil then
   begin
-    LstPatForExportDB := TList<TRealPatientNewItem>.Create;
+    Adb_DM.LstPatForExportDB := TList<TRealPatientNewItem>.Create;
   end
   else
   begin
-    LstPatForExportDB.Clear;
+    Adb_DM.LstPatForExportDB.Clear;
   end;
   Stopwatch := TStopwatch.StartNew;
   linkPos := 100;
@@ -4811,13 +4864,13 @@ begin
     data := Pointer(PByte(node)+ lenNode);
     if data.vid = vvPatient then
     begin
-      pat := TRealPatientNewItem(CollPatient.Add);
+      pat := TRealPatientNewItem(Adb_DM.CollPatient.Add);
       pat.DataPos := data.DataPos;
       pat.FNode := node;
-      if CollPatient.getintMap(data.DataPos, Word(PatientNew_ID)) = 0 then //now pacient
+      if Adb_DM.CollPatient.getintMap(data.DataPos, Word(PatientNew_ID)) = 0 then //now pacient
       begin
-        //mmoTest.Lines.Add('нов пациент ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
-        LstPatForExportDB.Add(pat);
+        //mmoTest.Lines.Add('РЅРѕРІ РїР°С†РёРµРЅС‚ ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
+        Adb_DM.LstPatForExportDB.Add(pat);
         FDBHelper.SavePatientFDB(pat, Fdm.ibsqlCommand);
         RunInPat(pat, true);
       end
@@ -4842,48 +4895,48 @@ var
   datPos: Cardinal;
   pCardinalData: PCardinal;
 begin
-  CollExamAnal.SortByCl022;
-  CL022Coll.IndexValue(CL022_Key);
-  CL022Coll.SortByIndexAnsiString;
+  Adb_DM.CollExamAnal.SortByCl022;
+  Adb_DM.CL022Coll.IndexValue(CL022_Key);
+  Adb_DM.CL022Coll.SortByIndexAnsiString;
   Stopwatch := TStopwatch.StartNew;
   iCl022 := 0;
   iExamAnal := 0;
-  while (iCl022 < CL022Coll.Count) and (iExamAnal < CollExamAnal.Count) do
+  while (iCl022 < Adb_DM.CL022Coll.Count) and (iExamAnal < Adb_DM.CollExamAnal.Count) do
   begin
-    if CollExamAnal.Items[iExamAnal].Cl022 = '08-001' then
+    if Adb_DM.CollExamAnal.Items[iExamAnal].Cl022 = '08-001' then
     begin
-      CollExamAnal.Items[iExamAnal].Cl022 := '08-001'
+      Adb_DM.CollExamAnal.Items[iExamAnal].Cl022 := '08-001'
     end;
-    if CL022Coll.Items[iCl022].IndexAnsiStr1 = '08-001' then
+    if Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 = '08-001' then
     begin
-      CL022Coll.Items[iCl022].IndexAnsiStr1 := '08-001'
+      Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 := '08-001'
     end;
 
-    if CL022Coll.Items[iCl022].IndexAnsiStr1 = CollExamAnal.Items[iExamAnal].Cl022 then
+    if Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 = Adb_DM.CollExamAnal.Items[iExamAnal].Cl022 then
     begin
-      examAnal := CollExamAnal.Items[iExamAnal];
+      examAnal := Adb_DM.CollExamAnal.Items[iExamAnal];
       New(examAnal.PRecord);
       examAnal.PRecord.setProp := [ExamAnalysis_PosDataNomen];
-      examAnal.PRecord.PosDataNomen := CL022Coll.Items[iCl022].FDataPos;
+      examAnal.PRecord.PosDataNomen := Adb_DM.CL022Coll.Items[iCl022].FDataPos;
 
-      datPos := AspectsHipFile.FPosData + AspectsHipFile.GetLenData;
+      datPos := Adb_DM.AdbMain.FPosData + Adb_DM.AdbMain.GetLenData;
       examAnal.SaveExamAnalysis(datPos);
-      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-      pCardinalData^  := datPos - self.AspectsHipFile.FPosData;
+      pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+      pCardinalData^  := datPos - self.Adb_DM.AdbMain.FPosData;
 
       inc(iExamAnal);
       nextCl022 := iCl022 + 1;
-      while (nextCl022 < CL022Coll.Count) and (CL022Coll.Items[iCl022].IndexAnsiStr1 = CL022Coll.Items[nextCl022].IndexAnsiStr1) do
+      while (nextCl022 < Adb_DM.CL022Coll.Count) and (Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 = Adb_DM.CL022Coll.Items[nextCl022].IndexAnsiStr1) do
       begin
         inc(iCl022);
         nextCl022 := iCl022 + 1;
       end;
     end
-    else if CL022Coll.Items[iCl022].IndexAnsiStr1 > CollExamAnal.Items[iExamAnal].Cl022 then
+    else if Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 > Adb_DM.CollExamAnal.Items[iExamAnal].Cl022 then
     begin
       inc(iExamAnal);
     end
-    else if CL022Coll.Items[iCl022].IndexAnsiStr1 < CollExamAnal.Items[iExamAnal].Cl022 then
+    else if Adb_DM.CL022Coll.Items[iCl022].IndexAnsiStr1 < Adb_DM.CollExamAnal.Items[iExamAnal].Cl022 then
     begin
       inc(iCl022);
     end;
@@ -4908,8 +4961,8 @@ begin
   if vtrDoctor.TotalCount < 1 then
     LoadVtrDoctor;
   WinStorage := TElWinCertStorage.Create(nil);
-  buf := AspectsHipFile.Buf;
-  posdata := AspectsHipFile.FPosData;
+  buf := Adb_DM.AdbMain.Buf;
+  posdata := Adb_DM.AdbMain.FPosData;
 
   WinStorage.SystemStores.Add('MY');
   CntCert := 0;
@@ -4928,9 +4981,9 @@ begin
               if StrTemp.StartsWith('PNOBG-') then
               begin
                 certEgn := Copy(StrTemp, 7, 10);
-                for j := 0 to CollDoctor.Count - 1 do
+                for j := 0 to Adb_DM.CollDoctor.Count - 1 do
                 begin
-                  doc := CollDoctor.Items[j];
+                  doc := Adb_DM.CollDoctor.Items[j];
                   docEgn := doc.getAnsiStringMap(buf, posdata, word(Doctor_EGN));
                   if docEgn = certEgn then
                   begin
@@ -4970,24 +5023,24 @@ begin
   iCl0088 := 0;
   iCl088UP := 0;
 
-  CL088Coll.IndexValue(CL088_Key);
-  CL088Coll.SortByIndexAnsiString;
-  CL088Coll.FCL088New.SortByKeyRec;
+  Adb_DM.CL088Coll.IndexValue(CL088_Key);
+  Adb_DM.CL088Coll.SortByIndexAnsiString;
+  Adb_DM.CL088Coll.FCL088New.SortByKeyRec;
 
-  while (iCl0088 < CL088Coll.Count) and (iCl088UP < CL088Coll.FCL088New.Count) do
+  while (iCl0088 < Adb_DM.CL088Coll.Count) and (iCl088UP < Adb_DM.CL088Coll.FCL088New.Count) do
   begin
-    if CL088Coll.Items[iCl0088].IndexAnsiStr1 = CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
+    if Adb_DM.CL088Coll.Items[iCl0088].IndexAnsiStr1 = Adb_DM.CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
     begin
-      CL088Coll.Items[iCl0088].FItemUp := CL088Coll.FCL088New.Items[iCl088UP];
-      CL088Coll.FCL088New.Items[iCl088UP].FItemUp := CL088Coll.Items[iCl0088];
+      Adb_DM.CL088Coll.Items[iCl0088].FItemUp := Adb_DM.CL088Coll.FCL088New.Items[iCl088UP];
+      Adb_DM.CL088Coll.FCL088New.Items[iCl088UP].FItemUp := Adb_DM.CL088Coll.Items[iCl0088];
       inc(iCl088UP);
       inc(iCl0088);
     end
-    else if CL022Coll.Items[iCl0088].IndexAnsiStr1 > CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
+    else if Adb_DM.CL022Coll.Items[iCl0088].IndexAnsiStr1 > Adb_DM.CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
     begin
       inc(iCl088UP);
     end
-    else if CL022Coll.Items[iCl0088].IndexAnsiStr1 < CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
+    else if Adb_DM.CL022Coll.Items[iCl0088].IndexAnsiStr1 < Adb_DM.CL088Coll.FCL088New.Items[iCl088UP].PRecord.Key then
     begin
       inc(iCl0088);
     end;
@@ -5002,32 +5055,32 @@ var
   iDiag, iMkb: integer;
   preg: TRealPregledNewItem;
 begin
-  CollDiag.IndexValue(Diagnosis_code_CL011);
-  CollDiag.SortByIndexAnsiString;
-  CollMkb.IndexValue(TMkbItem.TPropertyIndex.Mkb_CODE);
-  CollMkb.SortByIndexAnsiString;
+  Adb_DM.CollDiag.IndexValue(Diagnosis_code_CL011);
+  Adb_DM.CollDiag.SortByIndexAnsiString;
+  Adb_DM.CollMkb.IndexValue(TMkbItem.TPropertyIndex.Mkb_CODE);
+  Adb_DM.CollMkb.SortByIndexAnsiString;
 
   Stopwatch := TStopwatch.StartNew;
   iDiag := 0;
   iMkb := 0;
-  while (iDiag < CollDiag.Count) and (iMkb < CollMkb.Count) do
+  while (iDiag < Adb_DM.CollDiag.Count) and (iMkb < Adb_DM.CollMkb.Count) do
   begin
-    if CollDiag.Items[iDiag].getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011)) =
-       CollMkb.Items[iMkb].getAnsiStringMap(CollMkb.Buf, CollMkb.posData, word(Mkb_CODE)) then
+    if Adb_DM.CollDiag.Items[iDiag].getAnsiStringMap(Adb_DM.CollDiag.Buf, Adb_DM.CollDiag.posData, word(Diagnosis_code_CL011)) =
+       Adb_DM.CollMkb.Items[iMkb].getAnsiStringMap(Adb_DM.CollMkb.Buf, Adb_DM.CollMkb.posData, word(Mkb_CODE)) then
     begin
-      CollMkb.Items[iMkb].Version :=  CollMkb.Items[iMkb].Version + 1;
+      Adb_DM.CollMkb.Items[iMkb].Version :=  Adb_DM.CollMkb.Items[iMkb].Version + 1;
       inc(iDiag);
     end
-    else if CollDiag.Items[iDiag].getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011)) >
-       CollMkb.Items[iMkb].getAnsiStringMap(CollMkb.Buf, CollMkb.posData, word(Mkb_CODE)) then
+    else if Adb_DM.CollDiag.Items[iDiag].getAnsiStringMap(Adb_DM.CollDiag.Buf, Adb_DM.CollDiag.posData, word(Diagnosis_code_CL011)) >
+       Adb_DM.CollMkb.Items[iMkb].getAnsiStringMap(Adb_DM.CollMkb.Buf, Adb_DM.CollMkb.posData, word(Mkb_CODE)) then
     begin
       begin
         inc(iMkb);
 
       end;
     end
-    else if CollDiag.Items[iDiag].getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011)) <
-       CollMkb.Items[iMkb].getAnsiStringMap(CollMkb.Buf, CollMkb.posData, word(Mkb_CODE)) then
+    else if Adb_DM.CollDiag.Items[iDiag].getAnsiStringMap(Adb_DM.CollDiag.Buf, Adb_DM.CollDiag.posData, word(Diagnosis_code_CL011)) <
+       Adb_DM.CollMkb.Items[iMkb].getAnsiStringMap(Adb_DM.CollMkb.Buf, Adb_DM.CollMkb.posData, word(Mkb_CODE)) then
     begin
       inc(iDiag);
     end;
@@ -5041,52 +5094,52 @@ var
   iDoc, iPreg: integer;
   preg: TRealPregledNewItem;
 begin
-  CollPregled.SortByDoctorID;
-  CollDoctor.SortByDoctorID;
+  Adb_DM.CollPregled.SortByDoctorID;
+  Adb_DM.CollDoctor.SortByDoctorID;
 
   Stopwatch := TStopwatch.StartNew;
   iDoc := 0;
   iPreg := 0;
-  while (iDoc < CollDoctor.Count) and (iPreg < CollPregled.Count) do
+  while (iDoc < Adb_DM.CollDoctor.Count) and (iPreg < Adb_DM.CollPregled.Count) do
   begin
-    if CollDoctor.Items[iDoc].DoctorId = CollPregled.Items[iPreg].DoctorId then
+    if Adb_DM.CollDoctor.Items[iDoc].DoctorId = Adb_DM.CollPregled.Items[iPreg].DoctorId then
     begin
-      preg := CollPregled.Items[iPreg];
+      preg := Adb_DM.CollPregled.Items[iPreg];
       if Fdm.IsGP then
       begin
         if (preg.IS_ZAMESTVASHT) or (preg.IS_NAET) then
         begin
-          CollPregled.Items[ipreg].FDoctor := preg.Fpatient.FDoctor;
-          CollPregled.Items[ipreg].FDeput := CollDoctor.Items[iDoc];
+          Adb_DM.CollPregled.Items[ipreg].FDoctor := preg.Fpatient.FDoctor;
+          Adb_DM.CollPregled.Items[ipreg].FDeput := Adb_DM.CollDoctor.Items[iDoc];
         end
         else
         begin
-          CollPregled.Items[ipreg].FDoctor := CollDoctor.Items[iDoc];
+          Adb_DM.CollPregled.Items[ipreg].FDoctor := Adb_DM.CollDoctor.Items[iDoc];
         end;
       end
       else
       begin
         if (preg.IS_ZAMESTVASHT) or (preg.IS_NAET) then
         begin
-          CollPregled.Items[ipreg].FDoctor := preg.FOwnerDoctor;
-          CollPregled.Items[ipreg].FDeput := CollDoctor.Items[iDoc];
+          Adb_DM.CollPregled.Items[ipreg].FDoctor := preg.FOwnerDoctor;
+          Adb_DM.CollPregled.Items[ipreg].FDeput := Adb_DM.CollDoctor.Items[iDoc];
         end
         else
         begin
-          CollPregled.Items[ipreg].FDoctor := CollDoctor.Items[iDoc];
+          Adb_DM.CollPregled.Items[ipreg].FDoctor := Adb_DM.CollDoctor.Items[iDoc];
         end;
       end;
 
       inc(iPreg);
     end
-    else if CollDoctor.Items[iDoc].DoctorId > CollPregled.Items[iPreg].DoctorId then
+    else if Adb_DM.CollDoctor.Items[iDoc].DoctorId > Adb_DM.CollPregled.Items[iPreg].DoctorId then
     begin
       begin
         inc(iPreg);
 
       end;
     end
-    else if CollDoctor.Items[iDoc].DoctorId < CollPregled.Items[iPreg].DoctorId then
+    else if Adb_DM.CollDoctor.Items[iDoc].DoctorId < Adb_DM.CollPregled.Items[iPreg].DoctorId then
     begin
       inc(iDoc);
     end;
@@ -5101,23 +5154,23 @@ procedure TfrmSuperHip.FillExamAnalInMDN;
 var
   iExamAnal, iMdn: integer;
 begin
-  CollExamAnal.SortByMdnID;
-  CollMDN.SortById;
+  Adb_DM.CollExamAnal.SortByMdnID;
+  Adb_DM.CollMDN.SortById;
   Stopwatch := TStopwatch.StartNew;
   iExamAnal := 0;
   iMdn := 0;
-  while (iExamAnal < CollExamAnal.Count) and (iMdn < CollMDN.Count) do
+  while (iExamAnal < Adb_DM.CollExamAnal.Count) and (iMdn < Adb_DM.CollMDN.Count) do
   begin
-    if CollExamAnal.Items[iExamAnal].MdnId = CollMDN.Items[iMdn].MdnId then
+    if Adb_DM.CollExamAnal.Items[iExamAnal].MdnId = Adb_DM.CollMDN.Items[iMdn].MdnId then
     begin
-      CollMDN.Items[iMdn].FExamAnals.Add(CollExamAnal.Items[iExamAnal]);
+      Adb_DM.CollMDN.Items[iMdn].FExamAnals.Add(Adb_DM.CollExamAnal.Items[iExamAnal]);
       inc(iExamAnal);
     end
-    else if CollExamAnal.Items[iExamAnal].MdnId > CollMDN.Items[iMdn].MdnId then
+    else if Adb_DM.CollExamAnal.Items[iExamAnal].MdnId > Adb_DM.CollMDN.Items[iMdn].MdnId then
     begin
       inc(iMdn);
     end
-    else if CollExamAnal.Items[iExamAnal].MdnId < CollMDN.Items[iMdn].MdnId then
+    else if Adb_DM.CollExamAnal.Items[iExamAnal].MdnId < Adb_DM.CollMDN.Items[iMdn].MdnId then
     begin
       inc(iExamAnal);
     end;
@@ -5130,26 +5183,26 @@ procedure TfrmSuperHip.FillImunInPregled;
 var
   iImn, iPr: integer;
 begin
-  CollPregled.SortByPregledID;
-  CollExamImun.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollExamImun.SortByPregID;
   iImn := 0;
   iPr := 0;
-  while iImn < CollExamImun.Count do
+  while iImn < Adb_DM.CollExamImun.Count do
   begin
-    if CollExamImun.Items[iImn].PregledID = collPregled.Items[iPr].PregledID then
+    if Adb_DM.CollExamImun.Items[iImn].PregledID = Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
-      collPregled.Items[iPr].FImmuns.Add(CollExamImun.Items[iImn]);
+      Adb_DM.CollPregled.Items[iPr].FImmuns.Add(Adb_DM.CollExamImun.Items[iImn]);
       //CollMedNapr.Items[imn].FPregled := collPregled.Items[iPr];
       inc(iImn);
     end
-    else if CollExamImun.Items[iImn].PregledID > collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollExamImun.Items[iImn].PregledID > Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       begin
         inc(iPr);
 
       end;
     end
-    else if CollExamImun.Items[iImn].PregledID < collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollExamImun.Items[iImn].PregledID < Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       inc(iImn);
     end;
@@ -5162,10 +5215,10 @@ var
   i: Integer;
   incDoc: TRealOtherDoctorItem;
 begin
-  for i := 0 to CollOtherDoctor.Count - 1 do
+  for i := 0 to Adb_DM.CollOtherDoctor.Count - 1 do
   begin
-    incDoc := TRealOtherDoctorItem(msgColl.CollIncDoc.Add);
-    incDoc.DataPos := CollOtherDoctor.Items[i].DataPos;
+    incDoc := TRealOtherDoctorItem(Adb_DM.AmsgColl.CollIncDoc.Add);
+    incDoc.DataPos := Adb_DM.CollOtherDoctor.Items[i].DataPos;
   end;
 end;
 
@@ -5173,27 +5226,27 @@ procedure TfrmSuperHip.FillIncMdnInPat;
 var
   iMDD, iPat: integer;
 begin
-  CollIncMdn.SortByPatID;
-  CollPatient.SortByPatId;
+  Adb_DM.CollIncMdn.SortByPatID;
+  Adb_DM.CollPatient.SortByPatId;
   Stopwatch := TStopwatch.StartNew;
   iMDD := 0;
   iPat := 0;
-  while iMDD < CollIncMdn.Count do
+  while iMDD < Adb_DM.CollIncMdn.Count do
   begin
-    if CollIncMdn.Items[iMDD].PatientID = CollPatient.Items[iPat].PatID then
+    if Adb_DM.CollIncMdn.Items[iMDD].PatientID = Adb_DM.CollPatient.Items[iPat].PatID then
     begin
-      CollPatient.Items[iPat].FMDDs.Add(CollIncMdn.Items[iMDD]);
-      CollIncMdn.Items[iMDD].FPatient := CollPatient.Items[iPat];
+      Adb_DM.CollPatient.Items[iPat].FMDDs.Add(Adb_DM.CollIncMdn.Items[iMDD]);
+      Adb_DM.CollIncMdn.Items[iMDD].FPatient := Adb_DM.CollPatient.Items[iPat];
       inc(iMDD);
     end
-    else if CollIncMdn.Items[iMDD].PatientID > CollPatient.Items[iPat].PatID then
+    else if Adb_DM.CollIncMdn.Items[iMDD].PatientID > Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       begin
         inc(iPat);
 
       end;
     end
-    else if CollIncMdn.Items[iMDD].PatientID < CollPatient.Items[iPat].PatID then
+    else if Adb_DM.CollIncMdn.Items[iMDD].PatientID < Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       inc(iMDD);
     end;
@@ -5206,40 +5259,40 @@ procedure TfrmSuperHip.FillIncMNInPat;
 var
   iMN, iPat: integer;
 begin
-  CollIncMN.SortByPatID;
-  CollPatient.SortByPatId;
+  Adb_DM.CollIncMN.SortByPatID;
+  Adb_DM.CollPatient.SortByPatId;
   Stopwatch := TStopwatch.StartNew;
   iMN := 0;
   iPat := 0;
-  while iMN < CollIncMN.Count do
+  while iMN < Adb_DM.CollIncMN.Count do
   begin
-    if CollIncMN.Items[iMN].NRN = '2418760164D8' then
+    if Adb_DM.CollIncMN.Items[iMN].NRN = '2418760164D8' then
     begin
       Caption := 'ddd';
     end;
-    if CollIncMN.Items[iMN].PatientID = 85386 then
+    if Adb_DM.CollIncMN.Items[iMN].PatientID = 85386 then
     begin
       Caption := 'ddd';
     end;
-    if CollPatient.Items[iPat].PatEGN = '5610312202' then
+    if Adb_DM.CollPatient.Items[iPat].PatEGN = '5610312202' then
     begin
       Caption := 'ddd';
     end;
 
-    if CollIncMN.Items[iMN].PatientID = CollPatient.Items[iPat].PatID then
+    if Adb_DM.CollIncMN.Items[iMN].PatientID = Adb_DM.CollPatient.Items[iPat].PatID then
     begin
-      CollPatient.Items[iPat].FIncMNs.Add(CollIncMN.Items[iMN]);
-      CollIncMN.Items[iMN].FPatient := CollPatient.Items[iPat];
+      Adb_DM.CollPatient.Items[iPat].FIncMNs.Add(Adb_DM.CollIncMN.Items[iMN]);
+      Adb_DM.CollIncMN.Items[iMN].FPatient := Adb_DM.CollPatient.Items[iPat];
       inc(iMN);
     end
-    else if CollIncMN.Items[iMN].PatientID > CollPatient.Items[iPat].PatID then
+    else if Adb_DM.CollIncMN.Items[iMN].PatientID > Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       begin
         inc(iPat);
 
       end;
     end
-    else if CollIncMN.Items[iMN].PatientID < CollPatient.Items[iPat].PatID then
+    else if Adb_DM.CollIncMN.Items[iMN].PatientID < Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       inc(iMN);
     end;
@@ -5253,32 +5306,32 @@ var
   iMN, iPac, cnt: integer;
 begin
   Exit;
-  msgColl.CollIncMN.SortByPatEgn;
-  msgColl.CollPat.SortByPatEGN;
+  Adb_DM.AmsgColl.CollIncMN.SortByPatEgn;
+  Adb_DM.AmsgColl.CollPat.SortByPatEGN;
   Stopwatch := TStopwatch.StartNew;
   iMN := 0;
   iPac := 0;
   cnt := 0;
-  while (iMN < msgColl.CollIncMN.Count) and (ipac < msgColl.CollPat.Count) do
+  while (iMN < Adb_DM.AmsgColl.CollIncMN.Count) and (ipac < Adb_DM.AmsgColl.CollPat.Count) do
   begin
-    if msgColl.CollIncMN.Items[iMN].PatEgn = msgColl.CollPat.Items[iPac].PatEgn then
+    if Adb_DM.AmsgColl.CollIncMN.Items[iMN].PatEgn = Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
-      if msgColl.CollIncMN.Items[iMN].FLstMsgImportNzis.Count > 0 then
+      if Adb_DM.AmsgColl.CollIncMN.Items[iMN].FLstMsgImportNzis.Count > 0 then
       begin
-        msgColl.CollPat.Items[iPac].FIncMNs.Add(msgColl.CollIncMN.Items[iMN]);
-        msgColl.CollIncMN.Items[iMN].FPatient := msgColl.CollPat.Items[iPac];
+        Adb_DM.AmsgColl.CollPat.Items[iPac].FIncMNs.Add(Adb_DM.AmsgColl.CollIncMN.Items[iMN]);
+        Adb_DM.AmsgColl.CollIncMN.Items[iMN].FPatient := Adb_DM.AmsgColl.CollPat.Items[iPac];
         inc(cnt);
       end;
       inc(iMN);
     end
-    else if msgColl.CollIncMN.Items[iMN].PatEgn > msgColl.CollPat.Items[iPac].PatEgn then
+    else if Adb_DM.AmsgColl.CollIncMN.Items[iMN].PatEgn > Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
       begin
         inc(iPac);
 
       end;
     end
-    else if msgColl.CollIncMN.Items[iMN].PatEgn < msgColl.CollPat.Items[iPac].PatEgn then
+    else if Adb_DM.AmsgColl.CollIncMN.Items[iMN].PatEgn < Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
       inc(iMN);
     end;
@@ -5292,29 +5345,29 @@ var
   iMN, iPreg: integer;
 begin
   Exit;
-  CollIncMN.SortByNomer;
-  CollPregled.SortByIncMNNomer;
+  Adb_DM.CollIncMN.SortByNomer;
+  Adb_DM.CollPregled.SortByIncMNNomer;
   Stopwatch := TStopwatch.StartNew;
   iMN := 0;
   iPreg := 0;
-  while iMN < CollIncMN.Count do
+  while iMN < Adb_DM.CollIncMN.Count do
   begin
-    if CollIncMN.Items[iMN].NRN = '22152C02F1F8' then
+    if Adb_DM.CollIncMN.Items[iMN].NRN = '22152C02F1F8' then
       Caption := 'ddd';
-    if CollIncMN.Items[iMN].Nomer = CollPregled.Items[iPreg].IncNaprNom then
+    if Adb_DM.CollIncMN.Items[iMN].Nomer = Adb_DM.CollPregled.Items[iPreg].IncNaprNom then
     begin
-      CollPregled.Items[iPreg].FIncMN := CollIncMN.Items[iMN];
+      Adb_DM.CollPregled.Items[iPreg].FIncMN := Adb_DM.CollIncMN.Items[iMN];
       //CollIncMN.Items[iMN].FPregledi := CollPregled.Items[iPreg];
       inc(iMN);
     end
-    else if CollIncMN.Items[iMN].Nomer > CollPregled.Items[iPreg].IncNaprNom then
+    else if Adb_DM.CollIncMN.Items[iMN].Nomer > Adb_DM.CollPregled.Items[iPreg].IncNaprNom then
     begin
       begin
         inc(iPreg);
 
       end;
     end
-    else if CollIncMN.Items[iMN].Nomer < CollPregled.Items[iPreg].IncNaprNom then
+    else if Adb_DM.CollIncMN.Items[iMN].Nomer < Adb_DM.CollPregled.Items[iPreg].IncNaprNom then
     begin
       inc(iMN);
     end;
@@ -5327,34 +5380,34 @@ procedure TfrmSuperHip.FillIncMNInPRegNrn;
 var
   iMN, iPreg: integer;
 begin
-  CollIncMN.SortByNRN;
-  CollPregled.SortByCopyed;
+  Adb_DM.CollIncMN.SortByNRN;
+  Adb_DM.CollPregled.SortByCopyed;
   Stopwatch := TStopwatch.StartNew;
   iMN := 0;
   iPreg := 0;
-  while (iMN < CollIncMN.Count) and (iPreg < CollPregled.Count) do
+  while (iMN < Adb_DM.CollIncMN.Count) and (iPreg < Adb_DM.CollPregled.Count) do
   begin
-    if CollPregled.Items[iPreg].COPIED_FROM_NRN = '' then
+    if Adb_DM.CollPregled.Items[iPreg].COPIED_FROM_NRN = '' then
     begin
       inc(iPreg);
       Continue;
     end;
-    if CollIncMN.Items[iMN].NRN = '2511870643E9' then
+    if Adb_DM.CollIncMN.Items[iMN].NRN = '2511870643E9' then
       Caption := 'ddd';
-    if CollIncMN.Items[iMN].NRN = CollPregled.Items[iPreg].COPIED_FROM_NRN then
+    if Adb_DM.CollIncMN.Items[iMN].NRN = Adb_DM.CollPregled.Items[iPreg].COPIED_FROM_NRN then
     begin
-      CollPregled.Items[iPreg].FIncMN := CollIncMN.Items[iMN];
+      Adb_DM.CollPregled.Items[iPreg].FIncMN := Adb_DM.CollIncMN.Items[iMN];
       //CollIncMN.Items[iMN].FPregledi := CollPregled.Items[iPreg];
       inc(iPreg);
     end
-    else if CollIncMN.Items[iMN].NRN > CollPregled.Items[iPreg].COPIED_FROM_NRN then
+    else if Adb_DM.CollIncMN.Items[iMN].NRN > Adb_DM.CollPregled.Items[iPreg].COPIED_FROM_NRN then
     begin
       begin
         inc(iPreg);
 
       end;
     end
-    else if CollIncMN.Items[iMN].NRN < CollPregled.Items[iPreg].COPIED_FROM_NRN then
+    else if Adb_DM.CollIncMN.Items[iMN].NRN < Adb_DM.CollPregled.Items[iPreg].COPIED_FROM_NRN then
     begin
       inc(iMN);
     end;
@@ -5383,7 +5436,7 @@ begin
   linkpos := 100;
   pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
   FPosLinkData := pCardinalData^;
-  pCardinalData := pointer(PByte(AspectsHipFile.buf) + 8);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.buf) + 8);
   FPosDataADB := pCardinalData^;
   node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
   data := pointer(PByte(node) + lenNode);
@@ -5409,11 +5462,11 @@ begin
           case dataChild.vid of
             vvDoctor:
             begin
-              Doc := TRealDoctorItem.Create(nil);
+              //Doc := TRealDoctorItem.Create(nil);
 
               lastDatePreg := 0;
-              doc.DataPos := dataChild.DataPos;
-              AUin := Doc.getAnsiStringMap(AspectsHipFile.buf, CollDoctor.posData, word(Doctor_UIN));
+              //doc.DataPos := ;
+              AUin := Adb_DM.CollDoctor.getAnsiStringMap(dataChild.DataPos, word(Doctor_UIN));
               if AUin <> '0500000430' then
               begin
                 isBreak := True;
@@ -5424,7 +5477,7 @@ begin
             begin
               preg := TRealPregledNewItem.Create(nil);
               preg.DataPos := dataChild.DataPos;
-              tempdate := preg.getDateMap(AspectsHipFile.buf, CollDoctor.posData, word(PregledNew_START_DATE));
+              tempdate := preg.getDateMap(Adb_DM.AdbMain.buf, Adb_DM.CollDoctor.posData, word(PregledNew_START_DATE));
               lastDatePreg := Max(tempdate, lastDatePreg);
               if lastDatePreg = tempdate then
                 lastPreg := preg;
@@ -5489,11 +5542,11 @@ begin
   linkpos := 100;
   pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
   FPosLinkData := pCardinalData^;
-  pCardinalData := pointer(PByte(AspectsHipFile.buf) + 8);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.buf) + 8);
   FPosDataADB := pCardinalData^;
   node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
   data := pointer(PByte(node) + lenNode);
-  Doc := TDoctorItem.Create(nil);
+  //Doc := TDoctorItem.Create(nil);
   while linkPos <= FPosLinkData do
   begin
     Inc(linkPos, LenData);
@@ -5513,8 +5566,7 @@ begin
           case dataChild.vid of
             vvDoctor:
             begin
-              doc.DataPos := dataChild.DataPos;
-              AUin := Doc.getAnsiStringMap(AspectsHipFile.buf, CollDoctor.posData, word(Doctor_UIN));
+              AUin := Adb_DM.CollDoctor.getAnsiStringMap(dataChild.DataPos, word(Doctor_UIN));
               if AUin <> uin then
               begin
                 isBreak := True;
@@ -5565,18 +5617,18 @@ var
   mdn: TRealMDNItem;
   diagMdn, diagPreg: TRealDiagnosisItem;
 begin
-  CollPregled.SortByPregledID;
-  CollMDN.SortByPregledId;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollMDN.SortByPregledId;
   imdn := 0;
   iPreg := 0;
-  while imdn < CollMDN.Count do
+  while imdn < Adb_DM.CollMDN.Count do
   begin
-    if CollMDN.Items[imdn].PregledID = CollPregled.Items[iPreg].PregledID then
+    if Adb_DM.CollMDN.Items[imdn].PregledID = Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
-      CollPregled.Items[iPreg].FMdns.Add(CollMDN.Items[imdn]);
-      preg := CollPregled.Items[iPreg];
-      mdn := CollMDN.Items[imdn];
-      //търся коя диагноза от прегледа е избрана за мдн-то
+      Adb_DM.CollPregled.Items[iPreg].FMdns.Add(Adb_DM.CollMDN.Items[imdn]);
+      preg := Adb_DM.CollPregled.Items[iPreg];
+      mdn := Adb_DM.CollMDN.Items[imdn];
+      //С‚СЉСЂСЃСЏ РєРѕСЏ РґРёР°РіРЅРѕР·Р° РѕС‚ РїСЂРµРіР»РµРґР° Рµ РёР·Р±СЂР°РЅР° Р·Р° РјРґРЅ-С‚Рѕ
       diagMdn := mdn.FDiagnosis[0];
       for i := 0 to preg.FDiagnosis.Count - 1 do
       begin
@@ -5591,14 +5643,14 @@ begin
       end;
       inc(imdn);
     end
-    else if CollMDN.Items[imdn].PregledID > CollPregled.Items[iPreg].PregledID then
+    else if Adb_DM.CollMDN.Items[imdn].PregledID > Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
       begin
         inc(iPreg);
 
       end;
     end
-    else if CollMDN.Items[imdn].PregledID < CollPregled.Items[iPreg].PregledID then
+    else if Adb_DM.CollMDN.Items[imdn].PregledID < Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
       inc(imdn);
     end;
@@ -5609,26 +5661,26 @@ procedure TfrmSuperHip.FillMedNapr3AInPregled;
 var
   imn, iPr: integer;
 begin
-  CollPregled.SortByPregledID;
-  CollMedNapr3A.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollMedNapr3A.SortByPregID;
   imn := 0;
   iPr := 0;
-  while imn < CollMedNapr3A.Count do
+  while imn < Adb_DM.CollMedNapr3A.Count do
   begin
-    if CollMedNapr3A.Items[imn].PregledID = collPregled.Items[iPr].PregledID then
+    if Adb_DM.CollMedNapr3A.Items[imn].PregledID = Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
-      collPregled.Items[iPr].FMNs3A.Add(CollMedNapr3A.Items[imn]);
-      CollMedNapr3A.Items[imn].FPregled := collPregled.Items[iPr];
+      Adb_DM.CollPregled.Items[iPr].FMNs3A.Add(Adb_DM.CollMedNapr3A.Items[imn]);
+      Adb_DM.CollMedNapr3A.Items[imn].FPregled := Adb_DM.CollPregled.Items[iPr];
       inc(imn);
     end
-    else if CollMedNapr3A.Items[imn].PregledID > collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNapr3A.Items[imn].PregledID > Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       begin
         inc(iPr);
 
       end;
     end
-    else if CollMedNapr3A.Items[imn].PregledID < collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNapr3A.Items[imn].PregledID < Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       inc(imn);
     end;
@@ -5640,26 +5692,26 @@ procedure TfrmSuperHip.FillMedNaprHospInPregled;
 var
   imn, iPr: integer;
 begin
-  CollPregled.SortByPregledID;
-  CollMedNaprHosp.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollMedNaprHosp.SortByPregID;
   imn := 0;
   iPr := 0;
-  while imn < CollMedNaprHosp.Count do
+  while imn < Adb_DM.CollMedNaprHosp.Count do
   begin
-    if CollMedNaprHosp.Items[imn].PregledID = collPregled.Items[iPr].PregledID then
+    if Adb_DM.CollMedNaprHosp.Items[imn].PregledID = Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
-      collPregled.Items[iPr].FMNsHosp.Add(CollMedNaprHosp.Items[imn]);
-      CollMedNaprHosp.Items[imn].FPregled := collPregled.Items[iPr];
+      Adb_DM.CollPregled.Items[iPr].FMNsHosp.Add(Adb_DM.CollMedNaprHosp.Items[imn]);
+      Adb_DM.CollMedNaprHosp.Items[imn].FPregled := Adb_DM.CollPregled.Items[iPr];
       inc(imn);
     end
-    else if CollMedNaprHosp.Items[imn].PregledID > collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNaprHosp.Items[imn].PregledID > Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       begin
         inc(iPr);
 
       end;
     end
-    else if CollMedNaprHosp.Items[imn].PregledID < collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNaprHosp.Items[imn].PregledID < Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       inc(imn);
     end;
@@ -5671,26 +5723,26 @@ procedure TfrmSuperHip.FillMedNaprInPregled;
 var
   imn, iPr: integer;
 begin
-  CollPregled.SortByPregledID;
-  CollMedNapr.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollMedNapr.SortByPregID;
   imn := 0;
   iPr := 0;
-  while imn < CollMedNapr.Count do
+  while imn < Adb_DM.CollMedNapr.Count do
   begin
-    if CollMedNapr.Items[imn].PregledID = collPregled.Items[iPr].PregledID then
+    if Adb_DM.CollMedNapr.Items[imn].PregledID = Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
-      collPregled.Items[iPr].FMNs.Add(CollMedNapr.Items[imn]);
-      CollMedNapr.Items[imn].FPregled := collPregled.Items[iPr];
+      Adb_DM.CollPregled.Items[iPr].FMNs.Add(Adb_DM.CollMedNapr.Items[imn]);
+      Adb_DM.CollMedNapr.Items[imn].FPregled := Adb_DM.CollPregled.Items[iPr];
       inc(imn);
     end
-    else if CollMedNapr.Items[imn].PregledID > collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNapr.Items[imn].PregledID > Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       begin
         inc(iPr);
 
       end;
     end
-    else if CollMedNapr.Items[imn].PregledID < collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNapr.Items[imn].PregledID < Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       inc(imn);
     end;
@@ -5702,26 +5754,26 @@ procedure TfrmSuperHip.FillMedNaprLkkInPregled;
 var
   imn, iPr: integer;
 begin
-  CollPregled.SortByPregledID;
-  CollMedNaprLkk.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollMedNaprLkk.SortByPregID;
   imn := 0;
   iPr := 0;
-  while imn < CollMedNaprLkk.Count do
+  while imn < Adb_DM.CollMedNaprLkk.Count do
   begin
-    if CollMedNaprLkk.Items[imn].PregledID = collPregled.Items[iPr].PregledID then
+    if Adb_DM.CollMedNaprLkk.Items[imn].PregledID = Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
-      collPregled.Items[iPr].FMNsLKK.Add(CollMedNaprLkk.Items[imn]);
-      CollMedNaprLkk.Items[imn].FPregled := collPregled.Items[iPr];
+      Adb_DM.CollPregled.Items[iPr].FMNsLKK.Add(Adb_DM.CollMedNaprLkk.Items[imn]);
+      Adb_DM.CollMedNaprLkk.Items[imn].FPregled := Adb_DM.CollPregled.Items[iPr];
       inc(imn);
     end
-    else if CollMedNaprLkk.Items[imn].PregledID > collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNaprLkk.Items[imn].PregledID > Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       begin
         inc(iPr);
 
       end;
     end
-    else if CollMedNaprLkk.Items[imn].PregledID < collPregled.Items[iPr].PregledID then
+    else if Adb_DM.CollMedNaprLkk.Items[imn].PregledID < Adb_DM.CollPregled.Items[iPr].PregledID then
     begin
       inc(imn);
     end;
@@ -5737,34 +5789,34 @@ var
   data: PAspRec;
 begin
   vtrTemp.BeginUpdate;
-  msgColl.SortByPatEgn;
-  msgColl.CollPat.IndexValue(TPatientNewItem.TPropertyIndex.PatientNew_EGN);
-  msgColl.CollPat.SortByIndexAnsiString;
+  Adb_DM.AmsgColl.SortByPatEgn;
+  Adb_DM.AmsgColl.CollPat.IndexValue(TPatientNewItem.TPropertyIndex.PatientNew_EGN);
+  Adb_DM.AmsgColl.CollPat.SortByIndexAnsiString;
   Stopwatch := TStopwatch.StartNew;
   iPat := 0;
   iMsg := 0;
-  while (iPat < msgColl.CollPat.Count) and (iMsg < msgColl.Count) do
+  while (iPat < Adb_DM.AmsgColl.CollPat.Count) and (iMsg < Adb_DM.AmsgColl.Count) do
   begin
-    if msgColl.Items[iMsg].PRecord.patEgn = '5103275350' then
+    if Adb_DM.AmsgColl.Items[iMsg].PRecord.patEgn = '5103275350' then
       Caption := 'ddd';
 
-    if msgColl.CollPat.Items[iPat].IndexAnsiStr1 = msgColl.Items[iMsg].PRecord.patEgn then
+    if Adb_DM.AmsgColl.CollPat.Items[iPat].IndexAnsiStr1 = Adb_DM.AmsgColl.Items[iMsg].PRecord.patEgn then
     begin
 
-      msg := msgColl.Items[iMsg];
-      msg.Pat := msgColl.CollPat.Items[iPat];
-      msgColl.CollPat.Items[iPat].FLstMsgImportNzis.Add(msg);
-      msgColl.CollPat.Items[iPat].PatEGN := msg.PRecord.patEgn;
+      msg := Adb_DM.AmsgColl.Items[iMsg];
+      msg.Pat := Adb_DM.AmsgColl.CollPat.Items[iPat];
+      Adb_DM.AmsgColl.CollPat.Items[iPat].FLstMsgImportNzis.Add(msg);
+      Adb_DM.AmsgColl.CollPat.Items[iPat].PatEGN := msg.PRecord.patEgn;
       inc(iMsg);
     end
-    else if msgColl.CollPat.Items[iPat].IndexAnsiStr1 > msgColl.Items[iMsg].PRecord.patEgn then
+    else if Adb_DM.AmsgColl.CollPat.Items[iPat].IndexAnsiStr1 > Adb_DM.AmsgColl.Items[iMsg].PRecord.patEgn then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollPat.Items[iPat].IndexAnsiStr1 < msgColl.Items[iMsg].PRecord.patEgn then
+    else if Adb_DM.AmsgColl.CollPat.Items[iPat].IndexAnsiStr1 < Adb_DM.AmsgColl.Items[iMsg].PRecord.patEgn then
     begin
       inc(iPat);
     end;
@@ -5782,26 +5834,26 @@ var
   data: PAspRec;
 begin
   vtrTemp.BeginUpdate;
-  msgColl.SortByNrn;
-  msgColl.CollPreg.IndexValue(TPregledNewItem.TPropertyIndex.PregledNew_NRN_LRN);
-  msgColl.CollPreg.SortByIndexAnsiString;
+  Adb_DM.AmsgColl.SortByNrn;
+  Adb_DM.AmsgColl.CollPreg.IndexValue(TPregledNewItem.TPropertyIndex.PregledNew_NRN_LRN);
+  Adb_DM.AmsgColl.CollPreg.SortByIndexAnsiString;
   Stopwatch := TStopwatch.StartNew;
   iPreg := 0;
   iMsg := 0;
-  while (iPreg < msgColl.CollPreg.Count) and (iMsg < msgColl.Count) do
+  while (iPreg < Adb_DM.AmsgColl.CollPreg.Count) and (iMsg < Adb_DM.AmsgColl.Count) do
   begin
-    if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 = msgColl.Items[iMsg].PRecord.NRN then
+    if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 = Adb_DM.AmsgColl.Items[iMsg].PRecord.NRN then
     begin
-      if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 <> '' then
+      if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 <> '' then
       begin
-        msg := msgColl.Items[iMsg];
+        msg := Adb_DM.AmsgColl.Items[iMsg];
 
-        msg.Preg := msgColl.CollPreg.Items[iPreg];
+        msg.Preg := Adb_DM.AmsgColl.CollPreg.Items[iPreg];
         if msg.Pat = nil then
         begin
           vPat := msg.Preg.Fnode.Parent;
           data := pointer(PByte(vPat) + lenNode);
-          msg.Pat := TRealPatientNewItem(msgColl.CollPat.Add);
+          msg.Pat := TRealPatientNewItem(Adb_DM.AmsgColl.CollPat.Add);
           msg.Pat.PatEGN := msg.PRecord.patEgn;
           msg.Pat.DataPos := Data.DataPos;
           //msg.Pat.FLstMsgImportNzis.Add(msg);
@@ -5814,20 +5866,20 @@ begin
         //msgColl.CollPreg.Items[iPreg].FLstMsgImportNzis.Add(msg);
         inc(iMsg);
       end
-      else // не трябва да има тука нещо, ама...
+      else // РЅРµ С‚СЂСЏР±РІР° РґР° РёРјР° С‚СѓРєР° РЅРµС‰Рѕ, Р°РјР°...
       begin
         //inc(iMsg);
         inc(iPreg);
       end;
     end
-    else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 > msgColl.Items[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 > Adb_DM.AmsgColl.Items[iMsg].PRecord.NRN then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 < msgColl.Items[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 < Adb_DM.AmsgColl.Items[iMsg].PRecord.NRN then
     begin
       inc(iPreg);
     end;
@@ -5848,30 +5900,30 @@ var
   data: PAspRec;
 begin
   //msgColl.SortListByNRN(LstRIncMN);
-  msgColl.CollIncMN.SortLstByNRN(LstRIncMN);
-  msgColl.CollIncMN.SortByNrn;
+  Adb_DM.AmsgColl.CollIncMN.SortLstByNRN(LstRIncMN);
+  Adb_DM.AmsgColl.CollIncMN.SortByNrn;
   Stopwatch := TStopwatch.StartNew;
   iIncMN := 0;
   iMsg := 0;
-  while (iIncMN < msgColl.CollIncMN.Count) and (iMsg < LstRIncMN.Count) do
+  while (iIncMN < Adb_DM.AmsgColl.CollIncMN.Count) and (iMsg < LstRIncMN.Count) do
   begin
-    if msgColl.CollIncMN.Items[iIncMN].NRN = '25244A02FFD2' then
+    if Adb_DM.AmsgColl.CollIncMN.Items[iIncMN].NRN = '25244A02FFD2' then
       Caption := 'ddd';
-    if msgColl.CollIncMN.Items[iIncMN].NRN = LstRIncMN[iMsg].NRN then
+    if Adb_DM.AmsgColl.CollIncMN.Items[iIncMN].NRN = LstRIncMN[iMsg].NRN then
     begin
       msg := TNzisReqRespItem (LstRIncMN[iMsg].msg);
-      msg.IncMN := msgColl.CollIncMN.Items[iIncMN];
-      msgColl.CollIncMN.Items[iIncMN].FLstMsgImportNzis.Add(msg);
+      msg.IncMN := Adb_DM.AmsgColl.CollIncMN.Items[iIncMN];
+      Adb_DM.AmsgColl.CollIncMN.Items[iIncMN].FLstMsgImportNzis.Add(msg);
       inc(iMsg);
     end
-    else if msgColl.CollIncMN.Items[iIncMN].NRN > LstRIncMN[iMsg].NRN then
+    else if Adb_DM.AmsgColl.CollIncMN.Items[iIncMN].NRN > LstRIncMN[iMsg].NRN then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollIncMN.Items[iIncMN].NRN < LstRIncMN[iMsg].NRN then
+    else if Adb_DM.AmsgColl.CollIncMN.Items[iIncMN].NRN < LstRIncMN[iMsg].NRN then
     begin
       inc(iIncMN);
     end;
@@ -5887,31 +5939,31 @@ var
   vPat: PVirtualNode;
   data: PAspRec;
 begin
-  msgColl.SortListByNRN(LstRMDN);
-  msgColl.CollMdn.SortByNrn;
+  Adb_DM.AmsgColl.SortListByNRN(LstRMDN);
+  Adb_DM.AmsgColl.CollMdn.SortByNrn;
   Stopwatch := TStopwatch.StartNew;
   iMdn := 0;
   iMsg := 0;
-  while (iMdn < msgColl.CollMdn.Count) and (iMsg < LstRMDN.Count) do
+  while (iMdn < Adb_DM.AmsgColl.CollMdn.Count) and (iMsg < LstRMDN.Count) do
   begin
-    if msgColl.CollMdn.Items[iMdn].NRN = LstRMDN[iMsg].PRecord.NRN then
+    if Adb_DM.AmsgColl.CollMdn.Items[iMdn].NRN = LstRMDN[iMsg].PRecord.NRN then
     begin
 
       msg := LstRMDN[iMsg];
-      msg.Mdn := msgColl.CollMdn.Items[iMdn];
+      msg.Mdn := Adb_DM.AmsgColl.CollMdn.Items[iMdn];
       if msg.PRecord.msgNom = 7 then
         Caption := 'ddd';
-      msgColl.CollMdn.Items[iMdn].FLstMsgImportNzis.Add(msg);
+      Adb_DM.AmsgColl.CollMdn.Items[iMdn].FLstMsgImportNzis.Add(msg);
       inc(iMsg);
     end
-    else if msgColl.CollMdn.Items[iMdn].NRN > LstRMDN[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollMdn.Items[iMdn].NRN > LstRMDN[iMsg].PRecord.NRN then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollMdn.Items[iMdn].NRN < LstRMDN[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollMdn.Items[iMdn].NRN < LstRMDN[iMsg].PRecord.NRN then
     begin
       inc(iMdn);
     end;
@@ -5928,34 +5980,34 @@ var
   vPat: PVirtualNode;
   data: PAspRec;
 begin
-  msgColl.SortListByNRN(LstXXXX);
-  msgColl.CollPreg.IndexValue(TPregledNewItem.TPropertyIndex.PregledNew_NRN_LRN);
-  msgColl.CollPreg.SortByIndexAnsiString;
+  Adb_DM.AmsgColl.SortListByNRN(LstXXXX);
+  Adb_DM.AmsgColl.CollPreg.IndexValue(TPregledNewItem.TPropertyIndex.PregledNew_NRN_LRN);
+  Adb_DM.AmsgColl.CollPreg.SortByIndexAnsiString;
   Stopwatch := TStopwatch.StartNew;
   iPreg := 0;
   iMsg := 0;
-  while (iPreg < msgColl.CollPreg.Count) and (iMsg < LstXXXX.Count) do
+  while (iPreg < Adb_DM.AmsgColl.CollPreg.Count) and (iMsg < LstXXXX.Count) do
   begin
-    if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 = LstXXXX[iMsg].PRecord.NRN then
+    if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 = LstXXXX[iMsg].PRecord.NRN then
     begin
 
       msg := LstXXXX[iMsg];
-      msg.preg := msgColl.CollPreg.Items[iPreg];
+      msg.preg := Adb_DM.AmsgColl.CollPreg.Items[iPreg];
       //if msg.PRecord.msgNom = 3 then
 //      begin
 //        msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN := msg.PRecord.BaseOn;
 //      end;
-      msgColl.CollPreg.Items[iPreg].FLstMsgImportNzis.Add(msg);
+      Adb_DM.AmsgColl.CollPreg.Items[iPreg].FLstMsgImportNzis.Add(msg);
       inc(iMsg);
     end
-    else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 > LstXXXX[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 > LstXXXX[iMsg].PRecord.NRN then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 < LstXXXX[iMsg].PRecord.NRN then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].IndexAnsiStr1 < LstXXXX[iMsg].PRecord.NRN then
     begin
       inc(iPreg);
     end;
@@ -5975,25 +6027,25 @@ var
   iDoc, iMN: integer;
   IncMN: TRealINC_NAPRItem;
 begin
-  CollIncMN.SortByIncDoc;
-  CollOtherDoctor.SortByDoctorID;
+  Adb_DM.CollIncMN.SortByIncDoc;
+  Adb_DM.CollOtherDoctor.SortByDoctorID;
   Stopwatch := TStopwatch.StartNew;
   iDoc := 0;
   iMN := 0;
-  while (iDoc < CollOtherDoctor.Count) and (iMN < CollIncMN.Count) do
+  while (iDoc < Adb_DM.CollOtherDoctor.Count) and (iMN < Adb_DM.CollIncMN.Count) do
   begin
-    if CollOtherDoctor.Items[iDoc].DoctorId = CollIncMN.Items[iMN].IncDoctorId then
+    if Adb_DM.CollOtherDoctor.Items[iDoc].DoctorId = Adb_DM.CollIncMN.Items[iMN].IncDoctorId then
     begin
-      CollIncMN.Items[iMN].FIncDoctor := CollOtherDoctor.Items[iDoc];
+      Adb_DM.CollIncMN.Items[iMN].FIncDoctor := Adb_DM.CollOtherDoctor.Items[iDoc];
       inc(iMN);
     end
-    else if CollOtherDoctor.Items[iDoc].DoctorId > CollIncMN.Items[iMN].IncDoctorId then
+    else if Adb_DM.CollOtherDoctor.Items[iDoc].DoctorId > Adb_DM.CollIncMN.Items[iMN].IncDoctorId then
     begin
       begin
         inc(iMN);
       end;
     end
-    else if CollOtherDoctor.Items[iDoc].DoctorId < CollIncMN.Items[iMN].IncDoctorId then
+    else if Adb_DM.CollOtherDoctor.Items[iDoc].DoctorId < Adb_DM.CollIncMN.Items[iMN].IncDoctorId then
     begin
       inc(iDoc);
     end;
@@ -6007,28 +6059,28 @@ var
   iDoc, iPreg: integer;
   preg: TRealPregledNewItem;
 begin
-  CollPregled.SortByOwnerDoctorID;
-  CollDoctor.SortByDoctorID;
+  Adb_DM.CollPregled.SortByOwnerDoctorID;
+  Adb_DM.CollDoctor.SortByDoctorID;
   Stopwatch := TStopwatch.StartNew;
   iDoc := 0;
   iPreg := 0;
-  while (iDoc < CollDoctor.Count) and (iPreg < CollPregled.Count) do
+  while (iDoc < Adb_DM.CollDoctor.Count) and (iPreg < Adb_DM.CollPregled.Count) do
   begin
-    if CollDoctor.Items[iDoc].DoctorId = CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
+    if Adb_DM.CollDoctor.Items[iDoc].DoctorId = Adb_DM.CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
     begin
-      preg := CollPregled.Items[iPreg];
-      CollPregled.Items[ipreg].FOwnerDoctor := CollDoctor.Items[iDoc];
+      preg := Adb_DM.CollPregled.Items[iPreg];
+      Adb_DM.CollPregled.Items[ipreg].FOwnerDoctor := Adb_DM.CollDoctor.Items[iDoc];
 
       inc(iPreg);
     end
-    else if CollDoctor.Items[iDoc].DoctorId > CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
+    else if Adb_DM.CollDoctor.Items[iDoc].DoctorId > Adb_DM.CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
     begin
       begin
         inc(iPreg);
 
       end;
     end
-    else if CollDoctor.Items[iDoc].DoctorId < CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
+    else if Adb_DM.CollDoctor.Items[iDoc].DoctorId < Adb_DM.CollPregled.Items[iPreg].OWNER_DOCTOR_ID then
     begin
       inc(iDoc);
     end;
@@ -6071,7 +6123,7 @@ end;
 ////    end;
 ////  end;
 ////  Elapsed := Stopwatch.Elapsed;
-////  //Memo1.Lines.Add(Format('Брой амб. листи pri doctorite: %d за %f ms',
+////  //Memo1.Lines.Add(Format('Р‘СЂРѕР№ Р°РјР±. Р»РёСЃС‚Рё pri doctorite: %d Р·Р° %f ms',
 //////    [AmbListColl.Count, Elapsed.TotalMilliseconds]));
 //end;
 
@@ -6081,29 +6133,29 @@ procedure TfrmSuperHip.FillPatInDoctor;
 var
   iPat, iDoc: integer;
 begin
-  CollPatient.SortByDoctorID;
-  CollDoctor.SortByDoctorID;
+  Adb_DM.CollPatient.SortByDoctorID;
+  Adb_DM.CollDoctor.SortByDoctorID;
   Stopwatch := TStopwatch.StartNew;
   iPat := 0;
   iDoc := 0;
-  // понеже няма как да има ambs без пациент, очаква се първо да свършат ambs-тата или едновременно
-  // затова въртим всичко до изчерпване на ambs-тата
-  while iPat < CollPatient.Count do
+  // РїРѕРЅРµР¶Рµ РЅСЏРјР° РєР°Рє РґР° РёРјР° ambs Р±РµР· РїР°С†РёРµРЅС‚, РѕС‡Р°РєРІР° СЃРµ РїСЉСЂРІРѕ РґР° СЃРІСЉСЂС€Р°С‚ ambs-С‚Р°С‚Р° РёР»Рё РµРґРЅРѕРІСЂРµРјРµРЅРЅРѕ
+  // Р·Р°С‚РѕРІР° РІСЉСЂС‚РёРј РІСЃРёС‡РєРѕ РґРѕ РёР·С‡РµСЂРїРІР°РЅРµ РЅР° ambs-С‚Р°С‚Р°
+  while iPat < Adb_DM.CollPatient.Count do
   begin
-    if CollPatient.Items[iPat].DoctorId = CollDoctor.Items[iDoc].DoctorId then
+    if Adb_DM.CollPatient.Items[iPat].DoctorId = Adb_DM.CollDoctor.Items[iDoc].DoctorId then
     begin
-      CollPatient.Items[iPat].FDoctor := CollDoctor.Items[iDoc];
+      Adb_DM.CollPatient.Items[iPat].FDoctor := Adb_DM.CollDoctor.Items[iDoc];
       //pregledColl.Items[iamb].FPatient := PatientColl.Items[iPac];
       inc(iPat);
     end
-    else if CollPatient.Items[iPat].DoctorId > CollDoctor.Items[iDoc].DoctorId then
+    else if Adb_DM.CollPatient.Items[iPat].DoctorId > Adb_DM.CollDoctor.Items[iDoc].DoctorId then
     begin
       begin
         inc(iDoc);
 
       end;
     end
-    else if CollPatient.Items[iPat].DoctorId < CollDoctor.Items[iDoc].DoctorId then
+    else if Adb_DM.CollPatient.Items[iPat].DoctorId < Adb_DM.CollDoctor.Items[iDoc].DoctorId then
     begin
       inc(iPat);
     end;
@@ -6130,7 +6182,7 @@ begin
 //  begin
 //    if pnlRoleView.Controls[i] is TRoleButton then
 //    begin
-//      if TRoleButton(pnlRoleView.Controls[i]).Description = 'Импорт ПЛ НЗОК' then
+//      if TRoleButton(pnlRoleView.Controls[i]).Description = 'РРјРїРѕСЂС‚ РџР› РќР—РћРљ' then
 //      begin
 //        btnImpotPL := TRoleButton(pnlRoleView.Controls[i]);
 //        btnImpotPL.MaxValue := Acolpat.Count;
@@ -6183,9 +6235,9 @@ begin
   //CollPatPis.IndexValue(TPatientNZOKItem.TPropertyIndex.PatientNZOK_EGN);
   //CollPatPis.SortByIndexValue(TPatientNZOKItem.TPropertyIndex.PatientNZOK_EGN);
   //CollPatPis.ShowGrid(grdNom);
-  CollPatPis.SortByPatEGN;
-  Acolpat.Buf := CollPatient.Buf;
-  Acolpat.posData := CollPatient.posData;
+  Adb_DM.CollPatPis.SortByPatEGN;
+  Acolpat.Buf := Adb_DM.CollPatient.Buf;
+  Acolpat.posData := Adb_DM.CollPatient.posData;
   Acolpat.IndexValue(TPatientNewItem.TPropertyIndex.PatientNew_EGN);
   Acolpat.SortByIndexValue(TPatientNewItem.TPropertyIndex.PatientNew_EGN);
 
@@ -6193,9 +6245,9 @@ begin
   iPacNzok := 0;
   iPacHip := 0;
   pat := nil;
-  while (iPacNzok < CollPatPis.Count) and (iPacHip < Acolpat.Count) do
+  while (iPacNzok < Adb_DM.CollPatPis.Count) and (iPacHip < Acolpat.Count) do
   begin
-    if Acolpat.Items[iPacHip].FDoctor.getAnsiStringMap(AspectsHipFile.buf, CollDoctor.posData, word(Doctor_UIN)) <> uin then
+    if Acolpat.Items[iPacHip].FDoctor.getAnsiStringMap(Adb_DM.AdbMain.buf, Adb_DM.CollDoctor.posData, word(Doctor_UIN)) <> uin then
     begin
       inc(iPacHip);
       Continue;
@@ -6203,10 +6255,10 @@ begin
 
     //btnImpotPL.Position := iPacHip;
 
-    if CollPatPis.Items[iPacNzok].PatEGN = Acolpat.Items[iPacHip].IndexAnsiStr1 then
+    if Adb_DM.CollPatPis.Items[iPacNzok].PatEGN = Acolpat.Items[iPacHip].IndexAnsiStr1 then
     begin
       pat := Acolpat.Items[iPacHip];
-      pat.FPatNzok := (CollPatPis.Items[iPacNzok]);
+      pat.FPatNzok := (Adb_DM.CollPatPis.Items[iPacNzok]);
 
       v := vtrTemp.AddChild(vNZOK_HIP, nil);
       data := vtrTemp.GetNodeData(v);
@@ -6244,7 +6296,7 @@ begin
 
       inc(iPacNzok);
     end
-    else if CollPatPis.Items[iPacNzok].PatEGN > Acolpat.Items[iPacHip].IndexAnsiStr1 then
+    else if Adb_DM.CollPatPis.Items[iPacNzok].PatEGN > Acolpat.Items[iPacHip].IndexAnsiStr1 then
     begin
       pat := Acolpat.Items[iPacHip];
       if not pat.IsAdded then
@@ -6295,7 +6347,7 @@ begin
 
       inc(iPacHip);
     end
-    else if CollPatPis.Items[iPacNzok].PatEGN < Acolpat.Items[iPacHip].IndexAnsiStr1 then
+    else if Adb_DM.CollPatPis.Items[iPacNzok].PatEGN < Acolpat.Items[iPacHip].IndexAnsiStr1 then
     begin
 
       if Assigned(pat) and (not pat.IsAdded) then
@@ -6304,7 +6356,7 @@ begin
         data := vtrTemp.GetNodeData(v);
         data.vid := vvPatient;
         data.index := iPacNzok;
-        data.DataPos := CollPatPis.Items[iPacNzok].DataPos;
+        data.DataPos := Adb_DM.CollPatPis.Items[iPacNzok].DataPos;
       end;
 
 
@@ -6323,33 +6375,30 @@ procedure TfrmSuperHip.FillPregInPat;
 var
   iamb, iPac: integer;
 begin
-  msgColl.CollPreg.SortByPatEGN;
-  msgColl.CollPat.SortByPatEGN;
+  Adb_DM.AmsgColl.CollPreg.SortByPatEGN;
+  Adb_DM.AmsgColl.CollPat.SortByPatEGN;
   Stopwatch := TStopwatch.StartNew;
   iamb := 0;
   iPac := 0;
-  while (iamb < msgColl.CollPreg.Count) and (ipac < msgColl.CollPat.Count) do
+  while (iamb < Adb_DM.AmsgColl.CollPreg.Count) and (ipac < Adb_DM.AmsgColl.CollPat.Count) do
   begin
-    if msgColl.CollPreg.Items[iamb].PatEgn = msgColl.CollPat.Items[iPac].PatEgn then
+    if Adb_DM.AmsgColl.CollPreg.Items[iamb].PatEgn = Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
-      if msgColl.CollPreg.Items[iamb].FLstMsgImportNzis.Count > 0 then
+      if Adb_DM.AmsgColl.CollPreg.Items[iamb].FLstMsgImportNzis.Count > 0 then
       begin
-        if msgColl.CollPreg.Items[iamb].NRN = '252462095FD4' then
-        Caption := 'ddd';
-        msgColl.CollPat.Items[iPac].FPregledi.Add(msgColl.CollPreg.Items[iamb]);
-        msgColl.CollPreg.Items[iamb].FPatient := msgColl.CollPat.Items[iPac];
-        //msgColl.CollPreg.Items[iamb].FPatient
+        Adb_DM.AmsgColl.CollPat.Items[iPac].FPregledi.Add(Adb_DM.AmsgColl.CollPreg.Items[iamb]);
+        Adb_DM.AmsgColl.CollPreg.Items[iamb].FPatient := Adb_DM.AmsgColl.CollPat.Items[iPac];
       end;
       inc(iamb);
     end
-    else if msgColl.CollPreg.Items[iamb].PatEgn > msgColl.CollPat.Items[iPac].PatEgn then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iamb].PatEgn > Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
       begin
         inc(iPac);
 
       end;
     end
-    else if msgColl.CollPreg.Items[iamb].PatEgn < msgColl.CollPat.Items[iPac].PatEgn then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iamb].PatEgn < Adb_DM.AmsgColl.CollPat.Items[iPac].PatEgn then
     begin
       inc(iamb);
     end;
@@ -6367,40 +6416,40 @@ var
   DummyList: TList<RealObj.RealHipp.TRealINC_NAPRItem>;
   Dummy: RealObj.RealHipp.TRealINC_NAPRItem;
 begin
-  msgColl.CollIncMN.SortLstByNRN(LstRIncMN);
-  msgColl.CollPreg.SortByCopyed;
+  Adb_DM.AmsgColl.CollIncMN.SortLstByNRN(LstRIncMN);
+  Adb_DM.AmsgColl.CollPreg.SortByCopyed;
   Stopwatch := TStopwatch.StartNew;
   iPreg := 0;
   iMsg := 0;
 
  // DummyList := nil;
 //  if False then
-//    Dummy := DummyList.Items[0]; // Принуждава Delphi да задържи GetItem
-  while (iPreg < msgColl.CollPreg.Count) and (iMsg < LstRIncMN.Count) do
+//    Dummy := DummyList.Items[0]; // РџСЂРёРЅСѓР¶РґР°РІР° Delphi РґР° Р·Р°РґСЉСЂР¶Рё GetItem
+  while (iPreg < Adb_DM.AmsgColl.CollPreg.Count) and (iMsg < LstRIncMN.Count) do
   begin
     if LstRIncMN.Items[iMsg].nrn = '2511870643E9' then
       Caption := 'ddd';
-    if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = '' then
+    if Adb_DM.AmsgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = '' then
     begin
       inc(iPreg);
       Continue;
     end;
     Caption := LstRIncMN.items[iMsg].nrn;
-    if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = LstRIncMN.Items[iMsg].nrn then
+    if Adb_DM.AmsgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN = LstRIncMN.Items[iMsg].nrn then
     begin
-      LstRIncMN[iMsg].FPregledi.Add(msgColl.CollPreg.Items[iPreg]);
-      msgColl.CollPreg.Items[iPreg].Fpatient.FIncMNs.Add(LstRIncMN.Items[iMsg]);
-      msgColl.CollPreg.Items[iPreg].FIncMN := LstRIncMN[iMsg];
+      LstRIncMN[iMsg].FPregledi.Add(Adb_DM.AmsgColl.CollPreg.Items[iPreg]);
+      Adb_DM.AmsgColl.CollPreg.Items[iPreg].Fpatient.FIncMNs.Add(LstRIncMN.Items[iMsg]);
+      Adb_DM.AmsgColl.CollPreg.Items[iPreg].FIncMN := LstRIncMN[iMsg];
       inc(iPreg);
     end
-    else if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN > LstRIncMN[iMsg].nrn then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN > LstRIncMN[iMsg].nrn then
     begin
       begin
         inc(iMsg);
 
       end;
     end
-    else if msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN < LstRIncMN[iMsg].nrn then
+    else if Adb_DM.AmsgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN < LstRIncMN[iMsg].nrn then
     begin
       inc(iPreg);
     end;
@@ -6411,33 +6460,31 @@ end;
 
 procedure TfrmSuperHip.FillPregledInPat;
 var
-  iamb, iPac: integer;
+  iamb, iPat: integer;
 begin
-  CollPregled.SortByPatID_StartDate;
-  CollPatient.SortByPatId;
+  Adb_DM.CollPregled.SortByPatID_StartDate;
+  Adb_DM.CollPatient.SortByPatId;
   Stopwatch := TStopwatch.StartNew;
   iamb := 0;
-  iPac := 0;
-  // понеже няма как да има ambs без пациент, очаква се първо да свършат ambs-тата или едновременно
-  // затова въртим всичко до изчерпване на ambs-тата
-  while iamb < CollPregled.Count do
+  iPat := 0;
+  // РїРѕРЅРµР¶Рµ РЅСЏРјР° РєР°Рє РґР° РёРјР° ambs Р±РµР· РїР°С†РёРµРЅС‚, РѕС‡Р°РєРІР° СЃРµ РїСЉСЂРІРѕ РґР° СЃРІСЉСЂС€Р°С‚ ambs-С‚Р°С‚Р° РёР»Рё РµРґРЅРѕРІСЂРµРјРµРЅРЅРѕ
+  // Р·Р°С‚РѕРІР° РІСЉСЂС‚РёРј РІСЃРёС‡РєРѕ РґРѕ РёР·С‡РµСЂРїРІР°РЅРµ РЅР° ambs-С‚Р°С‚Р°
+  while iamb < Adb_DM.CollPregled.Count do
   begin
-    if CollPregled.Items[iamb].PatID = 85386  then
-      Caption := 'ddd';
-    if CollPregled.Items[iamb].PatID = CollPatient.Items[iPac].PatID then
+    if Adb_DM.CollPregled.Items[iamb].PatID = Adb_DM.CollPatient.Items[iPat].PatID then
     begin
-      CollPatient.Items[iPac].FPregledi.Add(CollPregled.Items[iamb]);
-      CollPregled.Items[iamb].FPatient := CollPatient.Items[iPac];
+      Adb_DM.CollPatient.Items[iPat].FPregledi.Add(Adb_DM.CollPregled.Items[iamb]);
+      Adb_DM.CollPregled.Items[iamb].FPatient := Adb_DM.CollPatient.Items[iPat];
       inc(iamb);
     end
-    else if CollPregled.Items[iamb].PatID > CollPatient.Items[iPac].PatID then
+    else if Adb_DM.CollPregled.Items[iamb].PatID > Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       begin
-        inc(iPac);
+        inc(iPat);
 
       end;
     end
-    else if CollPregled.Items[iamb].PatID < CollPatient.Items[iPac].PatID then
+    else if Adb_DM.CollPregled.Items[iamb].PatID < Adb_DM.CollPatient.Items[iPat].PatID then
     begin
       inc(iamb);
     end;
@@ -6456,26 +6503,26 @@ var
   mdn: TRealMDNItem;
   diagMdn, diagPreg: TRealDiagnosisItem;
 begin
-  CollPregled.SortByPregledID;
-  CollCardProf.SortByPregID;
+  Adb_DM.CollPregled.SortByPregledID;
+  Adb_DM.CollCardProf.SortByPregID;
   iCard := 0;
   iPreg := 0;
-  // понеже няма как да има карта без preg, очаква се първо да свършат картите или едновременно
-  // затова въртим всичко до изчерпване на картите
-  while iCard < CollCardProf.Count do
+  // РїРѕРЅРµР¶Рµ РЅСЏРјР° РєР°Рє РґР° РёРјР° РєР°СЂС‚Р° Р±РµР· preg, РѕС‡Р°РєРІР° СЃРµ РїСЉСЂРІРѕ РґР° СЃРІСЉСЂС€Р°С‚ РєР°СЂС‚РёС‚Рµ РёР»Рё РµРґРЅРѕРІСЂРµРјРµРЅРЅРѕ
+  // Р·Р°С‚РѕРІР° РІСЉСЂС‚РёРј РІСЃРёС‡РєРѕ РґРѕ РёР·С‡РµСЂРїРІР°РЅРµ РЅР° РєР°СЂС‚РёС‚Рµ
+  while iCard < Adb_DM.CollCardProf.Count do
   begin
-    if CollCardProf.Items[iCard].PregledID = CollPregled.Items[iPreg].PregledID then
+    if Adb_DM.CollCardProf.Items[iCard].PregledID = Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
-      CollPregled.Items[iPreg].FProfCards.Add(CollCardProf.Items[iCard]);
+      Adb_DM.CollPregled.Items[iPreg].FProfCards.Add(Adb_DM.CollCardProf.Items[iCard]);
       inc(iCard);
     end
-    else if CollCardProf.Items[iCard].PregledID > CollPregled.Items[iPreg].PregledID then
+    else if Adb_DM.CollCardProf.Items[iCard].PregledID > Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
       begin
         inc(iPreg);
       end;
     end
-    else if CollCardProf.Items[iCard].PregledID < CollPregled.Items[iPreg].PregledID then
+    else if Adb_DM.CollCardProf.Items[iCard].PregledID < Adb_DM.CollPregled.Items[iPreg].PregledID then
     begin
       inc(iCard);
     end;
@@ -6490,17 +6537,17 @@ var
   doctor: TRealDoctorItem;
   linkPos: Cardinal;
 begin
-// прегледа
+// РїСЂРµРіР»РµРґР°
   Result := TRealPregledNewItem.Create(nil);
   dataPreg := pointer(PByte(linkNode) + lenNode);
   Result.DataPos := dataPreg.DataPos;
- // едно ниво по-нагоре е пациента
+ // РµРґРЅРѕ РЅРёРІРѕ РїРѕ-РЅР°РіРѕСЂРµ Рµ РїР°С†РёРµРЅС‚Р°
   vpat := linkNode.Parent;
   dataPat := pointer(PByte(vpat) + lenNode);
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
   Result.Fpatient := pat;
-// започвам да обикалям всички дечица на пациента
+// Р·Р°РїРѕС‡РІР°Рј РґР° РѕР±РёРєР°Р»СЏРј РІСЃРёС‡РєРё РґРµС‡РёС†Р° РЅР° РїР°С†РёРµРЅС‚Р°
   vRunChildPat := vpat.FirstChild;
   while vRunChildPat <> nil do
   begin
@@ -6522,30 +6569,30 @@ procedure TfrmSuperHip.FillReferalMdnInPreg;
 var
   iMdn, iAmb: integer;
 begin
-  msgColl.CollPreg.SortByNrn;
-  msgColl.CollMdn.SortByPregledNRN;
+  Adb_DM.AmsgColl.CollPreg.SortByNrn;
+  Adb_DM.AmsgColl.CollMdn.SortByPregledNRN;
   Stopwatch := TStopwatch.StartNew;
   iMdn := 0;
   iAmb := 0;
-  while (iMdn < msgColl.CollMdn.Count) and (iAmb < msgColl.CollPreg.Count) do
+  while (iMdn < Adb_DM.AmsgColl.CollMdn.Count) and (iAmb < Adb_DM.AmsgColl.CollPreg.Count) do
   begin
-    if msgColl.CollMdn.Items[iMdn].PregledNRN = msgColl.CollPreg.Items[iAmb].NRN then
+    if Adb_DM.AmsgColl.CollMdn.Items[iMdn].PregledNRN = Adb_DM.AmsgColl.CollPreg.Items[iAmb].NRN then
     begin
-      if msgColl.CollMdn.Items[iMdn].FLstMsgImportNzis.Count > 0 then
+      if Adb_DM.AmsgColl.CollMdn.Items[iMdn].FLstMsgImportNzis.Count > 0 then
       begin
-        msgColl.CollPreg.Items[iAmb].FMdns.Add(msgColl.CollMdn.Items[iMdn]);
-        msgColl.CollMdn.Items[iMdn].FPregled := msgColl.CollPreg.Items[iAmb];
+        Adb_DM.AmsgColl.CollPreg.Items[iAmb].FMdns.Add(Adb_DM.AmsgColl.CollMdn.Items[iMdn]);
+        Adb_DM.AmsgColl.CollMdn.Items[iMdn].FPregled := Adb_DM.AmsgColl.CollPreg.Items[iAmb];
       end;
       inc(iMdn);
     end
-    else if msgColl.CollMdn.Items[iMdn].PregledNRN > msgColl.CollPreg.Items[iAmb].NRN then
+    else if Adb_DM.AmsgColl.CollMdn.Items[iMdn].PregledNRN > Adb_DM.AmsgColl.CollPreg.Items[iAmb].NRN then
     begin
       begin
         inc(iAmb);
 
       end;
     end
-    else if msgColl.CollMdn.Items[iMdn].PregledNRN < msgColl.CollPreg.Items[iAmb].NRN then
+    else if Adb_DM.AmsgColl.CollMdn.Items[iMdn].PregledNRN < Adb_DM.AmsgColl.CollPreg.Items[iAmb].NRN then
     begin
       inc(iMdn);
     end;
@@ -6560,11 +6607,11 @@ var
   i: Integer;
 begin
   Stopwatch := TStopwatch.StartNew;
-  msgColl.SortByMessageId_nom;
+  Adb_DM.AmsgColl.SortByMessageId_nom;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('sort :двойкуване за %f ', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('sort :РґРІРѕР№РєСѓРІР°РЅРµ Р·Р° %f ', [Elapsed.TotalMilliseconds]));
   Stopwatch := TStopwatch.StartNew;
-  for i := 1 to msgColl.Count - 1 do
+  for i := 1 to Adb_DM.AmsgColl.Count - 1 do
   begin
     //if (i mod 300) = 0 then
 //    begin
@@ -6572,15 +6619,15 @@ begin
 //      FmxRoleBar.rctProgres.EndUpdate;
 //      Application.ProcessMessages;
 //    end;
-    if msgColl.Items[i].PRecord.messageId = msgColl.Items[i - 1].PRecord.messageId then  // двойка са
+    if Adb_DM.AmsgColl.Items[i].PRecord.messageId = Adb_DM.AmsgColl.Items[i - 1].PRecord.messageId then  // РґРІРѕР№РєР° СЃР°
     begin
-      msgColl.Items[i - 1].PRecord.RESP := msgColl.Items[i].PRecord.REQ;
+      Adb_DM.AmsgColl.Items[i - 1].PRecord.RESP := Adb_DM.AmsgColl.Items[i].PRecord.REQ;
       //SetLength(msgColl.Items[i -1].PRecord.RESP, length(msgColl.Items[i - 1].PRecord.RESP)-2);
       //msgColl.Items[i - 1].PRecord.NRN := msgColl.Items[i].PRecord.NRN
     end;
   end;
   Elapsed := Stopwatch.Elapsed;
-  for i := msgColl.Count - 1 downto 0 do
+  for i := Adb_DM.AmsgColl.Count - 1 downto 0 do
   begin
     //if (i mod 300) = 0 then
 //    begin
@@ -6588,13 +6635,13 @@ begin
 //      FmxRoleBar.rctProgres.EndUpdate;
 //      Application.ProcessMessages;
 //    end;
-    if msgColl.Items[i].PRecord.RESP = '' then  // двойка са
+    if Adb_DM.AmsgColl.Items[i].PRecord.RESP = '' then  // РґРІРѕР№РєР° СЃР°
     begin
-      msgColl.Delete(i);
+      Adb_DM.AmsgColl.Delete(i);
     end;
   end;
 
-  mmoTest.Lines.Add(Format('двойкуване за %f ', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РґРІРѕР№РєСѓРІР°РЅРµ Р·Р° %f ', [Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.FillSecInPrim(pat: TRealPatientNewItem);
@@ -6606,7 +6653,7 @@ begin
   for i := 0 to pat.FPregledi.Count - 1 do
   begin
     preg  := pat.FPregledi[i];
-    log := TlogicalPregledNewSet(preg.getLogical40Map(CollPregled.Buf, CollPregled.posData, word(PregledNew_Logical)));
+    log := TlogicalPregledNewSet(preg.getLogical40Map(Adb_DM.CollPregled.Buf, Adb_DM.CollPregled.posData, word(PregledNew_Logical)));
     if (TLogicalPregledNew.IS_PRIMARY in log) then
     begin
       mmoTest.Lines.Add(IntToStr(i));
@@ -6620,18 +6667,18 @@ var
   dataPosition: Cardinal;
   pCardinalData: PCardinal;
 begin
-  CL006Coll.IndexValue(CL006_Key);
-  CL006Coll.SortByIndexAnsiString;
-  CollMedNapr.SortBySpecNzis;
+  Adb_DM.CL006Coll.IndexValue(CL006_Key);
+  Adb_DM.CL006Coll.SortByIndexAnsiString;
+  Adb_DM.CollMedNapr.SortBySpecNzis;
   icl006 := 0;
   imn := 0;
   //pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
   //dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
-  while (icl006 < CL006Coll.Count) and (imn < CollMedNapr.Count) do
+  while (icl006 < Adb_DM.CL006Coll.Count) and (imn < Adb_DM.CollMedNapr.Count) do
   begin
-    if CL006Coll.Items[icl006].IndexAnsiStr1 = CollMedNapr.Items[imn].SpecNzis then
+    if Adb_DM.CL006Coll.Items[icl006].IndexAnsiStr1 = Adb_DM.CollMedNapr.Items[imn].SpecNzis then
     begin
-      CollMedNapr.SetIntMap(CollMedNapr.Items[imn].DataPos, word(BLANKA_MED_NAPR_SpecDataPos), CL006Coll.Items[icl006].DataPos);
+      Adb_DM.CollMedNapr.SetIntMap(Adb_DM.CollMedNapr.Items[imn].DataPos, word(BLANKA_MED_NAPR_SpecDataPos), Adb_DM.CL006Coll.Items[icl006].DataPos);
       //New(CollMedNapr.Items[imn].PRecord);
 //
 //      CollMedNapr.Items[imn].PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
@@ -6640,14 +6687,14 @@ begin
 
       inc(imn);
     end
-    else if CL006Coll.Items[icl006].IndexAnsiStr1 > CollMedNapr.Items[imn].SpecNzis then
+    else if Adb_DM.CL006Coll.Items[icl006].IndexAnsiStr1 > Adb_DM.CollMedNapr.Items[imn].SpecNzis then
     begin
       begin
         inc(imn);
 
       end;
     end
-    else if CL006Coll.Items[icl006].IndexAnsiStr1 < CollMedNapr.Items[imn].SpecNzis then
+    else if Adb_DM.CL006Coll.Items[icl006].IndexAnsiStr1 < Adb_DM.CollMedNapr.Items[imn].SpecNzis then
     begin
       inc(icl006);
     end;
@@ -6717,7 +6764,7 @@ end;
 //      inc(iPrim);
 //    end;
 //  end;
-//  //Memo1.Lines.Add(Format('Брой амб. листи pri doctorite: %d за %f ms',
+//  //Memo1.Lines.Add(Format('Р‘СЂРѕР№ Р°РјР±. Р»РёСЃС‚Рё pri doctorite: %d Р·Р° %f ms',
 ////    [AmbListColl.Count, Elapsed.TotalMilliseconds]));
 //end;
 
@@ -6727,30 +6774,30 @@ var
   indexUnfav: integer;
   Unfav: TRealUnfavItem;
 begin
-  CollDoctor.IndexValue(Doctor_ID);
-  CollDoctor.SortByIndexValue(Doctor_ID);
-  CollUnfav.IndexValue(Unfav_DOCTOR_ID_PRAC);
-  CollUnfav.SortByIndexValue(Unfav_DOCTOR_ID_PRAC);
+  Adb_DM.CollDoctor.IndexValue(Doctor_ID);
+  Adb_DM.CollDoctor.SortByIndexValue(Doctor_ID);
+  Adb_DM.CollUnfav.IndexValue(Unfav_DOCTOR_ID_PRAC);
+  Adb_DM.CollUnfav.SortByIndexValue(Unfav_DOCTOR_ID_PRAC);
   iun := 0;
   iDoc := 0;
-  while iun < CollUnfav.Count do
+  while iun < Adb_DM.CollUnfav.Count do
   begin
-    if CollUnfav.Items[iun].DoctorID = CollDoctor.Items[iDoc].DoctorID then
+    if Adb_DM.CollUnfav.Items[iun].DoctorID = Adb_DM.CollDoctor.Items[iDoc].DoctorID then
     begin
-      unfav := CollUnfav.Items[iun];
+      unfav := Adb_DM.CollUnfav.Items[iun];
       indexUnfav := (unfav.Year - 2024) * 12 + Unfav.Month;
-      CollDoctor.Items[iDoc].FListUnfav[indexUnfav] := unfav;
-      CollDoctor.Items[iDoc].FListUnfavDB[indexUnfav] := unfav;
+      Adb_DM.CollDoctor.Items[iDoc].FListUnfav[indexUnfav] := unfav;
+      Adb_DM.CollDoctor.Items[iDoc].FListUnfavDB[indexUnfav] := unfav;
       inc(iun);
     end
-    else if CollUnfav.Items[iun].DoctorID > CollDoctor.Items[iDoc].DoctorID then
+    else if Adb_DM.CollUnfav.Items[iun].DoctorID > Adb_DM.CollDoctor.Items[iDoc].DoctorID then
     begin
       begin
         inc(iDoc);
 
       end;
     end
-    else if CollUnfav.Items[iun].DoctorID < CollDoctor.Items[iDoc].DoctorID then
+    else if Adb_DM.CollUnfav.Items[iun].DoctorID < Adb_DM.CollDoctor.Items[iDoc].DoctorID then
     begin
       inc(iun);
     end;
@@ -6809,14 +6856,14 @@ var
   IncMN: TRealINC_NAPRItem;
 
 begin
-  msgColl.CollPat.posData := AspectsHipFile.FPosData;
-  msgColl.CollPat.buf := AspectsHipFile.Buf;
-  msgColl.CollPreg.posData := AspectsHipFile.FPosData;
-  msgColl.CollPreg.buf := AspectsHipFile.Buf;
-  msgColl.CollIncMN.posData := AspectsHipFile.FPosData;
-  msgColl.CollIncMN.buf := AspectsHipFile.Buf;
-  msgColl.CollIncDoc.posData := AspectsHipFile.FPosData;
-  msgColl.CollIncDoc.buf := AspectsHipFile.Buf;
+  Adb_DM.AmsgColl.CollPat.posData := Adb_DM.AdbMain.FPosData;
+  Adb_DM.AmsgColl.CollPat.buf := Adb_DM.AdbMain.Buf;
+  Adb_DM.AmsgColl.CollPreg.posData := Adb_DM.AdbMain.FPosData;
+  Adb_DM.AmsgColl.CollPreg.buf := Adb_DM.AdbMain.Buf;
+  Adb_DM.AmsgColl.CollIncMN.posData := Adb_DM.AdbMain.FPosData;
+  Adb_DM.AmsgColl.CollIncMN.buf := Adb_DM.AdbMain.Buf;
+  Adb_DM.AmsgColl.CollIncDoc.posData := Adb_DM.AdbMain.FPosData;
+  Adb_DM.AmsgColl.CollIncDoc.buf := Adb_DM.AdbMain.Buf;
   bufLink := AspectsLinkPatPregFile.Buf;
   begin
     linkPos := 100;
@@ -6829,47 +6876,47 @@ begin
       case data.vid of
         vvPatient:
         begin
-          pat := TRealPatientNewItem(msgColl.CollPat.Add);
+          pat := TRealPatientNewItem(Adb_DM.AmsgColl.CollPat.Add);
           pat.DataPos := Data.DataPos;
-          pat.PatEGN := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
+          pat.PatEGN := Adb_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
           pat.FNode := RunNode;
         end;
         vvPregled:
         begin
-          if CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
+          if Adb_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
           begin
             dataPat := pointer(PByte(RunNode.Parent) + lenNode);
 
-            preg := TRealPregledNewItem(msgColl.CollPreg.Add);
+            preg := TRealPregledNewItem(Adb_DM.AmsgColl.CollPreg.Add);
             preg.DataPos := Data.DataPos;
-            preg.nrn := CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
-            preg.PatEGN := CollPatient.getAnsiStringMap(DataPat.DataPos, word(PatientNew_EGN));
+            preg.nrn := Adb_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
+            preg.PatEGN := Adb_DM.CollPatient.getAnsiStringMap(DataPat.DataPos, word(PatientNew_EGN));
             preg.FNode := RunNode;
           end;
         end;
         vvmdn:
         begin
-          if CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN)) <> '' then
+          if Adb_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN)) <> '' then
           begin
             dataPreg := pointer(PByte(RunNode.Parent) + lenNode);
 
-            mdn := TRealMDNItem(msgColl.CollMdn.Add);
+            mdn := TRealMDNItem(Adb_DM.AmsgColl.CollMdn.Add);
             mdn.DataPos := Data.DataPos;
-            mdn.NRN := CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
-            mdn.PregledNRN := CollPatient.getAnsiStringMap(DataPreg.DataPos, word(PregledNew_NRN_LRN));
+            mdn.NRN := Adb_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
+            mdn.PregledNRN := Adb_DM.CollPatient.getAnsiStringMap(DataPreg.DataPos, word(PregledNew_NRN_LRN));
             mdn.LinkNode := RunNode;
           end;
         end;
         vvIncMN:
         begin
-          if CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN)) <> '' then
+          if Adb_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN)) <> '' then
           begin
             dataPat := pointer(PByte(RunNode.Parent) + lenNode);
 
-            IncMN := TRealINC_NAPRItem(msgColl.CollIncMN.Add);
+            IncMN := TRealINC_NAPRItem(Adb_DM.AmsgColl.CollIncMN.Add);
             IncMN.DataPos := Data.DataPos;
-            IncMN.NRN := CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
-            IncMN.PatEgn := CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
+            IncMN.NRN := Adb_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+            IncMN.PatEgn := Adb_DM.CollPatient.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
             IncMN.LinkNode := RunNode;
           end;
         end;
@@ -7078,20 +7125,20 @@ begin
    // if AspectsHipFile <> nil then
      // AspectsHipFile.Free;
     Stopwatch := TStopwatch.StartNew;
-    AspectsHipFile := TMappedFile.Create(S, false, TGUID.Empty);
+    Adb_DM.AdbMain := TMappedFile.Create(S, false, TGUID.Empty);
     Elapsed := Stopwatch.Elapsed;
     mmotest.Lines.Add( S + ' Martin ' + FloatToStr(Elapsed.TotalMilliseconds));
-    if AspectsHipFile.Buf <> nil then
+    if Adb_DM.AdbMain.Buf <> nil then
     begin
-      pCardinalData := pointer(PByte(AspectsHipFile.Buf));
+      pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf));
       FPosMetaData := pCardinalData^;
-      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 4);
+      pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 4);
       FLenMetaData := pCardinalData^;
-      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 8);
+      pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 8);
       FPosData := pCardinalData^;
-      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
+      pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
       FLenData := pCardinalData^;
-      Pg := pointer(PByte(AspectsHipFile.Buf) + 16 );
+      Pg := pointer(PByte(Adb_DM.AdbMain.Buf) + 16 );
       for j := 0 to AGUID.Count - 1 do
       begin
         if AGUID[j] <> TGUID.Empty then
@@ -7105,8 +7152,8 @@ begin
       end;
 
       aspPos := FPosMetaData;
-      AspectsHipFile.Free;
-      AspectsHipFile := nil;
+      Adb_DM.AdbMain.Free;
+      Adb_DM.AdbMain := nil;
     end;
 
   end;
@@ -7121,14 +7168,14 @@ var
   StrTemp, docEgn, certEgn : String;
   WithEgn: Boolean;
   doc: TRealDoctorItem;
-  buf: Pointer;
+  //buf: Pointer;
   posdata: Cardinal;
   data: PAspRec;
   isEqu: Boolean;
 begin
   Result := nil;
   WinStorage := TElWinCertStorage.Create(nil);
-  buf := AspectsHipFile.Buf;
+  //buf := Adb_DM.AdbMain.Buf;
 
   WinStorage.SystemStores.Add('MY');
   CntCert := 0;
@@ -7210,7 +7257,7 @@ begin
     Inc(linkPos, LenData);
   end;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('loopTree за %f',[Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('loopTree Р·Р° %f',[Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.FindDoctor(Down: Boolean);
@@ -7245,7 +7292,7 @@ begin
   while node <> nil do
   begin
     data := vtrSpisyci.GetNodeData(node);
-    doc := CollDoctor.Items[data.index];
+    doc := Adb_DM.CollDoctor.Items[data.index];
     if AnsiUpperCase(doc.FullName).Contains(AnsiUpperCase(SearchTextSpisyci)) then
     begin
       ButtonedEdit1.Tag := Integer(node);
@@ -7411,10 +7458,10 @@ end;
 //
 //  Result := FindNodeRepeat(DirectionFind, ACol);
 //
-//  if (not Result) and (FinderRec.IsFinded) then // до сега е имало намерено, и вече няма.
+//  if (not Result) and (FinderRec.IsFinded) then // РґРѕ СЃРµРіР° Рµ РёРјР°Р»Рѕ РЅР°РјРµСЂРµРЅРѕ, Рё РІРµС‡Рµ РЅСЏРјР°.
 //  begin
 //    case DirectionFind of
-//      dfForward: // намирано е напред. Затова се връщам на първия възел и търся първия след него от съответния тип
+//      dfForward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°РїСЂРµРґ. Р—Р°С‚РѕРІР° СЃРµ РІСЂСЉС‰Р°Рј РЅР° РїСЉСЂРІРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ СЃР»РµРґ РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
 //      begin
 //        node := vtr.RootNode.FirstChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
 //        if vtr is TVirtualStringTreeAspect then
@@ -7432,7 +7479,7 @@ end;
 //        end;
 //        result := FindNodeRepeat(dfForward);
 //      end;
-//      dfBackward: // намирано е назад. Затова се отивам на последния възел и търся първия преди него от съответния тип
+//      dfBackward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°Р·Р°Рґ. Р—Р°С‚РѕРІР° СЃРµ РѕС‚РёРІР°Рј РЅР° РїРѕСЃР»РµРґРЅРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ РїСЂРµРґРё РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
 //      begin
 //        node := vtr.RootNode.FirstChild.LastChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
 //        data := pointer(PByte(node) + lenNode);
@@ -7599,10 +7646,10 @@ begin
 
   Result := FindNodeRepeat(DirectionFind, ACol);
 
-  if (not Result) and (FinderRec.IsFinded) then // до сега е имало намерено, и вече няма.
+  if (not Result) and (FinderRec.IsFinded) then // РґРѕ СЃРµРіР° Рµ РёРјР°Р»Рѕ РЅР°РјРµСЂРµРЅРѕ, Рё РІРµС‡Рµ РЅСЏРјР°.
   begin
     case DirectionFind of
-      dfForward: // намирано е напред. Затова се връщам на първия възел и търся първия след него от съответния тип
+      dfForward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°РїСЂРµРґ. Р—Р°С‚РѕРІР° СЃРµ РІСЂСЉС‰Р°Рј РЅР° РїСЉСЂРІРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ СЃР»РµРґ РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
       begin
         node := vtrPregledPat.RootNode.FirstChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
         data := pointer(PByte(node) + lenNode);
@@ -7613,7 +7660,7 @@ begin
         end;
         result := FindNodeRepeat(dfForward, ACol);
       end;
-      dfBackward: // намирано е назад. Затова се отивам на последния възел и търся първия преди него от съответния тип
+      dfBackward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°Р·Р°Рґ. Р—Р°С‚РѕРІР° СЃРµ РѕС‚РёРІР°Рј РЅР° РїРѕСЃР»РµРґРЅРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ РїСЂРµРґРё РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
       begin
         node := vtrPregledPat.RootNode.FirstChild.LastChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
         data := pointer(PByte(node) + lenNode);
@@ -7695,10 +7742,10 @@ var
             node := node.NextSibling;
           end
           else
-          begin  //  мкб-тата в подгрупата са свършили.
-            if node.Parent.NextSibling = nil then //Ако и подгрупата е последна, ще трябва да иде на следващата група.
+          begin  //  РјРєР±-С‚Р°С‚Р° РІ РїРѕРґРіСЂСѓРїР°С‚Р° СЃР° СЃРІСЉСЂС€РёР»Рё.
+            if node.Parent.NextSibling = nil then //РђРєРѕ Рё РїРѕРґРіСЂСѓРїР°С‚Р° Рµ РїРѕСЃР»РµРґРЅР°, С‰Рµ С‚СЂСЏР±РІР° РґР° РёРґРµ РЅР° СЃР»РµРґРІР°С‰Р°С‚Р° РіСЂСѓРїР°.
             begin
-              if node.Parent.parent.NextSibling = nil then // като свършат и групите да се върне на първата група, на първата подгрупа...
+              if node.Parent.parent.NextSibling = nil then // РєР°С‚Рѕ СЃРІСЉСЂС€Р°С‚ Рё РіСЂСѓРїРёС‚Рµ РґР° СЃРµ РІСЉСЂРЅРµ РЅР° РїСЉСЂРІР°С‚Р° РіСЂСѓРїР°, РЅР° РїСЉСЂРІР°С‚Р° РїРѕРґРіСЂСѓРїР°...
               begin
                 node := node.Parent.parent.Parent.FirstChild.FirstChild.FirstChild;
               end
@@ -7707,7 +7754,7 @@ var
                 node := node.Parent.parent.NextSibling.FirstChild.FirstChild;
               end;
             end
-            else// не е последна подгрупа
+            else// РЅРµ Рµ РїРѕСЃР»РµРґРЅР° РїРѕРґРіСЂСѓРїР°
             begin
               node := node.Parent.NextSibling.FirstChild;
             end;
@@ -7720,10 +7767,10 @@ var
             node := node.PrevSibling;
           end
           else
-          begin  //  мкб-тата в подгрупата са свършили.
-            if node.Parent.PrevSibling = nil then //Ако и подгрупата е първата, ще трябва да иде на предната група.
+          begin  //  РјРєР±-С‚Р°С‚Р° РІ РїРѕРґРіСЂСѓРїР°С‚Р° СЃР° СЃРІСЉСЂС€РёР»Рё.
+            if node.Parent.PrevSibling = nil then //РђРєРѕ Рё РїРѕРґРіСЂСѓРїР°С‚Р° Рµ РїСЉСЂРІР°С‚Р°, С‰Рµ С‚СЂСЏР±РІР° РґР° РёРґРµ РЅР° РїСЂРµРґРЅР°С‚Р° РіСЂСѓРїР°.
             begin
-              if node.Parent.parent.PrevSibling = nil then // като свършат и групите да отиде на последнат група, на последната подгрупа...
+              if node.Parent.parent.PrevSibling = nil then // РєР°С‚Рѕ СЃРІСЉСЂС€Р°С‚ Рё РіСЂСѓРїРёС‚Рµ РґР° РѕС‚РёРґРµ РЅР° РїРѕСЃР»РµРґРЅР°С‚ РіСЂСѓРїР°, РЅР° РїРѕСЃР»РµРґРЅР°С‚Р° РїРѕРґРіСЂСѓРїР°...
               begin
                 node := node.Parent.parent.Parent.LastChild.LastChild.LastChild;
               end
@@ -7732,7 +7779,7 @@ var
                 node := node.Parent.parent.PrevSibling.LastChild.LastChild;
               end;
             end
-            else// не е ппървата подгрупа
+            else// РЅРµ Рµ РїРїСЉСЂРІР°С‚Р° РїРѕРґРіСЂСѓРїР°
             begin
               node := node.Parent.PrevSibling.LastChild;
             end;
@@ -7761,10 +7808,10 @@ begin
         node := FinderRecMKB.node.NextSibling;
       end
       else
-      begin  //  мкб-тата в подгрупата са свършили.
-        if FinderRecMKB.node.Parent.NextSibling = nil then //Ако и подгрупата е последна, ще трябва да иде на следващата група.
+      begin  //  РјРєР±-С‚Р°С‚Р° РІ РїРѕРґРіСЂСѓРїР°С‚Р° СЃР° СЃРІСЉСЂС€РёР»Рё.
+        if FinderRecMKB.node.Parent.NextSibling = nil then //РђРєРѕ Рё РїРѕРґРіСЂСѓРїР°С‚Р° Рµ РїРѕСЃР»РµРґРЅР°, С‰Рµ С‚СЂСЏР±РІР° РґР° РёРґРµ РЅР° СЃР»РµРґРІР°С‰Р°С‚Р° РіСЂСѓРїР°.
         begin
-          if FinderRecMKB.node.Parent.parent.NextSibling = nil then // като свършат и групите да се върне на първата група, на първата подгрупа...
+          if FinderRecMKB.node.Parent.parent.NextSibling = nil then // РєР°С‚Рѕ СЃРІСЉСЂС€Р°С‚ Рё РіСЂСѓРїРёС‚Рµ РґР° СЃРµ РІСЉСЂРЅРµ РЅР° РїСЉСЂРІР°С‚Р° РіСЂСѓРїР°, РЅР° РїСЉСЂРІР°С‚Р° РїРѕРґРіСЂСѓРїР°...
           begin
             node := FinderRecMKB.node.Parent.parent.Parent.FirstChild.FirstChild.FirstChild;
           end
@@ -7773,7 +7820,7 @@ begin
             node := FinderRecMKB.node.Parent.parent.NextSibling.FirstChild.FirstChild;
           end;
         end
-        else// не е последна подгрупа
+        else// РЅРµ Рµ РїРѕСЃР»РµРґРЅР° РїРѕРґРіСЂСѓРїР°
         begin
           node :=FinderRecMKB.node.Parent.NextSibling.FirstChild;
         end;
@@ -7803,10 +7850,10 @@ begin
 
   Result := FindNodeRepeat(DirectionFind, ACol);
 
-  if (not Result) and (FinderRecMKB.IsFinded) then // до сега е имало намерено, и вече няма.
+  if (not Result) and (FinderRecMKB.IsFinded) then // РґРѕ СЃРµРіР° Рµ РёРјР°Р»Рѕ РЅР°РјРµСЂРµРЅРѕ, Рё РІРµС‡Рµ РЅСЏРјР°.
   begin
     case DirectionFind of
-      dfForward: // намирано е напред. Затова се връщам на първия възел и търся първия след него от съответния тип
+      dfForward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°РїСЂРµРґ. Р—Р°С‚РѕРІР° СЃРµ РІСЂСЉС‰Р°Рј РЅР° РїСЉСЂРІРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ СЃР»РµРґ РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
       begin
         node := vtrTemp.RootNode.FirstChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
         data := pointer(PByte(node) + lenNode);
@@ -7817,7 +7864,7 @@ begin
         end;
         result := FindNodeRepeat(dfForward, ACol);
       end;
-      dfBackward: // намирано е назад. Затова се отивам на последния възел и търся първия преди него от съответния тип
+      dfBackward: // РЅР°РјРёСЂР°РЅРѕ Рµ РЅР°Р·Р°Рґ. Р—Р°С‚РѕРІР° СЃРµ РѕС‚РёРІР°Рј РЅР° РїРѕСЃР»РµРґРЅРёСЏ РІСЉР·РµР» Рё С‚СЉСЂСЃСЏ РїСЉСЂРІРёСЏ РїСЂРµРґРё РЅРµРіРѕ РѕС‚ СЃСЉРѕС‚РІРµС‚РЅРёСЏ С‚РёРї
       begin
         node := vtrTemp.RootNode.FirstChild.LastChild; //pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
         data := pointer(PByte(node) + lenNode);
@@ -7859,9 +7906,9 @@ begin
     case data.vid of
       vvPregled:
       begin
-        if CollPregled.getIntMap(data.DataPos, word(PregledNew_ID)) = 0 then
+        if Adb_DM.CollPregled.getIntMap(data.DataPos, word(PregledNew_ID)) = 0 then
         begin
-          ListPregledLinkForInsert.Add(RunNode);
+          Adb_DM.ListPregledLinkForInsert.Add(RunNode);
         end;
       end;
     end;
@@ -7884,7 +7931,7 @@ var
 begin
   Result := nil;
   bufLink := AspectsLinkPatPregFile.Buf;
-  BufADB := AspectsHipFile.Buf;
+  BufADB := Adb_DM.AdbMain.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(bufLink));
   FPosLinkData := pCardinalData^;
@@ -8111,7 +8158,7 @@ end;
 //    try
 //      try
 //        FillCertInDoctors;
-//        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+//        if CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
 //        begin
 //          edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
 //          CollDoctor.Items[0].Cert.Clone(CertForThread);
@@ -8132,7 +8179,7 @@ end;
 ////            EditPregX009(preg.FNode);
 ////          end;
 //        end
-//        else // Не е намерен подпис за доктора
+//        else // РќРµ Рµ РЅР°РјРµСЂРµРЅ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
 //        begin
 //          // zzzzzzzzzzzzz
 //        end;
@@ -8150,7 +8197,7 @@ end;
 //  begin
 //    try
 //      try
-//        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+//        if CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
 //        begin
 //          if CurrentCert = nil then
 //            CurrentCert := TelX509Certificate.Create(self);
@@ -8223,11 +8270,11 @@ begin
     try
       try
         FillCertInDoctors;
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
-          edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          edtCertNom.Text := BuildHexString(Adb_DM.CollDoctor.Items[0].Cert.SerialNumber);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
           GetTokenNzis(Sender);
           if edtToken.Text <> '' then
           begin
@@ -8235,7 +8282,7 @@ begin
             GetPlanedTypeL009(preg.FNode);
           end;
         end
-        else // Не е намерен подпис за доктора
+        else // РќРµ Рµ РЅР°РјРµСЂРµРЅ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           // zzzzzzzzzzzzz
         end;
@@ -8250,12 +8297,12 @@ begin
   begin
     try
       try
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           if CurrentCert = nil then
             CurrentCert := TelX509Certificate.Create(self);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
         end
         else
         begin
@@ -8336,11 +8383,11 @@ begin
     try
       try
         FillCertInDoctors;
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
-          edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          edtCertNom.Text := BuildHexString(Adb_DM.CollDoctor.Items[0].Cert.SerialNumber);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
           GetTokenNzis(sender);
           //if edtToken.Text = '' then
 //          begin
@@ -8364,7 +8411,7 @@ begin
             OfLinePregX013(preg.FNode);
           end;
         end
-        else // Не е намерен подпис за доктора
+        else // РќРµ Рµ РЅР°РјРµСЂРµРЅ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           // zzzzzzzzzzzzz
         end;
@@ -8378,12 +8425,12 @@ begin
   begin
     try
       try
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           if CurrentCert = nil then
             CurrentCert := TelX509Certificate.Create(self);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
         end
         else
         begin
@@ -8429,11 +8476,11 @@ begin
     try
       try
         FillCertInDoctors;
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
-          edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          edtCertNom.Text := BuildHexString(Adb_DM.CollDoctor.Items[0].Cert.SerialNumber);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
           GetTokenNzis(Sender);
           if edtToken.Text <> '' then
           begin
@@ -8443,7 +8490,7 @@ begin
             OpenPregX001(preg.FNode);
           end;
         end
-        else // Не е намерен подпис за доктора
+        else // РќРµ Рµ РЅР°РјРµСЂРµРЅ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           // zzzzzzzzzzzzz
         end;
@@ -8461,12 +8508,12 @@ begin
   begin
     try
       try
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_DM.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           if CurrentCert = nil then
             CurrentCert := TelX509Certificate.Create(self);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_DM.CollDoctor.Items[0].Cert.Clone(CurrentCert);
         end
         else
         begin
@@ -8535,7 +8582,7 @@ Exit;
   case Vid of
     vvPatient:
     begin
-      CollPatient.OnSetTextSearchEDT(Text, field, Condition);
+      Adb_DM.CollPatient.OnSetTextSearchEDT(Text, field, Condition);
       thrSearch.start;
     end;
     vvPregled:
@@ -8548,7 +8595,7 @@ Exit;
       begin
         //include(CollPregForSearch.PRecordSearch.setProp, TPregledNewItem.TPropertyIndex(edt.Field));
       end;
-      CollPregForSearch.PRecordSearch.ANAMN  :=  AnsiUpperCase(Text);
+      //CollPregForSearch.PRecordSearch.ANAMN  :=  AnsiUpperCase(Text);
       thrSearch.start;
     end;
   end;
@@ -8557,7 +8604,7 @@ end;
 procedure TfrmSuperHip.OnShowFindFprm(Sender: TObject);
 var
   i: Integer;
-  act: TAsectTypeKind;
+  act: TAspectTypeKind;
   edt: FMX.Edit.TEdit;
   logPat: TLogicalPatientNew;
   expPat: TExpander;
@@ -8569,7 +8616,7 @@ end;
 procedure TfrmSuperHip.OnShowGridSearch(sender: TObject);
 begin
   //Elapsed := Stopwatch.Elapsed;
-  //mmoTest.Lines.Add( Format('loopSearch за %f',[Elapsed.TotalMilliseconds]));
+  //mmoTest.Lines.Add( Format('loopSearch Р·Р° %f',[Elapsed.TotalMilliseconds]));
   SendMessage(Self.Handle, WM_SHOW_GRID, 0, 0);
 end;
 
@@ -8611,61 +8658,61 @@ begin
       aspVersion := word(p^);
       inc(aspPos, 2);
 
-      case collType of // в зависимост от това какъв е типа на колекцията.
+      case collType of // РІ Р·Р°РІРёСЃРёРјРѕСЃС‚ РѕС‚ С‚РѕРІР° РєР°РєСЉРІ Рµ С‚РёРїР° РЅР° РєРѕР»РµРєС†РёСЏС‚Р°.
         ctPractica:
         begin
-          CollPractica.OpenAdbFull(aspPos);
+          Adb_DM.CollPractica.OpenAdbFull(aspPos);
         end;
         ctPregledNew:
         begin
-          Inc(aspPos, (CollPregled.FieldCount) * 4);
-          CollPregled.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollPregled.FieldCount) * 4);
+          Adb_DM.CollPregled.IncCntInADB;
         end;
         ctPatientNew:
         begin
-          Inc(aspPos, (CollPatient.FieldCount) * 4);
-          CollPatient.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollPatient.FieldCount) * 4);
+          Adb_DM.CollPatient.IncCntInADB;
         end;
         ctPatientNZOK:
         begin
-          Inc(aspPos, (CollPatPis.FieldCount) * 4);
-          CollPatPis.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollPatPis.FieldCount) * 4);
+          Adb_DM.CollPatPis.IncCntInADB;
         end;
         ctDiagnosis:
         begin
           //CollDiag.OpenAdbFull(aspPos);
-          Inc(aspPos, (CollDiag.FieldCount) * 4);
-          CollDiag.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
+          Adb_DM.CollDiag.IncCntInADB;
         end;
         ctDiagnosisDel:
         begin
-          Inc(aspPos, (CollDiag.FieldCount) * 4);
+          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
         end;
         ctMDN:
         begin
-          Inc(aspPos, (CollMDN.FieldCount) * 4);
-          CollMDN.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollMDN.FieldCount) * 4);
+          Adb_DM.CollMDN.IncCntInADB;
         end;
         ctDoctor:
         begin
-          CollDoctor.OpenAdbFull(aspPos);
+          Adb_DM.CollDoctor.OpenAdbFull(aspPos);
         end;
         ctOtherDoctor:
         begin
-          CollOtherDoctor.OpenAdbFull(aspPos);
+          Adb_DM.CollOtherDoctor.OpenAdbFull(aspPos);
         end;
         ctUnfav:
         begin
-          Inc(aspPos, (CollUnfav.FieldCount) * 4);
-          CollUnfav.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
+          Adb_DM.CollUnfav.IncCntInADB;
         end;
         ctUnfavDel:
         begin
-          Inc(aspPos, (CollUnfav.FieldCount) * 4);
+          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
         end;
         ctMkb:
         begin
-          CollMkb.OpenAdbFull(aspPos);
+          Adb_DM.CollMkb.OpenAdbFull(aspPos);
         end;
         ctEventsManyTimes:
         begin
@@ -8674,221 +8721,130 @@ begin
         end;
         ctExam_boln_list:
         begin
-          Inc(aspPos, (CollEbl.FieldCount) * 4);
-          CollEbl.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollEbl.FieldCount) * 4);
+          Adb_DM.CollEbl.IncCntInADB;
         end;
         ctExamAnalysis:
         begin
-          Inc(aspPos, (CollExamAnal.FieldCount) * 4);
-          CollExamAnal.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollExamAnal.FieldCount) * 4);
+          Adb_DM.CollExamAnal.IncCntInADB;
         end;
         ctExamImmunization:
         begin
-          Inc(aspPos, (CollExamImun.FieldCount) * 4);
-          CollExamImun.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollExamImun.FieldCount) * 4);
+          Adb_DM.CollExamImun.IncCntInADB;
         end;
         ctProcedures:
         begin
-          Inc(aspPos, (CollProceduresNomen.FieldCount) * 4);
-          CollProceduresNomen.IncCntInADB;
+          Inc(aspPos, (Adb_DM.ProceduresNomenColl.FieldCount) * 4);
+          Adb_DM.ProceduresNomenColl.IncCntInADB;
         end;
         ctKARTA_PROFILAKTIKA2017:
         begin
-          Inc(aspPos, (CollCardProf.FieldCount) * 4);
-          CollCardProf.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollCardProf.FieldCount) * 4);
+          Adb_DM.CollCardProf.IncCntInADB;
         end;
         ctBLANKA_MED_NAPR:
         begin
-          Inc(aspPos, (CollMedNapr.FieldCount) * 4);
-          CollMedNapr.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollMedNapr.FieldCount) * 4);
+          Adb_DM.CollMedNapr.IncCntInADB;
         end;
         ctBLANKA_MED_NAPR_3A:
         begin
-          Inc(aspPos, (CollMedNapr3A.FieldCount) * 4);
-          CollMedNapr3A.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollMedNapr3A.FieldCount) * 4);
+          Adb_DM.CollMedNapr3A.IncCntInADB;
         end;
         ctHOSPITALIZATION:
         begin
-          Inc(aspPos, (CollMedNaprHosp.FieldCount) * 4);
-          CollMedNaprHosp.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollMedNaprHosp.FieldCount) * 4);
+          Adb_DM.CollMedNaprHosp.IncCntInADB;
         end;
         ctEXAM_LKK:
         begin
-          Inc(aspPos, (CollMedNaprLkk.FieldCount) * 4);
-          CollMedNaprLkk.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollMedNaprLkk.FieldCount) * 4);
+          Adb_DM.CollMedNaprLkk.IncCntInADB;
         end;
         ctINC_MDN:
         begin
           //CollIncMdn.OpenAdbFull(aspPos);
-          Inc(aspPos, (CollIncMdn.FieldCount) * 4);
-          CollIncMdn.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollIncMdn.FieldCount) * 4);
+          Adb_DM.CollIncMdn.IncCntInADB;
         end;
         ctINC_NAPR:
         begin
           //CollIncMdn.OpenAdbFull(aspPos);
-          Inc(aspPos, (CollIncMN.FieldCount) * 4);
-          CollIncMN.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollIncMN.FieldCount) * 4);
+          Adb_DM.CollIncMN.IncCntInADB;
         end;
         ctNZIS_PLANNED_TYPE:
         begin
-          Inc(aspPos, (CollNZIS_PLANNED_TYPE.FieldCount) * 4);
-          CollNZIS_PLANNED_TYPE.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_PLANNED_TYPE.FieldCount) * 4);
+          Adb_DM.CollNZIS_PLANNED_TYPE.IncCntInADB;
         end;
         ctNZIS_QUESTIONNAIRE_RESPONSE:
         begin
-          Inc(aspPos, (CollNZIS_QUESTIONNAIRE_RESPONSE.FieldCount) * 4);
-          CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FieldCount) * 4);
+          Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
         end;
         ctNZIS_QUESTIONNAIRE_ANSWER:
         begin
-          Inc(aspPos, (CollNZIS_QUESTIONNAIRE_ANSWER.FieldCount) * 4);
-          CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FieldCount) * 4);
+          Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
         end;
         ctNZIS_DIAGNOSTIC_REPORT:
         begin
-          Inc(aspPos, (CollNZIS_DIAGNOSTIC_REPORT.FieldCount) * 4);
-          CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.FieldCount) * 4);
+          Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
         end;
         ctNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
-          Inc(aspPos, (CollNZIS_RESULT_DIAGNOSTIC_REPORT.FieldCount) * 4);
-          CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.FieldCount) * 4);
+          Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
         end;
         ctNZIS_ANSWER_VALUE:
         begin
-          Inc(aspPos, (CollNZIS_ANSWER_VALUE.FieldCount) * 4);
-          CollNZIS_ANSWER_VALUE.IncCntInADB;
+          Inc(aspPos, (Adb_DM.CollNZIS_ANSWER_VALUE.FieldCount) * 4);
+          Adb_DM.CollNZIS_ANSWER_VALUE.IncCntInADB;
         end;
         ctNzisToken:
         begin
-          CollNzisToken.OpenAdbFull(aspPos);
+          Adb_DM.CollNzisToken.OpenAdbFull(aspPos);
         end;
         ctCertificates:
         begin
-          CollCertificates.OpenAdbFull(aspPos);
+          Adb_DM.CollCertificates.OpenAdbFull(aspPos);
         end;
         ctAddres:
         begin
           Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
           FNasMesto.addresColl.IncCntInADB;
         end;
+      else
+        //raise Exception.Create('РќРµРїРѕР·РЅР°С‚ : collType' + TRttiEnumerationType.GetName(collType));
       end;
     end;
   end;
 
-  //Elapsed := Stopwatch.Elapsed;
-  CollPatient.Buf :=  ADB.Buf;
-  CollPatient.posData := ADB.FPosData;
-  CollPatPis.Buf :=  ADB.Buf;
-  CollPatPis.posData := ADB.FPosData;
-  CollPregled.Buf :=  ADB.Buf;
-  CollPregled.posData := ADB.FPosData;
-  CollDiag.Buf :=  ADB.Buf;
-  CollDiag.posData := ADB.FPosData;
-  CollMDN.Buf :=  ADB.Buf;
-  CollMDN.posData := ADB.FPosData;
-  CollDoctor.Buf :=  ADB.Buf;
-  CollDoctor.posData := ADB.FPosData;
-  CollOtherDoctor.Buf :=  ADB.Buf;
-  CollOtherDoctor.posData := ADB.FPosData;
-  CollUnfav.Buf :=  ADB.Buf;
-  CollUnfav.posData := ADB.FPosData;
-  CollMkb.Buf :=  ADB.Buf;
-  CollMkb.posData := ADB.FPosData;
-  CollPractica.Buf :=  ADB.Buf;
-  CollPractica.posData := ADB.FPosData;
-  CollEbl.Buf :=  ADB.Buf;
-  CollEbl.posData := ADB.FPosData;
-  CollExamAnal.Buf :=  ADB.Buf;
-  CollExamAnal.posData := ADB.FPosData;
-  CollExamImun.Buf :=  ADB.Buf;
-  CollExamImun.posData := ADB.FPosData;
-  CollProceduresNomen.Buf :=  ADB.Buf;
-  CollProceduresNomen.posData := ADB.FPosData;
-  CollCardProf.Buf :=  ADB.Buf;
-  CollCardProf.posData := ADB.FPosData;
-  CollMedNapr.Buf :=  ADB.Buf;
-  CollMedNapr.posData := ADB.FPosData;
-  CollMedNapr3A.Buf :=  ADB.Buf;
-  CollMedNapr3A.posData := ADB.FPosData;
-  CollMedNaprHosp.Buf :=  ADB.Buf;
-  CollMedNaprHosp.posData := ADB.FPosData;
-  CollMedNaprLkk.Buf :=  ADB.Buf;
-  CollMedNaprLkk.posData := ADB.FPosData;
-  CollIncMdn.Buf :=  ADB.Buf;
-  CollIncMdn.posData := ADB.FPosData;
-  CollIncMN.Buf :=  ADB.Buf;
-  CollIncMN.posData := ADB.FPosData;
-  CollNZIS_PLANNED_TYPE.Buf :=  ADB.Buf;
-  CollNZIS_PLANNED_TYPE.posData := ADB.FPosData;
-  CollNZIS_QUESTIONNAIRE_RESPONSE.Buf :=  ADB.Buf;
-  CollNZIS_QUESTIONNAIRE_RESPONSE.posData := ADB.FPosData;
-  CollNZIS_QUESTIONNAIRE_ANSWER.Buf :=  ADB.Buf;
-  CollNZIS_QUESTIONNAIRE_ANSWER.posData := ADB.FPosData;
-  CollNZIS_DIAGNOSTIC_REPORT.Buf :=  ADB.Buf;
-  CollNZIS_DIAGNOSTIC_REPORT.posData := ADB.FPosData;
-  CollNzis_RESULT_DIAGNOSTIC_REPORT.Buf :=  ADB.Buf;
-  CollNzis_RESULT_DIAGNOSTIC_REPORT.posData := ADB.FPosData;
-  CollNZIS_ANSWER_VALUE.Buf :=  ADB.Buf;
-  CollNZIS_ANSWER_VALUE.posData := ADB.FPosData;
-  CollNzisToken.Buf := ADB.Buf;
-  CollNzisToken.posData := ADB.FPosData;
-  CollCertificates.Buf := ADB.Buf;
-  CollCertificates.posData := ADB.FPosData;
+  
   FNasMesto.addresColl.Buf := ADB.Buf;
   FNasMesto.addresColl.posData := ADB.FPosData;
-  
+
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµ Р·Р° %f',[Elapsed.TotalMilliseconds]));
   mmoTest.Lines.endUpdate;
 
   CalcStatusDB;
-  FDbHelper.CollPreg := CollPregled;
-  FDbHelper.CollPat := CollPatient;
-  FDbHelper.CollMdn := CollMDN;
-  FDbHelper.mkbColl := CollMkb;
-  FDbHelper.CollDoctor := CollDoctor;
-
-  FDbHelper.collCl022 := CL022Coll;
-  FDBHelper.CollEbl := CollEbl;
-  FDBHelper.CollDiag := CollDiag;
   FDBHelper.AdbHip := ADB;
   FDBHelper.Fdm := Fdm;
   FDBHelper.NasMesto := FNasMesto;
-  FDBHelper.AdbDM := Adb_DM;
+  FDBHelper.Adb_DM := Adb_DM;
 
 
   FDBHelper.AdbLink := AspectsLinkPatPregFile;
-  Adb_DM.AdbHip := ADB;
+  Adb_DM.AdbMain := ADB;
   Adb_DM.AdbLink := AspectsLinkPatPregFile;
   Adb_DM.NasMesto := FNasMesto;
-
-  Adb_DM.CollDoc := CollDoctor;
-  Adb_DM.CollPrac := CollPractica;
-  Adb_DM.CollPatient := CollPatient;
-  Adb_DM.CollCert := CollCertificates;
-  Adb_DM.CollPregled := CollPregled;
-  Adb_DM.CollMDN := CollMDN;
-  Adb_DM.CollMedNapr := CollMedNapr;
-  Adb_DM.CollMedNaprHosp := CollMedNaprHosp;
-  Adb_DM.CollMedNaprLkk := CollMedNaprLkk;
-  Adb_DM.CollIncMN := CollIncMN;
-  Adb_DM.CollOtherDoctor := CollOtherDoctor;
-
-  Adb_DM.CollAnalsNew := CollAnalsNew;
-
-
-  Adb_DM.CollExamAnal := CollExamAnal;
-  Adb_DM.CollExamImun := CollExamImun;
-  Adb_DM.CollDiag := CollDiag;
-  Adb_DM.CollNZIS_PLANNED_TYPE := CollNZIS_PLANNED_TYPE;
-  Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE := CollNZIS_QUESTIONNAIRE_RESPONSE;
-  Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER := CollNZIS_QUESTIONNAIRE_ANSWER;
-  Adb_DM.CollNZIS_ANSWER_VALUEColl := CollNZIS_ANSWER_VALUE;
-
-  Adb_DM.collNZIS_DIAGNOSTIC_REPORT := CollNZIS_DIAGNOSTIC_REPORT;
-  Adb_DM.collNZIS_RESULT_DIAGNOSTIC_REPORT := CollNzis_RESULT_DIAGNOSTIC_REPORT;
 
 end;
 
@@ -8915,8 +8871,8 @@ begin
 
   if AspectsNomHipFile.Buf <> nil then
   begin
-    CollAnalsNew.Buf := AspectsNomHipFile.Buf;
-    CollAnalsNew.posData := AspectsNomHipFile.FPosData;
+    Adb_DM.CollAnalsNew.Buf := AspectsNomHipFile.Buf;
+    Adb_DM.CollAnalsNew.posData := AspectsNomHipFile.FPosData;
 
 
     pCardinalData := pointer(PByte(AspectsNomHipFile.Buf));
@@ -8942,9 +8898,9 @@ begin
         case collType of
           ctAnalsNew:
           begin
-            anal := TAnalsNewItem(CollAnalsNew.Add);
+            anal := TAnalsNewItem(Adb_DM.CollAnalsNew.Add);
             anal.DataPos := aspPos;
-            Inc(aspPos, (CollAnalsNew.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CollAnalsNew.FieldCount) * 4);
           end;
 
         end;
@@ -8988,6 +8944,7 @@ begin
     //AspectsNomFile.Free;
   try
     AspectsNomFile := TMappedFile.Create(FileName, false, TGUID.Empty);
+
   except
 
   end;
@@ -9019,91 +8976,91 @@ begin
         case collType of
           ctCL132:
           begin
-            Cl132 := TCL132Item(CL132Coll.Add);
+            Cl132 := TCL132Item(Adb_DM.CL132Coll.Add);
             Cl132.DataPos := aspPos;
-            Inc(aspPos, (CL132Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL132Coll.FieldCount) * 4);
           end;
           ctCL050:
           begin
-            Cl050 := TCL050Item(CL050Coll.Add);
+            Cl050 := TCL050Item(Adb_DM.CL050Coll.Add);
             Cl050.DataPos := aspPos;
-            Inc(aspPos, (CL050Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL050Coll.FieldCount) * 4);
           end;
           ctCL006:
           begin
-            Cl006 := TCL006Item(CL006Coll.Add);
+            Cl006 := TCL006Item(Adb_DM.CL006Coll.Add);
             Cl006.DataPos := aspPos;
-            Inc(aspPos, (CL006Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL006Coll.FieldCount) * 4);
           end;
           ctCL022:
           begin
-            Cl022 := TCL022Item(CL022Coll.Add);
+            Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
             Cl022.DataPos := aspPos;
-            Inc(aspPos, (CL022Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL022Coll.FieldCount) * 4);
           end;
           ctCL024:
           begin
-            Cl024 := TCL024Item(CL024Coll.Add);
+            Cl024 := TCL024Item(Adb_DM.CL024Coll.Add);
             Cl024.DataPos := aspPos;
-            Inc(aspPos, (CL024Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL024Coll.FieldCount) * 4);
           end;
           ctCL037:
           begin
-            Cl037 := TCL037Item(CL037Coll.Add);
+            Cl037 := TCL037Item(Adb_DM.CL037Coll.Add);
             Cl037.DataPos := aspPos;
-            Inc(aspPos, (CL037Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL037Coll.FieldCount) * 4);
           end;
           ctCL038:
           begin
-            Cl038 := TCL038Item(CL038Coll.Add);
+            Cl038 := TCL038Item(Adb_DM.CL038Coll.Add);
             Cl038.DataPos := aspPos;
-            Inc(aspPos, (CL038Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL038Coll.FieldCount) * 4);
           end;
           ctCL088:
           begin
-            Cl088 := TCL088Item(CL088Coll.Add);
+            Cl088 := TCL088Item(Adb_DM.CL088Coll.Add);
             Cl088.DataPos := aspPos;
-            Inc(aspPos, (CL088Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.CL088Coll.FieldCount) * 4);
           end;
 
 
           ctCL134:
           begin
-            Cl134 := TCl134Item(Cl134Coll.Add);
+            Cl134 := TCl134Item(Adb_DM.Cl134Coll.Add);
             Cl134.DataPos := aspPos;
-            Inc(aspPos, (Cl134Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.Cl134Coll.FieldCount) * 4);
           end;
           ctCL139:
           begin
-            Cl139 := TCl139Item(Cl139Coll.Add);
+            Cl139 := TCl139Item(Adb_DM.Cl139Coll.Add);
             Cl139.DataPos := aspPos;
-            Inc(aspPos, (Cl139Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.Cl139Coll.FieldCount) * 4);
           end;
           ctCL142:
           begin
-            Cl142 := TCl142Item(Cl142Coll.Add);
+            Cl142 := TCl142Item(Adb_DM.Cl142Coll.Add);
             Cl142.DataPos := aspPos;
-            Inc(aspPos, (Cl142Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.Cl142Coll.FieldCount) * 4);
           end;
           ctCL144:
           begin
-            Cl144 := TRealCl144Item(Cl144Coll.Add);
+            Cl144 := TRealCl144Item(Adb_DM.Cl144Coll.Add);
             Cl144.DataPos := aspPos;
-            Inc(aspPos, (Cl144Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.Cl144Coll.FieldCount) * 4);
           end;
 
           ctPR001:
           begin
-            PR001 := TPR001Item(PR001Coll.Add);
+            PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
             PR001.DataPos := aspPos;
-            Inc(aspPos, (PR001Coll.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.PR001Coll.FieldCount) * 4);
           end;
 
           ctNomenNzis:
           begin
             //NomenNzis := TNomenNzisItem(NomenNzisColl.Add);
             //NomenNzis.DataPos := aspPos;
-            Inc(aspPos, (NomenNzisColl.FieldCount) * 4);
+            Inc(aspPos, (Adb_DM.NomenNzisColl.FieldCount) * 4);
           end;
         end;
       end;
@@ -9119,49 +9076,14 @@ begin
 
 
 
-  CL132Coll.Buf := AspectsNomFile.Buf;
-  CL132Coll.posData := AspectsNomFile.FPosData;
-
-  PR001Coll.Buf := AspectsNomFile.Buf;
-  PR001Coll.posData := AspectsNomFile.FPosData;
-
-  CL050Coll.Buf := AspectsNomFile.Buf;
-  CL050Coll.posData := AspectsNomFile.FPosData;
-  Cl134Coll.Buf := AspectsNomFile.Buf;
-  Cl134Coll.posData := AspectsNomFile.FPosData;
-  Cl139Coll.Buf := AspectsNomFile.Buf;
-  Cl139Coll.posData := AspectsNomFile.FPosData;
-  Cl139Coll.IndexValue(CL139_cl138);
-  Cl139Coll.SortByIndexAnsiString;
-  CL006Coll.Buf := AspectsNomFile.Buf;
-  CL006Coll.posData := AspectsNomFile.FPosData;
-  CL022Coll.Buf := AspectsNomFile.Buf;
-  CL022Coll.posData := AspectsNomFile.FPosData;
-  CL024Coll.Buf := AspectsNomFile.Buf;
-  CL024Coll.posData := AspectsNomFile.FPosData;
-  CL037Coll.Buf := AspectsNomFile.Buf;
-  CL037Coll.posData := AspectsNomFile.FPosData;
-  CL038Coll.Buf := AspectsNomFile.Buf;
-  CL038Coll.posData := AspectsNomFile.FPosData;
-  CL088Coll.Buf := AspectsNomFile.Buf;
-  CL088Coll.posData := AspectsNomFile.FPosData;
-  CL142Coll.Buf := AspectsNomFile.Buf;
-  CL142Coll.posData := AspectsNomFile.FPosData;
-  CL144Coll.Buf := AspectsNomFile.Buf;
-  CL144Coll.posData := AspectsNomFile.FPosData;
-
-  NomenNzisColl.Buf := AspectsNomFile.Buf;
-  NomenNzisColl.posData := AspectsNomFile.FPosData;
+  Adb_DM.AdbNomenNzis := AspectsNomFile;
   FDBHelper.AdbNomenNzis := AspectsNomFile;
 
-  Adb_DM.CollCL022 := CL022Coll;
-  Adb_DM.collCl132 := CL132Coll;
-  Adb_DM.collCl139 := CL139Coll;
-  Adb_DM.collCl144 := CL144Coll;
+
   OpenCmdNomenNzis(AspectsNomFile);
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.lines.add(Format('Р·Р°СЂРµР¶РґР°РЅРµ РѕС‚ Nom: %f', [Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.OpenCmd(ADB: TMappedFile);
@@ -9175,11 +9097,11 @@ begin
   begin
     streamCmdFile := TFileCMDStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
     FDBHelper.cmdFile := streamCmdFile;
-    CollPregled.cmdFile := streamCmdFile;
-    CollDoctor.cmdFile := streamCmdFile;
-    CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
-    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
-    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+    Adb_DM.CollPregled.cmdFile := streamCmdFile;
+    Adb_DM.CollDoctor.cmdFile := streamCmdFile;
+    Adb_DM.CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
+    Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+    Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
   end
   else
   begin
@@ -9195,7 +9117,7 @@ begin
     streamCmdFileTemp.Guid := ADB.GUID;
     //FDBHelper.cmdFile := streamCmdFile;
     //CollPregled.cmdFile := streamCmdFile;
-    CollDoctor.cmdFileTemp := streamCmdFileTemp;
+    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
     //CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
 //    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
 //    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
@@ -9206,7 +9128,7 @@ begin
 
     streamCmdFileTemp.Size := 100;
 
-    CollDoctor.cmdFileTemp := streamCmdFileTemp;
+    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
   end;
   streamCmdFileTemp.Position := streamCmdFileTemp.Size;
   Adb_DM.cmdFile := streamCmdFile;
@@ -9235,92 +9157,82 @@ begin
   end;
 
   streamCmdFileNomenNzis.Position := streamCmdFileNomenNzis.Size;
-  CL006Coll.cmdFile := streamCmdFileNomenNzis;
-  CL022Coll.cmdFile := streamCmdFileNomenNzis;
-  CL024Coll.cmdFile := streamCmdFileNomenNzis;
-  CL037Coll.cmdFile := streamCmdFileNomenNzis;
-  CL038Coll.cmdFile := streamCmdFileNomenNzis;
-  CL050Coll.cmdFile := streamCmdFileNomenNzis;
-  CL088Coll.cmdFile := streamCmdFileNomenNzis;
-  CL132Coll.cmdFile := streamCmdFileNomenNzis;
-  CL134Coll.cmdFile := streamCmdFileNomenNzis;
-  CL139Coll.cmdFile := streamCmdFileNomenNzis;
-  CL142Coll.cmdFile := streamCmdFileNomenNzis;
-  CL144Coll.cmdFile := streamCmdFileNomenNzis;
-  PR001Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL006Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL022Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL024Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL037Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL038Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL050Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL088Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL132Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL134Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL139Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL142Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.CL144Coll.cmdFile := streamCmdFileNomenNzis;
+  Adb_DM.PR001Coll.cmdFile := streamCmdFileNomenNzis;
 end;
 
 procedure TfrmSuperHip.OpenDB(index: integer);
-var
-  nodeLink: PVirtualNode;
 begin
-  if Assigned(AspectsHipFile) then
+  if index >= 0 then
+  begin
+    FFDbName := option.dblist[index];
+  end
+  else
+  begin
+    if ParamStr(3) = '' then
     begin
-      UnmapViewOfFile(AspectsHipFile.Buf);
-      FreeAndNil(AspectsHipFile);
-
-    end;
-    if AspectsLinkPatPregFile <> nil then
-    begin
-      vtrPregledPat.BeginUpdate;
-      nodeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
-      vtrPregledPat.InternalDisconnectNode(nodeLink, false);
-      UnmapViewOfFile(AspectsLinkPatPregFile.Buf);
-      FreeAndNil(AspectsLinkPatPregFile);
-      vtrPregledPat.Selected[vtrPregledPat.GetFirstSelected()] := False;
-      vtrPregledPat.CanClear := True;
-      vtrPregledPat.AddChild(nil, nil);
-      //vtrPregledPat.Clear;
-
-      vtrPregledPat.CanClear := false;
-      vtrPregledPat.Repaint;
-      vtrPregledPat.endUpdate;
-    end;
-    if index >= 0 then
-    begin
-      FFDbName := option.dblist[index];
+      FFDbName := '';
     end
     else
     begin
-      if ParamStr(3) = '' then
-      begin
-        FFDbName := '';
-      end
-      else
-      begin
-        FFDbName := ParamStr(3);
-      end;
+      FFDbName := ParamStr(3);
     end;
-    ClearColl;
-    if FmxProfForm = nil then
-      InitFMXDyn;
-    FmxProfForm.PatientColl := CollPatient;
-    FmxProfForm.DoctorColl := CollDoctor;
-    FmxProfForm.PregledColl := CollPregled;
-    FmxProfForm.MKBColl := CollMkb;
-    FmxProfForm.MdnColl := CollMdn;
-    FmxProfForm.ExamAnalColl := CollExamAnal;
-    FmxProfForm.AnswValuesColl := CollNZIS_ANSWER_VALUE;
-    FmxProfForm.ResDiagRepColl := CollNzis_RESULT_DIAGNOSTIC_REPORT;
-    FmxProfForm.PlanedTypeColl := CollNZIS_PLANNED_TYPE;
-    FmxProfForm.DiagColl := CollDiag;
-    FmxProfForm.IncNaprColl := CollIncMN;
-    FmxProfForm.CollOtherDoctor := CollOtherDoctor;
-
-
-    //if Assigned(streamCmdFile) then
+  end;
+  Adb_DM.OpenDB(FFDbName);
+//
+//  if Assigned(Adb_DM.AdbMain) then
 //    begin
-//      streamCmdFile.Free;
+//      UnmapViewOfFile(Adb_DM.AdbMain.Buf);
+//      //FreeAndNil(Adb_DM.AdbMain);
+//
 //    end;
-    vtrGraph.DeleteChildren(vRootGraph);
-    lstPatGraph.Clear;
-    if thrHistPerf <> nil then
-      thrHistPerf.stop := true;
-    //if not nnn then
-    begin
-      initDB();
-      vtrFDB.Repaint;
-    end;
+//    if AspectsLinkPatPregFile <> nil then
+//    begin
+//      vtrPregledPat.BeginUpdate;
+//      nodeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+//      vtrPregledPat.InternalDisconnectNode(nodeLink, false);
+//      UnmapViewOfFile(AspectsLinkPatPregFile.Buf);
+//      FreeAndNil(AspectsLinkPatPregFile);
+//      vtrPregledPat.Selected[vtrPregledPat.GetFirstSelected()] := False;
+//      vtrPregledPat.CanClear := True;
+//      vtrPregledPat.AddChild(nil, nil);
+//      //vtrPregledPat.Clear;
+//
+//      vtrPregledPat.CanClear := false;
+//      vtrPregledPat.Repaint;
+//      vtrPregledPat.endUpdate;
+//    end;
+//
+//   // ClearColl;
+//    if FmxProfForm = nil then
+//      InitFMXDyn;
+//
+//
+//
+//    //if Assigned(streamCmdFile) then
+////    begin
+////      streamCmdFile.Free;
+////    end;
+//    vtrGraph.DeleteChildren(vRootGraph);
+//    Adb_dm.lstPatGraph.Clear;
+//    if thrHistPerf <> nil then
+//      thrHistPerf.stop := true;
+//    //if not nnn then
+//    begin
+//      initDB();
+//      vtrFDB.Repaint;
+//    end;
 end;
 
 procedure TfrmSuperHip.OpenExcels;
@@ -9344,7 +9256,7 @@ begin
     end;
   end;
   xlsHipp.Refresh;
-  xlsHipp.Filename := 'D:\NzisSpec\НЗИС - Профилактика - Бизнес правила - v1.0.5.xlsx';
+  xlsHipp.Filename := 'D:\NzisSpec\РќР—РРЎ - РџСЂРѕС„РёР»Р°РєС‚РёРєР° - Р‘РёР·РЅРµСЃ РїСЂР°РІРёР»Р° - v1.0.5.xlsx';
   xlsHipp.Read;
   //xlsHipp.OnCellChanged := XLSSpreadSheet1CellChanged;
   //LoadVtrNomen;
@@ -9367,7 +9279,7 @@ begin
 //    end;
 //  end;
 //  xlsHippPregled.Refresh;
-//  xlsHippPregled.Filename := 'D:\Nzis\НЗИС Е-Преглед - API Спецификация v1.3.1.xlsx';
+//  xlsHippPregled.Filename := 'D:\Nzis\РќР—РРЎ Р•-РџСЂРµРіР»РµРґ - API РЎРїРµС†РёС„РёРєР°С†РёСЏ v1.3.1.xlsx';
 //  xlsHippPregled.Read;
 //  //xlsHippNomen.OnCellChanged := XLSSpreadSheet1CellChanged;
 //  LoadVtrPregled;
@@ -9390,7 +9302,7 @@ begin
 //    end;
 //  end;
 //  xlsHippPR001.Refresh;
-//  xlsHippPR001.Filename := 'D:\Nzis\НЗИС - Профилактика - Бизнес правила - v1.0.0.xlsx';
+//  xlsHippPR001.Filename := 'D:\Nzis\РќР—РРЎ - РџСЂРѕС„РёР»Р°РєС‚РёРєР° - Р‘РёР·РЅРµСЃ РїСЂР°РІРёР»Р° - v1.0.0.xlsx';
 //  xlsHippPR001.Read;
 end;
 
@@ -9562,7 +9474,7 @@ begin
   Elapsed := Stopwatch.Elapsed;
   tmpVtr.vtrNewAnal := vtrNewAnal;
 
-  mmotest.Lines.Add( Format('ЗарежданеLinkAnal %d за %f',[vtrNewAnal.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  mmotest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLinkAnal %d Р·Р° %f',[vtrNewAnal.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
   //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
   //PregledColl.ShowGrid(TeeGrid1);
 end;
@@ -9648,7 +9560,7 @@ begin
       node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
       //node.NodeHeight := 27;
       Exclude(node.States, vsSelected);
-      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -9686,7 +9598,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -9707,7 +9619,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         //Exclude(node.States, vsInitialized);
         data := pointer(PByte(node) + lenNode);
         //if data.vid <> vvPatient then
@@ -9740,7 +9652,7 @@ begin
   AspectsLinkPatPregFile.FStreamCmdFile := streamCmdFile;
   FDBHelper.AdbLink := AspectsLinkPatPregFile;
   FmxProfForm.AspLink := AspectsLinkPatPregFile;
-  Adb_DM.AdbHip := AspectsHipFile;
+  //Adb_DM.AdbMain := AspectsHipFile;
   Adb_DM.AdbLink := AspectsLinkPatPregFile;
 
   //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
@@ -9751,12 +9663,14 @@ begin
 
   //Elapsed := Stopwatch.Elapsed;
 
-  mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLink %d Р·Р° %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
   //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
   //PregledColl.ShowGrid(TeeGrid1);
 
   //FindOldItemsForInsert;
   CheckCollForSave;
+
+  
 end;
 
 procedure TfrmSuperHip.OpenPregX001(pregNode: PVirtualNode);
@@ -9783,9 +9697,6 @@ begin
   //nzisThr.StreamData := preg.FStreamNzis;
   nzisThr.token := '';//edtToken.Text;
   nzisThr.CurrentCert := nil;
-  nzisThr.PregColl := CollPregled;
-  nzisThr.CollNzisToken := CollNzisToken;
-  nzisThr.CollDoctor := CollDoctor;
   nzisThr.Resume;
 end;
 
@@ -9848,7 +9759,7 @@ begin
 
 
   InitHttpNzis;
-  InitColl;
+  //InitColl;
   InitAdb;
   InitVTRs;
 
@@ -9864,7 +9775,7 @@ begin
   pgcTree.ActivePage := nil;
   FFilterCountPregled := -1;
 
-  //InitFMXDyn;//zzzzzzzzzzzzzzzzzzzzzzzzzz много бавно
+  //InitFMXDyn;//zzzzzzzzzzzzzzzzzzzzzzzzzz РјРЅРѕРіРѕ Р±Р°РІРЅРѕ
   Elapsed := Stopwatch.Elapsed;
   InXmlStream := TStringStream.Create;
   streamRes := TMemoryStream.Create;
@@ -9873,23 +9784,23 @@ begin
   //Application.OnHint := OnApplicationHint;
 
 
-  mmoTest.Lines.Add( Format('create  за %f',[ Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('create  Р·Р° %f',[ Elapsed.TotalMilliseconds]));
   fmxCntrRoleBar.DoubleBuffered := false;
   fmxCntrDyn.DoubleBuffered := false;
-  tmpVtr := TTempVtrHelper.Create(vtrTemp, CollMkb, Adb_DM, CollDiag, CollDoctor, mmoTest, vNomenMKB, FmxProfForm);
+  tmpVtr := TTempVtrHelper.Create(vtrTemp, Adb_dm.CollMkb, Adb_DM, Adb_dm.CollDiag, Adb_dm.CollDoctor, mmoTest, vNomenMKB, FmxProfForm);
   Screen.HintFont.Size := 8;
 
   Stopwatch := TStopwatch.StartNew;
   FNasMesto := TRealNasMestoAspects.Create(vtrLinkNasMesta);
   FNasMesto.memotest := mmotest;
-  CollPatient.NasMesto := FNasMesto;
+  Adb_dm.CollPatient.NasMesto := FNasMesto;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('TRealNasMestoAspects.Create  за %f',[ Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('TRealNasMestoAspects.Create  Р·Р° %f',[ Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
   FNasMesto.LinkToColl;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  Р·Р° %f',[ Elapsed.TotalMilliseconds]));
   //sgctl1.Licence :=
 //  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3YmM5Y2IxYWIxMGE0NmUxODI2N2E5MTJkYTA2' +
 //  'ZTI3NiIsImV4cCI6MjE0NzQ4MzY0NywiaWF0IjoxNTYwOTUwMjcyLCJyaWdodHMiOlsiU0lHX1NES19DT1JFI' +
@@ -9914,16 +9825,16 @@ var
   nomen: TNomenNzisRec;
 begin
   FreeAndNil(ListHistoryNav);
-  FreeColl;
+  //FreeColl;
   FreeAndNil(listFilterCount);
   //FreeAndNil(LSNomenNzisNames);
-  for i := 0 to ListNomenNzisNames.Count - 1 do
-  begin
-    nomen := ListNomenNzisNames[i];
-    FreeAndNil(nomen);
-  end;
-  FreeAndNil(ListNomenNzisNames);
-  FreeAndNil(lstPatGraph);
+  //for i := 0 to ListNomenNzisNames.Count - 1 do
+//  begin
+//    nomen := ListNomenNzisNames[i];
+//    FreeAndNil(nomen);
+//  end;
+//  FreeAndNil(ListNomenNzisNames);
+  //FreeAndNil(Adb_dm.lstPatGraph);
   //FreeAndNil(FilterList);
   FreeAndNil(FilterStringsHave);
   FreeAndNil(FilterStringsNotHave);
@@ -9931,8 +9842,8 @@ begin
 
   FreeAndNil(AZipHelpFile);
   DownloadedStream.Free;
-  if AspectsHipFile <> nil then
-    AspectsHipFile.Free;
+  if Adb_DM.AdbMain <> nil then
+    Adb_DM.AdbMain.Free;
   if AspectsLinkPatPregFile <> nil then
     AspectsLinkPatPregFile.Free;
   //FreeAndNil(ListNodes);
@@ -10022,87 +9933,84 @@ begin
 end;
 
 
-procedure TfrmSuperHip.FreeColl;
-begin
-  FreeAndNil(CollPatGR);
-  FreeAndNil(CollDoctor);
-  FreeAndNil(CollOtherDoctor);
-  FreeAndNil(CollUnfav);
-  FreeAndNil(CollMkb);
-  FreeAndNil(CollPregled);
-  FreeAndNil(ListPregledForFDB);
-  FreeAndNil(ListPregledLinkForInsert);
-  FreeAndNil(CollPatient);
-  //FreeAndNil(CollPatForSearch);
-  FreeAndNil(CollPregForSearch);
-  FreeAndNil(AcollpatFromDoctor);
-  FreeAndNil(ACollPatFDB);
-  FreeAndNil(ACollNovozapisani);
-  FreeAndNil(ListPatientForFDB);
-  FreeAndNil(CollPatPis);
-  FreeAndNil(CollDiag);
-  FreeAndNil(CollMDN);
-  FreeAndNil(CollPregledVtor);
-  FreeAndNil(CollPregledPrim);
-  FreeAndNil(CollAnalsNew);
-  FreeAndNil(CollPractica);
-  FreeAndNil(CollEbl);
-  FreeAndNil(CollExamAnal);
-  FreeAndNil(CollExamImun);
-  FreeAndNil(CollProceduresNomen);
-  FreeAndNil(CollProceduresPreg);
-  FreeAndNil(CollCardProf);
-  FreeAndNil(CollMedNapr);
-  FreeAndNil(CollMedNapr3A);
-  FreeAndNil(CollMedNaprHosp);
-  FreeAndNil(CollMedNaprLkk);
-  FreeAndNil(CollNZIS_PLANNED_TYPE);
-  FreeAndNil(CollNZIS_QUESTIONNAIRE_RESPONSE);
-  FreeAndNil(CollNZIS_QUESTIONNAIRE_ANSWER);
-  FreeAndNil(CollNZIS_ANSWER_VALUE);
-  FreeAndNil(CollNZIS_DIAGNOSTIC_REPORT);
-  FreeAndNil(CollNzis_RESULT_DIAGNOSTIC_REPORT);
-  FreeAndNil(CollIncMdn);
-  FreeAndNil(CollIncMN);
-  FreeAndNil(CollNzisToken);
-  FreeAndNil(CollCertificates);
-
-  FreeAndNil(CL132Coll);
-  FreeAndNil(CL050Coll);
-  FreeAndNil(CL006Coll);
-  FreeAndNil(CL022Coll);
-  FreeAndNil(CL024Coll);
-  FreeAndNil(CL037Coll);
-  FreeAndNil(CL038Coll);
-  FreeAndNil(CL088Coll);
-  FreeAndNil(CL134Coll);
-  FreeAndNil(CL139Coll);
-  FreeAndNil(CL142Coll);
-  FreeAndNil(CL144Coll);
-  FreeAndNil(PR001Coll);
-  FreeAndNil(NomenNzisColl);
-
-  FreeAndNil(FPatientTemp);
-  FreeAndNil(PregledTemp);
-  FreeAndNil(DiagTemp);
-  FreeAndNil(MDNTemp);
-  FreeAndNil(MNTemp);
-  FreeAndNil(ExamAnalTemp);
-  FreeAndNil(DoctorTemp);
-  FreeAndNil(AnalTemp);
-  FreeAndNil(Cl022temp);
-  FreeAndNil(Cl132temp);
-  FreeAndNil(PR001Temp);
-  FreeAndNil(CL088Temp);
-  FreeAndNil(ProcTemp);
-  FreeAndNil(NZIS_PLANNED_TYPETemp);
-  FreeAndNil(NZIS_QUESTIONNAIRE_RESPONSETemp);
-  FreeAndNil(NZIS_QUESTIONNAIRE_ANSWERTemp);
-  FreeAndNil(NZIS_DIAGNOSTIC_REPORTTemp);
-  FreeAndNil(NZIS_Result_DIAGNOSTIC_REPORTTemp);
-
-  //FreeAndNil(CurrentPatient);
-end;
+//procedure TfrmSuperHip.FreeColl;
+//begin
+//  FreeAndNil(CollPatGR);
+//  FreeAndNil(CollDoctor);
+//  FreeAndNil(CollOtherDoctor);
+//  FreeAndNil(CollUnfav);
+//  FreeAndNil(CollMkb);
+//  FreeAndNil(CollPregled);
+//  FreeAndNil(ListPregledForFDB);
+//  FreeAndNil(ListPregledLinkForInsert);
+//  FreeAndNil(CollPatient);
+//  FreeAndNil(AcollpatFromDoctor);
+//  FreeAndNil(ACollPatFDB);
+//  FreeAndNil(ACollNovozapisani);
+//  FreeAndNil(ListPatientForFDB);
+//  FreeAndNil(CollPatPis);
+//  FreeAndNil(CollDiag);
+//  FreeAndNil(CollMDN);
+//  FreeAndNil(CollPregledVtor);
+//  FreeAndNil(CollPregledPrim);
+//  FreeAndNil(CollAnalsNew);
+//  FreeAndNil(CollPractica);
+//  FreeAndNil(CollEbl);
+//  FreeAndNil(CollExamAnal);
+//  FreeAndNil(CollExamImun);
+//  FreeAndNil(CollProceduresNomen);
+//  FreeAndNil(CollProceduresPreg);
+//  FreeAndNil(CollCardProf);
+//  FreeAndNil(CollMedNapr);
+//  FreeAndNil(CollMedNapr3A);
+//  FreeAndNil(CollMedNaprHosp);
+//  FreeAndNil(CollMedNaprLkk);
+//  FreeAndNil(CollNZIS_PLANNED_TYPE);
+//  FreeAndNil(CollNZIS_QUESTIONNAIRE_RESPONSE);
+//  FreeAndNil(CollNZIS_QUESTIONNAIRE_ANSWER);
+//  FreeAndNil(CollNZIS_ANSWER_VALUE);
+//  FreeAndNil(CollNZIS_DIAGNOSTIC_REPORT);
+//  FreeAndNil(CollNzis_RESULT_DIAGNOSTIC_REPORT);
+//  FreeAndNil(CollIncMdn);
+//  FreeAndNil(CollIncMN);
+//  FreeAndNil(CollNzisToken);
+//  FreeAndNil(CollCertificates);
+//
+//  FreeAndNil(CL132Coll);
+//  FreeAndNil(CL050Coll);
+//  FreeAndNil(CL006Coll);
+//  FreeAndNil(CL022Coll);
+//  FreeAndNil(CL024Coll);
+//  FreeAndNil(CL037Coll);
+//  FreeAndNil(CL038Coll);
+//  FreeAndNil(CL088Coll);
+//  FreeAndNil(CL134Coll);
+//  FreeAndNil(CL139Coll);
+//  FreeAndNil(CL142Coll);
+//  FreeAndNil(CL144Coll);
+//  FreeAndNil(PR001Coll);
+//  FreeAndNil(NomenNzisColl);
+//
+//  FreeAndNil(FPatientTemp);
+//  FreeAndNil(PregledTemp);
+//  FreeAndNil(DiagTemp);
+//  FreeAndNil(MDNTemp);
+//  FreeAndNil(MNTemp);
+//  FreeAndNil(ExamAnalTemp);
+//  FreeAndNil(DoctorTemp);
+//  FreeAndNil(AnalTemp);
+//  FreeAndNil(Cl022temp);
+//  FreeAndNil(Cl132temp);
+//  FreeAndNil(PR001Temp);
+//  FreeAndNil(CL088Temp);
+//  FreeAndNil(ProcTemp);
+//  FreeAndNil(NZIS_PLANNED_TYPETemp);
+//  FreeAndNil(NZIS_QUESTIONNAIRE_RESPONSETemp);
+//  FreeAndNil(NZIS_QUESTIONNAIRE_ANSWERTemp);
+//  FreeAndNil(NZIS_DIAGNOSTIC_REPORTTemp);
+//  FreeAndNil(NZIS_Result_DIAGNOSTIC_REPORTTemp);
+//
+//end;
 
 procedure TfrmSuperHip.FreeFMXDin;
 begin
@@ -10179,6 +10087,20 @@ begin
   end;
 end;
 
+function TfrmSuperHip.GetCollectionFromRoot(
+  Root: PVirtualNode): TBaseCollection;
+var
+  data: PAspRec;
+begin
+  Result := nil;
+  if Root = nil then Exit;
+
+  data := PAspRec(PByte(Root) + lenNode);
+
+  if data^.DataPos <> 0 then
+    Result := TBaseCollection(Pointer(data^.DataPos));
+end;
+
 procedure TfrmSuperHip.GetCurrentPatProf(pat: TRealPatientNewItem);
 var
   preg: TRealPregledNewItem;
@@ -10198,20 +10120,10 @@ begin
     LoadVtrNomenNzis1();
 
     profGR := TProfGraph.create;
-    profGR.CL006Coll := CL006Coll;
-    profGR.CL022Coll := CL022Coll;
-    profGR.CL037Coll := CL037Coll;
-    profGR.CL038Coll := CL038Coll;
-    profGR.CL050Coll := CL050Coll;
-    profGR.CL132Coll := CL132Coll;
-    profGR.CL134Coll := CL134Coll;
-    profGR.CL142Coll := CL142Coll;
-    profGR.CL144Coll := CL144Coll;
-    profGR.CL088Coll := CL088Coll;
-    profGR.PR001Coll := PR001Coll;
+
     profGR.BufNomen := AspectsNomFile.Buf;
-    profGR.BufADB := AspectsHipFile.Buf;
-    profGR.posDataADB := AspectsHipFile.FPosData;
+    //profGR.BufADB := AspectsHipFile.Buf;
+    //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
   end;
   //vtrGraph.BeginUpdate;
@@ -10223,7 +10135,7 @@ begin
     runDataPat := pointer(PByte(runPat) + lenNode);
 
     //PatientTemp.DataPos := runDataPat.DataPos;
-    egn := CollPatient.getAnsiStringMap(runDataPat.DataPos, word(PatientNew_EGN));
+    egn := Adb_dm.CollPatient.getAnsiStringMap(runDataPat.DataPos, word(PatientNew_EGN));
     if egn <> Adb_DM.patEgn then //////////////////////'8403236257' then
     begin
       runPat := runPat.NextSibling;
@@ -10239,7 +10151,7 @@ begin
       preg.DataPos := runDataPreg.DataPos;
       //PregIsProf := False;
       runDiag := runPreg.FirstChild;
-      while runDiag <> nil do // Тука на това ниво са и мдн-тата;
+      while runDiag <> nil do // РўСѓРєР° РЅР° С‚РѕРІР° РЅРёРІРѕ СЃР° Рё РјРґРЅ-С‚Р°С‚Р°;
       begin
         runDataDiag := pointer(PByte(runDiag) + lenNode);
         case runDataDiag.vid of
@@ -10247,7 +10159,7 @@ begin
           begin
             diag := TRealDiagnosisItem.Create(nil);
             diag.DataPos := runDataDiag.DataPos;
-            mkb := diag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
+            mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
             if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
             begin
               //preg.ListNZIS_PLANNED_TYPEs.Count;
@@ -10269,8 +10181,8 @@ begin
 
 
     //i := lstPatGraph.Add(CurrentPatient);
-    dat := pat.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(pat.getLogical40Map(CollPatient.Buf, CollPatient.posData, word(PatientNew_Logical)));
+    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
     profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
     profGR.CurrDate := dat;
     profGR.Adb_DM := Adb_DM;
@@ -10285,7 +10197,7 @@ begin
     pat.FNode := runPat;
     profGR.LoadVtrGraph(pat, i);
     pnlProfMinaliPreg.Caption := pat.NoteProf;
-    btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+    btnNzisProf.Enabled  := (pat.NoteProf <> 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.');
     pnlProfMinaliPreg.Repaint;
     runPat := runPat.NextSibling;
     Break;
@@ -10314,20 +10226,10 @@ begin
     LoadVtrNomenNzis1();
 
     profGR := TProfGraph.create;
-    profGR.CL006Coll := CL006Coll;
-    profGR.CL022Coll := CL022Coll;
-    profGR.CL037Coll := CL037Coll;
-    profGR.CL038Coll := CL038Coll;
-    profGR.CL050Coll := CL050Coll;
-    profGR.CL132Coll := CL132Coll;
-    profGR.CL134Coll := CL134Coll;
-    profGR.CL142Coll := CL142Coll;
-    profGR.CL144Coll := CL144Coll;
-    profGR.CL088Coll := CL088Coll;
-    profGR.PR001Coll := PR001Coll;
+
     profGR.BufNomen := AspectsNomFile.Buf;
-    profGR.BufADB := AspectsHipFile.Buf;
-    profGR.posDataADB := AspectsHipFile.FPosData;
+    //profGR.BufADB := AspectsHipFile.Buf;
+    //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
   end;
   runPat := pat.FNode;
@@ -10339,7 +10241,7 @@ begin
     runDataPreg := pointer(PByte(runPreg) + lenNode);
 
     runPregledNodes := runPreg.FirstChild;
-    while runPregledNodes <> nil do // Тука на това ниво са и мдн-тата;
+    while runPregledNodes <> nil do // РўСѓРєР° РЅР° С‚РѕРІР° РЅРёРІРѕ СЃР° Рё РјРґРЅ-С‚Р°С‚Р°;
     begin
       runDataPregledNodes := pointer(PByte(runPregledNodes) + lenNode);
       case runDataPregledNodes.vid of
@@ -10347,7 +10249,7 @@ begin
         begin
           diag := TRealDiagnosisItem.Create(nil);
           diag.DataPos := runDataPregledNodes.DataPos;
-          mkb := diag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
+          mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
           if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
           begin
             //preg.ListNZIS_PLANNED_TYPEs.Count;
@@ -10372,8 +10274,8 @@ begin
   end;
 
 
-  dat := pat.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_BIRTH_DATE));
-  log := TlogicalPatientNewSet(pat.getLogical40Map(CollPatient.Buf, CollPatient.posData, word(PatientNew_Logical)));
+  dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+  log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
   profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
   profGR.CurrDate := dat;
   profGR.Adb_DM := Adb_DM;
@@ -10389,13 +10291,13 @@ begin
 
   if pat.CurrentGraphIndex >= 0 then
   begin
-    runPreg := runPat.FirstChild; // наново, за да се откраднат от предишен преглед останали планове
+    runPreg := runPat.FirstChild; // РЅР°РЅРѕРІРѕ, Р·Р° РґР° СЃРµ РѕС‚РєСЂР°РґРЅР°С‚ РѕС‚ РїСЂРµРґРёС€РµРЅ РїСЂРµРіР»РµРґ РѕСЃС‚Р°РЅР°Р»Рё РїР»Р°РЅРѕРІРµ
     while runPreg <> nil do
     begin
       runDataPreg := pointer(PByte(runPreg) + lenNode);
 
       runPregledNodes := runPreg.FirstChild;
-      while runPregledNodes <> nil do // Тука на това ниво са и мдн-тата;
+      while runPregledNodes <> nil do // РўСѓРєР° РЅР° С‚РѕРІР° РЅРёРІРѕ СЃР° Рё РјРґРЅ-С‚Р°С‚Р°;
       begin
         runDataPregledNodes := pointer(PByte(runPregledNodes) + lenNode);
         case runDataPregledNodes.vid of
@@ -10403,8 +10305,8 @@ begin
           begin
             //if (runPregledNodes.CheckType = ctCheckBox) and (runPregledNodes.CheckState = csUncheckedNormal) then
             begin
-              CL132Key := CollNZIS_PLANNED_TYPE.getAnsiStringMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-              if (CollNZIS_PLANNED_TYPE.getDateMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_StartDate))<=
+              CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+              if (Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_StartDate))<=
                 pat.lstGraph[pat.CurrentGraphIndex].endDate)then
 
               begin
@@ -10429,7 +10331,7 @@ begin
   end;
 
   pnlProfMinaliPreg.Caption := pat.NoteProf;
-  btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+  btnNzisProf.Enabled  := (pat.NoteProf <> 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.');
   pnlProfMinaliPreg.Repaint;
 
 end;
@@ -10470,7 +10372,7 @@ begin
   pat := TRealPatientNewItem.Create(nil);
   vtrGraph.BeginUpdate;
   vtrGraph.DeleteChildren(vRootGraph);
-  lstPatGraph.Clear;
+  Adb_dm.lstPatGraph.Clear;
   //runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
   //runPat := Adb_DM.PatNodes.patNode;
   while runPat <> nil do
@@ -10504,7 +10406,7 @@ begin
         end;
         diag := TRealDiagnosisItem.Create(nil);
         diag.DataPos := runDataDiag.DataPos;
-        mkb := diag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
+        mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
         if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
         begin
           PregIsProf := True;
@@ -10521,11 +10423,11 @@ begin
       runPreg := runPreg.NextSibling;
     end;
 
-    lstPatGraph.Clear;
-    i := lstPatGraph.Add(pat);
+    Adb_dm.lstPatGraph.Clear;
+    i := Adb_dm.lstPatGraph.Add(pat);
     //pat.DataPos := runDataPat.DataPos;
-    dat := pat.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(pat.getLogical40Map(CollPatient.Buf, CollPatient.posData, word(PatientNew_Logical)));
+    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
     profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
     profGR.CurrDate := dat;
     profGR.Adb_DM := Adb_DM;
@@ -10565,9 +10467,16 @@ begin
   nzisThr.MsgType := TNzisMsgType.L009;
   nzisThr.token := '';
   nzisThr.CurrentCert := nil;
-  nzisThr.PregColl := CollPregled;
-  nzisThr.CollNzisToken := CollNzisToken;
   nzisThr.Resume;
+end;
+
+function TfrmSuperHip.GetRootForNode(Node: PVirtualNode): PVirtualNode;
+begin
+  Result := Node;
+  if Result = nil then Exit;
+  Result := Node.Parent.Parent;
+  //while (Result.Parent <> nil) and not (vsRoot in Result.States) do
+//    Result := Result.Parent;
 end;
 
 procedure TfrmSuperHip.GetTextToDraw(node: PVirtualNode; Column: TColumnIndex; var text: string;
@@ -10654,16 +10563,16 @@ begin
       if Sender is TRealPregledNewItem then
       begin
         preg := TRealPregledNewItem(Sender);
-        oldStatus := CollPregled.GetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS));
+        oldStatus := Adb_dm.CollPregled.GetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS));
         case oldStatus of
           3: //
           begin
-            CollPregled.SetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS), 16);// провален отваряне
+            Adb_dm.CollPregled.SetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS), 16);// РїСЂРѕРІР°Р»РµРЅ РѕС‚РІР°СЂСЏРЅРµ
             FmxProfForm.CheckKep := false;
           end;
           13: //
           begin
-            CollPregled.SetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS), 15);// провален готов
+            Adb_dm.CollPregled.SetWordMap(preg.DataPos, word(PregledNew_NZIS_STATUS), 15);// РїСЂРѕРІР°Р»РµРЅ РіРѕС‚РѕРІ
             FmxProfForm.CheckKep := false;
           end;
         end;
@@ -10689,7 +10598,6 @@ begin
   nzisThr.MsgType := TNzisMsgType.NNNN;
   nzisThr.token := '';
   nzisThr.CurrentCert := CertForThread;
-  nzisThr.PregColl := nil;
   nzisThr.Resume;
 end;
 
@@ -10820,21 +10728,22 @@ begin
 //
 //    //GenerateNzisXml(nodeList);
 //
-//    ShowPregledFMX(dataPat, data, nodeList); //  показване на динамичната форма
+//    ShowPregledFMX(dataPat, data, nodeList); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
 //  end
 end;
 
 procedure TfrmSuperHip.grdSearchSelect(Sender: TObject);
 var
-  dataList, data, tagData, dataPat: PAspRec;
+  dataList, data, tagData, dataPat, dataPreg: PAspRec;
   runNode, nodeList, nodePat: PVirtualNode;
   bufLink: Pointer;
   linkPos, FPosLinkData: Cardinal;
   pCardinalData: PCardinal;
   SelRow: Integer;
+  CollForSearch: TBaseCollection;
 begin
 
-  Stopwatch := TStopwatch.StartNew;
+
   if not grdSearch.Focused then Exit;
   if FmxFinderFrm.IsFinding then Exit;
   if grdSearch.Selected.Row < 0 then
@@ -10845,101 +10754,171 @@ begin
   begin
     SelRow := grdSearch.Selected.Row;
   end;
-  case TVtrVid(grdSearch.Tag) of
-    vvPatient:
-    begin
-      if (CollPatient.ListDataPos.count - 1) < SelRow then
-      Exit;
-      nodeList := CollPatient.ListDataPos[SelRow];
 
-      //begin
-//        runNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
-//        while runNode <> nil  do
-//        begin
-//          data := pointer(PByte(runNode) + lenNode);
-//          if data.DataPos = dataList.DataPos then
-//          begin
-//            vtrPregledPat.Selected[runNode] := True;
-//            Break;
-//          end;
-//          runNode := runNode.NextSibling;
-//        end;
-//        ProfGraphClick(nil);
-//        vtrGraph.Repaint;
-//      end;
-    end;
+  CollForSearch := TBaseCollection(grdSearch.Tag);
+  if (CollForSearch.ListDataPos.count - 1) < SelRow then
+    Exit;
+  if CollForSearch.lastBottom = - 1 then
+  begin
+    nodeList := CollForSearch.ListDataPos[SelRow];
+  end
+  else
+  begin
+    nodeList := CollForSearch.ListDataPos[SelRow + CollForSearch.offsetTop];
+  end;
+
+  data := pointer(PByte(nodeList) + lenNode);
+  case data.vid of
+
     vvPregled:
     begin
-      if (CollPregled.ListDataPos.count - 1) < SelRow then
-      Exit;
-      if CollPregled.lastBottom = - 1 then
-      begin
-        nodeList := CollPregled.ListDataPos[SelRow];
-      end
-      else
-      begin
-        nodeList := CollPregled.ListDataPos[SelRow + CollPregled.offsetTop];
-      end;
-      nodePat := nodeList.Parent;
-      dataPat := Pointer(PByte(nodePat) + lenNode);
-      data := Pointer(PByte(nodeList) + lenNode);
+      Stopwatch := TStopwatch.StartNew;
+      vtrPregledPat.BeginUpdate;
+      dataPreg := data;
       if vtrPregledPat.GetFirstSelected <> nodeList then
       begin
-        //if CanSelectNodeFromSearchGrid then
-        begin
-          vtrPregledPat.Selected[nodeList] := True;
-          Application.ProcessMessages;
-          grdSearch.Tag := word(vvPregled);
-         // CanSelectNodeFromSearchGrid := False;
-        end;
-        //vtrPregledPat.RepaintNode(nodeList);
-        //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
-        InternalChangeWorkPage(tsFMXForm);
-        tsFMXForm.Tag := data.DataPos;
-        tsNZIS.Tag := integer(nodeList);
+        TVSTSyncHelper.SyncToNode(vtrPregledPat, nodeList);
+        //vtrPregledPat.TopNode := nodeList;
+//        vtrPregledPat.FocusedNode := nodeList;
+       // vtrPregledPat.ClearSelection;
+       // vtrPregledPat.Selected[nodeList] := True;
+        //Application.ProcessMessages;
 
+        //InternalChangeWorkPage(tsFMXForm);
+        //tsFMXForm.Tag := data.DataPos;
+        //tsNZIS.Tag := integer(nodeList);
 
-        //GenerateNzisXml(nodeList);
-
-        ShowPregledFMX(dataPat, data, nodeList); //  показване на динамичната форма
-        Application.ProcessMessages;
-        //FmxProfForm.scldlyt1.Repaint;
-        //vtrPregledPat.Selected[nodeList] := True;
-      end
-      else
+        ShowPregledFMX(dataPat, data, nodeList); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
+        //Application.ProcessMessages;
+      end ;
+      vtrPregledPat.endUpdate;
+      //vtrPregledPat.ScrollIntoView(nodeList, False);
+      Elapsed := Stopwatch.Elapsed;
+      mmoTest.Lines.Add( Format('grdSearchSelect Р·Р° %f',[ Elapsed.TotalMilliseconds]));
+    end;
+    vvPatient:
+    begin
+      if vtrPregledPat.GetFirstSelected <> nodeList then
       begin
-        //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
-      end;
-
-      //buflink := AspectsLinkPatPregFile.Buf;
-//      linkPos := 100;
-//      pCardinalData := pointer(PByte(buflink));
-//      FPosLinkData := pCardinalData^;
-//      while linkpos < FPosLinkData do
-//      begin
-//        RunNode := pointer(PByte(bufLink) + linkpos);
-//        data := pointer(PByte(RunNode) + lenNode);
-//        if data.DataPos = dataList.DataPos then
-//        begin
-//          if vtrPregledPat.GetFirstSelected <> runNode then
-//          begin
-//            vtrPregledPat.Selected[runNode] := True;
-//          end
-//          else
-//          begin
-//            vtrPreglediChange_Patients(vtrPregledPat, runNode);
-//          end;
-//          FmxProfForm.WindowState := wsMaximized;
-//          //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
-//            Break;
-//        end;
-//        Inc(linkPos, LenData);
-//      end;
+        vtrPregledPat.Selected[nodeList] := True;
+      end ;
     end;
   end;
 
-  Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('grdSearchSelect за %f',[ Elapsed.TotalMilliseconds]));
+  //if vtrPregledPat.GetFirstSelected <> nodeList then
+//  begin
+//    vtrPregledPat.Selected[nodeList] := True;
+//    Application.ProcessMessages;
+//
+//    InternalChangeWorkPage(tsFMXForm);
+//    tsFMXForm.Tag := data.DataPos;
+//    tsNZIS.Tag := integer(nodeList);
+//
+//    //ShowPregledFMX(dataPat, data, nodeList); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
+//    Application.ProcessMessages;
+//  end
+ // else
+ // begin
+    //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
+ // end;
+
+
+
+
+  //case TVtrVid(grdSearch.Tag) of
+//    vvPatient:
+//    begin
+//      if (CollPatient.ListDataPos.count - 1) < SelRow then
+//      Exit;
+//      nodeList := CollPatient.ListDataPos[SelRow];
+//
+//      //begin
+////        runNode := vtrPregledPat.RootNode.FirstChild.FirstChild;
+////        while runNode <> nil  do
+////        begin
+////          data := pointer(PByte(runNode) + lenNode);
+////          if data.DataPos = dataList.DataPos then
+////          begin
+////            vtrPregledPat.Selected[runNode] := True;
+////            Break;
+////          end;
+////          runNode := runNode.NextSibling;
+////        end;
+////        ProfGraphClick(nil);
+////        vtrGraph.Repaint;
+////      end;
+//    end;
+//    vvPregled:
+//    begin
+//      if (CollPregled.ListDataPos.count - 1) < SelRow then
+//      Exit;
+//      if CollPregled.lastBottom = - 1 then
+//      begin
+//        nodeList := CollPregled.ListDataPos[SelRow];
+//      end
+//      else
+//      begin
+//        nodeList := CollPregled.ListDataPos[SelRow + CollPregled.offsetTop];
+//      end;
+//      nodePat := nodeList.Parent;
+//      dataPat := Pointer(PByte(nodePat) + lenNode);
+//      data := Pointer(PByte(nodeList) + lenNode);
+//      if vtrPregledPat.GetFirstSelected <> nodeList then
+//      begin
+//        //if CanSelectNodeFromSearchGrid then
+//        begin
+//          vtrPregledPat.Selected[nodeList] := True;
+//          Application.ProcessMessages;
+//          grdSearch.Tag := word(vvPregled);
+//         // CanSelectNodeFromSearchGrid := False;
+//        end;
+//        //vtrPregledPat.RepaintNode(nodeList);
+//        //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
+//        InternalChangeWorkPage(tsFMXForm);
+//        tsFMXForm.Tag := data.DataPos;
+//        tsNZIS.Tag := integer(nodeList);
+//
+//
+//        //GenerateNzisXml(nodeList);
+//
+//        ShowPregledFMX(dataPat, data, nodeList); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
+//        Application.ProcessMessages;
+//        //FmxProfForm.scldlyt1.Repaint;
+//        //vtrPregledPat.Selected[nodeList] := True;
+//      end
+//      else
+//      begin
+//        //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
+//      end;
+//
+//      //buflink := AspectsLinkPatPregFile.Buf;
+////      linkPos := 100;
+////      pCardinalData := pointer(PByte(buflink));
+////      FPosLinkData := pCardinalData^;
+////      while linkpos < FPosLinkData do
+////      begin
+////        RunNode := pointer(PByte(bufLink) + linkpos);
+////        data := pointer(PByte(RunNode) + lenNode);
+////        if data.DataPos = dataList.DataPos then
+////        begin
+////          if vtrPregledPat.GetFirstSelected <> runNode then
+////          begin
+////            vtrPregledPat.Selected[runNode] := True;
+////          end
+////          else
+////          begin
+////            vtrPreglediChange_Patients(vtrPregledPat, runNode);
+////          end;
+////          FmxProfForm.WindowState := wsMaximized;
+////          //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
+////            Break;
+////        end;
+////        Inc(linkPos, LenData);
+////      end;
+//    end;
+//  end;
+
+
 
 end;
 
@@ -10950,6 +10929,7 @@ var
   dataPat, data: PAspRec;
   selRow: Integer;
 begin
+  Exit;
   if grdSearch.Selected.Row < 0 then
   begin
     Exit;
@@ -10958,21 +10938,21 @@ begin
   begin
     SelRow := grdSearch.Selected.Row;
   end;
-  if CollPregled.lastBottom = - 1 then
+  if Adb_dm.CollPregled.lastBottom = - 1 then
   begin
-    nodeList := CollPregled.ListDataPos[SelRow];
+    nodeList := Adb_dm.CollPregled.ListDataPos[SelRow];
   end
   else
   begin
-    nodeList := CollPregled.ListDataPos[SelRow + CollPregled.offsetTop];
+    nodeList := Adb_dm.CollPregled.ListDataPos[SelRow + Adb_dm.CollPregled.offsetTop];
   end;
   nodePat := nodeList.Parent;
   dataPat := Pointer(PByte(nodePat) + lenNode);
   data := Pointer(PByte(nodeList) + lenNode);
   if vtrPregledPat.GetFirstSelected <> nodeList then
   begin
-    vtrPregledPat.Selected[nodeList] := True;
-    grdSearch.Tag := word(vvPregled);
+    //vtrPregledPat.Selected[nodeList] := True;
+    //grdSearch.Tag := word(vvPregled);
     //
     //vtrPregledPat.RepaintNode(nodeList);
     //vtrPreglediChange_Patients(vtrPregledPat, nodeList);
@@ -10983,7 +10963,7 @@ begin
 
     //GenerateNzisXml(nodeList);
 
-    //ShowPregledFMX(dataPat, data, nodeList); //  показване на динамичната форма
+    //ShowPregledFMX(dataPat, data, nodeList); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
     //vtrPregledPat.Selected[nodeList] := True;
   end
   else
@@ -10995,110 +10975,108 @@ end;
 procedure TfrmSuperHip.InitAdb;
 begin
   Adb_DM := TADBDataModule.Create;
-  //Adb_DM.CollDoc := CollDoctor;
-
+  Adb_DM.FDM := Fdm;
+  Adb_DM.OnClearColl := Adb_DMOnClearColl;
 end;
 
-procedure TfrmSuperHip.InitColl;
-begin
-  CollPatGR := TRealPatientNewColl.Create(TRealPatientNewItem);
-
-  CollDoctor := TRealDoctorColl.Create(TRealDoctorItem);
-  CollOtherDoctor := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);
-  ListDoctorForFDB := TList<TDoctorItem>.create;
-  ListPregledLinkForInsert := TList<PVirtualNode>.create;
-
-  CollUnfav := TRealUnfavColl.Create(TRealUnfavItem);
-  CollUnfav.OnCurrentYearChange := OnChangeYear;
-  CollMkb := TRealMkbColl.Create(TMkbItem);
-  CollPregled := TRealPregledNewColl.Create(TRealPregledNewItem);
-  CollPregled.OnKeyUpGridSearch := GrdSearhKeyUp;
-  ListPregledForFDB := TList<TPregledNewItem>.Create;
-  CollPatient := TRealPatientNewColl.Create(TRealPatientNewItem);
- // CollPatForSearch := TRealPatientNewColl.Create(TRealPatientNewItem);
-  //CollPatForSearch.ArrPropSearch := [PatientNew_ID, PatientNew_EGN, PatientNew_BIRTH_DATE, PatientNew_FNAME];
-  CollPregForSearch := TRealPregledNewColl.Create(TRealPregledNewItem);
-  CollPregForSearch.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN_LRN, PregledNew_ANAMN];
-
-  ListPatientForFDB := TList<TPatientNewItem>.Create;
-  CollPatPis := TRealPatientNZOKColl.Create(TRealPatientNZOKItem);
-  AcollpatFromDoctor := TRealPatientNewColl.Create(TRealPatientNewItem);
-  ACollPatFDB := TRealPatientNewColl.Create(TRealPatientNewItem);
-  ACollNovozapisani := TRealPatientNewColl.Create(TRealPatientNewItem);
-
-  CollDiag := TRealDiagnosisColl.Create(TRealDiagnosisItem);
-  CollMDN := TRealMDNColl.Create(TRealMDNItem);
-  CollPregledVtor := Tlist<TRealPregledNewItem>.Create;
-  CollPregledPrim := Tlist<TRealPregledNewItem>.Create;
-  CollAnalsNew := TAnalsNewColl.Create(TAnalsNewItem);
-  CollPractica := TPracticaColl.Create(TPracticaItem);
-  CollEbl := TRealExam_boln_listColl.Create(TRealExam_boln_listItem);
-  CollExamAnal := TRealExamAnalysisColl.Create(TRealExamAnalysisItem);
-  CollExamImun := TRealExamImmunizationColl.Create(TRealExamImmunizationItem);
-  CollProceduresNomen := TRealProceduresColl.Create(TRealProceduresItem);
-  CollProceduresPreg := TRealProceduresColl.Create(TRealProceduresItem);
-  CollCardProf := TRealKARTA_PROFILAKTIKA2017Coll.Create(TRealKARTA_PROFILAKTIKA2017Item);
-  CollMedNapr := TRealBLANKA_MED_NAPRColl.Create(TRealBLANKA_MED_NAPRItem);
-  CollMedNapr3A := TRealBLANKA_MED_NAPR_3AColl.Create(TRealBLANKA_MED_NAPR_3AItem);
-  CollMedNaprHosp := TRealHOSPITALIZATIONColl.Create(TRealHOSPITALIZATIONItem);
-  CollMedNaprLkk := TRealEXAM_LKKColl.Create(TRealEXAM_LKKItem);
-  CollIncMdn := TRealINC_MDNColl.Create(TRealINC_MDNItem);
-  CollIncMN := TRealINC_NAPRColl.Create(TRealINC_NAPRItem);
-
-  CollNzisToken := TNzisTokenColl.Create(TNzisTokenItem);
-  CollCertificates := TCertificatesColl.Create(TCertificatesItem);
-
-  CollNZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEColl.Create(TRealNZIS_PLANNED_TYPEItem);
-  CollNZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEColl.Create(TRealNZIS_QUESTIONNAIRE_RESPONSEItem);
-  CollNZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERColl.Create(TRealNZIS_QUESTIONNAIRE_ANSWERItem);
-  CollNZIS_ANSWER_VALUE := TRealNZIS_ANSWER_VALUEColl.Create(TRealNZIS_ANSWER_VALUEItem);
-  CollNZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_DIAGNOSTIC_REPORTItem);
-  CollNzis_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem);
-
-  CL132Coll := TRealCL132Coll.Create(TRealCL132Item);
-  CL050Coll := TCL050Coll.Create(TCL050Item);
-  CL006Coll := TRealCL006Coll.Create(TRealCL006Item);
-  CL022Coll := TRealCL022Coll.Create(TRealCL022Item);
-  CL024Coll := TRealCL024Coll.Create(TRealCL024Item);
-  CL037Coll := TRealCL037Coll.Create(TRealCL037Item);
-  CL038Coll := TRealCL038Coll.Create(TRealCL038Item);
-  CL088Coll := TRealCL088Coll.Create(TRealCL088Item);
-  CL134Coll := TRealCL134Coll.Create(TRealCL134Item);
-  CL139Coll := TRealCL139Coll.Create(TRealCL139Item);
-  CL142Coll := TRealCL142Coll.Create(TRealCL142Item);
-  CL144Coll := TRealCL144Coll.Create(TRealCL144Item);
-  PR001Coll := TRealPR001Coll.Create(TRealPR001Item);
-  NomenNzisColl := TNomenNzisColl.Create(TNomenNzisItem);
-
-  //LSNomenNzisNames := TStringList.Create;
-  ListNomenNzisNames := TList<TNomenNzisRec>.Create;
-  lstPatGraph := TList<TRealPatientNewItem>.Create;
-
-  //ListNodes  := TList<PAspRec>.Create;
-  PatientTemp := TRealPatientNewItem.Create(nil);
-  PregledTemp := TPregledNewItem.Create(nil);
-  preg1 := TPregledNewItem.Create(nil);
-  preg2 := TPregledNewItem.Create(nil);
-  DiagTemp  := TDiagnosisItem.Create(nil);
-  MDNTemp := TMDNItem.Create(nil);
-  MNTemp := TBLANKA_MED_NAPRItem.Create(nil);
-  ExamAnalTemp := TExamAnalysisItem.Create(nil);
-  DoctorTemp := TDoctorItem.Create(nil);
-  AnalTemp:= TAnalsNewItem.Create(nil);
-  Cl022temp := TCL022Item.Create(nil);
-  Cl132temp := TRealCL132Item.Create(nil);
-  PR001Temp := TRealPR001Item.Create(nil);
-  CL088Temp := TRealCl088Item.Create(nil);
-  ProcTemp := TRealProceduresItem.Create(nil);
-  NZIS_PLANNED_TYPETemp := TRealNZIS_PLANNED_TYPEItem.Create(nil);
-  NZIS_QUESTIONNAIRE_RESPONSETemp := TRealNZIS_QUESTIONNAIRE_RESPONSEItem.Create(nil);
-  NZIS_QUESTIONNAIRE_ANSWERTemp := TRealNZIS_QUESTIONNAIRE_ANSWERItem.Create(nil);
-  NZIS_ANSWER_VALUETemp := TRealNZIS_ANSWER_VALUEItem.Create(nil);
-  NZIS_DIAGNOSTIC_REPORTTemp := TRealNZIS_DIAGNOSTIC_REPORTItem.Create(nil);
-  NZIS_Result_DIAGNOSTIC_REPORTTemp := TRealNZIS_Result_DIAGNOSTIC_REPORTItem.Create(nil);
-
-  LoadLinkOptions;
-end;
+//procedure TfrmSuperHip.InitColl;
+//begin
+//  CollPatGR := TRealPatientNewColl.Create(TRealPatientNewItem);
+//
+//  CollDoctor := TRealDoctorColl.Create(TRealDoctorItem);
+//  CollOtherDoctor := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);
+//  ListDoctorForFDB := TList<TDoctorItem>.create;
+//  ListPregledLinkForInsert := TList<PVirtualNode>.create;
+//
+//  CollUnfav := TRealUnfavColl.Create(TRealUnfavItem);
+//  CollUnfav.OnCurrentYearChange := OnChangeYear;
+//  CollMkb := TRealMkbColl.Create(TMkbItem);
+//  CollPregled := TRealPregledNewColl.Create(TRealPregledNewItem);
+//  CollPregled.OnKeyUpGridSearch := GrdSearhKeyUp;
+//  ListPregledForFDB := TList<TPregledNewItem>.Create;
+//  CollPatient := TRealPatientNewColl.Create(TRealPatientNewItem);
+//
+//  ListPatientForFDB := TList<TPatientNewItem>.Create;
+//  CollPatPis := TRealPatientNZOKColl.Create(TRealPatientNZOKItem);
+//  AcollpatFromDoctor := TRealPatientNewColl.Create(TRealPatientNewItem);
+//  ACollPatFDB := TRealPatientNewColl.Create(TRealPatientNewItem);
+//  ACollNovozapisani := TRealPatientNewColl.Create(TRealPatientNewItem);
+//
+//  CollDiag := TRealDiagnosisColl.Create(TRealDiagnosisItem);
+//  CollMDN := TRealMDNColl.Create(TRealMDNItem);
+//  CollPregledVtor := Tlist<TRealPregledNewItem>.Create;
+//  CollPregledPrim := Tlist<TRealPregledNewItem>.Create;
+//  CollAnalsNew := TAnalsNewColl.Create(TAnalsNewItem);
+//  CollPractica := TPracticaColl.Create(TPracticaItem);
+//  CollEbl := TRealExam_boln_listColl.Create(TRealExam_boln_listItem);
+//  CollExamAnal := TRealExamAnalysisColl.Create(TRealExamAnalysisItem);
+//  CollExamImun := TRealExamImmunizationColl.Create(TRealExamImmunizationItem);
+//  CollProceduresNomen := TRealProceduresColl.Create(TRealProceduresItem);
+//  CollProceduresPreg := TRealProceduresColl.Create(TRealProceduresItem);
+//  CollCardProf := TRealKARTA_PROFILAKTIKA2017Coll.Create(TRealKARTA_PROFILAKTIKA2017Item);
+//  CollMedNapr := TRealBLANKA_MED_NAPRColl.Create(TRealBLANKA_MED_NAPRItem);
+//  CollMedNapr3A := TRealBLANKA_MED_NAPR_3AColl.Create(TRealBLANKA_MED_NAPR_3AItem);
+//  CollMedNaprHosp := TRealHOSPITALIZATIONColl.Create(TRealHOSPITALIZATIONItem);
+//  CollMedNaprLkk := TRealEXAM_LKKColl.Create(TRealEXAM_LKKItem);
+//  CollIncMdn := TRealINC_MDNColl.Create(TRealINC_MDNItem);
+//  CollIncMN := TRealINC_NAPRColl.Create(TRealINC_NAPRItem);
+//
+//  CollNzisToken := TNzisTokenColl.Create(TNzisTokenItem);
+//  CollCertificates := TCertificatesColl.Create(TCertificatesItem);
+//
+//  CollNZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEColl.Create(TRealNZIS_PLANNED_TYPEItem);
+//  CollNZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEColl.Create(TRealNZIS_QUESTIONNAIRE_RESPONSEItem);
+//  CollNZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERColl.Create(TRealNZIS_QUESTIONNAIRE_ANSWERItem);
+//  CollNZIS_ANSWER_VALUE := TRealNZIS_ANSWER_VALUEColl.Create(TRealNZIS_ANSWER_VALUEItem);
+//  CollNZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_DIAGNOSTIC_REPORTItem);
+//  CollNzis_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem);
+//
+//  CL132Coll := TRealCL132Coll.Create(TRealCL132Item);
+//  CL050Coll := TCL050Coll.Create(TCL050Item);
+//  CL006Coll := TRealCL006Coll.Create(TRealCL006Item);
+//  CL022Coll := TRealCL022Coll.Create(TRealCL022Item);
+//  CL024Coll := TRealCL024Coll.Create(TRealCL024Item);
+//  CL037Coll := TRealCL037Coll.Create(TRealCL037Item);
+//  CL038Coll := TRealCL038Coll.Create(TRealCL038Item);
+//  CL088Coll := TRealCL088Coll.Create(TRealCL088Item);
+//  CL134Coll := TRealCL134Coll.Create(TRealCL134Item);
+//  CL139Coll := TRealCL139Coll.Create(TRealCL139Item);
+//  CL142Coll := TRealCL142Coll.Create(TRealCL142Item);
+//  CL144Coll := TRealCL144Coll.Create(TRealCL144Item);
+//  PR001Coll := TRealPR001Coll.Create(TRealPR001Item);
+//  NomenNzisColl := TNomenNzisColl.Create(TNomenNzisItem);
+//
+//  //LSNomenNzisNames := TStringList.Create;
+//  ListNomenNzisNames := TList<TNomenNzisRec>.Create;
+//  lstPatGraph := TList<TRealPatientNewItem>.Create;
+//
+//  //ListNodes  := TList<PAspRec>.Create;
+//  PatientTemp := TRealPatientNewItem.Create(nil);
+//  PregledTemp := TPregledNewItem.Create(nil);
+//  preg1 := TPregledNewItem.Create(nil);
+//  preg2 := TPregledNewItem.Create(nil);
+//  DiagTemp  := TDiagnosisItem.Create(nil);
+//  MDNTemp := TMDNItem.Create(nil);
+//  MNTemp := TBLANKA_MED_NAPRItem.Create(nil);
+//  ExamAnalTemp := TExamAnalysisItem.Create(nil);
+//  DoctorTemp := TDoctorItem.Create(nil);
+//  AnalTemp:= TAnalsNewItem.Create(nil);
+//  Cl022temp := TCL022Item.Create(nil);
+//  Cl132temp := TRealCL132Item.Create(nil);
+//  PR001Temp := TRealPR001Item.Create(nil);
+//  CL088Temp := TRealCl088Item.Create(nil);
+//  ProcTemp := TRealProceduresItem.Create(nil);
+//  NZIS_PLANNED_TYPETemp := TRealNZIS_PLANNED_TYPEItem.Create(nil);
+//  NZIS_QUESTIONNAIRE_RESPONSETemp := TRealNZIS_QUESTIONNAIRE_RESPONSEItem.Create(nil);
+//  NZIS_QUESTIONNAIRE_ANSWERTemp := TRealNZIS_QUESTIONNAIRE_ANSWERItem.Create(nil);
+//  NZIS_ANSWER_VALUETemp := TRealNZIS_ANSWER_VALUEItem.Create(nil);
+//  NZIS_DIAGNOSTIC_REPORTTemp := TRealNZIS_DIAGNOSTIC_REPORTItem.Create(nil);
+//  NZIS_Result_DIAGNOSTIC_REPORTTemp := TRealNZIS_Result_DIAGNOSTIC_REPORTItem.Create(nil);
+//
+//  LoadLinkOptions;
+//  LoadLinkFilter;
+//  //TFilterTreeLoader.LoadLinkFilters('LinkFilters.lnk', vtrSearch, AspectsFilterLinkFile);
+//end;
 
 procedure TfrmSuperHip.initDB;
 begin
@@ -11118,20 +11096,20 @@ begin
   end;
   Elapsed := Stopwatch.Elapsed;
   mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
-  if AspectsHipFile = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
+  if Adb_DM.AdbMain = nil then  // РЅРµ Рµ РЅР°РјРµСЂРµРЅРѕ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. С‚СЂСЏР±РІР° РґР° СЃРµ РёРјРїРѕСЂС‚РёСЂР°.
   begin
-    mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
+    mmoTest.Lines.Add('РЅРµ Рµ РЅР°РјРµСЂРµРЅРѕ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. С‚СЂСЏР±РІР° РґР° СЃРµ РёРјРїРѕСЂС‚РёСЂР°');
     RolPnlDoktorOPL.Enabled := False;
     RolPnlDoktorOPL.Repaint;
   end
-  else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
+  else  // РЅР°РјРµСЂРµРЅРѕ Рµ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. РњРѕР¶Рµ РґР° СЃРµ РѕС‚РІРѕСЂРё Рё Р·Р°СЂРµРґРё
   begin
-    mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
+    mmoTest.Lines.Add('РЅР°РјРµСЂРµРЅРѕ Рµ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. РњРѕР¶Рµ РґР° СЃРµ РѕС‚РІРѕСЂРё Рё Р·Р°СЂРµРґРё');
     if AspectsNomFile = nil then
       OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
-    OpenADB(AspectsHipFile);
-    OpenCmd(AspectsHipFile);
-    FindLNK(AspectsHipFile.GUID);
+    OpenADB(Adb_DM.AdbMain);
+    OpenCmd(Adb_DM.AdbMain);
+    FindLNK(Adb_DM.AdbMain.GUID);
     if AspectsLinkPatPregFile <> nil then
       OpenLinkPatPreg(AspectsLinkPatPregFile);
      // AspectsLinkPatPregFile.OpenLinkFile;
@@ -11183,14 +11161,6 @@ begin
    FmxProfForm.fmxCntrDyn := fmxCntrDyn;
    FmxProfForm.VtrGrapf := vtrGraph;
    FmxProfForm.VtrPregLink := vtrPregledPat;
-   FmxProfForm.Cl139Coll := CL139Coll;
-   FmxProfForm.Cl132Coll := CL132Coll;
-   FmxProfForm.Cl006Coll := CL006Coll;
-   FmxProfForm.Cl142Coll := CL142Coll;
-   FmxProfForm.Cl144Coll := CL144Coll;
-   FmxProfForm.Cl134Coll := CL134Coll;
-   FmxProfForm.Cl088Coll := CL088Coll;
-   FmxProfForm.Pr001Coll := PR001Coll;
    FmxProfForm.TmpVtr := tmpVtr;
    tmpVtr.FmxProfForm := FmxProfForm;
 
@@ -11308,6 +11278,12 @@ begin
   data.vid := vvNone;
   data.index := -1;
   option.LoadVtrRecentDB;
+end;
+
+procedure TfrmSuperHip.InternalChangeTreePage(Sheet: TTabSheet);
+begin
+  pgcTree.ActivePage := Sheet;
+  pgcTreeChange(nil);
 end;
 
 procedure TfrmSuperHip.InternalChangeWorkPage(Sheet: TTabSheet);
@@ -11443,10 +11419,10 @@ begin
     vvCl132:
     begin
       dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-      pat := lstPatGraph[dataPat.index];
+      pat := Adb_dm.lstPatGraph[dataPat.index];
       dataPeriod := vtrGraph.GetNodeData(node.Parent);
       case dataPeriod.index of
-        -2: //текущи
+        -2: //С‚РµРєСѓС‰Рё
         begin
           GraphDay := StrToInt(edtGraphDay.Text);
           vtrGraph.IsFiltered[node] := GraphDay  < DaysBetween(pat.lstGraph[Adata.index].endDate, UserDate) ;
@@ -11474,7 +11450,7 @@ begin
   case Adata.vid of
     vvPatient:
     begin
-      APat := ACollPatFDB.Items[Adata.index];
+      APat := Adb_dm.ACollPatFDB.Items[Adata.index];
       Sender.IsFiltered[Node] := (APat.FClonings.Count = 0);
     end;
   end;
@@ -11493,8 +11469,8 @@ begin
   case Adata.vid of
     vvPatient:
     begin
-      pat := ACollPatFDB.Items[adata.index];
-      patId := pat.getIntMap(AspectsHipFile.buf, CollPatient.posData, word(PatientNew_ID));
+      pat := Adb_dm.ACollPatFDB.Items[adata.index];
+      patId := pat.getIntMap(Adb_DM.AdbMain.buf, Adb_dm.CollPatient.posData, word(PatientNew_ID));
       ibsql.Close;
       ibsql.SQL.Text :=
           'update pacient pa' + #13#10 +
@@ -11503,7 +11479,7 @@ begin
           'pa.pat_kind = 2' + #13#10 +
           'where pa.id = :patID';
       ibsql.ParamByName('patID').AsInteger := patId;
-      ibsql.ParamByName('date_otpisvane').AsDate := pat.LastPregled.getDateMap(AspectsHipFile.buf, CollPatient.posData, word(PregledNew_START_DATE)) + 1;
+      ibsql.ParamByName('date_otpisvane').AsDate := pat.LastPregled.getDateMap(Adb_DM.AdbMain.buf, Adb_dm.CollPatient.posData, word(PregledNew_START_DATE)) + 1;
       ibsql.ExecQuery;
     end;
   end;
@@ -11572,7 +11548,7 @@ begin
   //thrSearch.CollPatForSearch.Buf := AspectsHipFile.Buf;
  // thrSearch.CollPatForSearch.posData := AspectsHipFile.FPosData;
   grdSearch.Tag := word(vvPatient);
-  thrSearch.CollPat.ShowLinksGrid(grdSearch);
+  //thrSearch.CollPat.ShowLinksGrid(grdSearch);
 end;
 
 procedure TfrmSuperHip.LinkPregClick(Sender: TObject);
@@ -11588,7 +11564,7 @@ var
   btnPregledSpec : TRoleButton;
 begin
   //RolPnlDoctorSpecStartRole(nil);
-  //btnPregledSpec  := spltvw1.BtnFromName('Прегледи');
+  //btnPregledSpec  := spltvw1.BtnFromName('РџСЂРµРіР»РµРґРё');
 //  btnPregledSpec.MaxValue := CollPatient.Count;
 //
 //
@@ -11618,8 +11594,68 @@ begin
   nzisThr.Node := nil;
   nzisThr.MsgType := TNzisMsgType.C001;
 
-  nzisThr.StreamData := ListNomenNzisNames[nomenId].xmlStream;
+  nzisThr.StreamData :=  Adb_DM.ListNomenNzisNames[nomenId].xmlStream;
   nzisThr.Resume;
+end;
+
+procedure TfrmSuperHip.LoadLinkFilter;
+var
+  fileLinkFilterName: string;
+  Fstream: TFileStream;
+  vFilterRoot: PVirtualNode;
+  LinkPos: Cardinal;
+  pCardinalData: PCardinal;
+begin
+  if AspectsFilterLinkFile <> nil then
+  begin
+    vtrSearch.InternalDisconnectNode(vtrSearch.RootNode.FirstChild, false);
+    AspectsFilterLinkFile.Free;
+    AspectsFilterLinkFile := nil;
+  end;
+
+  fileLinkFilterName := 'LinkFilters.lnk';
+
+  if FileExists(fileLinkFilterName) then
+  begin
+    AspectsFilterLinkFile := TMappedLinkFile.Create(fileLinkFilterName, false, TGUID.Empty);
+    AspectsFilterLinkFile.FVTR := vtrSearch;
+  end
+  else
+  begin
+    Fstream := TFileStream.Create(fileLinkFilterName,fmCreate);
+    Fstream.Size := 27000000;
+    Fstream.Free;
+    AspectsFilterLinkFile := TMappedLinkFile.Create(fileLinkFilterName, true, TGUID.Empty);
+    AspectsFilterLinkFile.FVTR := vtrSearch;
+    linkpos := 100;
+    AspectsFilterLinkFile.AddNewNode(vvRootFilter, 0, vtrSearch.RootNode, amAddChildLast, vFilterRoot, linkPos);
+    pCardinalData := pointer(PByte(AspectsFilterLinkFile.Buf) + 4);
+    pCardinalData^ := Cardinal(AspectsFilterLinkFile.Buf);
+
+    pCardinalData := pointer(PByte(AspectsFilterLinkFile.Buf) + 8);
+    pCardinalData^ := Cardinal(vtrSearch.RootNode);
+
+    vtrSearch.EndUpdate;
+    vtrSearch.UpdateScrollBars(true);
+    vtrSearch.InvalidateToBottom(vtrSearch.RootNode);
+
+    vtrSearch.InternalDisconnectNode(vtrSearch.RootNode.FirstChild, false);
+    AspectsFilterLinkFile.Free;
+    AspectsFilterLinkFile := nil;
+
+    AspectsFilterLinkFile := TMappedLinkFile.Create(fileLinkFilterName, false, TGUID.Empty);
+    AspectsFilterLinkFile.FVTR := vtrSearch;
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('MapLink Р·Р° %f',[Elapsed.TotalMilliseconds]));
+
+
+  Stopwatch := TStopwatch.StartNew;
+  AspectsFilterLinkFile.OpenLinkFile;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLinkfilters %d Р·Р° %f',[vtrSearch.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+
 end;
 
 procedure TfrmSuperHip.LoadLinkOptions;
@@ -11672,15 +11708,15 @@ begin
   end;
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('MapLink за %f',[Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('MapLink Р·Р° %f',[Elapsed.TotalMilliseconds]));
 
 
   Stopwatch := TStopwatch.StartNew;
   AspectsOptionsLinkFile.OpenLinkFile;
-  CollPregled.linkOptions := AspectsOptionsLinkFile;
-  CollPatient.linkOptions := AspectsOptionsLinkFile;
+  Adb_dm.CollPregled.linkOptions := AspectsOptionsLinkFile;
+  Adb_dm.CollPatient.linkOptions := AspectsOptionsLinkFile;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('ЗарежданеLinkOptions %d за %f',[vtrLinkOptions.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLinkOptions %d Р·Р° %f',[vtrLinkOptions.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 
 end;
 
@@ -11730,17 +11766,17 @@ begin
     data.vid := vvNomenNzis;
     data.index := -1;
 
-    msgColl.SortByMessageId;
+    Adb_dm.AmsgColl.SortByMessageId;
     msgID := '';
     pyrvi := 0;
     wtori := 1;
-    for i := 0 to msgColl.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.Count - 1 do
     begin
-      if msgID = msgColl.Items[i].PRecord.messageId then
+      if msgID = Adb_dm.AmsgColl.Items[i].PRecord.messageId then
       begin
         Inc(wtori);
         dec(pyrvi);
-        msg := msgColl.Items[i];
+        msg := Adb_dm.AmsgColl.Items[i];
 
         case byte(msg.PRecord.Logical) of
           1:
@@ -11786,13 +11822,13 @@ begin
             vResp := vtrTemp.AddChild(vReq, nil);
           end;
         end;
-        if msgColl.Items[i].PRecord.msgNom < msgColl.Items[CurrentI].PRecord.msgNom then
+        if Adb_dm.AmsgColl.Items[i].PRecord.msgNom < Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom then
         begin
           //SetLength(msgColl.Items[CurrentI].PRecord.REQ, length(msgColl.Items[CurrentI].PRecord.REQ)-2);
-          msg.PRecord.RESP := msgColl.Items[CurrentI].PRecord.REQ;
-          vReq.Dummy := msgColl.Items[i].PRecord.msgNom;
-          msgColl.Items[i].Node := vReq;
-          vResp.Dummy := msgColl.Items[CurrentI].PRecord.msgNom;
+          msg.PRecord.RESP := Adb_dm.AmsgColl.Items[CurrentI].PRecord.REQ;
+          vReq.Dummy := Adb_dm.AmsgColl.Items[i].PRecord.msgNom;
+          Adb_dm.AmsgColl.Items[i].Node := vReq;
+          vResp.Dummy := Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom;
           data := vtrTemp.GetNodeData(vReq);
           data.index := i;
           data := vtrTemp.GetNodeData(vResp);
@@ -11801,10 +11837,10 @@ begin
         else
         begin
           //SetLength(msgColl.Items[i].PRecord.REQ, length(msgColl.Items[i].PRecord.REQ)-2);
-          msgColl.Items[CurrentI].PRecord.RESP := msg.PRecord.REQ;
-          vReq.Dummy := msgColl.Items[CurrentI].PRecord.msgNom;
-          msgColl.Items[CurrentI].Node := vReq;
-          vResp.Dummy := msgColl.Items[i].PRecord.msgNom;
+          Adb_dm.AmsgColl.Items[CurrentI].PRecord.RESP := msg.PRecord.REQ;
+          vReq.Dummy := Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom;
+          Adb_dm.AmsgColl.Items[CurrentI].Node := vReq;
+          vResp.Dummy := Adb_dm.AmsgColl.Items[i].PRecord.msgNom;
           data := vtrTemp.GetNodeData(vResp);
           data.index := i;
           data := vtrTemp.GetNodeData(vReq);
@@ -11813,14 +11849,14 @@ begin
       end
       else
       begin
-        msgID := msgColl.Items[i].PRecord.messageId;
+        msgID := Adb_dm.AmsgColl.Items[i].PRecord.messageId;
         CurrentI := i;
         Inc(pyrvi);
         Dec(wtori);
         if pyrvi > 1 then
         begin
           pyrvi := 1;
-          mmoTest.Lines.Add(msgColl.Items[i - 1].PRecord.messageId);
+          mmoTest.Lines.Add(Adb_dm.AmsgColl.Items[i - 1].PRecord.messageId);
         end;
       end;
     end;
@@ -11878,13 +11914,13 @@ begin
     data.vid := vvNomenNzis;
     data.index := -1;
 
-    msgColl.SortByMessageId;
+    Adb_dm.AmsgColl.SortByMessageId;
     msgID := '';
     pyrvi := 0;
     wtori := 1;
-    for i := 0 to msgColl.CollPat.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.CollPat.Count - 1 do
     begin
-      pat := msgColl.CollPat.Items[i];
+      pat := Adb_dm.AmsgColl.CollPat.Items[i];
       vpat := vtrTemp.AddChild(vPatImportNzis, nil);
       data := vtrTemp.GetNodeData(vpat);
       data.vid := vvPatient;
@@ -11899,13 +11935,13 @@ begin
     end;
 
 
-    for i := 0 to msgColl.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.Count - 1 do
     begin
-      if msgID = msgColl.Items[i].PRecord.messageId then
+      if msgID = Adb_dm.AmsgColl.Items[i].PRecord.messageId then
       begin
         Inc(wtori);
         dec(pyrvi);
-        msg := msgColl.Items[i];
+        msg := Adb_dm.AmsgColl.Items[i];
 
         case byte(msg.PRecord.Logical) of
           1:
@@ -11952,13 +11988,13 @@ begin
         end;
         if vReq <> nil then
         begin
-          if msgColl.Items[i].PRecord.msgNom < msgColl.Items[CurrentI].PRecord.msgNom then
+          if Adb_dm.AmsgColl.Items[i].PRecord.msgNom < Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom then
           begin
             //SetLength(msgColl.Items[CurrentI].PRecord.REQ, length(msgColl.Items[CurrentI].PRecord.REQ)-2);
-            msg.PRecord.RESP := msgColl.Items[CurrentI].PRecord.REQ;
-            vReq.Dummy := msgColl.Items[i].PRecord.msgNom;
-            msgColl.Items[i].Node := vReq;
-            vResp.Dummy := msgColl.Items[CurrentI].PRecord.msgNom;
+            msg.PRecord.RESP := Adb_dm.AmsgColl.Items[CurrentI].PRecord.REQ;
+            vReq.Dummy := Adb_dm.AmsgColl.Items[i].PRecord.msgNom;
+            Adb_dm.AmsgColl.Items[i].Node := vReq;
+            vResp.Dummy := Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom;
             data := vtrTemp.GetNodeData(vReq);
             data.index := i;
             data := vtrTemp.GetNodeData(vResp);
@@ -11967,10 +12003,10 @@ begin
           else
           begin
             //SetLength(msgColl.Items[i].PRecord.REQ, length(msgColl.Items[i].PRecord.REQ)-2);
-            msgColl.Items[CurrentI].PRecord.RESP := msg.PRecord.REQ;
-            vReq.Dummy := msgColl.Items[CurrentI].PRecord.msgNom;
-            msgColl.Items[CurrentI].Node := vReq;
-            vResp.Dummy := msgColl.Items[i].PRecord.msgNom;
+            Adb_dm.AmsgColl.Items[CurrentI].PRecord.RESP := msg.PRecord.REQ;
+            vReq.Dummy := Adb_dm.AmsgColl.Items[CurrentI].PRecord.msgNom;
+            Adb_dm.AmsgColl.Items[CurrentI].Node := vReq;
+            vResp.Dummy := Adb_dm.AmsgColl.Items[i].PRecord.msgNom;
             data := vtrTemp.GetNodeData(vResp);
             data.index := i;
             data := vtrTemp.GetNodeData(vReq);
@@ -11980,14 +12016,14 @@ begin
       end
       else
       begin
-        msgID := msgColl.Items[i].PRecord.messageId;
+        msgID := Adb_dm.AmsgColl.Items[i].PRecord.messageId;
         CurrentI := i;
         Inc(pyrvi);
         Dec(wtori);
         if pyrvi > 1 then
         begin
           pyrvi := 1;
-          mmoTest.Lines.Add(msgColl.Items[i - 1].PRecord.messageId);
+          mmoTest.Lines.Add(Adb_dm.AmsgColl.Items[i - 1].PRecord.messageId);
         end;
       end;
     end;
@@ -12023,7 +12059,7 @@ begin
 
     vImportNzisPregled := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregledRoot;
+    data.vid := vvPregledNewRoot;
     data.index := -1;
     vImportNzisNapr := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisNapr);
@@ -12046,14 +12082,14 @@ begin
     data.vid := vvNomenNzis;
     data.index := -1;
 
-    msgColl.SortByMessageId;
+    Adb_dm.AmsgColl.SortByMessageId;
     msgID := '';
     pyrvi := 0;
     wtori := 1;
-    for i := 0 to msgColl.CollPat.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.CollPat.Count - 1 do
     begin
-      pat := msgColl.CollPat.Items[i];
-      if msgColl.CollPat.Items[i].FLstMsgImportNzis.Count > 0 then
+      pat := Adb_dm.AmsgColl.CollPat.Items[i];
+      if Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis.Count > 0 then
       begin
         vpat := vtrTemp.AddChild(vPatImportNzis, nil);
         data := vtrTemp.GetNodeData(vpat);
@@ -12069,9 +12105,9 @@ begin
           Caption := 'ddd';
         end;
 
-        for j := 0 to msgColl.CollPat.Items[i].FLstMsgImportNzis.Count - 1 do
+        for j := 0 to Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis.Count - 1 do
         begin
-          msg := TNzisReqRespItem(msgColl.CollPat.Items[i].FLstMsgImportNzis[j]);
+          msg := TNzisReqRespItem(Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis[j]);
           if (msg.PRecord.NRN = '25162A02B91A') then
                 Caption := 'ddd';
           if msg.Preg = nil then
@@ -12096,7 +12132,7 @@ begin
                 Dublikat := True;
                 Break;
               end;
-              vRun := vRun.NextSibling;// въртя прегледите
+              vRun := vRun.NextSibling;// РІСЉСЂС‚СЏ РїСЂРµРіР»РµРґРёС‚Рµ
             end;
 
             if Dublikat then
@@ -12131,9 +12167,9 @@ begin
     end;
 
 
-    for i := 0 to msgColl.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.Count - 1 do
     begin
-      msg := msgColl.Items[i];
+      msg := Adb_dm.AmsgColl.Items[i];
       if (msg.PRecord.NRN = '25153D04122B') then
                 Caption := 'ddd';
       if (msg.Pat = nil) then // and (msgColl.Items[i].PRecord.patEgn <> '') then
@@ -12211,7 +12247,7 @@ begin
 
     vImportNzisPregled := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregledRoot;
+    data.vid := vvPregledNewRoot;
     data.index := -1;
     vImportNzisNapr := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisNapr);
@@ -12238,9 +12274,9 @@ begin
     msgID := '';
     pyrvi := 0;
     wtori := 1;
-    for i := 0 to msgColl.CollPat.Count - 1 do
+    for i := 0 to Adb_dm.AmsgColl.CollPat.Count - 1 do
     begin
-      pat := msgColl.CollPat.Items[i];
+      pat := Adb_dm.AmsgColl.CollPat.Items[i];
       //if pat.DataPos > 0 then
       begin
         vpat := vtrTemp.AddChild(vPatImportNzis, nil);
@@ -12267,7 +12303,7 @@ begin
 
 
       Continue;
-      if msgColl.CollPat.Items[i].FLstMsgImportNzis.Count > 0 then
+      if Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis.Count > 0 then
       begin
         vpat := vtrTemp.AddChild(vPatImportNzis, nil);
         data := vtrTemp.GetNodeData(vpat);
@@ -12283,9 +12319,9 @@ begin
           Caption := 'ddd';
         end;
 
-        for j := 0 to msgColl.CollPat.Items[i].FLstMsgImportNzis.Count - 1 do
+        for j := 0 to Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis.Count - 1 do
         begin
-          msg := TNzisReqRespItem(msgColl.CollPat.Items[i].FLstMsgImportNzis[j]);
+          msg := TNzisReqRespItem(Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis[j]);
           if (msg.PRecord.NRN = '25162A02B91A') then
                 Caption := 'ddd';
           if msg.Preg = nil then
@@ -12310,7 +12346,7 @@ begin
                 Dublikat := True;
                 Break;
               end;
-              vRun := vRun.NextSibling;// въртя прегледите
+              vRun := vRun.NextSibling;// РІСЉСЂС‚СЏ РїСЂРµРіР»РµРґРёС‚Рµ
             end;
 
             if Dublikat then
@@ -12429,7 +12465,7 @@ begin
 
     vImportNzisPregled := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregledRoot;
+    data.vid := vvPregledNewRoot;
     data.index := -1;
     vImportNzisNapr := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisNapr);
@@ -12452,9 +12488,9 @@ begin
     data.vid := vvNomenNzis;
     data.index := -1;
 
-  for i := 0 to msgColl.CollPat.Count - 1 do
+  for i := 0 to Adb_dm.AmsgColl.CollPat.Count - 1 do
   begin
-    pat := msgColl.CollPat.Items[i];
+    pat := Adb_dm.AmsgColl.CollPat.Items[i];
     if pat.FPregledi.Count = 0 then Continue;
     //if pat.FIncMNs.Count = 0 then Continue;
 
@@ -12544,95 +12580,95 @@ begin
   vtrTemp.FullExpand();
   vtrTemp.EndUpdate;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('LoadTempVtrMSG4 за %f ', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('LoadTempVtrMSG4 Р·Р° %f ', [Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.LoadThreadDB(dbName: string);
 var
   thrLoadDb: TLoadDBThread;
 begin
-  FNasMesto.addresColl.Buf := AspectsHipFile.Buf;
-  FNasMesto.addresColl.posData := AspectsHipFile.FPosData;
+  FNasMesto.addresColl.Buf := Adb_DM.AdbMain.Buf;
+  FNasMesto.addresColl.posData := Adb_DM.AdbMain.FPosData;
 
   thrLoadDb := TLoadDBThread.Create(True, dbname);
-  thrLoadDb.Buf := AspectsHipFile.Buf;
+  thrLoadDb.Buf := Adb_DM.AdbMain.Buf;
   thrLoadDb.FNasMesto := FNasMesto;
-  CollDoctor.Buf := AspectsHipFile.Buf;
-  CollDoctor.posData := AspectsHipFile.FPosData;
-  CollOtherDoctor.Buf := AspectsHipFile.Buf;
-  CollOtherDoctor.posData := AspectsHipFile.FPosData;
-  CollMkb.Buf := AspectsHipFile.Buf;
-  CollMkb.posData := AspectsHipFile.FPosData;
-  CollPatient.Buf := AspectsHipFile.Buf;
-  CollPatient.posData := AspectsHipFile.FPosData;
-  CollMDN.Buf := AspectsHipFile.Buf;
-  CollMDN.posData := AspectsHipFile.FPosData;
-  CollPregled.Buf := AspectsHipFile.Buf;
-  CollPregled.posData := AspectsHipFile.FPosData;
-  CollDiag.Buf := AspectsHipFile.Buf;
-  CollDiag.posData := AspectsHipFile.FPosData;
-  CollDiag.cmdFile := streamCmdFile;
-  CollPregled.FCollDiag := CollDiag;
-  Collmdn.FCollDiag := CollDiag;
-  CollUnfav.Buf := AspectsHipFile.Buf;
-  CollUnfav.posData := AspectsHipFile.FPosData;
-  CollPractica.Buf :=  AspectsHipFile.Buf;
-  CollPractica.posData := AspectsHipFile.FPosData;
-  CollEBL.Buf :=  AspectsHipFile.Buf;
-  CollEBL.posData := AspectsHipFile.FPosData;
-  CollExamAnal.Buf :=  AspectsHipFile.Buf;
-  CollExamAnal.posData := AspectsHipFile.FPosData;
-  CollExamImun.Buf :=  AspectsHipFile.Buf;
-  CollExamImun.posData := AspectsHipFile.FPosData;
-  CollProceduresNomen.Buf :=  AspectsHipFile.Buf;
-  CollProceduresNomen.posData := AspectsHipFile.FPosData;
-  CollCardProf.Buf :=  AspectsHipFile.Buf;
-  CollCardProf.posData := AspectsHipFile.FPosData;
-  CollMedNapr.Buf :=  AspectsHipFile.Buf;
-  CollMedNapr.posData := AspectsHipFile.FPosData;
-  CollMedNapr.FCollDiag := CollDiag;
-  CollMedNapr3A.Buf :=  AspectsHipFile.Buf;
-  CollMedNapr3A.posData := AspectsHipFile.FPosData;
-  CollMedNapr3A.FCollDiag := CollDiag;
-  CollMedNaprHosp.Buf :=  AspectsHipFile.Buf;
-  CollMedNaprHosp.posData := AspectsHipFile.FPosData;
-  CollMedNaprHosp.FCollDiag := CollDiag;
-  CollMedNaprLkk.Buf :=  AspectsHipFile.Buf;
-  CollMedNaprLkk.posData := AspectsHipFile.FPosData;
-  CollMedNaprLkk.FCollDiag := CollDiag;
-  CollIncMdn.Buf :=  AspectsHipFile.Buf;
-  CollIncMdn.posData := AspectsHipFile.FPosData;
-  CollIncMdn.FCollDiag := CollDiag;
-  CollIncMN.Buf :=  AspectsHipFile.Buf;
-  CollIncMN.posData := AspectsHipFile.FPosData;
-  CollIncMN.FCollDiag := CollDiag;
+  //CollDoctor.Buf := AspectsHipFile.Buf;
+//  CollDoctor.posData := AspectsHipFile.FPosData;
+//  CollOtherDoctor.Buf := AspectsHipFile.Buf;
+//  CollOtherDoctor.posData := AspectsHipFile.FPosData;
+//  CollMkb.Buf := AspectsHipFile.Buf;
+//  CollMkb.posData := AspectsHipFile.FPosData;
+//  CollPatient.Buf := AspectsHipFile.Buf;
+//  CollPatient.posData := AspectsHipFile.FPosData;
+//  CollMDN.Buf := AspectsHipFile.Buf;
+//  CollMDN.posData := AspectsHipFile.FPosData;
+//  CollPregled.Buf := AspectsHipFile.Buf;
+//  CollPregled.posData := AspectsHipFile.FPosData;
+//  CollDiag.Buf := AspectsHipFile.Buf;
+//  CollDiag.posData := AspectsHipFile.FPosData;
+//  CollDiag.cmdFile := streamCmdFile;
+//  CollPregled.FCollDiag := CollDiag;
+//  Collmdn.FCollDiag := CollDiag;
+//  CollUnfav.Buf := AspectsHipFile.Buf;
+//  CollUnfav.posData := AspectsHipFile.FPosData;
+//  CollPractica.Buf :=  AspectsHipFile.Buf;
+//  CollPractica.posData := AspectsHipFile.FPosData;
+//  CollEBL.Buf :=  AspectsHipFile.Buf;
+//  CollEBL.posData := AspectsHipFile.FPosData;
+//  CollExamAnal.Buf :=  AspectsHipFile.Buf;
+//  CollExamAnal.posData := AspectsHipFile.FPosData;
+//  CollExamImun.Buf :=  AspectsHipFile.Buf;
+//  CollExamImun.posData := AspectsHipFile.FPosData;
+//  CollProceduresNomen.Buf :=  AspectsHipFile.Buf;
+//  CollProceduresNomen.posData := AspectsHipFile.FPosData;
+//  CollCardProf.Buf :=  AspectsHipFile.Buf;
+//  CollCardProf.posData := AspectsHipFile.FPosData;
+//  CollMedNapr.Buf :=  AspectsHipFile.Buf;
+//  CollMedNapr.posData := AspectsHipFile.FPosData;
+//  CollMedNapr.FCollDiag := CollDiag;
+//  CollMedNapr3A.Buf :=  AspectsHipFile.Buf;
+//  CollMedNapr3A.posData := AspectsHipFile.FPosData;
+//  CollMedNapr3A.FCollDiag := CollDiag;
+//  CollMedNaprHosp.Buf :=  AspectsHipFile.Buf;
+//  CollMedNaprHosp.posData := AspectsHipFile.FPosData;
+//  CollMedNaprHosp.FCollDiag := CollDiag;
+//  CollMedNaprLkk.Buf :=  AspectsHipFile.Buf;
+//  CollMedNaprLkk.posData := AspectsHipFile.FPosData;
+//  CollMedNaprLkk.FCollDiag := CollDiag;
+//  CollIncMdn.Buf :=  AspectsHipFile.Buf;
+//  CollIncMdn.posData := AspectsHipFile.FPosData;
+//  CollIncMdn.FCollDiag := CollDiag;
+//  CollIncMN.Buf :=  AspectsHipFile.Buf;
+//  CollIncMN.posData := AspectsHipFile.FPosData;
+//  CollIncMN.FCollDiag := CollDiag;
 
   thrLoadDb.FDBHelper := FDBHelper;
 
 
-  thrLoadDb.MKBColl := CollMkb;
-  thrLoadDb.PatientColl := CollPatient;
-  thrLoadDb.DoctorColl := CollDoctor;
-  thrLoadDb.PregledNewColl := CollPregled;
-  thrLoadDb.DiagColl := CollDiag;
-  thrLoadDb.UnFavColl := CollUnfav;
-  thrLoadDb.MDNColl := CollMDN;
-  thrLoadDb.PracticaColl := CollPractica;
-  thrLoadDb.EBLColl := CollEBL;
-  thrLoadDb.ExamAnalColl := CollExamAnal;
-  thrLoadDb.ExamImunColl := CollExamImun;
-  thrLoadDb.ProcCollNomen := CollProceduresNomen;
-  thrLoadDb.ProcCollPreg := CollProceduresPreg;
-  thrLoadDb.AdbNomen := AspectsNomFile;
-  thrLoadDb.Cl142Coll := CL142Coll;
-  thrLoadDb.KARTA_PROFILAKTIKA2017Coll := CollCardProf;
-  thrLoadDb.MedNaprColl := CollMedNapr;
-  thrLoadDb.MedNapr3AColl := CollMedNapr3A;
-  thrLoadDb.MedNaprHospColl := CollMedNaprHosp;
-  thrLoadDb.MedNaprLkkColl := CollMedNaprLkk;
-  thrLoadDb.IncMdnColl := CollIncMdn;
-  thrLoadDb.IncMNColl := CollIncMN;
-  thrLoadDb.OtherDoctorColl := CollOtherDoctor;
+  //thrLoadDb.MKBColl := CollMkb;
+//  thrLoadDb.PatientColl := CollPatient;
+//  thrLoadDb.DoctorColl := CollDoctor;
+//  thrLoadDb.PregledNewColl := CollPregled;
+//  thrLoadDb.DiagColl := CollDiag;
+//  thrLoadDb.UnFavColl := CollUnfav;
+//  thrLoadDb.MDNColl := CollMDN;
+//  thrLoadDb.PracticaColl := CollPractica;
+//  thrLoadDb.EBLColl := CollEBL;
+//  thrLoadDb.ExamAnalColl := CollExamAnal;
+//  thrLoadDb.ExamImunColl := CollExamImun;
+//  thrLoadDb.ProcCollNomen := CollProceduresNomen;
+//  thrLoadDb.ProcCollPreg := CollProceduresPreg;
+//  thrLoadDb.AdbNomen := AspectsNomFile;
+//  thrLoadDb.Cl142Coll := CL142Coll;
+//  thrLoadDb.KARTA_PROFILAKTIKA2017Coll := CollCardProf;
+//  thrLoadDb.MedNaprColl := CollMedNapr;
+//  thrLoadDb.MedNapr3AColl := CollMedNapr3A;
+//  thrLoadDb.MedNaprHospColl := CollMedNaprHosp;
+//  thrLoadDb.MedNaprLkkColl := CollMedNaprLkk;
+//  thrLoadDb.IncMdnColl := CollIncMdn;
+//  thrLoadDb.IncMNColl := CollIncMN;
+//  thrLoadDb.OtherDoctorColl := CollOtherDoctor;
   thrLoadDb.LinkAnals := AspectsLinkNomenHipAnalFile;
 
   //thrLoadDb.FCollPregVtor := CollPregledVtor;
@@ -12643,7 +12679,8 @@ begin
   thrLoadDb.OnCnt := LoadDbOnCNT;
   thrLoadDb.cmdFile := streamCmdFile;
 
-  thrLoadDb.Guid := AspectsHipFile.GUID;
+  thrLoadDb.Guid := Adb_DM.AdbMain.GUID;
+  thrLoadDb.Adb_dm := Adb_DM;
   thrLoadDb.Resume;
 end;
 
@@ -12663,9 +12700,9 @@ begin
   data.index := -1;
   data.vid := vvDoctorRoot;
 
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to Adb_dm.CollDoctor.Count - 1 do
   begin
-    doc := CollDoctor.Items[i];
+    doc := Adb_dm.CollDoctor.Items[i];
     vDoctor := vtrDoctor.AddChild(vRootDoctor, nil);
     data := vtrDoctor.GetNodeData(vDoctor);
     data.DataPos := 0;
@@ -12880,12 +12917,12 @@ var
 begin
   if vRootNomenNzis.ChildCount > 0  then Exit;
   vtrNomenNzis.BeginUpdate;
-  ListNomenNzisNames.Count := NomenNzisColl.Count;
+  Adb_DM.ListNomenNzisNames.Count := Adb_dm.NomenNzisColl.Count;
 
-  for i := 0 to NomenNzisColl.Count - 1 do
+  for i := 0 to Adb_dm.NomenNzisColl.Count - 1 do
   begin
-    ListNomenNzisNames[i] := TNomenNzisRec.Create;
-    ListNomenNzisNames[i].nomenNzis := NomenNzisColl.Items[i];
+    Adb_DM.ListNomenNzisNames[i] := TNomenNzisRec.Create;
+    Adb_DM.ListNomenNzisNames[i].nomenNzis := Adb_dm.NomenNzisColl.Items[i];
 
     v := vtrNomenNzis.AddChild(vRootNomenNzis, nil);
 
@@ -12920,112 +12957,112 @@ begin
   MaxCnt := 150;
   if vRootNomenNzis.ChildCount > 0  then Exit;
   vtrNomenNzis.BeginUpdate;
-  ListNomenNzisNames.Count := MaxCnt;
+  Adb_DM.ListNomenNzisNames.Count := MaxCnt;
 
   for i := 0 to MaxCnt -1 do
   begin
-    ListNomenNzisNames[i] := TNomenNzisRec.Create;
-    ListNomenNzisNames[i].nomenNzis := TNomenNzisItem(NomenNzisColl.add);
-    New(ListNomenNzisNames[i].nomenNzis.PRecord);
-    ListNomenNzisNames[i].nomenNzis.PRecord.setProp := [NomenNzis_NomenName, NomenNzis_NomenID];
-    ListNomenNzisNames[i].nomenNzis.PRecord.NomenName := '';
-    ListNomenNzisNames[i].nomenNzis.PRecord.NomenID := Format('CL%.*d', [3, i]) ;;
+    Adb_DM.ListNomenNzisNames[i] := TNomenNzisRec.Create;
+    Adb_DM.ListNomenNzisNames[i].nomenNzis := TNomenNzisItem(Adb_dm.NomenNzisColl.add);
+    New(Adb_DM.ListNomenNzisNames[i].nomenNzis.PRecord);
+    Adb_DM.ListNomenNzisNames[i].nomenNzis.PRecord.setProp := [NomenNzis_NomenName, NomenNzis_NomenID];
+    Adb_DM.ListNomenNzisNames[i].nomenNzis.PRecord.NomenName := '';
+    Adb_DM.ListNomenNzisNames[i].nomenNzis.PRecord.NomenID := Format('CL%.*d', [3, i]) ;;
 
     v := vtrNomenNzis.AddChild(vRootNomenNzis, nil);
     case i of
       006:
       begin
-        if CL006Coll.Count > 0 then
+        if Adb_dm.CL006Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL006Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL006Coll;
           v.Dummy := 80;
         end;
       end;
       022:
       begin
-        if CL022Coll.Count > 0 then
+        if Adb_dm.CL022Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL022Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL022Coll;
           v.Dummy := 80;
         end;
       end;
       024:
       begin
-        if CL024Coll.Count > 0 then
+        if Adb_dm.CL024Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL024Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL024Coll;
           v.Dummy := 80;
         end;
       end;
       037:
       begin
-        if CL037Coll.Count > 0 then
+        if Adb_dm.CL037Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL037Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL037Coll;
           v.Dummy := 80;
         end;
       end;
       038:
       begin
-        if CL038Coll.Count > 0 then
+        if Adb_dm.CL038Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL038Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL038Coll;
           v.Dummy := 80;
         end;
       end;
       050:
       begin
-        if CL050Coll.Count > 0 then
+        if Adb_dm.CL050Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL050Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL050Coll;
           v.Dummy := 80;
         end;
       end;
       088:
       begin
-        if CL088Coll.Count > 0 then
+        if Adb_dm.CL088Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL088Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL088Coll;
           v.Dummy := 80;
         end;
       end;
       132:
       begin
-        if CL132Coll.Count > 0 then
+        if Adb_dm.CL132Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL132Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL132Coll;
           v.Dummy := 80;
         end;
       end;
       134:
       begin
-        if CL134Coll.Count > 0 then
+        if Adb_dm.CL134Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL134Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL134Coll;
           v.Dummy := 80;
         end;
       end;
       139:
       begin
-        if CL139Coll.Count > 0 then
+        if Adb_dm.CL139Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL139Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL139Coll;
           v.Dummy := 80;
         end;
       end;
       142:
       begin
-        if CL142Coll.Count > 0 then
+        if Adb_dm.CL142Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL142Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL142Coll;
           v.Dummy := 80;
         end;
       end;
       144:
       begin
-        if CL144Coll.Count > 0 then
+        if Adb_dm.CL144Coll.Count > 0 then
         begin
-          ListNomenNzisNames[i].AspColl := CL144Coll;
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL144Coll;
           v.Dummy := 80;
         end;
       end;
@@ -13109,9 +13146,9 @@ begin
                     vtr, amAddChildLast, streamCmdFile);
   run := TreeLink;
 
-  for I := 0 to CollPatient.Count - 1 do
+  for I := 0 to Adb_dm.CollPatient.Count - 1 do
   begin
-    pat := CollPatient.Items[i];
+    pat := Adb_dm.CollPatient.Items[i];
     if pat.PatID = 85386 then
         Caption := 'ddd';
     TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
@@ -13274,7 +13311,7 @@ begin
         else
         begin
           vtr.InternalConnectNode_cmd(TreeLink, vpat,
-                        vtr, amAddChildFirst, streamCmdFile);//zzzzzzzzzzzzzzzzzz  да се отбележи, че не е добре
+                        vtr, amAddChildFirst, streamCmdFile);//zzzzzzzzzzzzzzzzzz  РґР° СЃРµ РѕС‚Р±РµР»РµР¶Рё, С‡Рµ РЅРµ Рµ РґРѕР±СЂРµ
           //Caption := pat.PatEGN;
         end;
       end;
@@ -13401,9 +13438,9 @@ begin
           //if diag.PregDiag <> nil then
 //          begin
 //            Caption := 'ddd';
-//            Continue;// zzzzzzzzzzzzzzzzzz  да се сложи коя диагноза от прегледа е...
+//            Continue;// zzzzzzzzzzzzzzzzzz  РґР° СЃРµ СЃР»РѕР¶Рё РєРѕСЏ РґРёР°РіРЅРѕР·Р° РѕС‚ РїСЂРµРіР»РµРґР° Рµ...
 //          end;
-          mdn.AddNewDiag(m, CollDiag);
+          mdn.AddNewDiag(m, Adb_dm.CollDiag);
           TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
           data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
@@ -13654,7 +13691,7 @@ begin
   vtr.InvalidateToBottom(vtr.RootNode);
   vtr.Expanded[run] := True;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('ЗаpisLink %d за %f',[vtr.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('Р—Р°pisLink %d Р·Р° %f',[vtr.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 end;
 
 
@@ -13714,7 +13751,7 @@ var
 begin
   vtrProfReg.BeginUpdate;
   buflink := AspectsLinkPatPregFile.Buf;
-  BufADB := AspectsHipFile.Buf;
+  BufADB := Adb_DM.AdbMain.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(bufLink));
   FPosLinkData := pCardinalData^;
@@ -13726,7 +13763,7 @@ begin
   temppreg := TRealPregledNewItem.Create(nil);
   tempDoctor := TDoctorItem.Create(nil);
 
-  collPregForSearch.ListDataPos.Clear;
+  //collPregForSearch.ListDataPos.Clear;
 
   patNode := node.FirstChild;
   while patNode <> nil do // loop pat
@@ -13747,7 +13784,7 @@ begin
       begin
         AdataPreg := pointer(PByte(pregNode) + lenNode);
         case AdataPreg.vid of
-          vvPregled:   // ако е преглед
+          vvPregled:   // Р°РєРѕ Рµ РїСЂРµРіР»РµРґ
           begin
             PregIsProf := False;
             temppreg.FDiagnosis.Clear;
@@ -13766,7 +13803,7 @@ begin
                     begin
                       tempDiag := TRealDiagnosisItem.Create(nil);
                       tempDiag.DataPos := AdataDiag.DataPos;
-                      mkb := tempDiag.getAnsiStringMap(CollDiag.Buf, CollDiag.posData, word(Diagnosis_code_CL011));
+                      mkb := tempDiag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
                       if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
                       begin
                         PregIsProf := True;
@@ -13815,17 +13852,17 @@ var
 begin
   //vtrSearch.NodeDataSize := SizeOf(tasprec);
   //vtrSearch.BeginUpdate;
-  CollPatient.ListForFinder.Clear;
+  Adb_dm.CollPatient.ListForFinder.Clear;
 
   //vPat := vtrSearch.AddChild(nil, nil);
   //data := vtrSearch.GetNodeData(vpat);
-  //data.index := CollPatient.AddItemForSearch;// шаблон за търсене.
+  //data.index := CollPatient.AddItemForSearch;// С€Р°Р±Р»РѕРЅ Р·Р° С‚СЉСЂСЃРµРЅРµ.
   //data.DataPos := 0;
 //  data.vid := vvPatient;
 //
 //  vPreg := vtrSearch.AddChild(vpat, nil);
 //  data := vtrSearch.GetNodeData(vPreg);
-//  data.index := CollPregled.AddItemForSearch;// шаблон за търсене.
+//  data.index := CollPregled.AddItemForSearch;// С€Р°Р±Р»РѕРЅ Р·Р° С‚СЉСЂСЃРµРЅРµ.
 //  data.DataPos := 0;
 //  data.vid := vvPregled;
 //
@@ -13843,13 +13880,13 @@ begin
   vtrSpisyci.Clear;
   vtrSpisyci.BeginUpdate;
 
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to Adb_dm.CollDoctor.Count - 1 do
   begin
     vDoc := vtrSpisyci.AddChild(nil, nil);
     data := vtrSpisyci.GetNodeData(vDoc);
     data.index := i;
     data.vid := vvDoctor;
-    CollDoctor.Items[i].Node := vDoc;
+    Adb_dm.CollDoctor.Items[i].Node := vDoc;
   end;
   vtrSpisyci.EndUpdate;
 end;
@@ -13900,20 +13937,10 @@ begin
     profGR := TProfGraph.create;
 
     profGR := TProfGraph.create;
-    profGR.CL006Coll := CL006Coll;
-    profGR.CL022Coll := CL022Coll;
-    profGR.CL037Coll := CL037Coll;
-    profGR.CL038Coll := CL038Coll;
-    profGR.CL050Coll := CL050Coll;
-    profGR.CL132Coll := CL132Coll;
-    profGR.CL134Coll := CL134Coll;
-    profGR.CL142Coll := CL142Coll;
-    profGR.CL144Coll := CL144Coll;
-    profGR.CL088Coll := CL088Coll;
-    profGR.PR001Coll := PR001Coll;
+
     profGR.BufNomen := AspectsNomFile.Buf;
-    profGR.BufADB := AspectsHipFile.Buf;
-    profGR.posDataADB := AspectsHipFile.FPosData;
+    //profGR.BufADB := AspectsHipFile.Buf;
+    //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
     profGR.Adb_DM := Adb_DM;
   end;
@@ -13926,22 +13953,22 @@ begin
     dataGraph := vtrGraph.GetNodeData(vRootGraph);
     dataGraph.vid := vvNone;
     dataGraph.index := 0;
-  CollPatGR.Clear;
-  CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+  Adb_dm.ACollPatGR.Clear;
+  Adb_dm.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
   vtrGraph.OnCompareNodes := nil;
   //vtrGraph.OnGetText := nil;
   vtrGraph.OnGetImageIndexEx := nil;
   Stopwatch := TStopwatch.StartNew;
-  for i := 0 to CollPatient.ListNodes.Count - 1 do
+  for i := 0 to Adb_dm.CollPatient.ListNodes.Count - 1 do
   begin
     //node := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
-    pat := TRealPatientNewItem(CollPatGR.Add);
+    pat := TRealPatientNewItem(Adb_dm.ACollPatGR.Add);
     //pat := TRealPatientNewItem.Create(nil);
-    pat.DataPos := CollPatient.ListNodes[i].DataPos;
-    pat.FNode := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
+    pat.DataPos := Adb_dm.CollPatient.ListNodes[i].DataPos;
+    pat.FNode := pointer(PByte(Adb_dm.CollPatient.ListNodes[i]) - lenNode);
     //pat := CollPatient.Items[i];
-    dat := CollPatient.getDateMap(CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(CollPatient.getLogical40Map(CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
+    dat := Adb_dm.CollPatient.getDateMap(Adb_dm.CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
+    log := TlogicalPatientNewSet(Adb_dm.CollPatient.getLogical40Map(Adb_dm.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
     profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
     profGR.CurrDate := dat;
     profGR.GeneratePeriod(pat);
@@ -13957,7 +13984,7 @@ begin
   //vtrGraph.Clear;
   //CollPatGR.Clear;
 
-  mmoTest.lines.add(Format('%d nodes за  проф: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
+  mmoTest.lines.add(Format('%d nodes Р·Р°  РїСЂРѕС„: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
 end;
 
 procedure TfrmSuperHip.miListAnalysisClick(Sender: TObject);
@@ -14187,8 +14214,8 @@ var
 begin
   node := PVirtualNode(pmActionPreg.tag);
   data := pointer(PByte(node) + lenNode);
-  CollPregled.SetIntMap(data.DataPos, word(PregledNew_AMB_LISTN), 88);
-  ListPregledLinkForInsert.Add(node);
+  Adb_dm.CollPregled.SetIntMap(data.DataPos, word(PregledNew_AMB_LISTN), 88);
+  Adb_dm.ListPregledLinkForInsert.Add(node);
   CheckCollForSave;
 end;
 
@@ -14281,27 +14308,16 @@ end;
 
 procedure TfrmSuperHip.mniPatientSearchViewClick(Sender: TObject);
 begin
-  grdSearch.Tag := word(vvPatient);
-  thrSearch.CollPat.ShowLinksGrid(grdSearch);
+  grdSearch.Tag := Cardinal(Adb_dm.CollPatient);
+  //thrSearch.CollPat.ShowLinksGrid(grdSearch);
 end;
 
 procedure TfrmSuperHip.mniPregledSearchViewClick(Sender: TObject);
 var
   i: Integer;
 begin
-  grdSearch.Tag := word(vvPregled);
-
-  thrSearch.collPreg.ShowLinksGrid(grdSearch);
-  //Stopwatch := TStopwatch.StartNew;
-//  for i := 0 to 200 do// CollPregled.ListDataPos.count - 1 do
-//  begin
-//    grdSearch.Selected.Row := i;
-//    Application.ProcessMessages;
-//  end;
-//  Elapsed := Stopwatch.Elapsed;
-//  //FmxProfForm.scldlyt1.endupdate;
-//  mmoTest.Lines.Add( '2000 br. za ' + FloatToStr(Elapsed.TotalMilliseconds));
-
+  grdSearch.Tag := Cardinal(Adb_dm.CollPregled);
+  //thrSearch.collPreg.ShowLinksGrid(grdSearch);
 end;
 
 procedure TfrmSuperHip.mniRemontCloningsClick(Sender: TObject);
@@ -14369,8 +14385,6 @@ begin
   nzisThr.MsgType := TNzisMsgType.X013;
   nzisThr.token := edtToken.Text;
   nzisThr.CurrentCert := CertForThread;
-  nzisThr.PregColl := CollPregled;
-  nzisThr.CollNzisToken := CollNzisToken;
   nzisThr.Resume;
 end;
 
@@ -14378,6 +14392,41 @@ procedure TfrmSuperHip.OnActivateFMX(sender: TObject);
 begin
  // if vtrPregledPat.MouseInClient then
    // vtrPregledPat.SetFocus;
+end;
+
+procedure TfrmSuperHip.OnAddNewNodeFilter(NewNode, adbNode: PVirtualNode);
+var
+  coll: TBaseCollection;
+  AspAdb: PAspRec;
+  aspNewNode: PAspRecFilter;
+
+  CollType: TCollectionsType;
+  PCollType: ^TCollectionsType;
+  i: integer;
+  linkPos: Cardinal;
+  run: PVirtualNode;
+begin
+  AspAdb := Pointer(PByte(adbNode) + lenNode);
+  if AspAdb.DataPos = 0 then Exit;
+
+  NewNode.CheckType := ctCheckBox;
+  NewNode.CheckState := csUncheckedNormal;
+
+  PCollType := Pointer(PByte(Adb_DM.AdbMain.Buf) + AspAdb.DataPos - 4);
+  CollType := TCollectionsType(PCollType^);
+  coll := GetCollectionByType(Word(CollType));
+  for i := 0 to  coll.FieldCount - 1 do
+  begin
+    AspectsFilterLinkFile.AddNewNode(vvFieldFilter, 0, NewNode , amAddChildlast, run, linkPos);
+    aspNewNode := Pointer(PByte(NewNode) + lenNode);
+    aspNewNode.CollType := (CollType);
+    run.Dummy := i;
+    run.CheckType := ctCheckBox;
+    run.CheckState := csCheckedNormal;
+    // С‚СѓРє РґРѕР±Р°РІСЏРјРµ РѕРїРµСЂР°С‚РѕСЂРёС‚Рµ
+    AddOperatorNodes(run, coll, i);
+  end;
+
 end;
 
 procedure TfrmSuperHip.OnApplicationHint(Sender: TObject);
@@ -14393,10 +14442,10 @@ end;
 
 procedure TfrmSuperHip.OnChangeYear(sender: TObject);
 begin
-  lblYear.Caption := inttostr(CollUnfav.CurrentYear);
+  lblYear.Caption := inttostr(Adb_dm.CollUnfav.CurrentYear);
   if vtrSpisyci.Header.Columns.Count > 0 then
   begin
-    vtrSpisyci.Header.Columns[0].Text := format('Лекари' + #13#10 + 'За %d г. по месеци', [collunfav.CurrentYear]);
+    vtrSpisyci.Header.Columns[0].Text := format('Р›РµРєР°СЂРё' + #13#10 + 'Р—Р° %d Рі. РїРѕ РјРµСЃРµС†Рё', [Adb_dm.collunfav.CurrentYear]);
     vtrSpisyci.Repaint;
   end;
 end;
@@ -14410,11 +14459,11 @@ begin
     try
       try
         FillCertInDoctors;
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_dm.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
-          edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          edtCertNom.Text := BuildHexString(Adb_dm.CollDoctor.Items[0].Cert.SerialNumber);
+          Adb_dm.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_dm.CollDoctor.Items[0].Cert.Clone(CurrentCert);
           if edtToken.Text = '' then
           begin
             httpNZIS.OnData := httpNZISDataToken;
@@ -14429,7 +14478,7 @@ begin
             ClosePregX003(preg.FNode);
           end;
         end
-        else // Не е намерен подпис за доктора
+        else // РќРµ Рµ РЅР°РјРµСЂРµРЅ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           // zzzzzzzzzzzzz
         end;
@@ -14446,12 +14495,12 @@ begin
   begin
     try
       try
-        if CollDoctor.Items[0].Cert <> nil then // намерен е подпис за доктора
+        if Adb_dm.CollDoctor.Items[0].Cert <> nil then // РЅР°РјРµСЂРµРЅ Рµ РїРѕРґРїРёСЃ Р·Р° РґРѕРєС‚РѕСЂР°
         begin
           if CurrentCert = nil then
             CurrentCert := TelX509Certificate.Create(self);
-          CollDoctor.Items[0].Cert.Clone(CertForThread);
-          CollDoctor.Items[0].Cert.Clone(CurrentCert);
+          Adb_dm.CollDoctor.Items[0].Cert.Clone(CertForThread);
+          Adb_dm.CollDoctor.Items[0].Cert.Clone(CurrentCert);
         end
         else
         begin
@@ -14640,26 +14689,26 @@ begin
     case dataInIncMn.vid of
       vvPregled:
       begin
-        preg := TRealPregledNewItem(CollPregled.Add);
+        preg := TRealPregledNewItem(Adb_dm.CollPregled.Add);
         preg.DataPos := dataInIncMn.DataPos;
         preg.FNode := RunNodeInIncMN;
         //preg.Fpatient := patient;
         //patient.FPregledi.Add(preg);
 
-        if CollPregled.getIntMap(dataInIncMn.DataPos, word(PregledNew_ID)) = 0 then
+        if Adb_dm.CollPregled.getIntMap(dataInIncMn.DataPos, word(PregledNew_ID)) = 0 then
         begin
           FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
           dataIncMN := Pointer(PByte(IncMnNode)+ lenNode);
 
-          PregledNRN := CollPregled.getAnsiStringMap(dataInIncMn.DataPos, Word(PregledNew_NRN_LRN));
-          IncMnNrn := CollIncMN.getAnsiStringMap(dataIncMN.DataPos, Word(INC_NAPR_NRN));
+          PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInIncMn.DataPos, Word(PregledNew_NRN_LRN));
+          IncMnNrn := Adb_dm.CollIncMN.getAnsiStringMap(dataIncMN.DataPos, Word(INC_NAPR_NRN));
           if isNew then
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ РЅРѕРІ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end
           else
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ СЃС‚Р°СЂ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end;
           RunInPregled(preg, true);
         end;
@@ -14685,23 +14734,23 @@ begin
     case dataInPat.vid of
       vvIncMN:
       begin
-        incMN := TRealINC_NAPRItem(CollIncMN.Add);
+        incMN := TRealINC_NAPRItem(Adb_dm.CollIncMN.Add);
         incMN.FNode := RunNodeInPat;
         incMN.FPatient := patient;
         patient.FIncMNs.Add(incMn);
-        if CollIncMN.getIntMap(dataInPat.DataPos, word(INC_NAPR_ID)) = 0 then
+        if Adb_dm.CollIncMN.getIntMap(dataInPat.DataPos, word(INC_NAPR_ID)) = 0 then
         begin
           dataPat := Pointer(PByte(patNode)+ lenNode);
 
-          IncMNNRN := CollIncMN.getAnsiStringMap(dataInPat.DataPos, Word(INC_NAPR_NRN));
-          patEgn := CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
+          IncMNNRN := Adb_dm.CollIncMN.getAnsiStringMap(dataInPat.DataPos, Word(INC_NAPR_NRN));
+          patEgn := Adb_dm.CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
           if isNew then
           begin
-            //mmoTest.Lines.Add(format('ново вх. напр.: %s  в нов пациент: %s ', [IncMNNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІРѕ РІС…. РЅР°РїСЂ.: %s  РІ РЅРѕРІ РїР°С†РёРµРЅС‚: %s ', [IncMNNRN, patEgn] ));
           end
           else
           begin
-            //mmoTest.Lines.Add(format('ново вх. напр.: %s  в стар пациент: %s ', [IncMNNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІРѕ РІС…. РЅР°РїСЂ.: %s  РІ СЃС‚Р°СЂ РїР°С†РёРµРЅС‚: %s ', [IncMNNRN, patEgn] ));
           end;
           RunInIncMN(incMN, true);
         end
@@ -14712,25 +14761,25 @@ begin
       end;
       vvPregled:
       begin
-        preg := TRealPregledNewItem(CollPregled.Add);
+        preg := TRealPregledNewItem(Adb_dm.CollPregled.Add);
         preg.DataPos := dataInPat.DataPos;
         preg.FNode := RunNodeInPat;
         preg.Fpatient := patient;
         patient.FPregledi.Add(preg);
-        if CollPregled.getIntMap(dataInPat.DataPos, word(PregledNew_ID)) = 0 then
+        if Adb_dm.CollPregled.getIntMap(dataInPat.DataPos, word(PregledNew_ID)) = 0 then
         begin
           FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
           dataPat := Pointer(PByte(patNode)+ lenNode);
 
-          PregledNRN := CollPregled.getAnsiStringMap(dataInPat.DataPos, Word(PregledNew_NRN_LRN));
-          patEgn := CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
+          PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInPat.DataPos, Word(PregledNew_NRN_LRN));
+          patEgn := Adb_dm.CollPatient.getAnsiStringMap(dataPat.DataPos, Word(PatientNew_EGN));
           if isNew then
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ РЅРѕРІ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end
           else
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ СЃС‚Р°СЂ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end;
           RunInPregled(preg, true);
         end
@@ -14764,18 +14813,18 @@ begin
     case dataInPreg.vid of
       vvmdn:
       begin
-        mdn := TRealMDNItem(CollMDN.add);
+        mdn := TRealMDNItem(Adb_dm.CollMDN.add);
         mdn.FNode := RunNodeInPregled;
         mdn.DataPos :=dataInPreg.DataPos;
-        mdn.PregledID := CollPregled.getIntMap(dataPreg.DataPos, Word(PregledNew_ID));;
+        mdn.PregledID := Adb_dm.CollPregled.getIntMap(dataPreg.DataPos, Word(PregledNew_ID));;
         mdn.FPregled := preg;
         preg.FMdns.Add(mdn);
-        if CollMDN.getIntMap(dataInPreg.DataPos, word(MDN_ID)) = 0 then
+        if Adb_dm.CollMDN.getIntMap(dataInPreg.DataPos, word(MDN_ID)) = 0 then
         begin
           dataMDN := Pointer(PByte(mdn.FNode)+ lenNode);
 
-          PregledNRN := CollPregled.getAnsiStringMap(dataInPreg.DataPos, Word(PregledNew_NRN_LRN));
-          MdnNrn := CollMdn.getAnsiStringMap(dataMDN.DataPos, Word(MDN_NRN));
+          PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInPreg.DataPos, Word(PregledNew_NRN_LRN));
+          MdnNrn := Adb_dm.CollMDN.getAnsiStringMap(dataMDN.DataPos, Word(MDN_NRN));
           FDBHelper.SaveMdn(mdn, Fdm.ibsqlCommand);
           for k :=  mdn.FExamAnals.Count - 1 downto 0 do
           begin
@@ -14786,11 +14835,11 @@ begin
           end;
           if isNew then
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в нов пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ РЅРѕРІ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end
           else
           begin
-            //mmoTest.Lines.Add(format('нов преглед: %s  в стар пациент: %s ', [PregledNRN, patEgn] ));
+            //mmoTest.Lines.Add(format('РЅРѕРІ РїСЂРµРіР»РµРґ: %s  РІ СЃС‚Р°СЂ РїР°С†РёРµРЅС‚: %s ', [PregledNRN, patEgn] ));
           end;
         end;
       end;
@@ -14834,6 +14883,259 @@ begin
   Handled := True;
 end;
 
+procedure TfrmSuperHip.SearchTest;
+var
+  run, node: PVirtualNode;
+  dataRun, data: PAspRec;
+  target: PAnsiChar;
+  targetLen: Word;
+  p: PAnsiChar;
+  len: Word;
+  i: Integer;
+begin
+  target := '111111111111111';
+  targetLen := Length('111111111111111');
+
+  Stopwatch := TStopwatch.StartNew;
+  node := vtrSearch.GetFirstSelected();
+  data := Pointer(PByte(node)+ lenNode);
+  for i := 0 to AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count - 1 do
+  begin
+    run := AspectsLinkPatPregFile.JoinResult[Data.index].AdbList[i];
+    dataRun := Pointer(PByte(run)+ lenNode);
+
+    // РІР·РµРјР°РјРµ PAnsiChar Рё length РґРёСЂРµРєС‚РЅРѕ РѕС‚ ADB Р±СѓС„РµСЂР°
+    p := Adb_DM.CollPregled.getPAnsiStringMap(
+            dataRun.DataPos,
+            Word(PregledNew_NRN_LRN),
+            len);
+
+    // Р°РєРѕ РЅСЏРјР° СЃС‚РѕР№РЅРѕСЃС‚
+    if p = nil then
+      Continue;
+
+    // Р°РєРѕ РґСЉР»Р¶РёРЅР°С‚Р° РЅРµ СЃСЉРІРїР°РґР° вЂ” РЅСЏРјР° СЃРјРёСЃСЉР» РґР° СЃСЂР°РІРЅСЏРІР°РјРµ
+    if len <> targetLen then
+      Continue;
+
+    // РґРёСЂРµРєС‚РЅРѕ memory СЃСЂР°РІРЅРµРЅРёРµ вЂ” РќРђР™-Р‘РЄР Р—РћРўРћ Р’РЄР—РњРћР–РќРћ
+    if CompareMem(p, target, len) then
+      break;
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add('loop-fast ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TfrmSuperHip.SearchTesStartsWith_CI;
+var
+  target: AnsiString;
+  targetLen: Word;
+  up: array[AnsiChar] of AnsiChar;
+
+  p: PAnsiChar;
+  len: Word;
+  i, j: Integer;
+
+  data, dataRun: PAspRec;
+  run, node: PVirtualNode;
+begin
+  // target
+  target := '24';
+  targetLen := Length(target);
+
+  // build ascii uppercase table
+  for i := 0 to 255 do
+    up[AnsiChar(i)] := AnsiChar(UpperCase(Char(i))[1]);
+
+  Stopwatch := TStopwatch.StartNew;
+
+  node := vtrSearch.GetFirstSelected();
+  data := Pointer(PByte(node) + lenNode);
+
+  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  begin
+    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    dataRun := Pointer(PByte(run) + lenNode);
+
+    p := Adb_DM.CollPregled.getPAnsiStringMap(
+           dataRun.DataPos,
+           Word(PregledNew_NRN_LRN),
+           len
+        );
+
+    if (p = nil) or (len < targetLen) then
+      Continue;
+
+    // manual case-insensitive compare
+    for j := 0 to targetLen - 1 do
+      if up[p[j]] <> up[PAnsiChar(target)[j]] then
+      begin      
+        Adb_DM.CollPregled.ListDataPos.Add(run);
+      end;        
+
+    if j = targetLen then
+    begin    
+      Adb_DM.CollPregled.ListDataPos.Add(run);
+    end;      
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add('loop-startswith-ci ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+
+procedure TfrmSuperHip.SearchTesStartsWith;
+var
+  target: AnsiString;
+  targetLen: Word;
+  p, p2: PAnsiChar;
+  len: Word;
+  i: Integer;
+  data, dataRun: PAspRec;
+  run, node: PVirtualNode;
+
+begin
+  target := '2607';
+  targetLen := Length(target);
+  p2 := PAnsiChar(target);
+
+  Stopwatch := TStopwatch.StartNew;
+  node := vtrSearch.GetFirstSelected();
+  data := Pointer(PByte(node) + lenNode);
+
+  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  begin
+    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    dataRun := Pointer(PByte(run) + lenNode);
+
+    p := Adb_DM.CollPregled.getPAnsiStringMap(
+           dataRun.DataPos,
+           Word(PregledNew_NRN_LRN),
+           len
+        );
+
+    if (p = nil) or (len < targetLen) then
+      Continue;
+
+    if CompareMem(p, p2, targetLen) then
+      Break;
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add('loop-startswith ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+
+procedure TfrmSuperHip.SearchTesBMH_contain;
+var
+  target: AnsiString;
+  targetLen: Word;
+  patBuf: PAnsiChar;
+
+  badChar: array[0..255] of Integer;
+
+  p: PAnsiChar;
+  len: Word;
+
+  i: Integer;
+  data, dataRun: PAspRec;
+  run, node: PVirtualNode;
+
+begin
+  // user pattern
+  target := 'в„–234';   // РјРѕР¶Рµ РґР° Рµ РїРѕРґРЅРёР·, РЅРµ РїСЉР»РµРЅ NRN
+  targetLen := Length(target);
+  patBuf := PAnsiChar(target);
+
+  // build BMH bad-char table ONCE
+  BuildBMHTable(patBuf, targetLen, badChar);
+
+  // start timing
+  Stopwatch := TStopwatch.StartNew;
+
+  node := vtrSearch.GetFirstSelected();
+  data := Pointer(PByte(node) + lenNode);
+
+  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  begin
+    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    dataRun := Pointer(PByte(run) + lenNode);
+
+    // get pointer to string in the ADB buffer
+    p := Adb_DM.CollPregled.getPAnsiStringMap(
+            dataRun.DataPos,
+            Word(PregledNew_NRN_LRN),
+            len
+         );
+
+    if (p = nil) or (len < targetLen) then
+      Continue;
+
+    if ContainsBMHFast(
+          p, len,
+          patBuf, targetLen,
+          cmCaseInsensitive,
+          badChar
+       ) then
+      Break;
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add('loop-BMH-contains ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TfrmSuperHip.SearchTesCRC_equ;
+function CRC32(const data: PAnsiChar; len: Integer): Cardinal;
+var
+  i: Integer;
+  c: Cardinal;
+begin
+  c := $FFFFFFFF;
+  for i := 0 to len - 1 do
+    c := CRC32_TABLE[(c xor Ord(data[i])) and $FF] xor (c shr 8);
+  Result := not c;
+end;
+
+var
+  target: AnsiString;
+  targetLen: Word;
+  targetCRC, crc: Cardinal;
+  p: PAnsiChar;
+  len: Word;
+  i: Integer;
+  data, dataRun: PAspRec;
+  run, node: PVirtualNode;
+  
+begin
+  target := '24075307A67D';
+  targetLen := Length(target);
+  targetCRC := CRC32(PAnsiChar(target), targetLen);
+
+  Stopwatch := TStopwatch.StartNew;
+  node := vtrSearch.GetFirstSelected();
+  data := Pointer(PByte(node)+ lenNode);
+
+  for i := 0 to  AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count - 1 do
+  begin
+    run := AspectsLinkPatPregFile.JoinResult[Data.index].AdbList[i];
+    dataRun := Pointer(PByte(run) + lenNode);
+
+    p := Adb_DM.CollPregled.getPAnsiStringMap(dataRun.DataPos, Word(PregledNew_NRN_LRN), len);
+    if (p = nil) or (len <> targetLen) then
+      Continue;
+
+    crc := CRC32(p, len);
+    if crc <> targetCRC then
+      Continue;
+
+    if CompareMem(p, PAnsiChar(target), len) then
+      Break;
+  end;
+
+  mmotest.Lines.Add('loop-CRC-fast ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
 procedure TfrmSuperHip.SelectDoctor(sender: TObject);
 begin
 
@@ -14858,10 +15160,10 @@ begin
   vtrTemp.Selected[diag.MkbNode] := True;
 end;
 
-procedure TfrmSuperHip.SetPatientTemp(const Value: TRealPatientNewItem);
-begin
-  FPatientTemp := Value;
-end;
+//procedure TfrmSuperHip.SetPatientTemp(const Value: TRealPatientNewItem);
+//begin
+//  FPatientTemp := Value;
+//end;
 
 procedure TfrmSuperHip.SetSearchTextSpisyci(const Value: string);
 begin
@@ -14880,7 +15182,7 @@ begin
            and not WS_CAPTION;
   SetWindowLong(Handle, GWL_STYLE, Style);
 
-  // Приложи промените
+  // РџСЂРёР»РѕР¶Рё РїСЂРѕРјРµРЅРёС‚Рµ
   SetWindowPos(Handle, 0, 0, 0, 0, 0,
     SWP_NOZORDER or SWP_NOMOVE or SWP_NOSIZE or SWP_FRAMECHANGED);
 end;
@@ -14964,7 +15266,7 @@ begin
   dataRun := pointer(PByte(linkPreg) + lenNode);
   mmoTest.Lines.Add(format('Fill dataPreg = %d', [dataPreg.DataPos]));
 
-  run := linkPreg.Parent.FirstChild; //  събирам останалите прегледи на пациента
+  run := linkPreg.Parent.FirstChild; //  СЃСЉР±РёСЂР°Рј РѕСЃС‚Р°РЅР°Р»РёС‚Рµ РїСЂРµРіР»РµРґРё РЅР° РїР°С†РёРµРЅС‚Р°
   FmxProfForm.OtherPregleds.Clear;
   while run <> nil do
   begin
@@ -14984,7 +15286,7 @@ begin
     run:= run.NextSibling;
   end;
 
-  run := linkPreg.FirstChild; // ще се обикалят всички неща по прегледа
+  run := linkPreg.FirstChild; // С‰Рµ СЃРµ РѕР±РёРєР°Р»СЏС‚ РІСЃРёС‡РєРё РЅРµС‰Р° РїРѕ РїСЂРµРіР»РµРґР°
   while run <> nil do
   begin
     dataRun := pointer(PByte(run) + lenNode);
@@ -15010,7 +15312,7 @@ begin
       end;
       vvMDN:
       begin
-        mdn := CollMDN.GetItemsFromDataPos(dataRun.DataPos);
+        mdn := Adb_dm.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
         if mdn = nil then
         begin
           mdn := TRealMdnItem.Create(nil);
@@ -15028,13 +15330,13 @@ begin
           case dataAnal.vid of
             vvExamAnal:
             begin
-              anal := CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
+              anal := Adb_dm.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
               if anal = nil then
               begin
                 anal := TRealExamAnalysisItem.Create(nil);
                 anal.DataPos := dataAnal.DataPos;
                 mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                PosInNomen := anal.getIntMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_PosDataNomen));
+                PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
                 anal.LinkNode := runAnal;
               end;
               mdn.FExamAnals.Add(anal);
@@ -15047,13 +15349,13 @@ begin
       begin
         nodePlan := run;
         dataPlan := Pointer(PByte(nodePlan) + lenNode);
-        cl132Key := CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-        prNomen := CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-        cl132pos := CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        cl136Key := CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+        cl132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+        prNomen := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+        cl132pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+        cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
         if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
         begin
-          mdn := CollMDN.GetItemsFromDataPos(dataRun.DataPos);
+          mdn := Adb_dm.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
           if mdn = nil then
           begin
             mdn := TRealMdnItem.Create(nil);
@@ -15071,20 +15373,20 @@ begin
             case dataAnal.vid of
               vvExamAnal:
               begin
-                anal := CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
+                anal := Adb_dm.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
                 if anal = nil then
                 begin
                   anal := TRealExamAnalysisItem.Create(nil);
                   anal.DataPos := dataAnal.DataPos;
                   mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                  PosInNomen := anal.getIntMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_PosDataNomen));
+                  PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
                   anal.LinkNode := runAnal;
                 end;
                 mdn.FExamAnals.Add(anal);
               end;
               vvMedNapr:
               begin
-                mn := CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
+                mn := Adb_dm.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
                 if mn = nil then
                 begin
                   mn := TRealBLANKA_MED_NAPRItem.Create(nil);
@@ -15110,10 +15412,10 @@ begin
         begin
           nodePlan := run;
           dataPlan := Pointer(PByte(nodePlan) + lenNode);
-          cl132Key := CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          prNomen := CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          cl132pos := CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          prNomen := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          cl132pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+          cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
           runAnal := run.FirstChild;
           while runAnal <> nil do
           begin
@@ -15134,7 +15436,7 @@ begin
 //              end;
               vvMedNapr:
               begin
-                mn := CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
+                mn := Adb_dm.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
                 if mn = nil then
                 begin
                   mn := TRealBLANKA_MED_NAPRItem.Create(nil);
@@ -15160,7 +15462,7 @@ begin
       end;
       vvMedNapr:
       begin
-        mn := CollMedNapr.GetItemsFromDataPos(dataRun.DataPos);
+        mn := Adb_dm.CollMedNapr.GetItemsFromDataPos(dataRun.DataPos);
         if mn = nil then
         begin
           mn := TRealBLANKA_MED_NAPRItem.Create(nil);
@@ -15181,7 +15483,7 @@ begin
       end;
       vvExamImun:
       begin
-        immun := CollExamImun.GetItemsFromDataPos(dataRun.DataPos);
+        immun := Adb_dm.CollExamImun.GetItemsFromDataPos(dataRun.DataPos);
         if immun = nil then
         begin
           immun := TRealExamImmunizationItem.Create(nil);
@@ -15214,10 +15516,10 @@ begin
   end;
   fmxCntrDyn.ChangeActiveForm(FmxProfForm);
 
-  FmxProfForm.AspAdbBuf := AspectsHipFile.Buf;
-  FmxProfForm.AspAdbPosData := AspectsHipFile.FPosData;
+  FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
+  FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
   FmxProfForm.Patient.DataPos := dataPat.DataPos;
-  if FmxProfForm.Pregled.FNode = nil then // не е избиран и редактиран до сега
+  if FmxProfForm.Pregled.FNode = nil then // РЅРµ Рµ РёР·Р±РёСЂР°РЅ Рё СЂРµРґР°РєС‚РёСЂР°РЅ РґРѕ СЃРµРіР°
   begin
     FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
     FmxProfForm.Pregled.FNode := linkPreg;
@@ -15225,24 +15527,24 @@ begin
   end
   else
   begin
-    if FmxProfForm.Pregled.PRecord <> nil then // Редактиран е и трябва да се добави нов във колекцията
+    if FmxProfForm.Pregled.PRecord <> nil then // Р РµРґР°РєС‚РёСЂР°РЅ Рµ Рё С‚СЂСЏР±РІР° РґР° СЃРµ РґРѕР±Р°РІРё РЅРѕРІ РІСЉРІ РєРѕР»РµРєС†РёСЏС‚Р°
     begin
       FmxProfForm.RemoveLastVacantindexPreg;
-      if dataPreg.index < 0 then  // само че да не е ползван и незаписан преди
+      if dataPreg.index < 0 then  // СЃР°РјРѕ С‡Рµ РґР° РЅРµ Рµ РїРѕР»Р·РІР°РЅ Рё РЅРµР·Р°РїРёСЃР°РЅ РїСЂРµРґРё
       begin
         lastVacantPreg := FmxProfForm.FindVacantIndexPreg();
         if lastVacantPreg = -1 then
         begin
           //oldPreg := FmxProfForm.Pregled;
-          FmxProfForm.Pregled := TRealPregledNewItem(CollPregled.Add);
-          dataPreg.index := CollPregled.Count - 1;
-          ////  трябва да се вземат нещата от стария (попълненият) преглед
+          FmxProfForm.Pregled := TRealPregledNewItem(Adb_dm.CollPregled.Add);
+          dataPreg.index := Adb_dm.CollPregled.Count - 1;
+          ////  С‚СЂСЏР±РІР° РґР° СЃРµ РІР·РµРјР°С‚ РЅРµС‰Р°С‚Р° РѕС‚ СЃС‚Р°СЂРёСЏ (РїРѕРїСЉР»РЅРµРЅРёСЏС‚) РїСЂРµРіР»РµРґ
 //          FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
 //          FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
         end
         else
         begin
-          FmxProfForm.Pregled := CollPregled.Items[lastVacantPreg];
+          FmxProfForm.Pregled := Adb_dm.CollPregled.Items[lastVacantPreg];
 
           dataPreg.index := lastVacantPreg;
 
@@ -15254,26 +15556,26 @@ begin
       else
       begin
        // oldPreg := FmxProfForm.Pregled;
-        FmxProfForm.Pregled := CollPregled.Items[dataPreg.index];
+        FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index];
         FmxProfForm.Pregled.FNode := linkPreg;
-        //dataPreg.index := dataPreg.index; // не трябва да се сменява
+        //dataPreg.index := dataPreg.index; // РЅРµ С‚СЂСЏР±РІР° РґР° СЃРµ СЃРјРµРЅСЏРІР°
         FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-        ////  трябва да се вземат нещата от стария (попълненият) преглед
+        ////  С‚СЂСЏР±РІР° РґР° СЃРµ РІР·РµРјР°С‚ РЅРµС‰Р°С‚Р° РѕС‚ СЃС‚Р°СЂРёСЏ (РїРѕРїСЉР»РЅРµРЅРёСЏС‚) РїСЂРµРіР»РµРґ
 //        FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
 //        FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
       end;
     end
     else
     begin
-      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // който е за редактиране
+      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // РєРѕР№С‚Рѕ Рµ Р·Р° СЂРµРґР°РєС‚РёСЂР°РЅРµ
       if dataPreg.index = - 1 then
       begin
         if FmxProfForm.FindVacantIndexPreg() = -1 then
-        begin// тука трябва да се записват някъде минусираните
+        begin// С‚СѓРєР° С‚СЂСЏР±РІР° РґР° СЃРµ Р·Р°РїРёСЃРІР°С‚ РЅСЏРєСЉРґРµ РјРёРЅСѓСЃРёСЂР°РЅРёС‚Рµ
           FmxProfForm.AddVacantindexPreg(dataFMXPreg.index);
         end;
-        dataPreg.index := dataFMXPreg.index;// заменям стария индекс със новия
-        dataFMXPreg.index := -1;// стария го минусирам :) за да се знае, че не е ползван
+        dataPreg.index := dataFMXPreg.index;// Р·Р°РјРµРЅСЏРј СЃС‚Р°СЂРёСЏ РёРЅРґРµРєСЃ СЃСЉСЃ РЅРѕРІРёСЏ
+        dataFMXPreg.index := -1;// СЃС‚Р°СЂРёСЏ РіРѕ РјРёРЅСѓСЃРёСЂР°Рј :) Р·Р° РґР° СЃРµ Р·РЅР°Рµ, С‡Рµ РЅРµ Рµ РїРѕР»Р·РІР°РЅ
         if dataPreg.index = -1 then
         begin
           Caption := 'errrr';
@@ -15287,7 +15589,7 @@ begin
       end;
 
 
-      FmxProfForm.Pregled := CollPregled.Items[dataPreg.index]; //взимам  прегледа и му слагам новите неща
+      FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index]; //РІР·РёРјР°Рј  РїСЂРµРіР»РµРґР° Рё РјСѓ СЃР»Р°РіР°Рј РЅРѕРІРёС‚Рµ РЅРµС‰Р°
       FmxProfForm.Pregled.FNode := linkPreg;
       FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
 
@@ -15320,7 +15622,7 @@ begin  // FmxTokensForm: TfrmFmxTokens
     FmxTokensForm := TfrmFmxTokens.Create(nil);
     FmxTokensForm.Option := Option;
     FmxTokensForm.thrCert := thrCert;
-    FmxTokensForm.collDoctor := CollDoctor;
+    FmxTokensForm.collDoctor := Adb_dm.CollDoctor;
     FmxTokensForm.FillTokens;
     //FmxTokensForm.OnShow := OnShowFindFprm;
   end
@@ -15394,7 +15696,7 @@ begin
 //
 //          'where pr.id = %d', [id]);
 //      du.ibsqlCommand.ExecQuery;
-      DocInfo := 'Амб. лист НРН: ' + 'testtttttt'; //zzzzzzzzzzzzzzzzzzzzzzz
+      DocInfo := 'РђРјР±. Р»РёСЃС‚ РќР Рќ: ' + 'testtttttt'; //zzzzzzzzzzzzzzzzzzzzzzz
       CMName := 'cmname'; //zzzzzzzzzzzzzzzzzzzzzzzzzzz
       //pat_ID := du.ibsqlCommand.Fields[18].AsInteger;
 
@@ -15497,7 +15799,7 @@ begin
 //          '' + #13#10 +
 //          'where imdn.id = %d', [id]);
 //      du.ibsqlCommand.ExecQuery;
-//      DocInfo := 'МДН НРН: ' + du.ibsqlCommand.Fields[2].AsString;
+//      DocInfo := 'РњР”Рќ РќР Рќ: ' + du.ibsqlCommand.Fields[2].AsString;
 //      CMName := du.ibsqlCommand.Fields[6].AsString;
 //      pat_ID := du.ibsqlCommand.Fields[16].AsInteger;
 //      if frmChoiceSigner = nil then
@@ -15606,6 +15908,42 @@ begin
 //  begin
 //    Self.Height := Screen.WorkAreaHeight;
 //  end;
+end;
+
+procedure TfrmSuperHip.SortListCollType(list: TList<word>);
+procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : word;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while list[I] < list[P] do Inc(I);
+        while list[J] > list[P] do Dec(J);
+        if I <= J then begin
+          Save := list[I];
+          list[I] := list[J];
+          list[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (list.count >1 ) then
+  begin
+    QuickSort(0,list.count-1);
+  end;
 end;
 
 procedure TfrmSuperHip.SortListString(list: TList<TString>);
@@ -15920,7 +16258,7 @@ begin
 //  Stopwatch := TStopwatch.StartNew;
 //
 //  //runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
-//  btnProf := pnlRoleView.BtnFromName('Профилактика');
+//  btnProf := pnlRoleView.BtnFromName('РџСЂРѕС„РёР»Р°РєС‚РёРєР°');
 //  if btnProf <> nil then
 //  begin
 //    btnProf.MaxValue := vtrPregledPat.RootNode.FirstChild.ChildCount;
@@ -15928,7 +16266,7 @@ begin
 //  GetPatProf(pat);
 //  profGR.LoadVtrGraph(CurrentPatient, i);
 //  Elapsed := Stopwatch.Elapsed;
-//  mmoTest.lines.add(Format('проф: %f', [Elapsed.TotalMilliseconds]));
+//  mmoTest.lines.add(Format('РїСЂРѕС„: %f', [Elapsed.TotalMilliseconds]));
 //  vtrGraph.Expanded[vRootGraph] := True;
 //  vtrGraph.EndUpdate;
 //  pnlTree.Width := 580;
@@ -15973,7 +16311,7 @@ begin
     end;
   end;
   //NzisToken.PRecord.CertID := BuildHexString(CertStorage.Certificates[0].SerialNumber);
-  NzisToken := TNzisTokenItem(CollNzisToken.Add);
+  NzisToken := TNzisTokenItem(Adb_dm.CollNzisToken.Add);
   New(NzisToken.PRecord);
   NzisToken.PRecord.Bearer := Bearer.PadRight(100, ' ');
   NzisToken.PRecord.ToDatTime := TokenToTime;
@@ -16004,10 +16342,10 @@ var
   pCardinalData: ^Cardinal;
   len: Word;
 begin
-  for i := 0 to Cl142Coll.Count - 1 do
+  for i := 0 to Adb_dm.Cl142Coll.Count - 1 do
   begin
-    cl142 := Cl142Coll.Items[i];
-    nhifCode := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_nhif_code));
+    cl142 := Adb_dm.Cl142Coll.Items[i];
+    nhifCode := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_nhif_code));
     if (nhifCode.Contains(';')) or (nhifCode.Contains(',')) then
     begin
       ArrNhifCode := nhifCode.Split([';', ',']);
@@ -16025,51 +16363,51 @@ begin
         end
         else
         begin
-          TempItem := TCL142Item(Cl142Coll.Add);
+          TempItem := TCL142Item(Adb_dm.Cl142Coll.Add);
           New(TempItem.PRecord);
-          datPos := Cl142Coll.posData;
+          datPos := Adb_dm.Cl142Coll.posData;
           TempItem.PRecord.setProp := [CL142_Key, CL142_Description];
-          TempItem.PRecord.Key := cl142.getAnsiStringMap(Cl142Coll.Buf, datPos, word(CL142_Key));
-          TempItem.PRecord.Description := cl142.getAnsiStringMap(Cl142Coll.Buf, datPos, word(CL142_Description));
+          TempItem.PRecord.Key := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, datPos, word(CL142_Key));
+          TempItem.PRecord.Description := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, datPos, word(CL142_Description));
 
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_DescriptionEn), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_DescriptionEn), len) <> nil then
           begin
-            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_DescriptionEn));
+            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_DescriptionEn));
             include(TempItem.PRecord.setProp, CL142_DescriptionEn);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_block), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_block), len) <> nil then
           begin
-            TempItem.PRecord.achi_block := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_block));
+            TempItem.PRecord.achi_block := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_block));
             include(TempItem.PRecord.setProp, CL142_achi_block);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_chapter), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_chapter), len) <> nil then
           begin
-            TempItem.PRecord.achi_chapter := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_chapter));
+            TempItem.PRecord.achi_chapter := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_chapter));
             include(TempItem.PRecord.setProp, CL142_achi_chapter);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_code), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_code), len) <> nil then
           begin
-            TempItem.PRecord.achi_code := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_achi_code));
+            TempItem.PRecord.achi_code := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_achi_code));
             include(TempItem.PRecord.setProp, CL142_achi_code);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_nhif_code), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_nhif_code), len) <> nil then
           begin
             TempItem.PRecord.nhif_code := ArrNhifCode[j];
             include(TempItem.PRecord.setProp, CL142_nhif_code);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_cl048), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048), len) <> nil then
           begin
-            TempItem.PRecord.cl048 := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_cl048));
+            TempItem.PRecord.cl048 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048));
             include(TempItem.PRecord.setProp, CL142_cl048);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_cl006), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006), len) <> nil then
           begin
-            TempItem.PRecord.cl006 := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_cl006));
+            TempItem.PRecord.cl006 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006));
             include(TempItem.PRecord.setProp, CL142_cl006);
           end;
-          if cl142.getPAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_highly), len) <> nil then
+          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly), len) <> nil then
           begin
-            TempItem.PRecord.highly := cl142.getAnsiStringMap(Cl142Coll.Buf, Cl142Coll.posData, word(CL142_highly));
+            TempItem.PRecord.highly := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly));
             include(TempItem.PRecord.setProp, CL142_highly);
           end;
 
@@ -16093,19 +16431,19 @@ var
 begin
   cnt := 0;
   ibsql := Fdm.ibsqlCommand;
-  for i := 0 to ACollPatFDB.Count - 1 do
+  for i := 0 to Adb_dm.ACollPatFDB.Count - 1 do
   begin
-    pat := ACollPatFDB.Items[i];
+    pat := Adb_dm.ACollPatFDB.Items[i];
 
     if pat.FClonings.Count = 0 then Continue;
     for j := 0 to pat.FClonings.Count - 1 do
     begin
       inc(cnt);
       clon := pat.FClonings[j];
-      clonId := clon.getIntMap(AspectsHipFile.buf, CollPatient.posData, word(PatientNew_ID));
+      clonId := clon.getIntMap(Adb_DM.AdbMain.buf, Adb_dm.CollPatient.posData, word(PatientNew_ID));
       //for k := 0 to clon.FPregledi.Count - 1 do
       begin
-        patId := pat.getIntMap(AspectsHipFile.buf, CollPatient.posData, word(PatientNew_ID));
+        patId := pat.getIntMap(Adb_DM.AdbMain.buf, Adb_dm.CollPatient.posData, word(PatientNew_ID));
 
         ibsql.Close;
         ibsql.SQL.Text :=
@@ -16189,11 +16527,11 @@ var
   pat1, pat2: TRealPatientNewItem;
   msg: TNzisReqRespItem;
 begin
-  msgColl.CollPat.SortByPatEGN;
-  for i := msgColl.CollPat.Count - 1 downto 1 do
+  Adb_dm.AmsgColl.CollPat.SortByPatEGN;
+  for i := Adb_dm.AmsgColl.CollPat.Count - 1 downto 1 do
   begin
-    pat1 := msgColl.CollPat.Items[i];
-    pat2 := msgColl.CollPat.Items[i-1];
+    pat1 := Adb_dm.AmsgColl.CollPat.Items[i];
+    pat2 := Adb_dm.AmsgColl.CollPat.Items[i-1];
     if pat1.PatEGN = pat2.PatEGN then
     begin
       for j := 0 to pat1.FLstMsgImportNzis.Count - 1 do
@@ -16201,7 +16539,7 @@ begin
         msg := TNzisReqRespItem(pat1.FLstMsgImportNzis[j]);
         pat2.FLstMsgImportNzis.Add(msg);
       end;
-      msgColl.CollPat.Delete(i);
+      Adb_dm.AmsgColl.CollPat.Delete(i);
     end;
   end;
 end;
@@ -16210,10 +16548,10 @@ procedure TfrmSuperHip.RemoveFreePatient;
 var
   i: Integer;
 begin
-  for i := msgColl.CollPat.Count - 1 downto 0 do
+  for i := Adb_dm.AmsgColl.CollPat.Count - 1 downto 0 do
   begin
-    if msgColl.CollPat.Items[i].FLstMsgImportNzis.Count = 0 then
-      msgColl.CollPat.Delete(i);
+    if Adb_dm.AmsgColl.CollPat.Items[i].FLstMsgImportNzis.Count = 0 then
+      Adb_dm.AmsgColl.CollPat.Delete(i);
   end;
 
 end;
@@ -16294,14 +16632,14 @@ var
   pat: TRealPatientNewItem;
   egn: string;
 begin
-  CollPatPis.Buf := nil;
-  CollPatPis.posData := 0;
+  Adb_dm.CollPatPis.Buf := nil;
+  Adb_dm.CollPatPis.posData := 0;
   pnlRoleView.ForceClose;
 
   Stopwatch := TStopwatch.StartNew;
   if not dlgOpenPL.Execute then Exit;
-  CollPatPis.Clear;
-  CollPatPis.Uin := '';
+  Adb_dm.CollPatPis.Clear;
+  Adb_dm.CollPatPis.Uin := '';
 
   PLFile := TStringList.Create;
   //PLFile.LoadFromFile('D:\down3108\Downloads\PL_Jord\pl.csv');
@@ -16313,7 +16651,7 @@ begin
     str := PLFile[i];
     arrStr := str.Split([',']);
     if arrStr[6] = '1100000095' then Continue;
-    TempItem := TRealPatientNZOKItem(CollPatPis.Add);
+    TempItem := TRealPatientNZOKItem(Adb_dm.CollPatPis.Add);
     New(TempItem.PRecord);
     TempItem.PRecord.setProp := [];
     if arrStr[0] <> '' then
@@ -16408,45 +16746,45 @@ begin
   if TempItem <> nil then
   begin
     uin := arrStr[6];
-    CollPatPis.Uin := uin;
+    Adb_dm.CollPatPis.Uin := uin;
   end;
   //pgcWork.ActivePage := tsGrid;
   InternalChangeWorkPage(tsGrid);
-  CollPatPis.ShowGrid(grdNom);
+  Adb_dm.CollPatPis.ShowGrid(grdNom);
 
-  AcollpatFromDoctor.Buf := AspectsHipFile.Buf;
-  ACollPatFDB.Buf := AspectsHipFile.Buf;
-  AcollpatFromDoctor.posData := AspectsHipFile.FPosData;
-  ACollPatFDB.posData := AspectsHipFile.FPosData;
-  AcollpatFromDoctor.Clear;
-  ACollPatFDB.Clear;
-  FillListPL_NZOKFromDB('0500000430', AcollpatFromDoctor); // попълва се за  определен УИН
-  FillListPL_ADB(ACollPatFDB);
+  Adb_dm.AcollpatFromDoctor.Buf := Adb_DM.AdbMain.Buf;
+  ADB_DM.ACollPatFDB.Buf := Adb_DM.AdbMain.Buf;
+  Adb_dm.AcollpatFromDoctor.posData := Adb_DM.AdbMain.FPosData;
+  ADB_DM.ACollPatFDB.posData := Adb_DM.AdbMain.FPosData;
+  Adb_dm.AcollpatFromDoctor.Clear;
+  ADB_DM.ACollPatFDB.Clear;
+  FillListPL_NZOKFromDB('0500000430', Adb_dm.AcollpatFromDoctor); // РїРѕРїСЉР»РІР° СЃРµ Р·Р°  РѕРїСЂРµРґРµР»РµРЅ РЈРРќ
+  FillListPL_ADB(ADB_DM.ACollPatFDB);
 
   vtrFDB.Repaint;
-  ACollPatFDB.IndexValue(PatientNew_EGN);
-  ACollPatFDB.SortByIndexAnsiString;
-  pat := ACollPatFDB.Items[0];
+  ADB_DM.ACollPatFDB.IndexValue(PatientNew_EGN);
+  ADB_DM.ACollPatFDB.SortByIndexAnsiString;
+  pat := ADB_DM.ACollPatFDB.Items[0];
   egn := pat.IndexAnsiStr1;
   i := 1;
-  while i < ACollPatFDB.Count do
+  while i < ADB_DM.ACollPatFDB.Count do
   begin
-    if egn = ACollPatFDB.Items[i].IndexAnsiStr1 then
+    if egn = ADB_DM.ACollPatFDB.Items[i].IndexAnsiStr1 then
     begin
-      pat.FClonings.Add(ACollPatFDB.Items[i]);
+      pat.FClonings.Add(ADB_DM.ACollPatFDB.Items[i]);
       mmoTest.Lines.Add(egn);
       inc(i);
     end
     else
     begin
-      pat := ACollPatFDB.Items[i];
+      pat := ADB_DM.ACollPatFDB.Items[i];
       egn := pat.IndexAnsiStr1;
       inc(i);
     end;
   end;
 
 
-  FillPatListPisInPatDB(uin, ACollPatFDB);
+  FillPatListPisInPatDB(uin, ADB_DM.ACollPatFDB);
 
 
 //  pgcWork.ActivePage := tsGrid;
@@ -16476,7 +16814,7 @@ begin
       isKeyFind := True;
       begin
         New(TempItem.PRecord);
-        TempItem.PRecord.CL132 := xlsHipp.xls[1].AsString[0, j].Replace('М', 'M');
+        TempItem.PRecord.CL132 := xlsHipp.xls[1].AsString[0, j].Replace('Рњ', 'M');
         TempItem.PRecord.Nomenclature := xlsHipp.xls[1].AsString[1, j] ;
         TempItem.PRecord.Activity_ID := xlsHipp.xls[1].AsString[2, j] ;
         TempItem.PRecord.Description := xlsHipp.xls[1].AsString[3, j]  ;
@@ -16530,9 +16868,9 @@ begin
   pnlRoleView.ForceClose;
   if FDbName = '' then exit;
 
-  if AspectsHipFile <> nil then
+  if Adb_DM.AdbMain <> nil then
   begin
-    UnmapViewOfFile(AspectsHipFile.Buf);
+    UnmapViewOfFile(Adb_DM.AdbMain.Buf);
   end;
 
 
@@ -16543,7 +16881,8 @@ begin
   fileStr.Size := 1000000000;//00;
   fileStr.Free;
 
-  AspectsHipFile := TMappedFile.Create(fileNameNew, true, AGuid);
+  Adb_DM.AdbMain := TMappedFile.Create(fileNameNew, true, AGuid);
+  Adb_DM.AdbMain := Adb_DM.AdbMain;
   streamCmdFile := TFileCmdStream.Create(fileNameNew.Replace('.adb', '.cmd'), fmCreate);
   streamCmdFile.Size := 100;
   streamCmdFile.Guid := AGuid;
@@ -16560,20 +16899,20 @@ begin
     OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
   OpenLinkNomenHipAnals;
 
-  CollPractica.Clear;
-  CollPatient.Clear;
-  CollPregled.Clear;
-  CollDoctor.Clear;
-  CollUnfav.Clear;
-  CollDiag.Clear;
-  CollMDN.Clear;
-  CollMedNapr.Clear;
-  CollMedNapr3A.Clear;
-  CollIncMdn.Clear;
-  CollMkb.Clear;
-  CollExamAnal.Clear;
-  CollProceduresNomen.Clear;
-  CollCardProf.Clear;
+  //CollPractica.Clear;
+//  CollPatient.Clear;
+//  CollPregled.Clear;
+//  CollDoctor.Clear;
+//  CollUnfav.Clear;
+//  CollDiag.Clear;
+//  CollMDN.Clear;
+//  CollMedNapr.Clear;
+//  CollMedNapr3A.Clear;
+//  CollIncMdn.Clear;
+//  CollMkb.Clear;
+//  CollExamAnal.Clear;
+//  CollProceduresNomen.Clear;
+//  CollCardProf.Clear;
 
 
 
@@ -16584,8 +16923,17 @@ end;
 procedure TfrmSuperHip.ActiveControlChanged(Sender: TObject);
 begin
   //Caption := ActiveControl.ClassType.ClassName;
-  //Caption := ' смяна ' + FormatDateTime('hh:mm:ss', Now );
+  //Caption := ' СЃРјСЏРЅР° ' + FormatDateTime('hh:mm:ss', Now );
   EnumChildWindows(GetDesktopWindow, @EnumChildren, 0);
+end;
+
+procedure TfrmSuperHip.Adb_DMOnClearColl(Sender: TObject);
+begin
+  vtrGraph.DeleteChildren(vRootGraph);
+  if thrHistPerf <> nil then
+    thrHistPerf.stop := true;
+  //initDB();
+  vtrFDB.Repaint;
 end;
 
 procedure TfrmSuperHip.AddAnalInMdn(sender: tobject; var MdnLink,
@@ -16601,10 +16949,10 @@ var
   data: PAspRec;
 
 begin
-  // намиране на mdn, към който ще се добави мдн;
+  // РЅР°РјРёСЂР°РЅРµ РЅР° mdn, РєСЉРј РєРѕР№С‚Рѕ С‰Рµ СЃРµ РґРѕР±Р°РІРё РјРґРЅ;
   nodeMdn := MdnLink;
-  //създаване на mdn с добавяне в колекцията
-  TempItem := TRealExamAnalysisItem(CollExamAnal.Add);
+  //СЃСЉР·РґР°РІР°РЅРµ РЅР° mdn СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
+  TempItem := TRealExamAnalysisItem(ADB_DM.CollExamAnal.Add);
   New(TempItem.PRecord);
   TempItem.PRecord.setProp := [];
   //FDBHelper.InsertAdbMdnField(TempItem);
@@ -16616,9 +16964,9 @@ begin
   Dispose(TempItem.PRecord);
   TempItem.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollPregled.IncCntInADB;
+  ADB_DM.CollPregled.IncCntInADB;
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
@@ -16666,7 +17014,7 @@ var
   data: PAspRec;
   i: Integer;
 begin
-  TempItem := TNomenNzisItem(NomenNzisColl.Add);
+  TempItem := TNomenNzisItem(ADB_DM.NomenNzisColl.Add);
   New(TempItem.PRecord);
   TempItem.PRecord.setProp := [NomenNzis_NomenName, NomenNzis_NomenID];
   TempItem.PRecord.NomenName := '';
@@ -16679,7 +17027,7 @@ begin
 
   //ListNomenNzisNames[i] := TNomenNzisRec.Create;
   nomenRec := TNomenNzisRec.Create;
-  i := ListNomenNzisNames.Add(nomenRec);
+  i :=  Adb_DM.ListNomenNzisNames.Add(nomenRec);
   nomenRec.nomenNzis := tempItem;
   //ListNomenNzisNames[i].nomenNzis := NomenNzisColl.Items[i];
 
@@ -16707,10 +17055,10 @@ var
   //vMdn: PVirtualNode;
 
 begin
-  // намиране на прегледа, към който ще се добави мдн;
+  // РЅР°РјРёСЂР°РЅРµ РЅР° РїСЂРµРіР»РµРґР°, РєСЉРј РєРѕР№С‚Рѕ С‰Рµ СЃРµ РґРѕР±Р°РІРё РјРґРЅ;
   nodePreg := PregledLink;
-  //създаване на mdn с добавяне в колекцията
-  TempItem := TRealMDNItem(CollMDN.Add);
+  //СЃСЉР·РґР°РІР°РЅРµ РЅР° mdn СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
+  TempItem := TRealMDNItem(ADB_DM.CollMDN.Add);
   New(TempItem.PRecord);
   TempItem.PRecord.setProp := [];
   FDBHelper.InsertAdbMdnField(TempItem); // otdeleno
@@ -16724,9 +17072,9 @@ begin
   Dispose(TempItem.PRecord);
   TempItem.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollPregled.IncCntInADB;
+  ADB_DM.CollPregled.IncCntInADB;
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
@@ -16775,10 +17123,10 @@ var
   //vMdn: PVirtualNode;
 
 begin
-  // намиране на прегледа, към който ще се добави мн;
+  // РЅР°РјРёСЂР°РЅРµ РЅР° РїСЂРµРіР»РµРґР°, РєСЉРј РєРѕР№С‚Рѕ С‰Рµ СЃРµ РґРѕР±Р°РІРё РјРЅ;
   nodePreg := PregledLink;
-  //създаване на mn с добавяне в колекцията
-  TempItem := TRealBLANKA_MED_NAPRItem(CollMedNapr.Add);
+  //СЃСЉР·РґР°РІР°РЅРµ РЅР° mn СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
+  TempItem := TRealBLANKA_MED_NAPRItem(ADB_DM.CollMedNapr.Add);
   New(TempItem.PRecord);
   TempItem.PRecord.setProp := [];
   FDBHelper.InsertAdbMnField(TempItem); // otdeleno
@@ -16788,9 +17136,9 @@ begin
   Dispose(TempItem.PRecord);
   TempItem.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollPregled.IncCntInADB;
+  ADB_DM.CollPregled.IncCntInADB;
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
@@ -16842,7 +17190,7 @@ begin
       case dataRun.vid of
         vvDiag:
         begin
-          if CollDiag.getWordMap(dataRun.DataPos, word(Diagnosis_rank)) = (rank - 1) then
+          if ADB_DM.CollDiag.getWordMap(dataRun.DataPos, word(Diagnosis_rank)) = (rank - 1) then
           begin
             vPrevDiag := run;
             Break;
@@ -16852,7 +17200,7 @@ begin
       run := run.NextSibling;
     end;
   end;
-  diag := TRealDiagnosisItem(CollDiag.Add);// добавяне на диагноза в колекцията
+  diag := TRealDiagnosisItem(ADB_DM.CollDiag.Add);// РґРѕР±Р°РІСЏРЅРµ РЅР° РґРёР°РіРЅРѕР·Р° РІ РєРѕР»РµРєС†РёСЏС‚Р°
   New(diag.PRecord);
   diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_rank, Diagnosis_MkbPos];
   diag.PRecord.code_CL011 := cl011;
@@ -16861,7 +17209,7 @@ begin
   if DataPosMkb = 100 then
   begin
     if tmpVtr.FindMkbDataPosFromCode(cl011, indexMkb) then
-      diag.PRecord.MkbPos := CollMkb.Items[indexMkb].DataPos;
+      diag.PRecord.MkbPos := ADB_DM.CollMkb.Items[indexMkb].DataPos;
     //for i := 0 to CollMkb.Count - 1 do
 //    begin
 //      if CollMkb.getAnsiStringMap( CollMkb.Items[i].DataPos, word(Diagnosis_code_CL011)) = cl011 then
@@ -16879,8 +17227,8 @@ begin
   end;
 
   diag.InsertDiagnosis;
-  CollDiag.streamComm.Len := CollDiag.streamComm.Size;
-  streamCmdFile.CopyFrom(CollDiag.streamComm, 0);
+  ADB_DM.CollDiag.streamComm.Len := ADB_DM.CollDiag.streamComm.Size;
+  streamCmdFile.CopyFrom(ADB_DM.CollDiag.streamComm, 0);
   Dispose(diag.PRecord);
   diag.PRecord := nil;
 
@@ -16901,7 +17249,7 @@ var
   CurrentNrn: string;
   currentMdn: TRealMDNItem;
 begin
-  msgColl.SortListByNRN(LstRMDN);
+  ADB_DM.AmsgColl.SortListByNRN(LstRMDN);
   CurrentNrn := '';
   for i := 0 to LstRMDN.Count - 1 do
   begin
@@ -16910,7 +17258,7 @@ begin
     begin
        if CurrentNrn <> LstRMDN[i].PRecord.NRN then
        begin
-         currentMdn := TRealMDNItem(msgColl.CollMdn.Add);
+         currentMdn := TRealMDNItem(ADB_DM.AmsgColl.CollMdn.Add);
          CurrentNrn := LstRMDN[i].PRecord.NRN;
          currentMdn.FLstMsgImportNzis.Add(msg);
          currentMdn.NRN := CurrentNrn;
@@ -16934,12 +17282,12 @@ var
   CurrentEgn: string;
   currentPat: TRealPatientNewItem;
 begin
-  msgColl.CollPreg.SortByPatEGN;
+  ADB_DM.AmsgColl.CollPreg.SortByPatEGN;
   CurrentEgn := 'aaaaaaaaaaaaaaaaaaaa';
   currentPat := nil;
-  for i := 0 to msgColl.CollPreg.Count - 1 do
+  for i := 0 to ADB_DM.AmsgColl.CollPreg.Count - 1 do
   begin
-    preg := msgColl.CollPreg.Items[i];
+    preg := ADB_DM.AmsgColl.CollPreg.Items[i];
     if preg.PatEgn = '' then
       Continue;
     if preg.FLstMsgImportNzis.Count = 0 then Continue;
@@ -16947,7 +17295,7 @@ begin
     begin
       if CurrentEgn <> preg.PatEgn then
       begin
-        pat := TRealPatientNewItem(msgColl.CollPat.Add);
+        pat := TRealPatientNewItem(ADB_DM.AmsgColl.CollPat.Add);
         preg.Fpatient := pat;
         if preg.NRN = '252462095FD4' then
         Caption := 'ddd';
@@ -16974,7 +17322,7 @@ var
   FPosMetaData, linkPos: Cardinal;
   planStatus: TPlanedStatusSet;
 begin
-  NZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEItem(CollNZIS_PLANNED_TYPE.Add);
+  NZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEItem(ADB_DM.CollNZIS_PLANNED_TYPE.Add);
   New(NZIS_PLANNED_TYPE.PRecord);
   NZIS_PLANNED_TYPE.PRecord.setProp :=
      [NZIS_PLANNED_TYPE_CL132_KEY, NZIS_PLANNED_TYPE_ID, NZIS_PLANNED_TYPE_PREGLED_ID,
@@ -16995,22 +17343,22 @@ begin
   NZIS_PLANNED_TYPE.PRecord.NumberRep := gr.repNumber;
 
 
-  NZIS_PLANNED_TYPE.InsertNZIS_PLANNED_TYPE; // добавям новия план
+  NZIS_PLANNED_TYPE.InsertNZIS_PLANNED_TYPE; // РґРѕР±Р°РІСЏРј РЅРѕРІРёСЏ РїР»Р°РЅ
 
-  CollNZIS_PLANNED_TYPE.streamComm.Len := CollNZIS_PLANNED_TYPE.streamComm.Size;
-  streamCmdFile.CopyFrom(CollNZIS_PLANNED_TYPE.streamComm, 0);
+  ADB_DM.CollNZIS_PLANNED_TYPE.streamComm.Len := ADB_DM.CollNZIS_PLANNED_TYPE.streamComm.Size;
+  streamCmdFile.CopyFrom(ADB_DM.CollNZIS_PLANNED_TYPE.streamComm, 0);
   Dispose(NZIS_PLANNED_TYPE.PRecord);
   NZIS_PLANNED_TYPE.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollNZIS_PLANNED_TYPE.IncCntInADB;
+  ADB_DM.CollNZIS_PLANNED_TYPE.IncCntInADB;
   AspectsLinkPatPregFile.AddNewNode(vvNZIS_PLANNED_TYPE, NZIS_PLANNED_TYPE.DataPos, vPreg, amAddChildLast, TreeLinkPlan, linkpos);
 
   TreeLinkPlan.CheckType := ctCheckBox;
   TreeLinkPlan.CheckState := csCheckedNormal;
   planStatus := [TPlanedStatus.psNew];
-  TreeLinkPlan.Dummy := Byte(planStatus);// току що създаден план. Не е проверяван и не е показван
+  TreeLinkPlan.Dummy := Byte(planStatus);// С‚РѕРєСѓ С‰Рѕ СЃСЉР·РґР°РґРµРЅ РїР»Р°РЅ. РќРµ Рµ РїСЂРѕРІРµСЂСЏРІР°РЅ Рё РЅРµ Рµ РїРѕРєР°Р·РІР°РЅ
 end;
 
 procedure TfrmSuperHip.AddNewPreg;
@@ -17020,7 +17368,7 @@ var
   CurrentNrn: string;
   currentPreg: TRealPregledNewItem;
 begin
-  msgColl.SortListByNRN(LstXXXX);
+  ADB_DM.AmsgColl.SortListByNRN(LstXXXX);
   CurrentNrn := '';
   for i := 0 to LstXXXX.Count - 1 do
   begin
@@ -17029,7 +17377,7 @@ begin
     begin
        if CurrentNrn <> LstXXXX[i].PRecord.NRN then
        begin
-         currentPreg := TRealPregledNewItem(msgColl.CollPreg.Add);
+         currentPreg := TRealPregledNewItem(ADB_DM.AmsgColl.CollPreg.Add);
          CurrentNrn := LstXXXX[i].PRecord.NRN;
          currentPreg.FLstMsgImportNzis.Add(msg);
          currentPreg.NRN := CurrentNrn;
@@ -17091,12 +17439,12 @@ var
   mkb, mkb_s: string;
   ArrPR001ActivityID: TArray<string>;
 begin
-  // намиране на пациента, на който ще се прави новия преглед;
+  // РЅР°РјРёСЂР°РЅРµ РЅР° РїР°С†РёРµРЅС‚Р°, РЅР° РєРѕР№С‚Рѕ С‰Рµ СЃРµ РїСЂР°РІРё РЅРѕРІРёСЏ РїСЂРµРіР»РµРґ;
   nodePat := PVirtualNode(vtrMinaliPregledi.Tag);
   dataPa := Pointer(PByte(nodePat) + lenNode);
-  mmoTest.Lines.Add(CollPatient.getAnsiStringMap(dataPa.DataPos, Word(PatientNZOK_EGN)));
-  //създаване на прегледа с добавяне в колекцията
-  TempItem := TRealPregledNewItem(CollPregled.Add);
+  mmoTest.Lines.Add(ADB_DM.CollPatient.getAnsiStringMap(dataPa.DataPos, Word(PatientNZOK_EGN)));
+  //СЃСЉР·РґР°РІР°РЅРµ РЅР° РїСЂРµРіР»РµРґР° СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
+  TempItem := TRealPregledNewItem(ADB_DM.CollPregled.Add);
   TempItem.Fpatient := FmxProfForm.Patient;
   if TempItem.Fpatient.CurrentGraphIndex < 0 then exit;
   if TempItem.Fpatient.lstGraph.Count = 0 then
@@ -17109,7 +17457,7 @@ begin
 
   try
     gr := TempItem.Fpatient.lstGraph[TempItem.Fpatient.CurrentGraphIndex];
-    TempItem.StartDate := Floor(gr.endDate);// Тука трябва да е последния ден от срока за профилактиката
+    TempItem.StartDate := Floor(gr.endDate);// РўСѓРєР° С‚СЂСЏР±РІР° РґР° Рµ РїРѕСЃР»РµРґРЅРёСЏ РґРµРЅ РѕС‚ СЃСЂРѕРєР° Р·Р° РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°
     TempItem.StartTime := 0;
   except
     Caption := 'ddd';
@@ -17120,27 +17468,27 @@ begin
 
   TempItem.InsertPregledNew;
 
-  CollPregled.streamComm.Len := CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(CollPregled.streamComm, 0);
+  ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
+  streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
 
 
   Dispose(TempItem.PRecord);
   TempItem.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollPregled.IncCntInADB;
+  ADB_DM.CollPregled.IncCntInADB;
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
   AspectsLinkPatPregFile.AddNewNode(vvPregled, TempItem.DataPos, nodePat, amAddChildFirst, TreeLink, linkpos);
   vPreg := TreeLink;
 
-  // zzzzzzzzzzzzzzzzzzzzzzzzzzzzz AutoNzis  тука слагам 2-рия доктор замества 1-вия
-  AspectsLinkPatPregFile.AddNewNode(vvPerformer, CollDoctor.Items[0].DataPos, vPreg, amAddChildLast, vPerf, linkpos);
-  AspectsLinkPatPregFile.AddNewNode(vvDeput, CollDoctor.Items[1].DataPos, vPerf, amAddChildLast, vDeput, linkpos);
+  // zzzzzzzzzzzzzzzzzzzzzzzzzzzzz AutoNzis  С‚СѓРєР° СЃР»Р°РіР°Рј 2-СЂРёСЏ РґРѕРєС‚РѕСЂ Р·Р°РјРµСЃС‚РІР° 1-РІРёСЏ
+  AspectsLinkPatPregFile.AddNewNode(vvPerformer, ADB_DM.CollDoctor.Items[0].DataPos, vPreg, amAddChildLast, vPerf, linkpos);
+  AspectsLinkPatPregFile.AddNewNode(vvDeput, ADB_DM.CollDoctor.Items[1].DataPos, vPerf, amAddChildLast, vDeput, linkpos);
   mkb_s := '';
-  ListPregledLinkForInsert.Add(vPreg);
+  ADB_DM.ListPregledLinkForInsert.Add(vPreg);
   for i := 0 to TempItem.Fpatient.ListCurrentProf.Count - 1 do
   begin
     gr := TempItem.Fpatient.ListCurrentProf[i];
@@ -17162,7 +17510,7 @@ begin
         begin
           Plan := preg.ListNZIS_PLANNED_TYPEs[k];
           //
-          if CollNZIS_PLANNED_TYPE.getAnsiStringMap(Plan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) = Cl132Key then
+          if ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(Plan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) = Cl132Key then
           begin
             if (Plan.Node.CheckType = ctCheckBox) and (Plan.Node.CheckState = csUncheckedNormal)  then
               vtrPregledPat.InternalDisconnectNode(plan.Node, False);
@@ -17180,7 +17528,7 @@ begin
         pr001 := gr.Cl132.FListPr001[j];
         if pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) = 'CL133'  then
         begin
-          NZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEItem(CollNZIS_QUESTIONNAIRE_RESPONSE.Add);
+          NZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEItem(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.Add);
           New(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord.setProp :=
              [NZIS_QUESTIONNAIRE_RESPONSE_CL133_QUEST_RESPONSE_CODE,
@@ -17196,14 +17544,14 @@ begin
              pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
           NZIS_QUESTIONNAIRE_RESPONSE.InsertNZIS_QUESTIONNAIRE_RESPONSE;
 
-          CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Len := CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Size;
-          streamCmdFile.CopyFrom(CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm, 0);
+          ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Size;
+          streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm, 0);
           Dispose(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord := nil;
 
-          pCardinalData := pointer(AspectsHipFile.Buf);
+          pCardinalData := pointer(Adb_DM.AdbMain.Buf);
           FPosMetaData := pCardinalData^;
-          CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
+          ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
           AspectsLinkPatPregFile.AddNewNode(vvNZIS_QUESTIONNAIRE_RESPONSE, NZIS_QUESTIONNAIRE_RESPONSE.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           if True then
           begin
@@ -17214,36 +17562,35 @@ begin
         else
         if pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) = 'CL022'  then
         begin
-          ArrPR001ActivityID := string(PR001Coll.getAnsiStringMap(pr001.DataPos, Word(PR001_Activity_ID))).Split([';']);
+          ArrPR001ActivityID := string(ADB_DM.PR001Coll.getAnsiStringMap(pr001.DataPos, Word(PR001_Activity_ID))).Split([';']);
           for k := 0 to Length(ArrPR001ActivityID) - 1 do
           begin
             PR001ActivityID := ArrPR001ActivityID[k];
-            cl22Pos := CL022Coll.GetDataPosFromKey(PR001ActivityID);
+            cl22Pos := ADB_DM.CL022Coll.GetDataPosFromKey(PR001ActivityID);
 
-            examAnal := TRealExamAnalysisItem(CollExamAnal.Add);
+            examAnal := TRealExamAnalysisItem(ADB_DM.CollExamAnal.Add);
             New(examAnal.PRecord);
             examAnal.PRecord.setProp :=
-               [ExamAnalysis_ANALYSIS_ID,
+               [
                 ExamAnalysis_ID,
                 ExamAnalysis_NZIS_CODE_CL22,
                 ExamAnalysis_PosDataNomen
                 ];
-            examAnal.PRecord.ANALYSIS_ID := 0;
             examAnal.PRecord.ID := 0;
-            examAnal.PRecord.NZIS_CODE_CL22 := CL022Coll.getAnsiStringMap(cl22Pos, word(CL022_nhif_code));
+            examAnal.PRecord.NZIS_CODE_CL22 := ADB_DM.CL022Coll.getAnsiStringMap(cl22Pos, word(CL022_nhif_code));
             examAnal.PRecord.PosDataNomen := cl22Pos;
 
 
             examAnal.InsertExamAnalysis;
 
-            CollExamAnal.streamComm.Len := CollExamAnal.streamComm.Size;
-            streamCmdFile.CopyFrom(CollExamAnal.streamComm, 0);
+            ADB_DM.CollExamAnal.streamComm.Len := ADB_DM.CollExamAnal.streamComm.Size;
+            streamCmdFile.CopyFrom(ADB_DM.CollExamAnal.streamComm, 0);
             Dispose(examAnal.PRecord);
             examAnal.PRecord := nil;
 
-            pCardinalData := pointer(AspectsHipFile.Buf);
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
-            CollExamAnal.IncCntInADB;
+            ADB_DM.CollExamAnal.IncCntInADB;
             AspectsLinkPatPregFile.AddNewNode(vvExamAnal, examAnal.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           end;
 
@@ -17253,7 +17600,7 @@ begin
         begin
           if  pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID)) = 'R2' then
           begin
-            MedNapr := TRealBLANKA_MED_NAPRItem(CollMedNapr.Add);
+            MedNapr := TRealBLANKA_MED_NAPRItem(ADB_DM.CollMedNapr.Add);
             New(MedNapr.PRecord);
             MedNapr.PRecord.setProp :=
                [BLANKA_MED_NAPR_ID ,
@@ -17273,7 +17620,7 @@ begin
         begin
           if pr001.CL142 <> nil then
           begin
-            NZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTItem(CollNZIS_DIAGNOSTIC_REPORT.Add);
+            NZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTItem(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.Add);
             New(NZIS_DIAGNOSTIC_REPORT.PRecord);
             NZIS_DIAGNOSTIC_REPORT.PRecord.setProp :=
                [NZIS_DIAGNOSTIC_REPORT_CL083_STATUS,
@@ -17289,35 +17636,35 @@ begin
             NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := pr001.CL142.DataPos;
             NZIS_DIAGNOSTIC_REPORT.InsertNZIS_DIAGNOSTIC_REPORT;
 
-            CollNZIS_DIAGNOSTIC_REPORT.streamComm.Len := CollNZIS_DIAGNOSTIC_REPORT.streamComm.Size;
-            streamCmdFile.CopyFrom(CollNZIS_DIAGNOSTIC_REPORT.streamComm, 0);
+            ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Size;
+            streamCmdFile.CopyFrom(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm, 0);
             Dispose(NZIS_DIAGNOSTIC_REPORT.PRecord);
             NZIS_DIAGNOSTIC_REPORT.PRecord := nil;
 
-            pCardinalData := pointer(AspectsHipFile.Buf);
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
-            CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
+            ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
             AspectsLinkPatPregFile.AddNewNode(vvNZIS_DIAGNOSTIC_REPORT, NZIS_DIAGNOSTIC_REPORT.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           end;
         end;
         vPr001 := TreeLink;
         if pr001.CL142 <> nil  then
         begin
-          Rule88 := pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Notes));
+          Rule88 := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Notes));
 
-          if pr001.CL142.FListCL144.Count > 1 then // дейности
+          if pr001.CL142.FListCL144.Count > 1 then // РґРµР№РЅРѕСЃС‚Рё
           begin
             for k := 0 to pr001.CL142.FListCL144.Count - 1 do
             begin
               Cl144 := pr001.CL142.FListCL144[k];
               if Trim(Rule88) <> '' then
               begin
-                ACL144_key := Cl144.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL144_Key));
+                ACL144_key := Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
                 if Pos(ACL144_key, Rule88) = 0 then Continue;
               end;
               /////////AspectsLinkPatPregFile.AddNewNode(vvCL144, Cl144.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
               //NZIS_RESULT_DIAGNOSTIC_REPORT
-              NZIS_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(CollNZIS_RESULT_DIAGNOSTIC_REPORT.Add);
+              NZIS_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.Add);
               New(NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord);
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.setProp :=  [
                  NZIS_RESULT_DIAGNOSTIC_REPORT_ID,
@@ -17328,35 +17675,35 @@ begin
                  ];
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.ID := 0;
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.DIAGNOSTIC_REPORT_ID := 0;
-              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL144_CODE := Cl144.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL144_Key));
-              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL028_VALUE_SCALE := StrToInt(Cl144.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL144_cl028)));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL144_CODE := Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL028_VALUE_SCALE := StrToInt(Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_cl028)));
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := Cl144.DataPos;
 
               NZIS_RESULT_DIAGNOSTIC_REPORT.InsertNZIS_RESULT_DIAGNOSTIC_REPORT;
 
-              CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Len := CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Size;
-              streamCmdFile.CopyFrom(CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm, 0);
+              ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Size;
+              streamCmdFile.CopyFrom(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm, 0);
               Dispose(NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord);
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord := nil;
 
-              pCardinalData := pointer(AspectsHipFile.Buf);
+              pCardinalData := pointer(Adb_DM.AdbMain.Buf);
               FPosMetaData := pCardinalData^;
-              CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
+              ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
               AspectsLinkPatPregFile.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, NZIS_RESULT_DIAGNOSTIC_REPORT.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
             end;
           end;
         end;
 
-        for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do  // отговори
+        for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do  // РѕС‚РіРѕРІРѕСЂРё
         begin
           cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
-          note := cl134.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL134_Note));
-          Field_cl133 := cl134.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL134_CL133));
-          cl028Key := cl134.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL134_CL028));
+          note := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
+          Field_cl133 := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_CL133));
+          cl028Key := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_CL028));
           if (note <> '') and (Field_cl133[1] in ['5', '6']) then
           begin
-            test := gr.Cl132.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL132_Key)) +
-                     cl134.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL134_Note));
+            test := gr.Cl132.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) +
+                     cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
           end
           else
           begin
@@ -17364,7 +17711,7 @@ begin
           end;
 
           begin
-            NZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERItem(CollNZIS_QUESTIONNAIRE_ANSWER.Add);
+            NZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERItem(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.Add);
             New(NZIS_QUESTIONNAIRE_ANSWER.PRecord);
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.setProp :=
                [NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE,
@@ -17373,23 +17720,23 @@ begin
                 NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS];
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID := 0;
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID := 0;
-            NZIS_QUESTIONNAIRE_ANSWER.PRecord.CL134_QUESTION_CODE := cl134.getAnsiStringMap(AspectsNomFile.buf, CL132Coll.posData, word(CL134_Key));;
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.CL134_QUESTION_CODE := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Key));;
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS := cl134.DataPos;
                //pr001.getWordMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
 
             NZIS_QUESTIONNAIRE_ANSWER.InsertNZIS_QUESTIONNAIRE_ANSWER;
 
-            CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Len := CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Size;
-            streamCmdFile.CopyFrom(CollNZIS_QUESTIONNAIRE_ANSWER.streamComm, 0);
+            ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Size;
+            streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm, 0);
             Dispose(NZIS_QUESTIONNAIRE_ANSWER.PRecord);
             NZIS_QUESTIONNAIRE_ANSWER.PRecord := nil;
 
-            pCardinalData := pointer(AspectsHipFile.Buf);
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
-            CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
+            ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
             AspectsLinkPatPregFile.AddNewNode(vvNZIS_QUESTIONNAIRE_ANSWER, NZIS_QUESTIONNAIRE_ANSWER.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
             //case cl028Key[1] of
-//              '1':// едиторчета
+//              '1':// РµРґРёС‚РѕСЂС‡РµС‚Р°
 //              begin
 //                AspectsLinkPatPregFile.AddNewNode(vvNZIS_ANSWER_VALUE, 0, TreeLink, amAddChildLast, TreeLink, linkpos);
 //              end;
@@ -17407,7 +17754,7 @@ begin
   if chkAutamatNzis.Checked then
   begin
     data := Pointer(PByte(vpreg) + lenNode);
-    CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),3);
+    ADB_DM.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),3);
     TempItem.FNode := vpreg;
     OnOpenPregled1(TempItem);
   end;
@@ -17438,30 +17785,30 @@ begin
   Stopwatch := TStopwatch.StartNew;
   //if dlgOpenNZIS.Execute then  // openDlg
   begin
-    if msgColl = nil then
+    if ADB_DM.AmsgColl = nil then
     begin
-      msgColl := TNzisReqRespColl.Create(TNzisReqRespItem);
+      ADB_DM.AmsgColl := TNzisReqRespColl.Create(TNzisReqRespItem);
     end
     else
     begin
-      msgColl.Clear;
+      ADB_DM.AmsgColl.Clear;
     end;
     List := TStringList.Create;
     lstMsgType := TStringList.Create;
-    //fileName := 'C:\Users\Administrator1\Downloads\За възстановяване на данни по предоставен xml от НЗИС\За възстановяване на данни по предоставен xml от НЗИС\attachments-katerinanikolova66mailbg-inbox-29131\Приложение 1\';
+    //fileName := 'C:\Users\Administrator1\Downloads\Р—Р° РІСЉР·СЃС‚Р°РЅРѕРІСЏРІР°РЅРµ РЅР° РґР°РЅРЅРё РїРѕ РїСЂРµРґРѕСЃС‚Р°РІРµРЅ xml РѕС‚ РќР—РРЎ\Р—Р° РІСЉР·СЃС‚Р°РЅРѕРІСЏРІР°РЅРµ РЅР° РґР°РЅРЅРё РїРѕ РїСЂРµРґРѕСЃС‚Р°РІРµРЅ xml РѕС‚ РќР—РРЎ\attachments-katerinanikolova66mailbg-inbox-29131\РџСЂРёР»РѕР¶РµРЅРёРµ 1\';
     //fileName := fileName + '1900000356org.txt';
     fileName := 'D:\HaknatFerdow\0200000824.txt';
     //fileName := dlgOpenNZIS.FileName;
     List.LoadFromFile(fileName);
 
     Elapsed := Stopwatch.Elapsed;
-    mmoTest.Lines.Add(Format('зареждане на файла: %f', [Elapsed.TotalMilliseconds]));
+    mmoTest.Lines.Add(Format('Р·Р°СЂРµР¶РґР°РЅРµ РЅР° С„Р°Р№Р»Р°: %f', [Elapsed.TotalMilliseconds]));
 
     Stopwatch := TStopwatch.StartNew;
     Arrstr := List.Text.Split(['<?','?>']);
     List.Free;
     Elapsed := Stopwatch.Elapsed;
-    mmoTest.Lines.Add(Format('разделяне на файла на съобщения за %f ', [Elapsed.TotalMilliseconds]));
+    mmoTest.Lines.Add(Format('СЂР°Р·РґРµР»СЏРЅРµ РЅР° С„Р°Р№Р»Р° РЅР° СЃСЉРѕР±С‰РµРЅРёСЏ Р·Р° %f ', [Elapsed.TotalMilliseconds]));
 
 
     Stopwatch := TStopwatch.StartNew;
@@ -17480,7 +17827,7 @@ begin
       p2 := Pos('<nhis:messageId value="', Arrstr[i]) + 23 ;
       lstMsgType.Add(Copy(arrstr[i],p1 , 4));
       XNom1 := StrToInt(Copy(arrstr[i],p1 + 1, 3));
-      msg := TNzisReqRespItem(msgColl.Add);
+      msg := TNzisReqRespItem(ADB_DM.AmsgColl.Add);
       pEnd := Pos('</nhis:message>', Arrstr[i]) + 15 ;
       SetLength(Arrstr[i], pEnd);
       New(msg.PRecord);
@@ -17502,10 +17849,31 @@ begin
     end;
     lstMsgType.Free;
     Elapsed := Stopwatch.Elapsed;
-    mmoTest.Lines.Add(Format('запис на съобщенията в колекцията за %f ', [Elapsed.TotalMilliseconds]));
-    mmoTest.Lines.Add('msgColl ' + IntToStr(msgColl.Count));
+    mmoTest.Lines.Add(Format('Р·Р°РїРёСЃ РЅР° СЃСЉРѕР±С‰РµРЅРёСЏС‚Р° РІ РєРѕР»РµРєС†РёСЏС‚Р° Р·Р° %f ', [Elapsed.TotalMilliseconds]));
+    mmoTest.Lines.Add('msgColl ' + IntToStr(ADB_DM.AmsgColl.Count));
   end;
 end;
+
+procedure TfrmSuperHip.AddOperatorNodes(FieldNode: PVirtualNode;
+  Coll: TBaseCollection; PropIndex: Integer);
+var
+  ops: TConditionTypeSet;
+  op: TConditionType;
+  run: PVirtualNode;
+  linkPos: Cardinal;
+begin
+  ops := Coll.GetAllowedOperators(PropIndex);
+
+  for op := Low(TConditionType) to High(TConditionType) do
+    if op in ops then
+    begin
+      AspectsFilterLinkFile.AddNewNode(vvOperator, 0, FieldNode,
+        amAddChildLast, run, linkPos, Ord(op));
+      run.CheckType := ctCheckBox;
+      run.CheckState := csUncheckedNormal;
+    end;
+end;
+
 
 //procedure TfrmSuperHip.AddNewPregledOld;
 //var
@@ -17525,13 +17893,13 @@ end;
 //  Cl088: TRealCl088Item;
 //  cl134: TRealCl134Item;
 //begin
-//  // намиране на пациента, на който ще се прави новия преглед;
+//  // РЅР°РјРёСЂР°РЅРµ РЅР° РїР°С†РёРµРЅС‚Р°, РЅР° РєРѕР№С‚Рѕ С‰Рµ СЃРµ РїСЂР°РІРё РЅРѕРІРёСЏ РїСЂРµРіР»РµРґ;
 //  nodePat := PVirtualNode(vtrMinaliPregledi.Tag);
-//  //създаване на прегледа с добавяне в колекцията
+//  //СЃСЉР·РґР°РІР°РЅРµ РЅР° РїСЂРµРіР»РµРґР° СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
 //  TempItem := TRealPregledNewItem(CollPregled.Add);
 //  TempItem.Fpatient := FmxProfForm.Patient;
 //  gr := TempItem.Fpatient.lstGraph[TempItem.Fpatient.CurrentGraphIndex];
-//  TempItem.StartDate := Floor(gr.endDate);// Тука трябва да е последния ден от срока за профилактиката
+//  TempItem.StartDate := Floor(gr.endDate);// РўСѓРєР° С‚СЂСЏР±РІР° РґР° Рµ РїРѕСЃР»РµРґРЅРёСЏ РґРµРЅ РѕС‚ СЃСЂРѕРєР° Р·Р° РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°
 //  New(TempItem.PRecord);
 //  TempItem.PRecord.setProp := [];
 //  //CollPregled.streamComm :=
@@ -17709,10 +18077,10 @@ procedure TfrmSuperHip.AddToListNodes(data: PAspRec);
 begin
   Exit;
   case data.vid of
-    vvPregled: CollPregled.ListNodes.Add(data);
-    vvPatient: CollPatient.ListNodes.Add(data);
-    vvDoctor: CollDoctor.ListNodes.Add(data);
-    vvMDN: CollMDN.ListNodes.Add(data);
+    vvPregled: ADB_DM.CollPregled.ListNodes.Add(data);
+    vvPatient: ADB_DM.CollPatient.ListNodes.Add(data);
+    vvDoctor: ADB_DM.CollDoctor.ListNodes.Add(data);
+    vvMDN: ADB_DM.CollMDN.ListNodes.Add(data);
   end;
 end;
 
@@ -17729,11 +18097,11 @@ var
   diag: TRealDiagnosisItem;
 
 begin
-  // намиране на пациента, на който ще се прави новия преглед;
+  // РЅР°РјРёСЂР°РЅРµ РЅР° РїР°С†РёРµРЅС‚Р°, РЅР° РєРѕР№С‚Рѕ С‰Рµ СЃРµ РїСЂР°РІРё РЅРѕРІРёСЏ РїСЂРµРіР»РµРґ;
   nodePat := PVirtualNode(vtrMinaliPregledi.Tag);
-  ////създаване на прегледа с добавяне в колекцията
+  ////СЃСЉР·РґР°РІР°РЅРµ РЅР° РїСЂРµРіР»РµРґР° СЃ РґРѕР±Р°РІСЏРЅРµ РІ РєРѕР»РµРєС†РёСЏС‚Р°
 //  TempItem := TRealPregledNewItem(CollPregled.Add);
-//  TempItem.StartDate := Date;// Тука трябва да е последния ден от срока за профилактиката
+//  TempItem.StartDate := Date;// РўСѓРєР° С‚СЂСЏР±РІР° РґР° Рµ РїРѕСЃР»РµРґРЅРёСЏ РґРµРЅ РѕС‚ СЃСЂРѕРєР° Р·Р° РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°
 //  New(TempItem.PRecord);
 //  TempItem.PRecord.setProp := [];
 //  FDBHelper.InsertAdbPregledField(TempItem); // otdeleno
@@ -17747,9 +18115,9 @@ begin
   Dispose(preg.PRecord);
   preg.PRecord := nil;
 
-  pCardinalData := pointer(AspectsHipFile.Buf);
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
-  CollPregled.IncCntInADB;
+  ADB_DM.CollPregled.IncCntInADB;
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
@@ -17776,7 +18144,7 @@ begin
                     vtrPregledPat, amAddChildLast);
 
   vpreg := TreeLink;
-  ListPregledLinkForInsert.Add(vpreg);
+  ADB_DM.ListPregledLinkForInsert.Add(vpreg);
 
   for k := 0 to preg.FDiagnosis.Count -1 do
   begin
@@ -17960,6 +18328,8 @@ begin
       ACol.Header.ParentFormat := False;
       pmGrdSearch.Popup(Mouse.CursorPos.X, Mouse.CursorPos.y);
 
+      //ACol.Header.pa
+
       Handled := True;
     end
     else
@@ -18078,7 +18448,7 @@ begin
   else
   begin
     InternalChangeWorkPage(nil);
-    //pgcWork.ActivePage := nil;// zzzzzzzzzzzzzz  може да покаже на главния бутон
+    //pgcWork.ActivePage := nil;// zzzzzzzzzzzzzz  РјРѕР¶Рµ РґР° РїРѕРєР°Р¶Рµ РЅР° РіР»Р°РІРЅРёСЏ Р±СѓС‚РѕРЅ
     ActiveSubButton := nil;
   end;
 end;
@@ -18095,7 +18465,7 @@ begin
   else
   begin
     InternalChangeWorkPage(nil);
-    //pgcWork.ActivePage := nil;// zzzzzzzzzzzzzz  може да покаже на главния бутон
+    //pgcWork.ActivePage := nil;// zzzzzzzzzzzzzz  РјРѕР¶Рµ РґР° РїРѕРєР°Р¶Рµ РЅР° РіР»Р°РІРЅРёСЏ Р±СѓС‚РѕРЅ
     ActiveSubButton := nil;
   end;
 end;
@@ -18136,8 +18506,8 @@ begin
   usb.OnUSBRemove := DoUSBRemove;
   thrCert := TCertThread.Create(true);
   thrCert.StorageFilename := option.LibTokenDll;
-  thrCert.CollDoctor := CollDoctor;
-  thrCert.CollCert := CollCertificates;
+  thrCert.CollDoctor := ADB_DM.CollDoctor;
+  thrCert.CollCert := ADB_DM.CollCertificates;
   thrCert.FreeOnTerminate := True;
   thrCert.OnStorageUpdate := CertStorageUpdate;
   thrCert.Resume;
@@ -18158,17 +18528,19 @@ var
   data: PAspRec;
   PAnsBuf, PAnsFind: PAnsiChar;
   ss: TPregledNewItem.TPropertyIndex;
-
 begin
+  InternalChangeTreePage(tsVtrSearch);
+  Exit;
+
   if FmxFinderFrm = nil then
   begin
     FmxFinderFrm := TfrmFinder.Create(nil);
-    CollPatient.AddItemForSearch;
-    CollPregled.AddItemForSearch;
-    FmxFinderFrm.CollPatient := CollPatient;
-    FmxFinderFrm.CollPregled := CollPregled;
+    ADB_DM.CollPatient.AddItemForSearch;
+    ADB_DM.CollPregled.AddItemForSearch;
+    FmxFinderFrm.CollPatient := ADB_DM.CollPatient;
+    FmxFinderFrm.CollPregled := ADB_DM.CollPregled;
 
-    FmxFinderFrm.ArrCondition := CollPregled.ListForFinder.Items[0].ArrCondition;
+    FmxFinderFrm.ArrCondition := ADB_DM.CollPregled.ListForFinder.Items[0].ArrCondition;
     FmxFinderFrm.AddExpanderPat1(0, nil);
     FmxFinderFrm.AddExpanderPreg1(0, nil);
     FmxFinderFrm.RecalcBlanka;
@@ -18188,39 +18560,58 @@ begin
   if not Assigned(thrSearch) then
   begin
 
-    //CollPregled.IndexValue(PregledNew_ANAMN); // за забързване на търсенето (предизвиква операционната система да кешира ...)
+    //CollPregled.IndexValue(PregledNew_ANAMN); // Р·Р° Р·Р°Р±СЉСЂР·РІР°РЅРµ РЅР° С‚СЉСЂСЃРµРЅРµС‚Рѕ (РїСЂРµРґРёР·РІРёРєРІР° РѕРїРµСЂР°С†РёРѕРЅРЅР°С‚Р° СЃРёСЃС‚РµРјР° РґР° РєРµС€РёСЂР° ...)
     //CollPregled.Clear;
 
     //CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN, PregledNew_ANAMN];
 
     thrSearch := TSearchThread.Create(true);
     FmxFinderFrm.thrSearch := thrSearch;
-    thrSearch.CollForFind := CollPregled;
-    thrSearch.CollPat := CollPatient;
-    thrSearch.collPreg := CollPregled;
-    thrSearch.CollExamImun := CollExamImun;
-    //thrSearch.collPregForSearch := CollPregForSearch;
+    thrSearch.CollForFind := ADB_DM.CollPregled;
 
     thrSearch.vtr := vtrPregledPat;
     thrSearch.bufLink := AspectsLinkPatPregFile.Buf;
-    thrSearch.BufADB := AspectsHipFile;
+    //thrSearch.BufADB := Adb_DM.AdbMain;
     pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
     FPosLinkData := pCardinalData^;
-    thrSearch.FPosData := FPosLinkData;
-    thrSearch.BufADB := AspectsHipFile.Buf;
+    //thrSearch.FPosData := FPosLinkData;
+    //thrSearch.BufADB := AspectsHipFile.Buf;
 
 
     thrSearch.grdSearch := grdSearch;
     thrSearch.OnShowGrid := OnShowGridSearch;
-    grdSearch.Tag := word(vvPregled);
+    grdSearch.Tag := cardinal(ADB_DM.CollPregled);
+
+
 
     thrSearch.CntPregInPat := -1;
+    if vtrSearch.GetFirstSelected() <> nil then
+    begin
+      thrSearch.AdbRoot := vtrPregledPat.RootNode.FirstChild;
+      thrSearch.FilterRoot := vtrSearch.GetFirstSelected();
+    end
+    else
+    begin
+      InternalChangeTreePage(tsVtrSearch);
+      Exit;
+    end;
     thrSearch.Resume;
     thrSearch.Start;
 
   end
   else
   begin
+    if vtrSearch.GetFirstSelected() <> nil then
+    begin
+      thrSearch.AdbRoot := vtrPregledPat.RootNode.FirstChild;
+      thrSearch.FilterRoot := vtrSearch.GetFirstSelected();
+    end
+    else
+    begin
+
+      InternalChangeTreePage(tsVtrSearch);
+      Exit;
+    end;
     thrSearch.Start;
   end;
   FmxFinderFrm.IsFinding := True;
@@ -18240,15 +18631,15 @@ begin
   thrHistPerf := THistoryThread.Create(True, FdbName);
   thrHistPerf.FCollPatient.NasMesto := FNasMesto;
   thrHistPerf.FreeOnTerminate := True;
-  thrHistPerf.Buf := AspectsHipFile.Buf;
+  thrHistPerf.Buf := Adb_DM.AdbMain.Buf;
   thrHistPerf.BufLink := AspectsLinkPatPregFile.Buf;
-  thrHistPerf.DataPos := AspectsHipFile.FPosData;
-  thrHistPerf.FCollUnfav := CollUnfav;
-  thrHistPerf.FCollPregled := CollPregled;
-  thrHistPerf.FCollDoctor := CollDoctor;
+  thrHistPerf.DataPos := Adb_DM.AdbMain.FPosData;
+  thrHistPerf.FCollUnfav := ADB_DM.CollUnfav;
+  thrHistPerf.FCollPregled := ADB_DM.CollPregled;
+  thrHistPerf.FCollDoctor := ADB_DM.CollDoctor;
   //thrHistPerf.FCollPatient := CollPatient;
-  thrHistPerf.FCollDiag := CollDiag;
-  thrHistPerf.GUID := AspectsHipFile.GUID;
+  thrHistPerf.FCollDiag := ADB_DM.CollDiag;
+  thrHistPerf.GUID := Adb_DM.AdbMain.GUID;
   thrHistPerf.FVTR := vtrPregledPat;
   thrHistPerf.OnEventAlert := RefreshEvent;
   thrHistPerf.OnDeleteEvent := DeleteEvent;
@@ -18286,9 +18677,9 @@ begin
   Exit;
   pat := TRealPatientNewItem.Create(nil);
   doctor := TRealDoctorItem.Create(nil);
-  for i := ListPregledLinkForInsert.Count - 1 downto 0 do
+  for i := ADB_DM.ListPregledLinkForInsert.Count - 1 downto 0 do
   begin
-    Run := ListPregledLinkForInsert[i]; //прегледа
+    Run := ADB_DM.ListPregledLinkForInsert[i]; //РїСЂРµРіР»РµРґР°
     runPat := Run.Parent;
     runDoctor := runPat.FirstChild;
     while runDoctor <> nil do
@@ -18307,30 +18698,30 @@ begin
     //vtrPregledPat.FocusedNode := Run;
     dataPreg := pointer(PByte(Run) + lenNode);
     //mmoTest.Lines.Add(format('dataPreg.DataPos = %d', [dataPreg.DataPos]));
-    preg := CollPregled.GetItemsFromDataPos(dataPreg.DataPos);// трябва да е тука някъде;
-    if preg = nil then //  може да е останал не записан стар
+    preg := ADB_DM.CollPregled.GetItemsFromDataPos(dataPreg.DataPos);// С‚СЂСЏР±РІР° РґР° Рµ С‚СѓРєР° РЅСЏРєСЉРґРµ;
+    if preg = nil then //  РјРѕР¶Рµ РґР° Рµ РѕСЃС‚Р°РЅР°Р» РЅРµ Р·Р°РїРёСЃР°РЅ СЃС‚Р°СЂ
     begin
      // preg := TRealPregledNewItem.Create(nil);
-      preg := TRealPregledNewItem(CollPregled.Add);
+      preg := TRealPregledNewItem(ADB_DM.CollPregled.Add);
       preg.DataPos := dataPreg.DataPos;
-      dataPreg.index := CollPregled.Count - 1;
+      dataPreg.index :=ADB_DM. CollPregled.Count - 1;
     end;
-    preg.PregledID := preg.getIntMap(AspectsHipFile.Buf, CollPatient.posData, word(PregledNew_ID));
-    if preg.PregledID <> 0 then Exit;//  има го в базата
+    preg.PregledID := preg.getIntMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PregledNew_ID));
+    if preg.PregledID <> 0 then Exit;//  РёРјР° РіРѕ РІ Р±Р°Р·Р°С‚Р°
 
-    dataPat := pointer(PByte(RunPat) + lenNode); // пациента
+    dataPat := pointer(PByte(RunPat) + lenNode); // РїР°С†РёРµРЅС‚Р°
 
     pat.DataPos := dataPat.DataPos;
     preg.Fpatient := pat;
     preg.FDoctor := doctor;
-    RunMdn := Run.FirstChild;// ще търся какво има в прегледа (диагнози, мдн-та...)
+    RunMdn := Run.FirstChild;// С‰Рµ С‚СЉСЂСЃСЏ РєР°РєРІРѕ РёРјР° РІ РїСЂРµРіР»РµРґР° (РґРёР°РіРЅРѕР·Рё, РјРґРЅ-С‚Р°...)
     while RunMdn <> nil do
     begin
-      dataRun :=  pointer(PByte(RunMdn) + lenNode); // нещата в прегледа
+      dataRun :=  pointer(PByte(RunMdn) + lenNode); // РЅРµС‰Р°С‚Р° РІ РїСЂРµРіР»РµРґР°
       case dataRun.vid of
         vvDiag:
         begin
-          //diag := TRealDiagnosisItem.Create(nil);   // нещо си ги има zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+          //diag := TRealDiagnosisItem.Create(nil);   // РЅРµС‰Рѕ СЃРё РіРё РёРјР° zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 //          diag.DataPos := dataRun.DataPos;
 //          preg.FDiagnosis.Add(diag);
         end;
@@ -18341,7 +18732,7 @@ begin
           mmoTest.Lines.Add(format('mdn.DataPos = %d', [mdn.DataPos]));
           mdn.FPregled := preg;
           preg.FMdns.Add(mdn);
-          runAnal := RunMdn.FirstChild; // изследванията в мдн-то
+          runAnal := RunMdn.FirstChild; // РёР·СЃР»РµРґРІР°РЅРёСЏС‚Р° РІ РјРґРЅ-С‚Рѕ
           while runAnal <> nil do
           begin
             dataAnal := pointer(PByte(runAnal) + lenNode);
@@ -18351,8 +18742,8 @@ begin
                 anal := TRealExamAnalysisItem.Create(nil);
                 anal.DataPos := dataAnal.DataPos;
                 mmoTest.Lines.Add(format('anal.DataPos = %d', [anal.DataPos]));
-                cl22Code := Anal.getAnsiStringMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_NZIS_CODE_CL22));
-                PosInNomen := Anal.getCardMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_PosDataNomen));
+                cl22Code := Anal.getAnsiStringMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_NZIS_CODE_CL22));
+                PosInNomen := Anal.getCardMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
                 mdn.FExamAnals.Add(anal);
               end;
             end;
@@ -18373,7 +18764,7 @@ begin
 //          mmoTest.Lines.Add(format('mdn.DataPos = %d', [mdn.DataPos]));
 //          mdn.FPregled := preg;
 //          preg.FMdns.Add(mdn);
-//          runAnal := RunMdn.FirstChild; // изследванията в мдн-то
+//          runAnal := RunMdn.FirstChild; // РёР·СЃР»РµРґРІР°РЅРёСЏС‚Р° РІ РјРґРЅ-С‚Рѕ
 //          while runAnal <> nil do
 //          begin
 //            dataAnal := pointer(PByte(runAnal) + lenNode);
@@ -18396,7 +18787,7 @@ begin
     end;
     try
       FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
-      ListPregledLinkForInsert.Delete(i);
+      ADB_DM.ListPregledLinkForInsert.Delete(i);
       for j := preg.FMdns.Count - 1 downto 0  do
       begin
         mdn := preg.FMdns[j];
@@ -18438,20 +18829,20 @@ var
   ofset: Cardinal;
   dataPatRevision: PAspRec;
 begin
-  CollDoctor.UpdateDoctors;
-  CollPregled.UpdatePregledi;
-  CollMkb.UpdateMkb;
-  CL132Coll.UpdateCL132;
-  CollNZIS_ANSWER_VALUE.UpdateNZIS_ANSWER_VALUEs;
-  CollNzis_RESULT_DIAGNOSTIC_REPORT.UpdateRESULT_DIAGNOSTIC_REPORT;
+  ADB_DM.CollDoctor.UpdateDoctors;
+  ADB_DM.CollPregled.UpdatePregledi;
+  ADB_DM.CollMkb.UpdateMkb;
+  ADB_DM.CL132Coll.UpdateCL132;
+  ADB_DM.CollNZIS_ANSWER_VALUE.UpdateNZIS_ANSWER_VALUEs;
+  ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.UpdateRESULT_DIAGNOSTIC_REPORT;
 
   cnt := 0;
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  dataPosition := pCardinalData^ + self.Adb_DM.AdbMain.FPosData;
   //cert
-  for i := 0 to CollCertificates.Count - 1 do
+  for i := 0 to ADB_DM.CollCertificates.Count - 1 do
   begin
-    cert := CollCertificates.Items[i];
+    cert := ADB_DM.CollCertificates.Items[i];
     if cert.PRecord <> nil then
     begin
       cert.SaveCertificates(dataPosition);
@@ -18460,17 +18851,17 @@ begin
   end;
   if cnt > 0 then
   begin
-    pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-    pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+    pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+    pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
   end;
 
   cnt := 0;
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
-  //мдн
-  for i := 0 to CollMDN.Count - 1 do
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
+  //РјРґРЅ
+  for i := 0 to ADB_DM.CollMDN.Count - 1 do
   begin
-    mdn := CollMDN.Items[i];
+    mdn := ADB_DM.CollMDN.Items[i];
     if mdn.PRecord <> nil then
     begin
       mdn.SaveMDN(dataPosition);
@@ -18479,16 +18870,16 @@ begin
   end;
   if cnt > 0 then
   begin
-    pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-    pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+    pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+    pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
   end;
 
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
-  //Изследвания
-  for i := 0 to CollExamAnal.Count - 1 do
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
+  //РР·СЃР»РµРґРІР°РЅРёСЏ
+  for i := 0 to ADB_DM.CollExamAnal.Count - 1 do
   begin
-    anal := CollExamAnal.Items[i];
+    anal := ADB_DM.CollExamAnal.Items[i];
     if anal.PRecord <> nil then
     begin
       if anal.DataPos > 0 then
@@ -18506,17 +18897,17 @@ begin
   end;
   if cnt > 0 then
   begin
-    pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-    pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+    pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+    pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
   end;
 
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
 
-  //пациенти
-  for i := 0 to CollPatient.Count - 1 do
+  //РїР°С†РёРµРЅС‚Рё
+  for i := 0 to ADB_DM.CollPatient.Count - 1 do
   begin
-    pat := CollPatient.Items[i];
+    pat := ADB_DM.CollPatient.Items[i];
     if pat.PRecord <> nil then
     begin
       if pat.DataPos > 0 then
@@ -18542,8 +18933,8 @@ begin
   end;
   if cnt > 0 then
   begin
-    pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-    pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+    pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+    pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
   end;
 
   btnSaveAll.Enabled := False;
@@ -18554,7 +18945,7 @@ var
   pat: TPatientNewItem;
 begin
   Stopwatch := TStopwatch.StartNew;
-  pat := CollPatient.ListForFinder[0];
+  pat := ADB_DM.CollPatient.ListForFinder[0];
   //if (not chk.IsNull) and (chk.IsChecked) then
 //  begin
 //    Include(pat.PRecord.Logical, TLogicalPatientNew(chk.IndexLog));
@@ -18566,13 +18957,13 @@ begin
   Caption := pat.Logical40ToStr(TLogicalData40(pat.PRecord.Logical));
   if pat.PRecord.Logical <> [] then
   begin
-    include(CollPatient.PRecordSearch.setProp, TPatientNewItem.TPropertyIndex.PatientNew_Logical);
+    include(ADB_DM.CollPatient.PRecordSearch.setProp, TPatientNewItem.TPropertyIndex.PatientNew_Logical);
   end
   else
   begin
-    Exclude(CollPatient.PRecordSearch.setProp, TPatientNewItem.TPropertyIndex.PatientNew_Logical);
+    Exclude(ADB_DM.CollPatient.PRecordSearch.setProp, TPatientNewItem.TPropertyIndex.PatientNew_Logical);
   end;
-  CollPatient.OnSetTextSearchLog(pat.PRecord.Logical);
+  ADB_DM.CollPatient.OnSetTextSearchLog(pat.PRecord.Logical);
   thrSearch.start;
 
 end;
@@ -18580,7 +18971,7 @@ end;
 procedure TfrmSuperHip.TerminateLoadDB(Sender: TObject);
 begin
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('зареждане от ДБ: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('Р·Р°СЂРµР¶РґР°РЅРµ РѕС‚ Р”Р‘: %f', [Elapsed.TotalMilliseconds]));
   PostMessage(Self.Handle, WM_AFTER_LOAD_DB, 0, 0);
 
 end;
@@ -18593,6 +18984,106 @@ begin
   //SendMessage(AmbListHandle, WM_CANCEL_USER, 1, 0); //zzzzzzzzz
 end;
 
+procedure TfrmSuperHip.DumpAdbPathIndex;
+var
+  Keys: TArray<UInt64>;
+  i, j: Integer;
+  Key: UInt64;
+  Bucket: TList<PVirtualNode>;
+  Data: PAspRec;
+begin
+  mmoTest.Lines.BeginUpdate;
+  try
+    Keys := AspectsLinkPatPregFile.PathIndex.Keys.ToArray;
+
+    mmoTest.Lines.Add('--- Dump PathIndex ---');
+    for i := 0 to High(Keys) do
+    begin
+      Key := Keys[i];
+      if AspectsLinkPatPregFile.PathIndex.TryGetValue(Key, Bucket) then
+      begin
+        mmoTest.Lines.Add(Format('Sig %d -> %d nodes', [Key, Bucket.Count]));
+        if mmoTest.Lines.Count > 10000 then  Exit;
+
+        for j := 0 to Bucket.Count - 1 do
+        begin
+          Data := PAspRec(PByte(Bucket[j]) + Lennode);
+          if True then
+          if j > 500 then  Continue;
+
+          mmoTest.Lines.Add(
+            Format('   [%d] node=%p vid=%s index=%d',
+              [ j,
+                Bucket[j],
+                GetEnumName(TypeInfo(TVtrVid), Ord(Data.vid)),
+                Bucket[j].Index
+              ]
+            )
+          );
+        end;
+      end;
+    end;
+  finally
+    mmoTest.Lines.EndUpdate;
+  end;
+end;
+
+
+procedure TfrmSuperHip.TestMagicIndex;
+var
+  FilterMagicIndex: TFilterMagicIndex;
+  res:  TList<PVirtualNode>;
+  i: Integer;
+  aBucket: TList<PVirtualNode>;
+   key: UInt64;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  AspectsLinkPatPregFile.BuildPathIndex;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d Р·Р° %f',[AspectsLinkPatPregFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+  //DumpAdbPathIndex;
+
+  Stopwatch := TStopwatch.StartNew;
+  AspectsFilterLinkFile.BuildPathIndex;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d Р·Р° %f',[AspectsFilterLinkFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+
+  for key in AspectsLinkPatPregFile.PathIndex.Keys do
+    mmoTest.Lines.Add(Format('ADB KEY = %d', [key]));
+
+  for key in AspectsFilterLinkFile.PathIndex.Keys do
+    mmoTest.Lines.Add(Format('FILTER KEY = %d', [key]));
+
+
+end;
+
+
+procedure TfrmSuperHip.TestMagicIndex1;
+var
+  key: UInt64;
+begin
+  LoadLinkFilter;
+
+  Stopwatch := TStopwatch.StartNew;
+  AspectsLinkPatPregFile.BuildPathIndex;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d Р·Р° %f',[AspectsLinkPatPregFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+  //DumpAdbPathIndex;
+
+  Stopwatch := TStopwatch.StartNew;
+  AspectsFilterLinkFile.BuildPathIndex;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d Р·Р° %f',[AspectsFilterLinkFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+
+  for key in AspectsLinkPatPregFile.PathIndex.Keys do
+    mmoTest.Lines.Add(Format('ADB KEY = %d', [key]));
+
+  for key in AspectsFilterLinkFile.PathIndex.Keys do
+    mmoTest.Lines.Add(Format('FILTER KEY = %d', [key]));
+
+  AspectsLinkPatPregFile.FFilterLink := AspectsFilterLinkFile;
+  AspectsLinkPatPregFile.JoinWith(AspectsFilterLinkFile);
+end;
 
 
 procedure TfrmSuperHip.mniImportNzisClick(Sender: TObject);
@@ -18607,9 +19098,9 @@ begin
     impNzis.VtrImport := vtrTemp;
     impNzis.mmoTest := mmoTest;
     impNzis.FmxRoleBar := FmxRoleBar;
-    impNzis.AspectsHipFile := AspectsHipFile;
+    impNzis.AspectsHipFile := Adb_DM.AdbMain;
     impNzis.AspectsLinkPatPregFile := AspectsLinkPatPregFile;
-    impNzis.CollOtherDoctor := CollOtherDoctor;
+    impNzis.CollOtherDoctor := ADB_DM.CollOtherDoctor;
     impNzis.syndtNzisReq := syndtNzisReq;
     impNzis.syndtNzisResp := syndtNzisResp;
     impNzis.FmxImportNzisFrm := FmxImportNzisFrm;
@@ -18618,10 +19109,10 @@ begin
     impNzis.ProcChangeWorkTS := InternalChangeWorkPage;
     impNzis.ProcAddNewPat := Adb_DM.AddNewImportNzisPat;
     impNzis.NasMesto := FNasMesto;
-    impNzis.CollPractica := CollPractica;
-    impNzis.CollDoctor := CollDoctor;
+    impNzis.CollPractica := ADB_DM.CollPractica;
+    impNzis.CollDoctor := ADB_DM.CollDoctor;
     impNzis.Adb_DM := Adb_DM;
-    Adb_DM.CollMkb := CollMkb;
+    Adb_DM.CollMkb := ADB_DM.CollMkb;
 
     ImpNzis.ImportNzis(fileName);
     ImpNzis.LoopPat;
@@ -18645,30 +19136,30 @@ begin
 //
 //  FmxTitleBar.p1.IsOpen := False;
 //
-//  AddNzisImport; // попълва колекцията от msg
-//  FillRespInReq;// намира и сдвоява двойките
-//  FillADBInMsgColl; // не са само пациентите, а и другите работи. Попълват се колекциите от каквото има в базата
+//  AddNzisImport; // РїРѕРїСЉР»РІР° РєРѕР»РµРєС†РёСЏС‚Р° РѕС‚ msg
+//  FillRespInReq;// РЅР°РјРёСЂР° Рё СЃРґРІРѕСЏРІР° РґРІРѕР№РєРёС‚Рµ
+//  FillADBInMsgColl; // РЅРµ СЃР° СЃР°РјРѕ РїР°С†РёРµРЅС‚РёС‚Рµ, Р° Рё РґСЂСѓРіРёС‚Рµ СЂР°Р±РѕС‚Рё. РџРѕРїСЉР»РІР°С‚ СЃРµ РєРѕР»РµРєС†РёРёС‚Рµ РѕС‚ РєР°РєРІРѕС‚Рѕ РёРјР° РІ Р±Р°Р·Р°С‚Р°
 //  FillIncDoctor;
 //
-//  LoopXml;// определя кое съобщение какво е и му попълва нещата. Попълва списъка със всички нрн-та за прегледи, направления....
-//  Delete99; // премахване на двойките със грешка в отговора
+//  LoopXml;// РѕРїСЂРµРґРµР»СЏ РєРѕРµ СЃСЉРѕР±С‰РµРЅРёРµ РєР°РєРІРѕ Рµ Рё РјСѓ РїРѕРїСЉР»РІР° РЅРµС‰Р°С‚Р°. РџРѕРїСЉР»РІР° СЃРїРёСЃСЉРєР° СЃСЉСЃ РІСЃРёС‡РєРё РЅСЂРЅ-С‚Р° Р·Р° РїСЂРµРіР»РµРґРё, РЅР°РїСЂР°РІР»РµРЅРёСЏ....
+//  Delete99; // РїСЂРµРјР°С…РІР°РЅРµ РЅР° РґРІРѕР№РєРёС‚Рµ СЃСЉСЃ РіСЂРµС€РєР° РІ РѕС‚РіРѕРІРѕСЂР°
 //
 //
-//  FillMsgXXXInPregled;// след това нещо, може да са останали в лстХХХХ такива съобщения, които нямат НРН в базата
-//  FillMsgRIncMNInIncMN;// LstRIncMN- списък със всички евентуални входящи направления
-//  AddNewPreg;// търсим новите съобщения и попълваме с нови прегледи
+//  FillMsgXXXInPregled;// СЃР»РµРґ С‚РѕРІР° РЅРµС‰Рѕ, РјРѕР¶Рµ РґР° СЃР° РѕСЃС‚Р°РЅР°Р»Рё РІ Р»СЃС‚РҐРҐРҐРҐ С‚Р°РєРёРІР° СЃСЉРѕР±С‰РµРЅРёСЏ, РєРѕРёС‚Рѕ РЅСЏРјР°С‚ РќР Рќ РІ Р±Р°Р·Р°С‚Р°
+//  FillMsgRIncMNInIncMN;// LstRIncMN- СЃРїРёСЃСЉРє СЃСЉСЃ РІСЃРёС‡РєРё РµРІРµРЅС‚СѓР°Р»РЅРё РІС…РѕРґСЏС‰Рё РЅР°РїСЂР°РІР»РµРЅРёСЏ
+//  AddNewPreg;// С‚СЉСЂСЃРёРј РЅРѕРІРёС‚Рµ СЃСЉРѕР±С‰РµРЅРёСЏ Рё РїРѕРїСЉР»РІР°РјРµ СЃ РЅРѕРІРё РїСЂРµРіР»РµРґРё
 //
 //
 //
-//  FillPregInPat;// след това нещо, може да са останали прегледи на пациенти, които ги няма в базата
-//  //FillIncMnInPatImport;// след това нещо, може да са останали прегледи на пациенти, които ги няма в базата
-//  AddNewPatXXX;// търсим новите
-//  // като имам всички прегледи сега трябва да намеря кои входящи направления са взети от лекаря. Трябва да е по басе-то
+//  FillPregInPat;// СЃР»РµРґ С‚РѕРІР° РЅРµС‰Рѕ, РјРѕР¶Рµ РґР° СЃР° РѕСЃС‚Р°РЅР°Р»Рё РїСЂРµРіР»РµРґРё РЅР° РїР°С†РёРµРЅС‚Рё, РєРѕРёС‚Рѕ РіРё РЅСЏРјР° РІ Р±Р°Р·Р°С‚Р°
+//  //FillIncMnInPatImport;// СЃР»РµРґ С‚РѕРІР° РЅРµС‰Рѕ, РјРѕР¶Рµ РґР° СЃР° РѕСЃС‚Р°РЅР°Р»Рё РїСЂРµРіР»РµРґРё РЅР° РїР°С†РёРµРЅС‚Рё, РєРѕРёС‚Рѕ РіРё РЅСЏРјР° РІ Р±Р°Р·Р°С‚Р°
+//  AddNewPatXXX;// С‚СЉСЂСЃРёРј РЅРѕРІРёС‚Рµ
+//  // РєР°С‚Рѕ РёРјР°Рј РІСЃРёС‡РєРё РїСЂРµРіР»РµРґРё СЃРµРіР° С‚СЂСЏР±РІР° РґР° РЅР°РјРµСЂСЏ РєРѕРё РІС…РѕРґСЏС‰Рё РЅР°РїСЂР°РІР»РµРЅРёСЏ СЃР° РІР·РµС‚Рё РѕС‚ Р»РµРєР°СЂСЏ. РўСЂСЏР±РІР° РґР° Рµ РїРѕ Р±Р°СЃРµ-С‚Рѕ
 //  FillPregledInIncMN;
 //
-//  FillMsgRMdnInMdn; // попълва старите, които са в базата
+//  FillMsgRMdnInMdn; // РїРѕРїСЉР»РІР° СЃС‚Р°СЂРёС‚Рµ, РєРѕРёС‚Рѕ СЃР° РІ Р±Р°Р·Р°С‚Р°
 //  AddNewMdn;
-//  FillReferalMdnInPreg; // мдн-тата в прегледите
+//  FillReferalMdnInPreg; // РјРґРЅ-С‚Р°С‚Р° РІ РїСЂРµРіР»РµРґРёС‚Рµ
 //
 //
 //  LoadTempVtrMSG4;
@@ -18725,15 +19216,15 @@ var
 begin
 
   mn := FmxProfForm.Pregled.FMNs[0];
-  mn.Collection := CollMedNapr;
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  dataPosition := pCardinalData^ + self.AspectsHipFile.FPosData;
+  mn.Collection := ADB_DM.CollMedNapr;
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
   New(mn.PRecord);
   mn.PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
   mn.PRecord.SpecDataPos := 444;
   mn.SaveBLANKA_MED_NAPR(dataPosition);
-  pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
-  pCardinalData^  := dataPosition - self.AspectsHipFile.FPosData;
+  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+  pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
 end;
 
 procedure TfrmSuperHip.treeviewGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -18915,7 +19406,7 @@ begin
 
     ProcessNode(nil, root, 'root');
     Elapsed := Stopwatch.Elapsed;
-    //Memo.Lines.Add(Format('попълнени са в първичната структура %d възела, за %f ms ' ,[treeview.TotalCount, Elapsed.TotalMilliseconds]));
+    //Memo.Lines.Add(Format('РїРѕРїСЉР»РЅРµРЅРё СЃР° РІ РїСЉСЂРІРёС‡РЅР°С‚Р° СЃС‚СЂСѓРєС‚СѓСЂР° %d РІСЉР·РµР»Р°, Р·Р° %f ms ' ,[treeview.TotalCount, Elapsed.TotalMilliseconds]));
     currentType := cvNone;
     currentIndex := -1;
     Cl000Coll.Clear;
@@ -18925,7 +19416,7 @@ begin
     treeview.IterateSubtree(nil, Cl000Coll.GetNodeXML, nil);
 //    btnGetManesClick(nil);
     Elapsed := Stopwatch.Elapsed;
-    //Memo.Lines.Add(Format('Обработени са  %d реда, за %f ms ' ,[Cl000Coll.Count, Elapsed.TotalMilliseconds]));
+    //Memo.Lines.Add(Format('РћР±СЂР°Р±РѕС‚РµРЅРё СЃР°  %d СЂРµРґР°, Р·Р° %f ms ' ,[Cl000Coll.Count, Elapsed.TotalMilliseconds]));
   finally
     treeview.EndUpdate;
   end;
@@ -18938,9 +19429,9 @@ var
   unfav: TUnfavItem;
   mnt, yr: word;
 begin
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to ADB_DM.CollDoctor.Count - 1 do
   begin
-    doc := CollDoctor.Items[i];
+    doc := ADB_DM.CollDoctor.Items[i];
     for j := 0 to doc.FListUnfav.Count - 1 do
     begin
       mnt := (j mod 12) ;
@@ -18969,7 +19460,7 @@ begin
 
         fdm.ibsqlCommandUdost.ExecQuery;
 
-        CollUnfav.DeleteAUnfav(doc.DoctorID, mnt, yr);
+        ADB_DM.CollUnfav.DeleteAUnfav(doc.DoctorID, mnt, yr);
       end
       else
       begin
@@ -18987,7 +19478,7 @@ begin
         fdm.ibsqlCommandUdost.ParamByName('month_unfav').AsInteger := mnt;
         fdm.ibsqlCommandUdost.ExecQuery;
 
-        CollUnfav.InsertAUnfav(doc.DoctorID, mnt, yr);
+        ADB_DM.CollUnfav.InsertAUnfav(doc.DoctorID, mnt, yr);
       end;
     end;
   end;
@@ -19000,6 +19491,52 @@ begin
 //
 end;
 
+procedure TfrmSuperHip.vtrSearchButtonClick(sender: TVirtualStringTreeAspect;
+  node: PVirtualNode; const numButton: Integer);
+var
+  data: PAspRec;
+  FilterTreeGenerator: TFilterTreeGenerator2;
+  FilterRootNode: PVirtualNode;
+begin
+  if node = nil then  Exit;
+  data := pointer(PByte(node) + lenNode);
+  case data.vid of
+    vvFieldFilter:
+    begin
+      case numButton of
+        0:
+        begin
+          CreateFieldGroup(node);
+        end;
+      end;
+    end;
+    vvRootFilter:
+    begin
+      case numButton of
+        0:
+        begin
+          Stopwatch := TStopwatch.StartNew;
+          try
+            FilterTreeGenerator := TFilterTreeGenerator2.Create(vtrPregledPat, vtrSearch, AspectsFilterLinkFile);
+            FilterTreeGenerator.OnAddNewNodeFilter := OnAddNewNodeFilter;
+            try
+              //FilterRootNode := FilterTreeGenerator.CreateFilterItem('testow');
+              FilterTreeGenerator.BuildFilterTree;//(vtrPregledPat.RootNode.FirstChild, FilterRootNode);
+              vtrSearch.Repaint;
+            except
+              FreeAndNil(FilterTreeGenerator);
+              Exit;
+            end;
+          finally
+            Elapsed := Stopwatch.Elapsed;
+            mmoTest.Lines.Add( 'BuildFilterTree ' + FloatToStr(Elapsed.TotalMilliseconds));
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
 procedure TfrmSuperHip.vtrSearchChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
 var
   data: PAspRec;
@@ -19010,13 +19547,13 @@ begin
   case data.vid of
     vvPatient:
     begin
-      FmxFinderFrm.ArrCondition := CollPatient.ListForFinder.Items[0].ArrCondition;
+      FmxFinderFrm.ArrCondition := ADB_DM.CollPatient.ListForFinder.Items[0].ArrCondition;
       FmxFinderFrm.AddExpanderPat1(0, nil);
 
     end;
     vvPregled:
     begin
-      FmxFinderFrm.ArrCondition := CollPregled.ListForFinder.Items[0].ArrCondition;
+      FmxFinderFrm.ArrCondition := ADB_DM.CollPregled.ListForFinder.Items[0].ArrCondition;
       FmxFinderFrm.AddExpanderPreg(0, nil);
 
     end;
@@ -19024,19 +19561,142 @@ begin
 
 end;
 
-procedure TfrmSuperHip.vtrSearchGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+procedure TfrmSuperHip.vtrSearchDrawButton(sender: TVirtualStringTreeAspect;
+  node: PVirtualNode; var ButonVisible: Boolean; const numButton: Integer;
+  var imageIndex: Integer);
 var
-  data: PAspRec;
+  data, dataParent: PAspRec;
 begin
-  data := vtrSearch.GetNodeData(node);
+  if node = nil then  Exit;
+  data := pointer(PByte(node) + lenNode);
   case data.vid of
-    vvPatient:
+    vvRootFilter:
     begin
-      case Column of
-        0: CellText := 'Пациент';
+      case numButton of
+        0:
+        begin
+          ButonVisible := True;
+          imageIndex := 55;
+        end;
+      end;
+    end;
+    vvFieldFilter:
+    begin
+      dataParent := pointer(PByte(node.Parent) + lenNode);
+      if dataParent.vid <> vvFieldOrGroup then
+      begin
+        case numButton of
+          0:
+          begin
+            ButonVisible := True;
+            imageIndex := 111;
+          end;
+        end;
+      end
+      else
+      begin
+        case numButton of
+          0:
+          begin
+            ButonVisible := True;
+            imageIndex := 55;
+          end;
+          1:
+          begin
+            ButonVisible := True;
+            imageIndex := 47;
+          end;
+        end;
       end;
     end;
   end;
+
+end;
+
+procedure TfrmSuperHip.vtrSearchGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+  Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+var
+  data, dataParent: PAspRecFilter;
+  coll: TBaseCollection;
+  key: UInt64;
+  lst: TList<PVirtualNode>;
+begin
+  data := Pointer(PByte(Node) + lenNode);
+  case Column of
+
+    0:
+    begin
+      case data.vid of
+        vvObjectGroup:
+        begin
+          CellText := 'РЈС‡Р°СЃС‚РІР°С‚ РѕС‰Рµ...';
+        end;
+        vvFieldOrGroup:
+        begin
+          dataParent := Pointer(PByte(Node.Parent) + lenNode);
+          coll := GetCollectionByType(Word(dataParent.CollType));
+          if coll  <> nil then
+            CellText := 'Р“СЂСѓРїР°: ' + coll.DisplayName(node.Dummy);
+        end;
+        vvFieldFilter:
+        begin
+          dataParent := Pointer(PByte(Node.Parent) + lenNode);
+          if dataParent.vid = vvFieldOrGroup then
+            dataParent := Pointer(PByte(Node.Parent.parent) + lenNode);
+          coll := Adb_DM.lstColl[Ord(dataParent.CollType)]; //GetCollectionByType(Word(dataParent.CollType));
+          if coll  <> nil then
+            CellText := coll.DisplayName(node.Dummy);
+        end;
+        vvOperator:
+          CellText := ConditionToStr(TConditionType(Node.Dummy));
+      else
+        CellText := CeltextFilterObjectFromVid(Word(data.vid));
+      end;
+
+    end;
+    1:
+    begin
+      CellText := TRttiEnumerationType.GetName(data.vid) + ' index = ' + inttostr(Data.index);
+
+    end;
+    2:
+    begin
+        if Data.index > -1 then
+        begin
+          CellText := TRttiEnumerationType.GetName(data.CollType) + ' br. = ' +
+             inttostr(AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count);
+        end;
+    end;
+  end;
+
+end;
+
+
+procedure TfrmSuperHip.vtrSearchShowHintButton(sender: TVirtualStringTreeAspect;
+  node: PVirtualNode; const numButton: Integer; r: TRect);
+var
+  Data: PAspRec;
+begin
+  Exit;
+  if node = nil then
+    Exit;
+  if sender.IsDisabled[node] then
+    Exit;
+  data := Pointer(PByte(Node) + lenNode);
+  case Data.vid of
+    vvRootFilter:
+    begin
+      case numButton of
+        0: hntMain.Description := 'РќРѕРІ С„РёР»С‚СЉСЂ';
+      else
+        Exit;
+      end;
+    end;
+
+  end;
+  hntMain.Delay := 500;
+  hntMain.HideAfter := 3000;
+  hntMain.ShowHint(r);
 end;
 
 procedure TfrmSuperHip.vtrSincPLGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex;
@@ -19055,12 +19715,12 @@ begin
         0:
         begin
           case data.index of
-            -1: CellText := 'Има го и в двете';
-            -2: CellText := 'Има го само в НЗОК';
-            -3: CellText := 'Има го само в ХИП';
-            -4: CellText := 'Новозаписани';
-            -5: CellText := 'Отписани';
-            -6: CellText := 'Записани (за отписване)';
+            -1: CellText := 'РРјР° РіРѕ Рё РІ РґРІРµС‚Рµ';
+            -2: CellText := 'РРјР° РіРѕ СЃР°РјРѕ РІ РќР—РћРљ';
+            -3: CellText := 'РРјР° РіРѕ СЃР°РјРѕ РІ РҐРРџ';
+            -4: CellText := 'РќРѕРІРѕР·Р°РїРёСЃР°РЅРё';
+            -5: CellText := 'РћС‚РїРёСЃР°РЅРё';
+            -6: CellText := 'Р—Р°РїРёСЃР°РЅРё (Р·Р° РѕС‚РїРёСЃРІР°РЅРµ)';
           end;
         end;
         1:
@@ -19094,17 +19754,17 @@ begin
         begin
           if DataParent.vid = vvPatient then
           begin
-            APat :=  ACollPatFDB.Items[DataParent.index];
+            APat :=  ADB_DM.ACollPatFDB.Items[DataParent.index];
             APreg :=  APat.FPregledi[data.index];
-            CellText := 'Pregled patID' + IntToStr(APat.getIntMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_ID)));
+            CellText := 'Pregled patID' + IntToStr(APat.getIntMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_ID)));
           end
           else if DataParent.vid = vvCloning then
           begin
             dataPat := Sender.GetNodeData(node.Parent.parent);
-            APat :=  ACollPatFDB.Items[dataPat.index];
+            APat :=  ADB_DM.ACollPatFDB.Items[dataPat.index];
             ACloning := APat.FClonings[DataParent.index];
             APreg :=  ACloning.FPregledi[data.index];
-            CellText := 'Pregled clonID ' + IntToStr(ACloning.getIntMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_ID)));
+            CellText := 'Pregled clonID ' + IntToStr(ACloning.getIntMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_ID)));
           end;
         end;
         1:
@@ -19112,18 +19772,18 @@ begin
          // APreg.DataPos := data.DataPos;
           if DataParent.vid = vvPatient then
           begin
-            APat :=  ACollPatFDB.Items[DataParent.index];
+            APat :=  ADB_DM.ACollPatFDB.Items[DataParent.index];
             APreg :=  APat.FPregledi[data.index];
           end
           else if DataParent.vid = vvCloning then
           begin
             dataPat := Sender.GetNodeData(node.Parent.parent);
-            APat :=  ACollPatFDB.Items[dataPat.index];
+            APat :=  ADB_DM.ACollPatFDB.Items[dataPat.index];
             ACloning := APat.FClonings[DataParent.index];
             APreg :=  ACloning.FPregledi[data.index];
           end;
 
-          PregledDate := APreg.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PregledNew_START_DATE));
+          PregledDate := APreg.getDateMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PregledNew_START_DATE));
           CellText := DateTimeToStr(PregledDate);
         end;
       end;
@@ -19137,26 +19797,26 @@ begin
           case DataParent.index of
             -1:
             begin
-              CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
+              CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
             end;
             -2:
             begin
-              if CollPatPis.Items[data.index].PatEGN <> '' then
+              if ADB_DM.CollPatPis.Items[data.index].PatEGN <> '' then
               begin
-                CellText := 'ЕГН ' + CollPatPis.Items[data.index].PatEGN;
+                CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatPis.Items[data.index].PatEGN;
               end
-              else  if CollPatPis.Items[data.index].PRecord.LNC <> '' then
+              else  if ADB_DM.CollPatPis.Items[data.index].PRecord.LNC <> '' then
               begin
-                CellText := 'ЛНЧ ' + CollPatPis.Items[data.index].PRecord.LNC;
+                CellText := 'Р›РќР§ ' + ADB_DM.CollPatPis.Items[data.index].PRecord.LNC;
               end
-              else  if CollPatPis.Items[data.index].PRecord.SNN <> '' then
+              else  if ADB_DM.CollPatPis.Items[data.index].PRecord.SNN <> '' then
               begin
-                CellText := 'SNN ' + CollPatPis.Items[data.index].PRecord.SNN;
+                CellText := 'SNN ' + ADB_DM.CollPatPis.Items[data.index].PRecord.SNN;
               end;
             end;
             -3, -4, -5, -6:
             begin
-              CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
+              CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
             end;
           end;
         end;
@@ -19166,24 +19826,24 @@ begin
           case DataParent.index of
             -5: //otpisani
             begin
-              CellText := DateToStr(ACollPatFDB.Items[data.index].DATE_OTPISVANE);
+              CellText := DateToStr(ADB_DM.ACollPatFDB.Items[data.index].DATE_OTPISVANE);
             end;
             -6: //zapisani
             begin
-              CellText := DateToStr(ACollPatFDB.Items[data.index].DATE_ZAPISVANE);
+              CellText := DateToStr(ADB_DM.ACollPatFDB.Items[data.index].DATE_ZAPISVANE);
             end;
           end;
         end;
         2:
         begin
           DataParent := Sender.GetNodeData(node.Parent);
-          APat := ACollPatFDB.Items[data.index];
+          APat := ADB_DM.ACollPatFDB.Items[data.index];
           case DataParent.index of
             -5, -6, -1: //otpisani i zapisani
             begin
               if APat.FPregledi.Count > 0 then
               begin
-                CellText := DateToStr(APat.LastPregled.getDateMap(AspectsHipFile.Buf, CollPatient.posData, word(PregledNew_START_DATE)));
+                CellText := DateToStr(APat.LastPregled.getDateMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PregledNew_START_DATE)));
               end;
 
               //if APat.FClonings.Count > 0 then
@@ -19213,15 +19873,15 @@ begin
   if node = nil then exit;
   //Exit;
   data := Sender.GetNodeData(node);
-  doctor := CollDoctor.Items[data.index];
+  doctor := ADB_DM.CollDoctor.Items[data.index];
   if Column > 1 then
   begin
     AColMonth := Column - 1;
     r := CellRect;
     r.Inflate(-8, -8);
-    indexUnfav := (CollUnfav.CurrentYear - 2024) * 12 + AColMonth;
-    if CollUnfav.CurrentYear = 2033 then
-      CollUnfav.CurrentYear := 2033;
+    indexUnfav := (ADB_DM.CollUnfav.CurrentYear - 2024) * 12 + AColMonth;
+    if ADB_DM.CollUnfav.CurrentYear = 2033 then
+      ADB_DM.CollUnfav.CurrentYear := 2033;
     if doctor.FListUnfav[indexUnfav] <> nil then
     begin
       if doctor.FListUnfavDB[indexUnfav] = nil then
@@ -19251,8 +19911,8 @@ begin
   if Column <> 0 then Exit;
   data1 := Sender.GetNodeData(Node1);
   data2 := Sender.GetNodeData(Node2);
-  doc1 := CollDoctor.items[data1.index];
-  doc2 := CollDoctor.items[data2.index];
+  doc1 := ADB_DM.CollDoctor.items[data1.index];
+  doc2 := ADB_DM.CollDoctor.items[data2.index];
   if doc1.FullName > doc2.FullName then
      Result := 1
   else
@@ -19319,9 +19979,9 @@ var
 begin
   data := Sender.GetNodeData(node);
   case data.vid of
-    vvDoctor: //доктор
+    vvDoctor: //РґРѕРєС‚РѕСЂ
     begin
-      doctor := CollDoctor.Items[data.index];
+      doctor := ADB_DM.CollDoctor.Items[data.index];
       case Column of
         0: CellText := doctor.fullName; //doctor.FName + ' ' + doctor.SName + ' ' + doctor.LName;
         //1: CellText := doctor.specHip;
@@ -19348,10 +20008,10 @@ var
   indexUnfav: word;
 begin
   data := Sender.GetNodeData(HitInfo.HitNode);
-  doctor := CollDoctor.Items[data.index];
+  doctor := ADB_DM.CollDoctor.Items[data.index];
   if HitInfo.HitColumn > 1 then
   begin
-    indexUnfav := (CollUnfav.CurrentYear - 2024) * 12 + HitInfo.HitColumn - 1;
+    indexUnfav := (ADB_DM.CollUnfav.CurrentYear - 2024) * 12 + HitInfo.HitColumn - 1;
     if doctor.FListUnfav[indexUnfav] <> nil then
     begin
       doctor.FListUnfav[indexUnfav] := nil;
@@ -19416,7 +20076,7 @@ begin
                 begin
                   patPL := pl.Doctor.DoctorsPatient.Items[i].Patient;
 
-                  patNovozapisan := TRealPatientNewItem(ACollNovozapisani.Add);
+                  patNovozapisan := TRealPatientNewItem(ADB_DM.ACollNovozapisani.Add);
                   patNovozapisan.DataPos := 0;
                   New(patNovozapisan.PRecord);
                   patNovozapisan.PRecord.setProp := [PatientNew_EGN];
@@ -19427,8 +20087,7 @@ begin
                   begin
 
                     dataZapisan := sender.GetNodeData(nodeZapisan);
-                    PatientTemp.DataPos := dataZapisan.DataPos;
-                    if CollPatient.getAnsiStringMap(dataZapisan.DataPos, word(PatientNew_EGN)) = patNovozapisan.PRecord.EGN then
+                    if ADB_DM.CollPatient.getAnsiStringMap(dataZapisan.DataPos, word(PatientNew_EGN)) = patNovozapisan.PRecord.EGN then
                     begin
                       ListNodes.Add(nodeZapisan);
                     end;
@@ -19569,7 +20228,7 @@ begin
   case data.vid of
     vvMKB:
     begin
-      Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+      Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
       AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
       dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
       dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
@@ -19595,9 +20254,9 @@ begin
       if (csCheckedNormal = Node.CheckState) then
       begin
         FmxProfForm.Pregled.CanDeleteDiag := False;
-        Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+        Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
         AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
-        FmxProfForm.Pregled.FDiagnosis.Add(CollDiag.Items[CollDiag.Count - 1]);
+        FmxProfForm.Pregled.FDiagnosis.Add(ADB_DM.CollDiag.Items[ADB_DM.CollDiag.Count - 1]);
         dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
         dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
         tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -19609,22 +20268,22 @@ begin
       end
       else
       begin
-        Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+        Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
         FmxProfForm.Pregled.CanDeleteDiag := False;
         for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
         begin
           if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
           begin
 
-            CollPregled.streamComm.Size := 0;
-            CollPregled.streamComm.OpType := toDeleteNode;
-            CollPregled.streamComm.Size := 12 + 4;
-            CollPregled.streamComm.Ver := 0;
-            CollPregled.streamComm.Vid := ctLink;
-            CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
-            CollPregled.streamComm.Propertys := [];
-            CollPregled.streamComm.Len := CollPregled.streamComm.Size;
-            streamCmdFile.CopyFrom(CollPregled.streamComm, 0);
+            ADB_DM.CollPregled.streamComm.Size := 0;
+            ADB_DM.CollPregled.streamComm.OpType := toDeleteNode;
+            ADB_DM.CollPregled.streamComm.Size := 12 + 4;
+            ADB_DM.CollPregled.streamComm.Ver := 0;
+            ADB_DM.CollPregled.streamComm.Vid := ctLink;
+            ADB_DM.CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
+            ADB_DM.CollPregled.streamComm.Propertys := [];
+            ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
+            streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
             FmxProfForm.Pregled.FDiagnosis.Delete(i);
             Break;
           end;
@@ -19691,15 +20350,15 @@ begin
   FinderRecMKB.LastFindedStr  := '';
   FinderRecMKB.ACol  := Column;
 
-  sender.Header.Columns[0].Text := 'Диагнози';
-  sender.Header.Columns[1].Text := 'Детайли';
+  sender.Header.Columns[0].Text := 'Р”РёР°РіРЅРѕР·Рё';
+  sender.Header.Columns[1].Text := 'Р”РµС‚Р°Р№Р»Рё';
   case Column of
     0:
     begin
       case data.vid of
         vvMKB:
         begin
-          sender.Header.Columns[Column].Text := 'МКБ';
+          sender.Header.Columns[Column].Text := 'РњРљР‘';
           sender.Header.Columns[Column].Tag := 0;
         end;
 
@@ -19712,7 +20371,7 @@ begin
       case data.vid of
         vvMKB:
         begin
-          sender.Header.Columns[Column].Text := 'Име на диагнозата';
+          sender.Header.Columns[Column].Text := 'РРјРµ РЅР° РґРёР°РіРЅРѕР·Р°С‚Р°';
           sender.Header.Columns[Column].Tag := 0;
         end;
       else
@@ -19816,7 +20475,7 @@ begin
   //rText.Width:= w ;
   //rText.Height:= 13;
   DefaultDraw := False;
-  FilterText := edtFilterTemp.Text;// 'система';
+  FilterText := edtFilterTemp.Text;// 'СЃРёСЃС‚РµРјР°';
   p := AnsiUpperCase(wb.Inls.Text).IndexOf((AnsiUpperCase(FilterText)));
   if p > -1 then
   begin
@@ -19864,7 +20523,7 @@ begin
         begin
           strPred := '';
           strSled := copy(wb.ls[i], 1,  Integer(wb.ls.Objects[i]));
-          if strSled.StartsWith('н') then
+          if strSled.StartsWith('РЅ') then
             strPred := '';
         end;
 
@@ -20019,27 +20678,27 @@ begin
       if data.index = -1 then
       begin
         case data.vid of
-          vvPregledRoot: CellText := 'Прегледи';
-          vvMDN: CellText := 'Направления';
-          vvRecepta: CellText := 'Рецепти';
-          vvExamImun: CellText := 'Имунизации';
-          vvHosp: CellText := 'Хоспитализации';
-          vvNomenNzis: CellText := 'Общи';
-          vvPatientNewRoot: CellText := 'Пациенти от импорта';
+          vvPregledNewRoot: CellText := 'РџСЂРµРіР»РµРґРё';
+          vvMDN: CellText := 'РќР°РїСЂР°РІР»РµРЅРёСЏ';
+          vvRecepta: CellText := 'Р РµС†РµРїС‚Рё';
+          vvExamImun: CellText := 'РРјСѓРЅРёР·Р°С†РёРё';
+          vvHosp: CellText := 'РҐРѕСЃРїРёС‚Р°Р»РёР·Р°С†РёРё';
+          vvNomenNzis: CellText := 'РћР±С‰Рё';
+          vvPatientNewRoot: CellText := 'РџР°С†РёРµРЅС‚Рё РѕС‚ РёРјРїРѕСЂС‚Р°';
           vvPatient:
           begin
-            CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
+            CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
           vvPregled:
           begin
             //preg := msgColl.CollPreg.Items[data.index];
             if Data.DataPos > 0 then
             begin
-              CellText := CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
+              CellText := ADB_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
             end
             else
             begin
-              CellText := 'Нов преглед';
+              CellText := 'РќРѕРІ РїСЂРµРіР»РµРґ';
             end;
           end;
         end;
@@ -20055,16 +20714,16 @@ begin
             begin
               dataPreg := vtrTemp.GetNodeData(node.parent);
               dataMdn := vtrTemp.GetNodeData(node);
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               preg := pat.FPregledi[dataPreg.index];
               mdn := preg.FMdns[dataMdn.index];
               if Data.DataPos > 0 then
               begin
-                CellText := CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
+                CellText := ADB_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
               end
               else
               begin
-                CellText := 'Ново МДН ' + mdn.NRN;
+                CellText := 'РќРѕРІРѕ РњР”Рќ ' + mdn.NRN;
               end;
             end
             else
@@ -20072,16 +20731,16 @@ begin
               dataPat := vtrTemp.GetNodeData(node.parent.parent.parent);
               dataPreg := vtrTemp.GetNodeData(node.parent);
               dataMdn := vtrTemp.GetNodeData(node);
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               preg := pat.FPregledi[dataPreg.index];
               mdn := preg.FMdns[dataMdn.index];
               if Data.DataPos > 0 then
               begin
-                CellText := CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
+                CellText := ADB_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN));
               end
               else
               begin
-                CellText := 'Ново МДН ' + mdn.NRN;
+                CellText := 'РќРѕРІРѕ РњР”Рќ ' + mdn.NRN;
               end;
             end;
           end;
@@ -20092,31 +20751,31 @@ begin
 
             if dataPat.vid = vvPatient then
             begin
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               preg := pat.FPregledi[data.index];
               if Data.DataPos > 0 then
               begin
-                CellText := CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
+                CellText := ADB_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
               end
               else
               begin
-                CellText := 'Нов преглед ' + preg.NRN;
+                CellText := 'РќРѕРІ РїСЂРµРіР»РµРґ ' + preg.NRN;
               end;
             end
             else
             begin
               dataPat := vtrTemp.GetNodeData(node.parent.parent);
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               dataIncMN := vtrTemp.GetNodeData(node.parent);
               incMN := pat.FIncMNs[dataIncMN.index];
               preg := pat.FPregledi[data.index];
               if Data.DataPos > 0 then
               begin
-                CellText := CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
+                CellText := ADB_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
               end
               else
               begin
-                CellText := 'Нов преглед ' + preg.NRN;
+                CellText := 'РќРѕРІ РїСЂРµРіР»РµРґ ' + preg.NRN;
               end;
             end;
           end;
@@ -20124,37 +20783,37 @@ begin
           begin
             if data.DataPos > 0 then
             begin
-              CellText := CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
+              CellText := ADB_DM.CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
             end
             else
             begin
-              CellText := msgColl.CollIncDoc.items[data.index].PRecord.UIN;
+              CellText := ADB_DM.AmsgColl.CollIncDoc.items[data.index].PRecord.UIN;
             end;
           end;
           vvIncMN:
           begin
             dataPat := vtrTemp.GetNodeData(node.parent);
-            pat := msgColl.CollPat.Items[dataPat.index];
+            pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
             incMN := pat.FIncMNs[data.index];
             if Data.DataPos > 0 then
             begin
-              CellText := CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+              CellText := ADB_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
             end
             else
             begin
-              CellText := 'Нова Консулт.  ' + incMN.NRN;
+              CellText := 'РќРѕРІР° РљРѕРЅСЃСѓР»С‚.  ' + incMN.NRN;
             end;
           end;
           vvPatient:
           begin
-            pat := msgColl.CollPat.Items[data.index];
+            pat := ADB_DM.AmsgColl.CollPat.Items[data.index];
             if Data.DataPos > 0 then
             begin
-              CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
+              CellText := ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
             end
             else
             begin
-              CellText := 'Нов ' + pat.PatEGN;
+              CellText := 'РќРѕРІ ' + pat.PatEGN;
             end;
           end;
 
@@ -20169,7 +20828,7 @@ begin
 
                 if dataPat.vid = vvPatient then
                 begin
-                  pat := msgColl.CollPat.Items[dataPat.index];
+                  pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
                   preg := pat.FPregledi[DataParent.index];
                   msg := TNzisReqRespItem(preg.FLstMsgImportNzis[data.index]);
                   CellText := Format('X%.3d', [msg.PRecord.msgNom]);
@@ -20177,7 +20836,7 @@ begin
                 else
                 begin
                   dataPat := vtrTemp.GetNodeData(node.parent.parent.parent);
-                  pat := msgColl.CollPat.Items[dataPat.index];
+                  pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
                   preg := pat.FPregledi[DataParent.index];
                   msg := TNzisReqRespItem(preg.FLstMsgImportNzis[data.index]);
                   CellText := Format('X%.3d', [msg.PRecord.msgNom]);
@@ -20191,7 +20850,7 @@ begin
 
                   dataPreg := vtrTemp.GetNodeData(node.parent.Parent);
                   dataMdn := vtrTemp.GetNodeData(node.parent);
-                  pat := msgColl.CollPat.Items[dataPat.index];
+                  pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
                   preg := pat.FPregledi[dataPreg.index];
                   mdn := preg.FMdns[dataMdn.index];
                   msg := TNzisReqRespItem(mdn.FLstMsgImportNzis[data.index]);
@@ -20202,7 +20861,7 @@ begin
                   dataPat := vtrTemp.GetNodeData(node.parent.parent.parent.parent);
                   dataPreg := vtrTemp.GetNodeData(node.parent.Parent);
                   dataMdn := vtrTemp.GetNodeData(node.parent);
-                  pat := msgColl.CollPat.Items[dataPat.index];
+                  pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
                   preg := pat.FPregledi[dataPreg.index];
                   mdn := preg.FMdns[dataMdn.index];
                   msg := TNzisReqRespItem(mdn.FLstMsgImportNzis[data.index]);
@@ -20231,10 +20890,10 @@ begin
 
           if Data.DataPos > 0 then
           begin
-            CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
-            CellText := CellText + ' ID: ' + IntToStr(CollPatient.getIntMap(Data.DataPos, word(PatientNew_ID)));
+            CellText := ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
+            CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
+            CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
+            CellText := CellText + ' ID: ' + IntToStr(ADB_DM.CollPatient.getIntMap(Data.DataPos, word(PatientNew_ID)));
           end
           else
           begin
@@ -20257,12 +20916,12 @@ begin
           case dataPat.vid of
             vvPatient:
             begin
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
             end;
-            vvPregledRoot:
+            vvPregledNewRoot:
             begin
-              msg := msgColl.items[data.index];
+              msg := ADB_DM.AmsgColl.items[data.index];
             end;
             vvpregled:
             begin
@@ -20302,27 +20961,27 @@ begin
       if data.index = -1 then
       begin
         case data.vid of
-          vvPregledRoot: CellText := 'Прегледи';
-          vvMDN: CellText := 'Направления';
-          vvRecepta: CellText := 'Рецепти';
-          vvExamImun: CellText := 'Имунизации';
-          vvHosp: CellText := 'Хоспитализации';
-          vvNomenNzis: CellText := 'Общи';
-          vvPatientNewRoot: CellText := 'Пациенти от импорта';
+          vvPregledNewRoot: CellText := 'РџСЂРµРіР»РµРґРё';
+          vvMDN: CellText := 'РќР°РїСЂР°РІР»РµРЅРёСЏ';
+          vvRecepta: CellText := 'Р РµС†РµРїС‚Рё';
+          vvExamImun: CellText := 'РРјСѓРЅРёР·Р°С†РёРё';
+          vvHosp: CellText := 'РҐРѕСЃРїРёС‚Р°Р»РёР·Р°С†РёРё';
+          vvNomenNzis: CellText := 'РћР±С‰Рё';
+          vvPatientNewRoot: CellText := 'РџР°С†РёРµРЅС‚Рё РѕС‚ РёРјРїРѕСЂС‚Р°';
           vvPatient:
           begin
-            CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
+            CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
           vvPregled:
           begin
             //preg := msgColl.CollPreg.Items[data.index];
             if Data.DataPos > 0 then
             begin
-              CellText := CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
+              CellText := ADB_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN));
             end
             else
             begin
-              CellText := 'Нов преглед';
+              CellText := 'РќРѕРІ РїСЂРµРіР»РµРґ';
             end;
           end;
         end;
@@ -20332,14 +20991,14 @@ begin
         case data.vid of
           vvPatient:
           begin
-            pat := msgColl.CollPat.Items[data.index];
+            pat := ADB_DM.AmsgColl.CollPat.Items[data.index];
             if Data.DataPos > 0 then
             begin
               //CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
             end
             else
             begin
-              CellText := 'Нов ' + pat.PatEGN;
+              CellText := 'РќРѕРІ ' + pat.PatEGN;
             end;
           end;
 
@@ -20349,7 +21008,7 @@ begin
             case dataPat.vid of
               vvPatient:
               begin
-                pat := msgColl.CollPat.Items[dataPat.index];
+                pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
 
                 msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
                 case byte(msg.PRecord.Logical) of
@@ -20361,9 +21020,9 @@ begin
                   32: CellText := Format('C%.3d', [node.Dummy]);
                 end;
               end;
-              vvPregledRoot:
+              vvPregledNewRoot:
               begin
-                msg := msgColl.items[data.index];
+                msg := ADB_DM.AmsgColl.items[data.index];
                 case byte(msg.PRecord.Logical) of
                   1: CellText := Format('X%.3d', [msg.PRecord.msgNom]);
                   2: CellText := Format('R%.3d', [node.Dummy]);
@@ -20376,7 +21035,7 @@ begin
               vvpregled:
               begin
                 //dataPat := vtrTemp.GetNodeData(node.parent.parent);
-                pat := msgColl.CollPat.Items[dataPat.index];
+                pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
 
                 msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
                 case byte(msg.PRecord.Logical) of
@@ -20410,9 +21069,9 @@ begin
 
           if Data.DataPos > 0 then
           begin
-            CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
+            CellText := ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
+            CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
+            CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
           end
           else
           begin
@@ -20435,17 +21094,17 @@ begin
           case dataPat.vid of
             vvPatient:
             begin
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
             end;
-            vvPregledRoot:
+            vvPregledNewRoot:
             begin
-              msg := msgColl.items[data.index];
+              msg := ADB_DM.AmsgColl.items[data.index];
             end;
             vvpregled:
             begin
               dataPat := vtrTemp.GetNodeData(node.parent.parent);
-              pat := msgColl.CollPat.Items[dataPat.index];
+              pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
               msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
             end;
           end;
@@ -20476,7 +21135,7 @@ begin
   end;
   if CharCode = VK_RETURN then
   begin
-    CharCode := 0;// да ходи на следващо попадение
+    CharCode := 0;// РґР° С…РѕРґРё РЅР° СЃР»РµРґРІР°С‰Рѕ РїРѕРїР°РґРµРЅРёРµ
 
     if KeyCNT then
     begin
@@ -20557,9 +21216,9 @@ begin
         0:
         begin
           FillCertInDoctors;
-          if CollDoctor.Items[0].Cert <> nil then
+          if ADB_DM.CollDoctor.Items[0].Cert <> nil then
           begin
-            edtCertNom.Text := BuildHexString(CollDoctor.Items[0].Cert.SerialNumber);
+            edtCertNom.Text := BuildHexString(ADB_DM.CollDoctor.Items[0].Cert.SerialNumber);
           end;
         end;
       end;
@@ -20596,19 +21255,19 @@ var
   buf: Pointer;
   posdata: Cardinal;
 begin
-  buf := AspectsHipFile.Buf;
-  posdata := AspectsHipFile.FPosData;
+  buf := Adb_DM.AdbMain.Buf;
+  posdata := Adb_DM.AdbMain.FPosData;
   data := vtrDoctor.GetNodeData(node);
   case data.vid of
     vvDoctorRoot:
     begin
       case Column of
-        0: CellText := 'Лекари';
+        0: CellText := 'Р›РµРєР°СЂРё';
       end;
     end;
     vvDoctor:
     begin
-      doc := CollDoctor.Items[data.index];
+      doc := ADB_DM.CollDoctor.Items[data.index];
       case Column of
         0:
         begin
@@ -20620,8 +21279,8 @@ begin
         1:
         begin
           CellText :=
-          'ЕГН ' + doc.getAnsiStringMap(buf, posdata, word(Doctor_EGN)) + #13#10 +
-          'УИН ' + doc.getAnsiStringMap(buf, posdata, word(Doctor_UIN));
+          'Р•Р“Рќ ' + doc.getAnsiStringMap(buf, posdata, word(Doctor_EGN)) + #13#10 +
+          'РЈРРќ ' + doc.getAnsiStringMap(buf, posdata, word(Doctor_UIN));
         end;
       end;
     end;
@@ -20630,7 +21289,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'Заместници'
+          CellText := 'Р—Р°РјРµСЃС‚РЅРёС†Рё'
         end;
       end;
     end;
@@ -20639,7 +21298,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'Сертификат'
+          CellText := 'РЎРµСЂС‚РёС„РёРєР°С‚'
         end;
       end;
     end;
@@ -20748,85 +21407,85 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      Collebl.FillListNodes(AspectsLinkPatPregFile, vvEbl);
-      CollEbl.ShowListNodesGrid(grdNom);
+      ADB_DM.Collebl.FillListNodes(AspectsLinkPatPregFile, vvEbl);
+      ADB_DM.Collebl.ShowListNodesGrid(grdNom);
       //grdNom.Tag := Integer(@CollEbl);
     end;
     EXAM_ANALYSIS:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollExamAnal.FillListNodes(AspectsLinkPatPregFile, vvExamAnal);
-      CollExamAnal.ShowListNodesGrid(grdNom);
+      ADB_DM.CollExamAnal.FillListNodes(AspectsLinkPatPregFile, vvExamAnal);
+      ADB_DM.CollExamAnal.ShowListNodesGrid(grdNom);
     end;
     EXAM_IMMUNIZATION:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollExamImun.FillListNodes(AspectsLinkPatPregFile, vvExamImun);
-      CollExamImun.ShowListNodesGrid(grdNom);
+      ADB_DM.CollExamImun.FillListNodes(AspectsLinkPatPregFile, vvExamImun);
+      ADB_DM.CollExamImun.ShowListNodesGrid(grdNom);
     end;
     KARTA_PROFILAKTIKA2017:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollCardProf.FillListNodes(AspectsLinkPatPregFile, vvProfCard);
-      CollCardProf.ShowListNodesGrid(grdNom);
+      ADB_DM.CollCardProf.FillListNodes(AspectsLinkPatPregFile, vvProfCard);
+      ADB_DM.CollCardProf.ShowListNodesGrid(grdNom);
     end;
 
     BLANKA_MDN:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollMDN.FillListNodes(AspectsLinkPatPregFile, vvMDN);
+      ADB_DM.CollMDN.FillListNodes(AspectsLinkPatPregFile, vvMDN);
 
-      CollMDN.ShowListNodesGrid(grdNom);
+      ADB_DM.CollMDN.ShowListNodesGrid(grdNom);
     end;
     DOCTOR:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollDoctor.ShowGrid(grdNom);
+      ADB_DM.CollDoctor.ShowGrid(grdNom);
     end;
     nzistoken:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNzisToken.ShowGrid(grdNom);
+      ADB_DM.CollNzisToken.ShowGrid(grdNom);
     end;
     CERTIFICATES:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollCertificates.ShowGrid(grdNom);
+      ADB_DM.CollCertificates.ShowGrid(grdNom);
     end;
     ICD10CM:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollMkb.FillListNodes(AspectsLinkPatPregFile, vvMKB);
-      CollMkb.ShowGrid(grdNom);
+      ADB_DM.CollMkb.FillListNodes(AspectsLinkPatPregFile, vvMKB);
+      ADB_DM.CollMkb.ShowGrid(grdNom);
     end;
     PACIENT:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
-      CollPatient.ShowListNodesGrid(grdNom);
+      ADB_DM.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+      ADB_DM.CollPatient.ShowListNodesGrid(grdNom);
     end;
     PREGLED:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregled);
-      CollPregled.ShowListNodesGrid(grdNom);
+      ADB_DM.CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregled);
+      ADB_DM.CollPregled.ShowListNodesGrid(grdNom);
     end;
     PRACTICA:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollPractica.ShowGrid(grdNom);
+      ADB_DM.CollPractica.ShowGrid(grdNom);
     end;
     UNFAV:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollUnfav.ShowGrid(grdNom);
-      if CollUnfav.Count > 0 then
+      ADB_DM.CollUnfav.ShowGrid(grdNom);
+      if ADB_DM.CollUnfav.Count > 0 then
       begin
         thrHistPerf.Ticker :=TGridTicker.Create(grdNom.Grid.Current);
       end;
@@ -20835,14 +21494,14 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollDiag.FillListNodes(AspectsLinkPatPregFile, vvDiag);
-      CollDiag.ShowListNodesGrid(grdNom);
+      ADB_DM.CollDiag.FillListNodes(AspectsLinkPatPregFile, vvDiag);
+      ADB_DM.CollDiag.ShowListNodesGrid(grdNom);
     end;
     Asp_PL_NZOK:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      CollPatPis.ShowGrid(grdNom);
+      ADB_DM.CollPatPis.ShowGrid(grdNom);
     end;
     Asp_EventManyTimes:
     begin
@@ -20854,74 +21513,74 @@ begin
     BLANKA_MED_NAPR:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollMedNapr.FillListNodes(AspectsLinkPatPregFile, vvMedNapr);
-      CollMedNapr.ShowListNodesGrid(grdNom);
+      ADB_DM.CollMedNapr.FillListNodes(AspectsLinkPatPregFile, vvMedNapr);
+      ADB_DM.CollMedNapr.ShowListNodesGrid(grdNom);
     end;
     BLANKA_MED_NAPR_3A:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollMedNapr3A.FillListNodes(AspectsLinkPatPregFile, vvMedNapr3A);
-      CollMedNapr3A.ShowListNodesGrid(grdNom);
+      ADB_DM.CollMedNapr3A.FillListNodes(AspectsLinkPatPregFile, vvMedNapr3A);
+      ADB_DM.CollMedNapr3A.ShowListNodesGrid(grdNom);
     end;
     HOSPITALIZATION:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollMedNaprHosp.FillListNodes(AspectsLinkPatPregFile, vvMedNaprHosp);
-      CollMedNaprHosp.ShowListNodesGrid(grdNom);
+      ADB_DM.CollMedNaprHosp.FillListNodes(AspectsLinkPatPregFile, vvMedNaprHosp);
+      ADB_DM.CollMedNaprHosp.ShowListNodesGrid(grdNom);
     end;
     EXAM_LKK:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollMedNaprLkk.FillListNodes(AspectsLinkPatPregFile, vvMedNaprLkk);
-      CollMedNaprLkk.ShowListNodesGrid(grdNom);
+      ADB_DM.CollMedNaprLkk.FillListNodes(AspectsLinkPatPregFile, vvMedNaprLkk);
+      ADB_DM.CollMedNaprLkk.ShowListNodesGrid(grdNom);
     end;
     INC_MDN:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollIncMdn.FillListNodes(AspectsLinkPatPregFile, vvIncMdn);
-      CollIncMdn.ShowListNodesGrid(grdNom);
+      ADB_DM.CollIncMdn.FillListNodes(AspectsLinkPatPregFile, vvIncMdn);
+      ADB_DM.CollIncMdn.ShowListNodesGrid(grdNom);
     end;
     INC_NAPR:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollIncMN.FillListNodes(AspectsLinkPatPregFile, vvIncMN);
-      CollIncMN.ShowListNodesGrid(grdNom);
+      ADB_DM.CollIncMN.FillListNodes(AspectsLinkPatPregFile, vvIncMN);
+      ADB_DM.CollIncMN.ShowListNodesGrid(grdNom);
     end;
     NZIS_PLANNED_TYPE:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNZIS_PLANNED_TYPE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_PLANNED_TYPE);
-      CollNZIS_PLANNED_TYPE.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNZIS_PLANNED_TYPE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_PLANNED_TYPE);
+      ADB_DM.CollNZIS_PLANNED_TYPE.ShowListNodesGrid(grdNom);
     end;
     NZIS_QUESTIONNAIRE_RESPONSE:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNZIS_QUESTIONNAIRE_RESPONSE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_RESPONSE);
-      CollNZIS_QUESTIONNAIRE_RESPONSE.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_RESPONSE);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.ShowListNodesGrid(grdNom);
     end;
     NZIS_QUESTIONNAIRE_ANSWER:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNZIS_QUESTIONNAIRE_ANSWER.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_ANSWER);
-      CollNZIS_QUESTIONNAIRE_ANSWER.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_ANSWER);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.ShowListNodesGrid(grdNom);
     end;
     NZIS_DIAGNOSTIC_REPORT:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNZIS_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNZIS_DIAGNOSTIC_REPORT);
-      CollNZIS_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNZIS_DIAGNOSTIC_REPORT);
+      ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
     end;
     NZIS_RESULT_DIAGNOSTIC_REPORT:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNzis_RESULT_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNzis_RESULT_DIAGNOSTIC_REPORT);
-      CollNzis_RESULT_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNzis_RESULT_DIAGNOSTIC_REPORT);
+      ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
     end;
     NZIS_ANSWER_VALUE:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollNZIS_ANSWER_VALUE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_ANSWER_VALUE);
-      CollNZIS_ANSWER_VALUE.ShowListNodesGrid(grdNom);
+      ADB_DM.CollNZIS_ANSWER_VALUE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_ANSWER_VALUE);
+      ADB_DM.CollNZIS_ANSWER_VALUE.ShowListNodesGrid(grdNom);
     end;
     Asp_Addres:
     begin
@@ -20932,7 +21591,7 @@ begin
     Asp_OtherDoctor:
     begin
       InternalChangeWorkPage(tsGrid);
-      CollOtherDoctor.ShowGrid(grdNom);
+      ADB_DM.CollOtherDoctor.ShowGrid(grdNom);
     end
 
   else
@@ -20992,7 +21651,7 @@ begin
     begin
       if data.index  < 0 then
       begin
-        CellText := 'Таблици';
+        CellText := 'РўР°Р±Р»РёС†Рё';
       end
       else
       begin
@@ -21007,40 +21666,40 @@ begin
       end
       else
       begin
-        if AspectsHipFile <> nil then
+        if Adb_DM.AdbMain <> nil then
         begin
           case TTablesTypeHip(data.index) of
-            PRACTICA: CellText := IntToStr(CollPractica.CntInADB);
-            PREGLED: CellText := IntToStr(CollPregled.CntInADB);
-            DOCTOR: CellText := IntToStr(CollDoctor.CntInADB);
-            ICD10CM: CellText := IntToStr(CollMkb.CntInADB);
-            PACIENT: CellText := IntToStr(CollPatient.CntInADB);
-            BLANKA_MDN: CellText := IntToStr(collMdn.CntInADB);
-            UNFAV: CellText := IntToStr(CollUnfav.CntInADB);
-            Asp_Diag: CellText := IntToStr(CollDiag.CntInADB);
-            Asp_PL_NZOK: CellText := IntToStr(CollPatPis.Count);
+            PRACTICA: CellText := IntToStr(ADB_DM.CollPractica.CntInADB);
+            PREGLED: CellText := IntToStr(ADB_DM.CollPregled.CntInADB);
+            DOCTOR: CellText := IntToStr(ADB_DM.CollDoctor.CntInADB);
+            ICD10CM: CellText := IntToStr(ADB_DM.CollMkb.CntInADB);
+            PACIENT: CellText := IntToStr(ADB_DM.CollPatient.CntInADB);
+            BLANKA_MDN: CellText := IntToStr(ADB_DM.collMdn.CntInADB);
+            UNFAV: CellText := IntToStr(ADB_DM.CollUnfav.CntInADB);
+            Asp_Diag: CellText := IntToStr(ADB_DM.CollDiag.CntInADB);
+            Asp_PL_NZOK: CellText := IntToStr(ADB_DM.CollPatPis.Count);
            //Asp_EventManyTimes: CellText := IntToStr(CollEventsManyTimes.CntInADB);
-            EXAM_BOLN_LIST: CellText := IntToStr(CollEbl.CntInADB);
-            EXAM_ANALYSIS: CellText := IntToStr(CollExamAnal.CntInADB);
-            EXAM_IMMUNIZATION: CellText := IntToStr(CollExamImun.CntInADB);
-            PROCEDURES: CellText := IntToStr(CollProceduresNomen.CntInADB);
-            KARTA_PROFILAKTIKA2017: CellText := IntToStr(CollCardProf.CntInADB);
-            BLANKA_MED_NAPR: CellText := IntToStr(CollMedNapr.CntInADB);
-            BLANKA_MED_NAPR_3A: CellText := IntToStr(CollMedNapr3A.CntInADB);
-            HOSPITALIZATION: CellText := IntToStr(CollMedNaprHosp.CntInADB);
-            EXAM_LKK: CellText := IntToStr(CollMedNaprLkk.CntInADB);
-            INC_MDN: CellText := IntToStr(CollIncMdn.CntInADB);
-            INC_NAPR: CellText := IntToStr(CollIncMN.CntInADB);
-            NZIS_PLANNED_TYPE: CellText := IntToStr(CollNZIS_PLANNED_TYPE.CntInADB);
-            NZIS_QUESTIONNAIRE_RESPONSE: CellText := IntToStr(CollNZIS_QUESTIONNAIRE_RESPONSE.CntInADB);
-            NZIS_QUESTIONNAIRE_ANSWER: CellText := IntToStr(CollNZIS_QUESTIONNAIRE_ANSWER.CntInADB);
-            NZIS_DIAGNOSTIC_REPORT: CellText := IntToStr(CollNZIS_DIAGNOSTIC_REPORT.CntInADB);
-            NZIS_RESULT_DIAGNOSTIC_REPORT: CellText := IntToStr(CollNzis_RESULT_DIAGNOSTIC_REPORT.CntInADB);
-            NZIS_ANSWER_VALUE: CellText := IntToStr(CollNZIS_ANSWER_VALUE.CntInADB);
-            NzisToken: CellText := IntToStr(CollNzisToken.count);
-            Certificates: CellText := IntToStr(CollCertificates.count);
+            EXAM_BOLN_LIST: CellText := IntToStr(ADB_DM.CollEbl.CntInADB);
+            EXAM_ANALYSIS: CellText := IntToStr(ADB_DM.CollExamAnal.CntInADB);
+            EXAM_IMMUNIZATION: CellText := IntToStr(ADB_DM.CollExamImun.CntInADB);
+            PROCEDURES: CellText := IntToStr(ADB_DM.ProceduresNomenColl.CntInADB);
+            KARTA_PROFILAKTIKA2017: CellText := IntToStr(ADB_DM.CollCardProf.CntInADB);
+            BLANKA_MED_NAPR: CellText := IntToStr(ADB_DM.CollMedNapr.CntInADB);
+            BLANKA_MED_NAPR_3A: CellText := IntToStr(ADB_DM.CollMedNapr3A.CntInADB);
+            HOSPITALIZATION: CellText := IntToStr(ADB_DM.CollMedNaprHosp.CntInADB);
+            EXAM_LKK: CellText := IntToStr(ADB_DM.CollMedNaprLkk.CntInADB);
+            INC_MDN: CellText := IntToStr(ADB_DM.CollIncMdn.CntInADB);
+            INC_NAPR: CellText := IntToStr(ADB_DM.CollIncMN.CntInADB);
+            NZIS_PLANNED_TYPE: CellText := IntToStr(ADB_DM.CollNZIS_PLANNED_TYPE.CntInADB);
+            NZIS_QUESTIONNAIRE_RESPONSE: CellText := IntToStr(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.CntInADB);
+            NZIS_QUESTIONNAIRE_ANSWER: CellText := IntToStr(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.CntInADB);
+            NZIS_DIAGNOSTIC_REPORT: CellText := IntToStr(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.CntInADB);
+            NZIS_RESULT_DIAGNOSTIC_REPORT: CellText := IntToStr(ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.CntInADB);
+            NZIS_ANSWER_VALUE: CellText := IntToStr(ADB_DM.CollNZIS_ANSWER_VALUE.CntInADB);
+            NzisToken: CellText := IntToStr(ADB_DM.CollNzisToken.count);
+            Certificates: CellText := IntToStr(ADB_DM.CollCertificates.count);
             Asp_Addres: CellText := IntToStr(FNasMesto.addresColl.CntInADB);
-            Asp_OtherDoctor: CellText := IntToStr(CollOtherDoctor.CntInADB);
+            Asp_OtherDoctor: CellText := IntToStr(ADB_DM.CollOtherDoctor.CntInADB);
           end;
         end
         else
@@ -21048,9 +21707,9 @@ begin
           case TTablesTypeHip(data.index) of
             Asp_PL_NZOK:
             begin
-              if CollPatPis.Count > 0 then
+              if ADB_DM.CollPatPis.Count > 0 then
               begin
-                CellText := Format('УИН: %s   %d', [CollPatPis.uin, CollPatPis.Count]);
+                CellText := Format('РЈРРќ: %s   %d', [ADB_DM.CollPatPis.uin, ADB_DM.CollPatPis.Count]);
               end;
             end;
           end;
@@ -21077,14 +21736,14 @@ begin
   if node = nil then Exit;
   data := vtrGraph.GetNodeData(node);
   case data.vid of
-    vvCl132:// може да е преглед, мдн, ваксина
+    vvCl132:// РјРѕР¶Рµ РґР° Рµ РїСЂРµРіР»РµРґ, РјРґРЅ, РІР°РєСЃРёРЅР°
     begin
       cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
       cl136Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping));
       cl132Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_Key));
       case cl136Key[1] of
         '1':
-        begin // ако няма преглед, значи трябва да го заплануваме
+        begin // Р°РєРѕ РЅСЏРјР° РїСЂРµРіР»РµРґ, Р·РЅР°С‡Рё С‚СЂСЏР±РІР° РґР° РіРѕ Р·Р°РїР»Р°РЅСѓРІР°РјРµ
           if cl132.FPregled <> nil then
           begin
             FmxProfForm.Pregled.DataPos := TRealPregledNewItem(cl132.FPregled).DataPos;
@@ -21109,8 +21768,8 @@ begin
         FmxProfForm.AspNomenPosData := AspectsNomFile.FPosData;
         FmxProfForm.AspNomenHipBuf := AspectsNomHipFile.Buf;
         FmxProfForm.AspNomenHipPosData := AspectsNomHipFile.FPosData;
-        FmxProfForm.AspAdbBuf := AspectsHipFile.Buf;
-        FmxProfForm.AspAdbPosData := AspectsHipFile.FPosData;
+        FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
+        FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
       end;
 
 
@@ -21250,23 +21909,23 @@ begin
     0:
     begin
       case data.index of
-        -1: CellText := 'минали';
-        -2: CellText := 'текущи';
-        -3: CellText := 'бъдещи';
+        -1: CellText := 'РјРёРЅР°Р»Рё';
+        -2: CellText := 'С‚РµРєСѓС‰Рё';
+        -3: CellText := 'Р±СЉРґРµС‰Рё';
 
       else
         case data.vid of
           vvNone:
           begin
-            CellText := 'Графици';
+            CellText := 'Р“СЂР°С„РёС†Рё';
           end;
           vvCl132:
           begin
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
           end;
           vvPr001:
           begin
@@ -21277,14 +21936,14 @@ begin
             end;
             dataCL132 := vtrGraph.GetNodeData(node.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Description));
+            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
             if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
             begin
               cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_cl028));
+              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
             end;
           end;
           vvCL088:
@@ -21292,30 +21951,30 @@ begin
             dataPr001 := vtrGraph.GetNodeData(node.Parent);
             dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
             dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
             dataPr001 := vtrGraph.GetNodeData(node.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL134_Description));
+            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
           end;
           vvPatient:
           begin
-            pat := CollPatGR.Items[data.index];
-            CellText := pat.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_LNAME));
+            pat := ADB_DM.ACollPatGR.Items[data.index];
+            CellText := pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_FNAME));
+            CellText := CellText + ' ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_SNAME));
+            CellText := CellText + ' ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_LNAME));
           end;
         end;
       end;
@@ -21323,52 +21982,52 @@ begin
     1:
     begin
       case data.index of
-        -1: ;//CellText := 'минали';
-        -2: //CellText := 'текущи';
+        -1: ;//CellText := 'РјРёРЅР°Р»Рё';
+        -2: //CellText := 'С‚РµРєСѓС‰Рё';
         begin
           if data.DataPos <> MaxInt then
           begin
             dataPat := vtrGraph.GetNodeData(node.Parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
           end;
         end;
-        -3: ;//CellText := 'бъдещи';
+        -3: ;//CellText := 'Р±СЉРґРµС‰Рё';
 
       else
         case data.vid of
           vvnone:
           begin
-            CellText := 'Брой пациенти: ' + inttostr(node.ChildCount);
+            CellText := 'Р‘СЂРѕР№ РїР°С†РёРµРЅС‚Рё: ' + inttostr(node.ChildCount);
           end;
           vvPatient:
           begin
             dataPat := vtrGraph.GetNodeData(node);
-            pat := CollPatGR.Items[dataPat.index];
-            CellText := 'ЕГН ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
+            CellText := 'Р•Р“Рќ ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
           end;
           vvCl132:
           begin
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             CellText := DateToStr(pat.lstGraph[data.index].startDate) + ' - ' + DateToStr(pat.lstGraph[data.index].endDate);
             cl132 := pat.lstGraph[data.index].Cl132;
-            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL132_CL136_Mapping));
+            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL132_CL136_Mapping));
             case cl132_CL136[1] of
               '1':
               begin
                 if cl132.FPregled <> nil then
                 begin
-                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
+                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
                   CellText := DateToStr(strtDate) + #13#10 + CellText;
                 end;
               end;
             else
               begin
                 pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
+                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
               end;
             end;
           end;
@@ -21381,18 +22040,18 @@ begin
             end;
             dataCL132 := vtrGraph.GetNodeData(node.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Activity_ID));
+            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
 
             if pr001.CL142 <> nil then
             begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_nhif_code));
+              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
             end;
             if pr001.FExamAnal <> nil then
             begin
-              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_DATA));
+              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_DATA));
               CellText := DateToStr(strtDate) + #13#10 + CellText;
             end;
           end;
@@ -21401,28 +22060,28 @@ begin
             dataPr001 := vtrGraph.GetNodeData(node.Parent);
             dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
             dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
             dataPr001 := vtrGraph.GetNodeData(node.Parent);
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := CollPatGR.Items[dataPat.index];
+            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL134_CL028))[1] of
-              '1': CellText := 'Количествено представяне';
-              '2': CellText := 'Категоризация по номенклатура';
-              '3': CellText := 'Описателен метод';
-              '4': CellText := 'Конкретна дата';
-              '5': CellText := 'Положително или отрицателно';
+            case cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
+              '1': CellText := 'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
+              '2': CellText := 'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
+              '3': CellText := 'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
+              '4': CellText := 'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
+              '5': CellText := 'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
             end;
           end;
         end;
@@ -21435,20 +22094,20 @@ begin
         vvPatient:
         begin
           dataPat := vtrGraph.GetNodeData(node);
-          pat := CollPatGR.Items[dataPat.index];
-          CellText := 'има общо: ' + IntToStr(pat.FPregledi.Count) + ' прегледа';
+          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
+          CellText := 'РёРјР° РѕР±С‰Рѕ: ' + IntToStr(pat.FPregledi.Count) + ' РїСЂРµРіР»РµРґР°';
         end;
         vvCL088:
         begin
           dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-          pat := CollPatGR.Items[dataPat.index];
+          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
           dataPr001 := vtrGraph.GetNodeData(node.Parent);
           dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
           cl132 := pat.lstGraph[dataCL132.index].Cl132;
           pr001 := cl132.FListPr001[dataPr001.index];
           CL142 := pr001.CL142;
           cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_cl028));
+          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
         end;
         vvPr001:
         begin
@@ -21459,15 +22118,15 @@ begin
             end;
           dataCL132 := vtrGraph.GetNodeData(node.Parent);
           dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-          pat := CollPatGR.Items[dataPat.index];
+          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
           cl132 := pat.lstGraph[dataCL132.index].Cl132;
           pr001 := cl132.FListPr001[data.index];
           begin
-            case pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Nomenclature))[5] of
-              '2': CellText := 'Изследвания';
-              '0': CellText := 'Дейност по профилактика';
-              '3': CellText := 'Въпроси';
-              '8': CellText := 'Имунизации';
+            case pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
+              '2': CellText := 'РР·СЃР»РµРґРІР°РЅРёСЏ';
+              '0': CellText := 'Р”РµР№РЅРѕСЃС‚ РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°';
+              '3': CellText := 'Р’СЉРїСЂРѕСЃРё';
+              '8': CellText := 'РРјСѓРЅРёР·Р°С†РёРё';
             end;
           end;
         end;
@@ -21475,19 +22134,19 @@ begin
         begin
           dataPeriod := vtrGraph.GetNodeData(node.Parent);
           dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-          pat := CollPatGR.Items[dataPat.index];
+          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
           case dataPeriod.index of
-            -1: //минали
+            -1: //РјРёРЅР°Р»Рё
             begin
               CellText := '++' + inttostr(DaysBetween(pat.lstGraph[data.index].endDate, UserDate));
             end;
-            -2: //текущи
+            -2: //С‚РµРєСѓС‰Рё
             begin
               cl132 := pat.lstGraph[data.index].Cl132;
 
               CellText := '+' + inttostr(DaysBetween(pat.lstGraph[data.index].endDate, UserDate));
             end;
-            -3: //бъдещи
+            -3: //Р±СЉРґРµС‰Рё
             begin
               CellText := '-' + inttostr(DaysBetween(pat.lstGraph[data.index].startDate, UserDate));
             end;
@@ -21522,23 +22181,23 @@ begin
     0:
     begin
       case data.index of
-        -1: CellText := 'минали';
-        -2: CellText := 'текущи';
-        -3: CellText := 'бъдещи';
+        -1: CellText := 'РјРёРЅР°Р»Рё';
+        -2: CellText := 'С‚РµРєСѓС‰Рё';
+        -3: CellText := 'Р±СЉРґРµС‰Рё';
 
       else
         case data.vid of
           vvNone:
           begin
-            CellText := 'Графици';
+            CellText := 'Р“СЂР°С„РёС†Рё';
           end;
           vvCl132:
           begin
             //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
             //pat := lstPatGraph[dataPat.index];
             cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
           end;
           vvPr001:
           begin
@@ -21553,11 +22212,11 @@ begin
             dataCL132 := vtrGraph.GetNodeData(node.Parent);
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Description));
+            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
             if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
             begin
               cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_cl028));
+              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
             end;
             //else  if pr001.CL133 <> TCL133.CL133_none  then
 //            begin
@@ -21580,7 +22239,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -21591,14 +22250,14 @@ begin
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL134_Description));
+            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
           end;
           vvPatient:
           begin
             //pat := lstPatGraph[data.index];
-            CellText := FmxProfForm.Patient.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PatientNew_LNAME));
+            CellText := FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_FNAME));
+            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_SNAME));
+            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_LNAME));
           end;
         end;
       end;
@@ -21606,24 +22265,24 @@ begin
     1:
     begin
       case data.index of
-        -1: ;//CellText := 'минали';
-        -2: //CellText := 'текущи';
+        -1: ;//CellText := 'РјРёРЅР°Р»Рё';
+        -2: //CellText := 'С‚РµРєСѓС‰Рё';
         begin
           if data.DataPos <> MaxInt then
           begin
             cl132 := FmxProfForm.Patient.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
           end;
         end;
-        -3: ;//CellText := 'бъдещи';
+        -3: ;//CellText := 'Р±СЉРґРµС‰Рё';
 
       else
         case data.vid of
           vvPatient:
           begin
             //pat := lstPatGraph[data.index];
-            CellText := 'ЕГН ' + FmxProfForm.Patient.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+            CellText := 'Р•Р“Рќ ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
           end;
           vvCl132:
           begin
@@ -21631,14 +22290,14 @@ begin
             //pat := lstPatGraph[dataPat.index];
             CellText := DateToStr(FmxProfForm.Patient.lstGraph[data.index].startDate) + ' - ' + DateToStr(FmxProfForm.Patient.lstGraph[data.index].endDate);
             cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL132_CL136_Mapping));
+            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL132_CL136_Mapping));
             //if cl132_CL136 = '1' then
             case cl132_CL136[1] of
               '1':
               begin
                 if cl132.FPregled <> nil then
                 begin
-                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
+                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
                   CellText := DateToStr(strtDate) + #13#10 + CellText;
                 end;
               end;
@@ -21653,7 +22312,7 @@ begin
             else
               begin
                 pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
+                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
               end;
             end;
           end;
@@ -21671,15 +22330,15 @@ begin
             pr001 := cl132.FListPr001[data.index];
             //if pr001.FExamAnal <> nil then
 //              Exit;
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Activity_ID));
+            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
 
             if pr001.CL142 <> nil then
             begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_nhif_code));
+              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
             end;
             if pr001.FExamAnal <> nil then
             begin
-              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_DATA));
+              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_DATA));
               CellText := DateToStr(strtDate) + #13#10 + CellText;
             end;
           end;
@@ -21693,7 +22352,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -21704,12 +22363,12 @@ begin
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL134_CL028))[1] of
-              '1': CellText := 'Количествено представяне';
-              '2': CellText := 'Категоризация по номенклатура';
-              '3': CellText := 'Описателен метод';
-              '4': CellText := 'Конкретна дата';
-              '5': CellText := 'Положително или отрицателно';
+            case cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
+              '1': CellText := 'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
+              '2': CellText := 'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
+              '3': CellText := 'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
+              '4': CellText := 'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
+              '5': CellText := 'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
             end;
           end;
         end;
@@ -21721,7 +22380,7 @@ begin
         vvPatient:
         begin
           //pat := lstPatGraph[data.index];
-          CellText := 'има общо: ' + IntToStr(FmxProfForm.Patient.FPregledi.Count) + ' прегледа';
+          CellText := 'РёРјР° РѕР±С‰Рѕ: ' + IntToStr(FmxProfForm.Patient.FPregledi.Count) + ' РїСЂРµРіР»РµРґР°';
         end;
         vvCL088:
         begin
@@ -21733,7 +22392,7 @@ begin
           pr001 := cl132.FListPr001[dataPr001.index];
           CL142 := pr001.CL142;
           cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_cl028));
+          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
         end;
         vvPr001:
         begin
@@ -21750,11 +22409,11 @@ begin
           //if pr001.CL050 <> nil then
           begin
             //CellText := pr001.getAnsiStringMap(bufNom, PR001Coll.posData, word(PR001_Nomenclature));
-            case pr001.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Nomenclature))[5] of
-              '2': CellText := 'Изследвания';
-              '0': CellText := 'Дейност по профилактика';
-              '3': CellText := 'Въпроси';
-              '8': CellText := 'Имунизации';
+            case pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
+              '2': CellText := 'РР·СЃР»РµРґРІР°РЅРёСЏ';
+              '0': CellText := 'Р”РµР№РЅРѕСЃС‚ РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°';
+              '3': CellText := 'Р’СЉРїСЂРѕСЃРё';
+              '8': CellText := 'РРјСѓРЅРёР·Р°С†РёРё';
             end;
           end;
         end;
@@ -21764,11 +22423,11 @@ begin
           //pat := lstPatGraph[dataPat.index];
           dataPeriod := vtrGraph.GetNodeData(node.Parent);
           case dataPeriod.index of
-            -1: //минали
+            -1: //РјРёРЅР°Р»Рё
             begin
               CellText := '++' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
             end;
-            -2: //текущи
+            -2: //С‚РµРєСѓС‰Рё
             begin
               cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
               //if cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping)) = '1' then
@@ -21790,7 +22449,7 @@ begin
 //              end;
               CellText := '+' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
             end;
-            -3: //бъдещи
+            -3: //Р±СЉРґРµС‰Рё
             begin
               CellText := '-' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].startDate, UserDate));
             end;
@@ -21848,6 +22507,7 @@ procedure TfrmSuperHip.vtrLinkOptionsChange(Sender: TBaseVirtualTree;
 var
   data: PAspRec;
 begin
+  exit;
   if Node = nil then
     Node := vtrLinkOptions.GetFirstSelected();
   if Node = nil then Exit;
@@ -21863,6 +22523,39 @@ begin
 //  end;
 end;
 
+procedure TfrmSuperHip.vtrLinkOptionsChecking(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; var NewState: TCheckState; var Allowed: Boolean);
+var
+  CollRoot: PVirtualNode;
+  Coll: TBaseCollection;
+  propIndex: Word;
+  colIndex: Integer;
+  data: PAspRec;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  data := Pointer(PByte(Node) + lenNode);
+  case data.vid of
+    vvFieldSearchGridOption:
+    begin
+      CollRoot := Node.Parent.Parent;
+      Coll := GetCollectionFromRoot(CollRoot);
+      Coll.ApplyVisibilityFromTree(CollRoot);
+      propIndex := node.index + 1;
+      colIndex := node.Dummy;
+      if NewState = csCheckedNormal then
+      begin
+        grdSearch.Columns[propIndex].Visible := true;
+      end
+      else
+      begin
+        grdSearch.Columns[propIndex].Visible := false;
+      end;
+    end;
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( 'check ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
 procedure TfrmSuperHip.vtrLinkOptionsDragAllowed(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
 begin
@@ -21873,22 +22566,42 @@ procedure TfrmSuperHip.vtrLinkOptionsDragDrop(Sender: TBaseVirtualTree;
   Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
   Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
 var
+  SrcRoot: PVirtualNode;
+  Coll: TBaseCollection;
   pSource, pTarget: PVirtualNode;
   attMode: TVTNodeAttachMode;
 begin
-  pSource := vtrLinkOptions.GetFirstSelected;
+  SrcRoot := GetRootForNode(Sender.FocusedNode);
+  if SrcRoot = nil then Exit;
+
+  // С‚РѕС‡РЅР°С‚Р° РєРѕР»РµРєС†РёСЏ
+  Coll := GetCollectionFromRoot(SrcRoot);
+  if Coll = nil then Exit;
+
+  pSource := TVirtualStringTree(Source).FocusedNode;
   pTarget := Sender.DropTargetNode;
 
   case Mode of
     dmNowhere: attMode := amNoWhere;
     dmAbove: attMode := amInsertBefore;
-    dmBelow: attMode := amInsertAfter;
-    dmOnNode: attMode := amAddChildLast;
+    dmOnNode, dmBelow: attMode := amInsertAfter;
   end;
 
-  vtrLinkOptions.MoveTo(pSource, pTarget, attMode, False);
-  //vtrPregledPat.MoveTo(vPrevNode, vNode, amInsertAfter, false);
+  Sender.MoveTo(pSource, pTarget, attMode, False);
+
+  // РѕР±РЅРѕРІРё РјР°СЃРёРІР° Р·Р° РєРѕР»РѕРЅРєРёС‚Рµ
+  Coll.UpdateOrderArrayFromTree(SrcRoot);
+
+
+  // СЂРµС„СЂРµС€ РЅР° РіСЂРёРґР°, СЃР°РјРѕ Р°РєРѕ СЂР°Р±РѕС‚Рё СЃ С‚Р°Р·Рё РєРѕР»РµРєС†РёСЏ
+  if grdSearch.Tag = Integer(Coll) then
+  begin
+    Coll.OrderFieldsSearch1(grdSearch);
+  end;
+
+  Effect := DROPEFFECT_MOVE;
 end;
+
 
 procedure TfrmSuperHip.vtrLinkOptionsDragDropFMX(Sender: TObject;
   var IsDropted: Boolean);
@@ -21936,13 +22649,18 @@ end;
 procedure TfrmSuperHip.vtrLinkOptionsDragOver(Sender: TBaseVirtualTree;
   Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint;
   Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
+var
+  SrcNode, TgtNode: PVirtualNode;
 begin
-  //if DragObj <> nil then
-//  begin
-//    DragObj.DropMode := Mode;
-//  end
-//  else
-//    Caption := vtrLinkOptions.Text[vtrLinkOptions.GetFirstSelected, 0];
+  SrcNode := Sender.FocusedNode;
+  TgtNode := Sender.DropTargetNode;
+
+  if (SrcNode = nil) or (TgtNode = nil) and (SrcNode = TgtNode) then Exit;
+
+  // СЃР°РјРѕ РІ СЂР°РјРєРёС‚Рµ РЅР° РµРґРЅР° Рё СЃСЉС‰Р° РєРѕР»РµРєС†РёСЏ
+  if GetRootForNode(SrcNode) <> GetRootForNode(TgtNode) then Exit;
+
+  // Р”РѕРїСѓСЃРєР°РЅРµ РЅР° drop
   Accept := True;
 end;
 
@@ -21982,8 +22700,8 @@ begin
         begin
           dataParent := Pointer(PByte(Node.Parent.parent) + lenNode);
           case dataParent.vid of
-            vvPregledRoot: CellText := CollPregled.DisplayName(node.Dummy);
-            vvPatientNewRoot: CellText := CollPatient.DisplayName(node.Dummy);
+            vvPregledNewRoot: CellText := ADB_DM.CollPregled.DisplayName(node.Dummy - 1);
+            vvPatientNewRoot: CellText := ADB_DM.CollPatient.DisplayName(node.Dummy - 1);
           end;
 
         end
@@ -21995,8 +22713,9 @@ begin
     end;
     1:
     begin
-      CellText := IntToStr(Data.index);
-      //CellText := format('index = %d  ;  rank = %d', [node.Dummy, Node.Index]); //IntToStr(node.Index);
+      case data.vid of
+        vvFieldSearchGridOption: CellText := format('PropIndex = %d  ;  ColIndex = %d', [node.Dummy, Node.Index + 1]); //IntToStr(node.Index);
+      end;
     end;
     2:
     begin
@@ -22053,8 +22772,8 @@ begin
 
   preg1.DataPos := data1.DataPos;
   preg2.DataPos := data2.DataPos;
-  date1 := preg1.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
-  date2 := preg2.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
+  date1 := preg1.getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
+  date2 := preg2.getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
   Result := floor(date1) - floor(date2);
 end;
 
@@ -22092,17 +22811,17 @@ begin
           if FmxProfForm.Patient.CurrentGraphIndex < 0 then Exit;
           if FmxProfForm.Patient.CurrentGraphIndex > FmxProfForm.Patient.lstGraph.Count - 1 then  Exit;
 
-          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-          CellText := CellText + '   ' + 'има да се правят толкова неща';
+          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+          CellText := CellText + '   ' + 'РёРјР° РґР° СЃРµ РїСЂР°РІСЏС‚ С‚РѕР»РєРѕРІР° РЅРµС‰Р°';
           //for i := 0 to FmxProfForm.Patient.lstGraph.Count - 1 do
 //          begin
 //            gr := FmxProfForm.Patient.lstGraph[i];
-//            if (Date <= gr.endDate) and (Date >= gr.startDate) then  // текущи
+//            if (Date <= gr.endDate) and (Date >= gr.startDate) then  // С‚РµРєСѓС‰Рё
 //            begin
 //              if FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then
 //              begin
 //                CellText := FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-//                CellText := CellText + '   ' + 'има да се правят толкова неща';
+//                CellText := CellText + '   ' + 'РёРјР° РґР° СЃРµ РїСЂР°РІСЏС‚ С‚РѕР»РєРѕРІР° РЅРµС‰Р°';
 //                Exit;
 //              end;
 //            end;
@@ -22120,8 +22839,8 @@ begin
     begin
       case Column of
 
-        0: CellText := DateTimeToStr(CollPregled.getDateMap(data.DataPos, word(PregledNew_START_DATE)));
-        1: CellText := IntToStr(CollPregled.getIntMap(data.DataPos, word(PregledNew_AMB_LISTN)));
+        0: CellText := DateTimeToStr(ADB_DM.CollPregled.getDateMap(data.DataPos, word(PregledNew_START_DATE)));
+        1: CellText := IntToStr(ADB_DM.CollPregled.getIntMap(data.DataPos, word(PregledNew_AMB_LISTN)));
         2:
         begin
           vPreg := Pvirtualnode(data.index);
@@ -22131,25 +22850,24 @@ begin
             dataDiag := pointer(PByte(vDiag) + lenNode);
             if dataDiag.vid = vvDiag then
             begin
-              DiagTemp.DataPos := dataDiag.DataPos;
-              mkb := DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Diagnosis_code_CL011));
+              mkb := Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011));
               CellText := CellText + ',' + mkb;
             end;
             vDiag := vDiag.NextSibling;
           end;
         end;
-        3: CellText := CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_NRN_LRN));
+        3: CellText := ADB_DM.CollPregled.getAnsiStringMap(data.DataPos, word(PregledNew_NRN_LRN));
         //4: CellText := preg.MedNaprStr;
         5:
         begin
-          logicalPregled := TlogicalPregledNewSet(CollPregled.getLogical40Map(data.DataPos, word(PregledNew_Logical)));
+          logicalPregled := TlogicalPregledNewSet(ADB_DM.CollPregled.getLogical40Map(data.DataPos, word(PregledNew_Logical)));
           if TLogicalPregledNew.IS_PRIMARY in logicalPregled then
           begin
-            CellText := 'Първичен';
+            CellText := 'РџСЉСЂРІРёС‡РµРЅ';
           end
           else
           begin
-            CellText := 'Вторичен';
+            CellText := 'Р’С‚РѕСЂРёС‡РµРЅ';
           end;
         end;
       end;
@@ -22225,17 +22943,17 @@ begin
         0:
         begin
           //AnalTemp.DataPos := data.DataPos;
-          CellText := CollAnalsNew.getAnsiStringMap(data.DataPos, word(AnalsNew_AnalName));
+          CellText := ADB_DM.CollAnalsNew.getAnsiStringMap(data.DataPos, word(AnalsNew_AnalName));
         end;
         1:
         begin
           AnalTemp.DataPos := data.DataPos;
-          posCl22 := AnalTemp.getcardMap(CollAnalsNew.Buf, CollAnalsNew.posData, word(AnalsNew_CL022_pos));
+          posCl22 := AnalTemp.getcardMap(ADB_DM.CollAnalsNew.Buf, ADB_DM.CollAnalsNew.posData, word(AnalsNew_CL022_pos));
           if posCl22 > 0 then
           begin
             //Cl022temp.DataPos := posCl22;
-            CellText := CL022Coll.getAnsiStringMap(posCl22, word(CL022_Key));
-            CellText := CellText + ' / ' + CL022Coll.getAnsiStringMap(posCl22, word(CL022_nhif_code))
+            CellText := ADB_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_Key));
+            CellText := CellText + ' / ' + ADB_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_nhif_code))
           end;
         end;
       end;
@@ -22282,9 +23000,9 @@ begin
     AddCl('CL1000');
   end
   else
-  if ActiveSubButton.Description = 'Ексел' then
+  if ActiveSubButton.Description = 'Р•РєСЃРµР»' then
   begin
-    ImportPR001(PR001Coll);
+    ImportPR001(ADB_DM.PR001Coll);
   end
   else
   if ActiveSubButton.Description = 'XML' then
@@ -22364,7 +23082,7 @@ begin
         begin
           //pgcWork.ActivePage := tsXML;
           InternalChangeWorkPage(tsXML);
-          ListNomenNzisNames[data.index].xmlStream.Position := 0;
+           Adb_DM.ListNomenNzisNames[data.index].xmlStream.Position := 0;
           //oXml := TXMLDocument.Create(self);
           try
             //oXml.LoadFromStream(ListNomenNzisNames[data.index].xmlStream);
@@ -22373,7 +23091,7 @@ begin
 //            ListNomenNzisNames[data.index].xmlStream.Size := 0;
 //            oXml.SaveToStream(ListNomenNzisNames[data.index].xmlStream);
 //            ListNomenNzisNames[data.index].xmlStream.Position := 0;
-            syndtXML.Lines.LoadFromStream(ListNomenNzisNames[data.index].xmlStream, TEncoding.UTF8);
+            syndtXML.Lines.LoadFromStream( Adb_DM.ListNomenNzisNames[data.index].xmlStream, TEncoding.UTF8);
           finally
             //if oXml.Active then
 //            begin
@@ -22387,14 +23105,14 @@ begin
         begin
           //pgcWork.ActivePage := tsGrid;
           InternalChangeWorkPage(tsGrid);
-          ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
-          mmotest.Lines.Assign(ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+           Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
+          mmotest.Lines.Assign(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
         end;
         79, 80:
         begin
           grdNom.ReadOnly := False;
           InternalChangeWorkPage(tsGrid);
-          ListNomenNzisNames[data.index].AspColl.ShowGrid(grdNom);
+          Adb_DM.ListNomenNzisNames[data.index].AspColl.ShowGrid(grdNom);
         end;
       end;
 
@@ -22405,7 +23123,7 @@ begin
       InternalChangeWorkPage(tsGrid);
       DataVPregledi := data;
       //ShowDynPR001;
-      PR001Coll.ShowGrid(grdNom);
+      ADB_DM.PR001Coll.ShowGrid(grdNom);
     end;
     vvNomenNzisUpdate:
     begin
@@ -22419,7 +23137,7 @@ begin
         begin
           //pgcWork.ActivePage := tsXML;
           InternalChangeWorkPage(tsXML);
-          ListNomenNzisNames[data.index].xmlStream.Position := 0;
+          Adb_DM.ListNomenNzisNames[data.index].xmlStream.Position := 0;
           //oXml := TXMLDocument.Create(self);
           try
             //oXml.LoadFromStream(ListNomenNzisNames[data.index].xmlStream);
@@ -22428,7 +23146,7 @@ begin
 //            ListNomenNzisNames[data.index].xmlStream.Size := 0;
 //            oXml.SaveToStream(ListNomenNzisNames[data.index].xmlStream);
 //            ListNomenNzisNames[data.index].xmlStream.Position := 0;
-            syndtXML.Lines.LoadFromStream(ListNomenNzisNames[data.index].xmlStream, TEncoding.UTF8);
+            syndtXML.Lines.LoadFromStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, TEncoding.UTF8);
           finally
             //if oXml.Active then
 //            begin
@@ -22481,7 +23199,7 @@ begin
     end;
   end
   else
-  if ActiveSubButton.Description = 'Ексел' then
+  if ActiveSubButton.Description = 'Р•РєСЃРµР»' then
   begin
     ButonVisible := True;
     imageIndex := 57;
@@ -22571,7 +23289,7 @@ begin
 //        end;
 //
 //      end;
-      TempItem := NomenNzisColl.items[data.index];
+      TempItem := ADB_DM.NomenNzisColl.items[data.index];
       New(TempItem.PRecord);
       TempItem.PRecord.setProp := [NomenNzis_NomenName, NomenNzis_NomenID];
       TempItem.PRecord.NomenName := '';
@@ -22624,24 +23342,24 @@ begin
         begin
           if data.index < 0 then
           begin
-            CellText := 'НЗИС номенклатури CL...';
+            CellText := 'РќР—РРЎ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂРё CL...';
             Exit;
           end;
          // CellText := Format('CL%.*d', [3, data.index]) ;
-          if NomenNzisColl.items[data.index].PRecord = nil then
+          if ADB_DM.NomenNzisColl.items[data.index].PRecord = nil then
           begin
-            CellText := NomenNzisColl.items[data.index].getAnsiStringMap(NomenNzisColl.Buf, NomenNzisColl.posData, word(NomenNzis_NomenID));
+            CellText := ADB_DM.NomenNzisColl.items[data.index].getAnsiStringMap(ADB_DM.NomenNzisColl.Buf, ADB_DM.NomenNzisColl.posData, word(NomenNzis_NomenID));
           end
           else
           begin
-            CellText := NomenNzisColl.items[data.index].PRecord.NomenID;
+            CellText := ADB_DM.NomenNzisColl.items[data.index].PRecord.NomenID;
           end;
         end;
         1:
         begin
           if data.index < 0 then
           begin
-            CellText := IntToStr(ListNomenNzisNames.Count);
+            CellText := IntToStr( Adb_DM.ListNomenNzisNames.Count);
             Exit;
           end;
 
@@ -22653,7 +23371,7 @@ begin
     end;
     vvNone: // NomenNzis_NomenID
     begin
-      CellText := NomenNzisColl.items[data.index].getAnsiStringMap(NomenNzisColl.Buf, NomenNzisColl.posData, word(NomenNzis_NomenID));
+      CellText := ADB_DM.NomenNzisColl.items[data.index].getAnsiStringMap(ADB_DM.NomenNzisColl.Buf, ADB_DM.NomenNzisColl.posData, word(NomenNzis_NomenID));
     end;
     vvNzisBiznes:
     begin
@@ -22662,7 +23380,7 @@ begin
         begin
           if data.index < 0 then
           begin
-            CellText := 'НЗИС Бизнес правила';
+            CellText := 'РќР—РРЎ Р‘РёР·РЅРµСЃ РїСЂР°РІРёР»Р°';
             Exit;
           end;
 
@@ -22695,13 +23413,13 @@ begin
     vvNomenNzisUpdate:
     begin
       dataParent := vtrNomenNzis.GetNodeData(Node.Parent);
-      if NomenNzisColl.items[dataParent.index].PRecord = nil then
+      if ADB_DM.NomenNzisColl.items[dataParent.index].PRecord = nil then
       begin
-        CellText := NomenNzisColl.items[dataParent.index].getAnsiStringMap(NomenNzisColl.Buf, NomenNzisColl.posData, word(NomenNzis_NomenID));
+        CellText := ADB_DM.NomenNzisColl.items[dataParent.index].getAnsiStringMap(ADB_DM.NomenNzisColl.Buf, ADB_DM.NomenNzisColl.posData, word(NomenNzis_NomenID));
       end
       else
       begin
-        CellText := NomenNzisColl.items[dataParent.index].PRecord.NomenID;
+        CellText := ADB_DM.NomenNzisColl.items[dataParent.index].PRecord.NomenID;
       end;
     end;
   end;
@@ -22731,7 +23449,7 @@ begin
 //      FLenData := pCardinalData^;
 //      dataPosition :=  FPosData + FLenData;
 
-      TempItem := NomenNzisColl.items[data.index];
+      TempItem := ADB_DM.NomenNzisColl.items[data.index];
       New(TempItem.PRecord);
       TempItem.PRecord.setProp := [NomenNzis_NomenName, NomenNzis_NomenID];
       TempItem.PRecord.NomenName := '';
@@ -22785,21 +23503,21 @@ begin
   case data.vid of
     vvOptionRoot:
     begin
-      CellText := 'Настройки';
+      CellText := 'РќР°СЃС‚СЂРѕР№РєРё';
     end;
     vvOptionDB:
     begin
-      CellText := 'Бази данни';
+      CellText := 'Р‘Р°Р·Рё РґР°РЅРЅРё';
     end;
     vvOptionGrids:
     begin
-      CellText := 'Таблични изгледи';
+      CellText := 'РўР°Р±Р»РёС‡РЅРё РёР·РіР»РµРґРё';
     end;
     vvOptionGridSearch:
     begin
       if data.index < 0 then
       begin
-        CellText := 'Изглед при търсене';
+        CellText := 'РР·РіР»РµРґ РїСЂРё С‚СЉСЂСЃРµРЅРµ';
       end
       else
       begin
@@ -22820,7 +23538,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'не се редактира';
+          CellText := 'РЅРµ СЃРµ СЂРµРґР°РєС‚РёСЂР°';
         end;
         1:
         begin
@@ -22833,7 +23551,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'някакъв стринг';
+          CellText := 'РЅСЏРєР°РєСЉРІ СЃС‚СЂРёРЅРі';
         end;
         1:
         begin
@@ -22846,7 +23564,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'комбо от стрингове';
+          CellText := 'РєРѕРјР±Рѕ РѕС‚ СЃС‚СЂРёРЅРіРѕРІРµ';
         end;
         1:
         begin
@@ -22859,7 +23577,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'число';
+          CellText := 'С‡РёСЃР»Рѕ';
         end;
         1:
         begin
@@ -22873,7 +23591,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'комбо от числа';
+          CellText := 'РєРѕРјР±Рѕ РѕС‚ С‡РёСЃР»Р°';
         end;
         1:
         begin
@@ -22886,7 +23604,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'Мемо';
+          CellText := 'РњРµРјРѕ';
         end;
         1:
         begin
@@ -22899,7 +23617,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'дата';
+          CellText := 'РґР°С‚Р°';
         end;
         1:
         begin
@@ -22912,7 +23630,7 @@ begin
       case Column of
         0:
         begin
-          CellText := 'чекче';
+          CellText := 'С‡РµРєС‡Рµ';
         end;
         1:
         begin
@@ -22966,7 +23684,7 @@ begin
     begin
       Stopwatch := TStopwatch.StartNew;
       vtrMinaliPregledi.Tag := Cardinal(Node);
-      Adb_DM.AdbHip := AspectsHipFile;
+      //Adb_DM.AdbMain := AspectsHipFile;
       Adb_DM.AdbLink := AspectsLinkPatPregFile;
       XmlStream := TXmlStream.Create;
       //if Fdm.IsGP then
@@ -23021,7 +23739,7 @@ begin
 
       GenerateNzisXml(node);
 
-      ShowPregledFMX(dataPat, data, node); //  показване на динамичната форма
+      ShowPregledFMX(dataPat, data, node); //  РїРѕРєР°Р·РІР°РЅРµ РЅР° РґРёРЅР°РјРёС‡РЅР°С‚Р° С„РѕСЂРјР°
 
       //Elapsed := Stopwatch.Elapsed;
       //Caption := FloatToStr(Elapsed.TotalMilliseconds);
@@ -23114,8 +23832,8 @@ end;
 //    vvPatientRoot:
 //    begin
 //      case Column of
-//        0: CellText := 'Прегледи по пациенти';
-//        1: CellText := format('%d бр.',[vPregledi.ChildCount]) ;
+//        0: CellText := 'РџСЂРµРіР»РµРґРё РїРѕ РїР°С†РёРµРЅС‚Рё';
+//        1: CellText := format('%d Р±СЂ.',[vPregledi.ChildCount]) ;
 //      end;
 //    end;
 //    vvPatient://pacienti
@@ -23164,8 +23882,8 @@ end;
 //    vvPregledRoot:
 //    begin
 //      case Column of
-//        0: CellText := 'Прегледи';
-//        1: CellText := format('%d бр.',[vPregledi.ChildCount]) ;
+//        0: CellText := 'РџСЂРµРіР»РµРґРё';
+//        1: CellText := format('%d Р±СЂ.',[vPregledi.ChildCount]) ;
 //      end;
 //    end;
 //    vvPregled: //pregledi
@@ -23298,18 +24016,18 @@ begin
   FinderRec.LastFindedStr  := '';
   FinderRec.ACol  := Column;
   vtrPregledPat.Header.Columns[0].Text := '....';
-  vtrPregledPat.Header.Columns[1].Text := 'Детайли';
+  vtrPregledPat.Header.Columns[1].Text := 'Р”РµС‚Р°Р№Р»Рё';
   case Column of
     0:
     begin
       case data.vid of
         vvPatient:
         begin
-          vtrPregledPat.Header.Columns[Column].Text := 'ЕГН на пациент';
+          vtrPregledPat.Header.Columns[Column].Text := 'Р•Р“Рќ РЅР° РїР°С†РёРµРЅС‚';
           vtrPregledPat.Header.Columns[Column].Tag := 4;
         end;
-        vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
-        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+        vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'РЈРРќ ';
+        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'РЈРРќ ';
 
       else
         vtrPregledPat.Header.Columns[Column].Text := '....';
@@ -23330,38 +24048,38 @@ begin
           vtrPregledPat.Header.Columns[Column].Text := Format('%d   %d', [-RText.Left + p.x, RText.Top- p.y]);
           if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0])) then
           begin
-            vtrPregledPat.Header.Columns[Column].Text := 'Име на пациента';
+            vtrPregledPat.Header.Columns[Column].Text := 'РРјРµ РЅР° РїР°С†РёРµРЅС‚Р°';
             vtrPregledPat.Header.Columns[Column].Tag := 0;
           end
           else
           if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1])) then
           begin
-            vtrPregledPat.Header.Columns[Column].Text := 'Презиме на пациента';
+            vtrPregledPat.Header.Columns[Column].Text := 'РџСЂРµР·РёРјРµ РЅР° РїР°С†РёРµРЅС‚Р°';
             vtrPregledPat.Header.Columns[Column].Tag := 1;
           end
           else
           if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2])) then
           begin
-            vtrPregledPat.Header.Columns[Column].Text := 'Фамилия на пациента';
+            vtrPregledPat.Header.Columns[Column].Text := 'Р¤Р°РјРёР»РёСЏ РЅР° РїР°С†РёРµРЅС‚Р°';
             vtrPregledPat.Header.Columns[Column].Tag := 2;
           end
           else
           if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2]+ ' ' + ArrStr[3]+ ' ' + ArrStr[4])) then
           begin
-            vtrPregledPat.Header.Columns[Column].Text := 'Възраст на пациента';
+            vtrPregledPat.Header.Columns[Column].Text := 'Р’СЉР·СЂР°СЃС‚ РЅР° РїР°С†РёРµРЅС‚Р°';
             vtrPregledPat.Header.Columns[Column].Tag := 3;
           end
           else
           begin
-            vtrPregledPat.Header.Columns[Column].Text := 'Детайли';
+            vtrPregledPat.Header.Columns[Column].Text := 'Р”РµС‚Р°Р№Р»Рё';
             vtrPregledPat.Header.Columns[Column].Tag := -1;
           end
         end;
-        vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
-        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
+        vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'РЈРРќ ';
+        vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'РЈРРќ ';
         vvPregled:
         begin
-          vtrPregledPat.Header.Columns[Column].Text := 'НРН ';
+          vtrPregledPat.Header.Columns[Column].Text := 'РќР Рќ ';
           vtrPregledPat.Header.Columns[Column].Tag := 4;
         end;
       else
@@ -23390,8 +24108,8 @@ begin
       begin
         Exit;
       end;
-      egn1 := CollPatient.getAnsiStringMap(data1.DataPos, word(PatientNew_EGN));
-      egn2 := CollPatient.getAnsiStringMap(data2.DataPos, word(PatientNew_EGN));
+      egn1 := ADB_DM.CollPatient.getAnsiStringMap(data1.DataPos, word(PatientNew_EGN));
+      egn2 := ADB_DM.CollPatient.getAnsiStringMap(data2.DataPos, word(PatientNew_EGN));
       Result := CompareStr(egn2, egn1);
     end;
     spAge:
@@ -23400,8 +24118,8 @@ begin
       begin
         Exit;
       end;
-      BIRTH_DATE1 := CollPatient.getDateMap(data1.DataPos, word(PatientNew_BIRTH_DATE));
-      BIRTH_DATE2 := CollPatient.getDateMap(data2.DataPos, word(PatientNew_BIRTH_DATE));
+      BIRTH_DATE1 := ADB_DM.CollPatient.getDateMap(data1.DataPos, word(PatientNew_BIRTH_DATE));
+      BIRTH_DATE2 := ADB_DM.CollPatient.getDateMap(data2.DataPos, word(PatientNew_BIRTH_DATE));
       Result := CompareDate(BIRTH_DATE2, BIRTH_DATE1);
     end;
     spStartPreg:
@@ -23410,8 +24128,8 @@ begin
       begin
         Exit;
       end;
-      startDate1 := CollPregled.getDateMap(data1.DataPos, word(PregledNew_START_DATE));
-      startDate2 := CollPregled.getDateMap(data2.DataPos, word(PregledNew_START_DATE));
+      startDate1 := ADB_DM.CollPregled.getDateMap(data1.DataPos, word(PregledNew_START_DATE));
+      startDate2 := ADB_DM.CollPregled.getDateMap(data2.DataPos, word(PregledNew_START_DATE));
       Result := CompareDate(startDate1, startDate2);
     end;
   end;
@@ -23478,7 +24196,7 @@ begin
   //rText.Width:= w ;
   //rText.Height:= 13;
   DefaultDraw := False;
-  FilterText := edtSearhTree.Text;// 'система';
+  FilterText := edtSearhTree.Text;// 'СЃРёСЃС‚РµРјР°';
   p := AnsiUpperCase(wb.Inls.Text).IndexOf((AnsiUpperCase(FilterText)));
   if p > -1 then
   begin
@@ -23527,7 +24245,7 @@ begin
         begin
           strPred := '';
           strSled := copy(wb.ls[i], 1,  Integer(wb.ls.Objects[i]));
-          if strSled.StartsWith('н') then
+          if strSled.StartsWith('РЅ') then
             strPred := '';
         end;
 
@@ -23664,9 +24382,9 @@ begin
       case Data.vid of
         vvNZIS_PLANNED_TYPE:
         begin
-          cl132Key := CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          cl132pos := CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
           case cl136Key[1] of
             '1':
             begin
@@ -23721,9 +24439,9 @@ begin
       case Data.vid of
         vvNZIS_PLANNED_TYPE:
         begin
-          cl132Key := CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          cl132pos := CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
           planStatus := TPlanedStatusSet(Node.Dummy);
           for planStat in  planStatus do
           begin
@@ -23736,7 +24454,7 @@ begin
         end;
         vvPregled:
         begin
-          nzisStatus := CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
+          nzisStatus := ADB_DM.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
           ImageIndex := nzisStatus;
         end;
         vvDoctor, vvPerformer, vvDeput:
@@ -23824,8 +24542,8 @@ var //perf
   nasMestoPos: Cardinal;
 begin
   if node = nil then  Exit;
-  if AspectsHipFile = nil then Exit;
-  if AspectsHipFile.Buf = nil then  Exit;
+  if Adb_DM.AdbMain = nil then Exit;
+  if Adb_DM.AdbMain.Buf = nil then  Exit;
   if AspectsLinkPatPregFile = nil then Exit;
 
 
@@ -23845,44 +24563,44 @@ begin
       case data.vid of
         vvProcedures:
         begin
-          CellText := 'процедураaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ' ;
+          CellText := 'РїСЂРѕС†РµРґСѓСЂР°aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ' ;
         end;
         vvPerformer:
         begin
-          CellText := 'изпълнител ' ;
+          CellText := 'РёР·РїСЉР»РЅРёС‚РµР» ' ;
         end;
         vvDeput:
         begin
           CellText := 'zamestnik ' ;
         end;
         vvPatientNewRoot:
-          CellText := 'Пациенти ' ;
+          CellText := 'РџР°С†РёРµРЅС‚Рё ' ;
         vvPatient:
         begin
          // if data.index <> -1 then
 //          begin
 //            pat := CollPatient.Items[Data.index];
-//            CellText := 'ЕГН ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+//            CellText := 'Р•Р“Рќ ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
 //          end
 //          else
           begin
             //pat := TPatientItem(PatientColl.Add);
             //pat.DataPos := Data.DataPos;
-            patLogical := TlogicalPatientNewSet(CollPatient.getLogical40Map(data.DataPos, word(PatientNew_Logical)));
+            patLogical := TlogicalPatientNewSet(ADB_DM.CollPatient.getLogical40Map(data.DataPos, word(PatientNew_Logical)));
             if PID_TYPE_B in patLogical then
-              CellText := 'Бебе ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+              CellText := 'Р‘РµР±Рµ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
             else
             if PID_TYPE_E in patLogical then
-              CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+              CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
             else
             if PID_TYPE_L in patLogical then
-              CellText := 'ЛНЧ ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+              CellText := 'Р›РќР§ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
             else
             if PID_TYPE_S in patLogical then
-              CellText := 'ССН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+              CellText := 'РЎРЎРќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
             else
             if PID_TYPE_F in patLogical then
-              CellText := 'Ч ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
+              CellText := 'Р§ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN))
             else
           end;
         end;
@@ -23890,26 +24608,26 @@ begin
         begin
           NodePat := Node.Parent;
           DataPat := pointer(PByte(nodePat) + lenNode);
-          dateBrd := CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
-          dateMDD := CollIncMdn.getDateMap(Data.DataPos, word(INC_MDN_DATE_EXECUTION));
-          PatAge := PatientTemp.CalcAge(dateMDD, dateBrd);
-          CellText := 'МДД ' + CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_MDN_NRN));
-          CellText := CellText + '  ' + IntToStr(PatAge) + ' год.';
+          dateBrd := ADB_DM.CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
+          dateMDD := ADB_DM.CollIncMdn.getDateMap(Data.DataPos, word(INC_MDN_DATE_EXECUTION));
+          PatAge := TRealPatientNewItem.CalcAge(dateMDD, dateBrd);
+          CellText := 'РњР”Р” ' + ADB_DM.CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_MDN_NRN));
+          CellText := CellText + '  ' + IntToStr(PatAge) + ' РіРѕРґ.';
         end;
         vvIncMN:
         begin
           NodePat := Node.Parent;
           DataPat := pointer(PByte(nodePat) + lenNode);
-          dateBrd := CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
-          dateIncNapr := CollIncMN.getDateMap(Data.DataPos, word(INC_NAPR_ISSUE_DATE));
-          PatAge := PatientTemp.CalcAge(dateIncNapr, dateBrd);
-          CellText := 'Консулт. ' + CollIncMn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
-          CellText := CellText + '  ' + IntToStr(PatAge) + ' год.';
+          dateBrd := ADB_DM.CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
+          dateIncNapr := ADB_DM.CollIncMN.getDateMap(Data.DataPos, word(INC_NAPR_ISSUE_DATE));
+          PatAge := TRealPatientNewItem.CalcAge(dateIncNapr, dateBrd);
+          CellText := 'РљРѕРЅСЃСѓР»С‚. ' + ADB_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+          CellText := CellText + '  ' + IntToStr(PatAge) + ' РіРѕРґ.';
         end;
 
         vvOtherDoctor:
         begin
-          CellText := 'Изпр. ' + CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
+          CellText := 'РР·РїСЂ. ' + ADB_DM.CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
         end;
         vvPregled:
         begin
@@ -23917,10 +24635,10 @@ begin
 //          begin
 //            //preg := PregledCollFilter.Items[Data.index];
 //            CollPregled.GetFieldText(Sender, word(PregledNew_AMB_LISTN), data.index, FieldText);
-//            CellText := 'АЛ№ ' + FieldText;
+//            CellText := 'РђР›в„– ' + FieldText;
 //            if FieldText = '0' then
-//              CellText := 'АЛ№ ' + FieldText;
-//            //CellText := 'АЛ№ ' + inttostr(preg.FilterAMB_LISTN);
+//              CellText := 'РђР›в„– ' + FieldText;
+//            //CellText := 'РђР›в„– ' + inttostr(preg.FilterAMB_LISTN);
 //          end
 //          else
           begin
@@ -23946,28 +24664,28 @@ begin
               begin
                 DataPat := Sender.GetNodeData(nodePat);
               end;
-              dateBrd := CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
+              dateBrd := ADB_DM.CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
 
-              datePreg := CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE));
-              PatAge := PatientTemp.CalcAge(datePreg, dateBrd);
-              CellText := 'АЛ№ ' + IntToStr(CollPregled.getIntMap(Data.DataPos, word(PregledNew_AMB_LISTN)));
-              CellText := CellText + '  ' + IntToStr(PatAge) + ' год.';
+              datePreg := ADB_DM.CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE));
+              PatAge := TRealPatientNewItem.CalcAge(datePreg, dateBrd);
+              CellText := 'РђР›в„– ' + IntToStr(ADB_DM.CollPregled.getIntMap(Data.DataPos, word(PregledNew_AMB_LISTN)));
+              CellText := CellText + '  ' + IntToStr(PatAge) + ' РіРѕРґ.';
             end
             else
             begin
-              CellText := 'АЛ№ НОВ';
+              CellText := 'РђР›в„– РќРћР’';
             end;
           end;
         end;
         vvCl132:
         begin
           CL132Temp.DataPos := data.DataPos;
-          CellText := CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-          CellText := CellText + '  ' + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Display_Value_BG));
+          CellText := CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+          CellText := CellText + '  ' + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
         end;
         vvNZIS_PLANNED_TYPE:
         begin
-          CellText := CollNZIS_PLANNED_TYPE.getAnsiStringMap( data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          CellText := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap( data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           //CellText := CellText + '  ' + CollNZIS_PLANNED_TYPE.getAnsiStringMap( data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         end;
         vvPr001:
@@ -23978,7 +24696,7 @@ begin
             exit;
           end;
           PR001Temp.DataPos := data.DataPos;
-          CellText := PR001Temp.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(PR001_Description));
+          CellText := PR001Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
         end;
         vvNZIS_QUESTIONNAIRE_RESPONSE:
         begin
@@ -23988,7 +24706,7 @@ begin
             exit;
           end;
           //NZIS_QUESTIONNAIRE_RESPONSETemp.DataPos := data.DataPos;
-          CellText := CollNZIS_QUESTIONNAIRE_RESPONSE.getAnsiStringMap(data.DataPos, word(NZIS_QUESTIONNAIRE_RESPONSE_PR001_KEY));
+          CellText := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.getAnsiStringMap(data.DataPos, word(NZIS_QUESTIONNAIRE_RESPONSE_PR001_KEY));
         end;
         vvNZIS_QUESTIONNAIRE_ANSWER:
         begin
@@ -23998,7 +24716,7 @@ begin
             exit;
           end;
           NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
-          CellText := NZIS_QUESTIONNAIRE_ANSWERTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE));
+          CellText := NZIS_QUESTIONNAIRE_ANSWERTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE));
         end;
         vvNZIS_ANSWER_VALUE:
         begin
@@ -24015,35 +24733,35 @@ begin
               exit;
             end;
             NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
               1:
               begin
-               CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
+               CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
               end;
-              2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
-              3: CellText := 'Текст-записан';
-              4: CellText := 'Дата-записана';
+              2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
+              3: CellText := 'РўРµРєСЃС‚-Р·Р°РїРёСЃР°РЅ';
+              4: CellText := 'Р”Р°С‚Р°-Р·Р°РїРёСЃР°РЅР°';
             end;
           end
           else
           begin
-            if CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
+            if ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
             begin
-              case CollNZIS_ANSWER_VALUE.Items[data.index].getWordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
-                1: CellText := Double.ToString(CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_QUANTITY);
-                2: CellText := CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_CODE;
-                3: CellText := 'Текст-НЕзаписан';
-                4: CellText := 'Дата-НЕзаписан';
+              case ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+                1: CellText := Double.ToString(ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_QUANTITY);
+                2: CellText := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_CODE;
+                3: CellText := 'РўРµРєСЃС‚-РќР•Р·Р°РїРёСЃР°РЅ';
+                4: CellText := 'Р”Р°С‚Р°-РќР•Р·Р°РїРёСЃР°РЅ';
               end;
             end
             else
             begin
-              NZIS_ANSWER_VALUETemp.DataPos := CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
-              case NZIS_ANSWER_VALUETemp.getWordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
-                1: CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
-                2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
-                3: CellText := 'Текст-ЗА записване';
-                4: CellText := 'Дата-ЗА записване';
+              NZIS_ANSWER_VALUETemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
+              case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+                1: CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
+                2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
+                3: CellText := 'РўРµРєСЃС‚-Р—Рђ Р·Р°РїРёСЃРІР°РЅРµ';
+                4: CellText := 'Р”Р°С‚Р°-Р—Рђ Р·Р°РїРёСЃРІР°РЅРµ';
               end;
             end;
           end;
@@ -24057,7 +24775,7 @@ begin
             exit;
           end;
           NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          CellText := 'CL142|' + NZIS_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE));
+          CellText := 'CL142|' + NZIS_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE));
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
@@ -24071,71 +24789,69 @@ begin
             CellText := 'test';
           end;
           NZIS_Result_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          case NZIS_Result_DIAGNOSTIC_REPORTTemp.getwordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
-            1: CellText := Double.ToString( NZIS_Result_DIAGNOSTIC_REPORTTemp.getDoubleMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
-            2: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
-            3: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
+          case NZIS_Result_DIAGNOSTIC_REPORTTemp.getwordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
+            1: CellText := Double.ToString( NZIS_Result_DIAGNOSTIC_REPORTTemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
+            2: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
+            3: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
           end;
         end;
         vvCL088:
         begin
           CL088Temp.DataPos := data.DataPos;
-          CellText := CL088Temp.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL088_Description));
+          CellText := CL088Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
         end;
         vvdiag:
         begin
-          DiagTemp.DataPos := Data.DataPos;
-          FieldText := (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_additionalCode_CL011)));
-          CellText := 'MKB ' + (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_code_CL011))) + FieldText;
+          FieldText := Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_additionalCode_CL011));
+          CellText := 'MKB ' + Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011)) + FieldText;
         end;
         vvMDN:
         begin
           MDNTemp.DataPos := Data.DataPos;
-          CellText := 'МДН ' + inttostr(MDNTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(MDN_NUMBER)));
+          CellText := 'РњР”Рќ ' + inttostr(MDNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NUMBER)));
         end;
         vvMedNapr:
         begin
           MNTemp.DataPos := Data.DataPos;
-          CellText := 'МН ' + inttostr(MNTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(BLANKA_MED_NAPR_NUMBER)));
+          CellText := 'РњРќ ' + inttostr(MNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(BLANKA_MED_NAPR_NUMBER)));
         end;
         vvMedNaprLkk:
         begin
-          CellText := 'МН_ЛКК ' +  CollMedNaprLkk.getAnsiStringMap(Data.DataPos, word(EXAM_LKK_NRN));
+          CellText := 'РњРќ_Р›РљРљ ' +  ADB_DM.CollMedNaprLkk.getAnsiStringMap(Data.DataPos, word(EXAM_LKK_NRN));
         end;
         vvMedNaprHosp:
         begin
-          CellText := 'МН_Hosp ' +  CollMedNaprHosp.getAnsiStringMap(Data.DataPos, word(HOSPITALIZATION_NRN));
+          CellText := 'РњРќ_Hosp ' +  ADB_DM.CollMedNaprHosp.getAnsiStringMap(Data.DataPos, word(HOSPITALIZATION_NRN));
         end;
         vvProfCard:
         begin
-          CellText := 'Проф. карта ' + IntToStr(CollCardProf.getIntMap(Data.DataPos, Word(KARTA_PROFILAKTIKA2017_NOMER)));
+          CellText := 'РџСЂРѕС„. РєР°СЂС‚Р° ' + IntToStr(ADB_DM.CollCardProf.getIntMap(Data.DataPos, Word(KARTA_PROFILAKTIKA2017_NOMER)));
         end;
         vvExamAnal:
         begin
-          anal := CollExamAnal.GetItemsFromDataPos(Data.DataPos);
+          anal := ADB_DM.CollExamAnal.GetItemsFromDataPos(Data.DataPos);
           if (anal <> nil) and (anal.PRecord <> nil) then
           begin
-            CellText := 'Изсл. ' + anal.PRecord.NZIS_CODE_CL22;
+            CellText := 'РР·СЃР». ' + anal.PRecord.NZIS_CODE_CL22;
           end
           else
           begin
             ExamAnalTemp.DataPos := Data.DataPos;
-            CellText := 'Изсл. ' + ExamAnalTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(ExamAnalysis_NZIS_CODE_CL22));
+            CellText := 'РР·СЃР». ' + ExamAnalTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(ExamAnalysis_NZIS_CODE_CL22));
           end;
         end;
         vvDoctor:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := 'Лекар ' + DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_UIN));
+          CellText := 'Р›РµРєР°СЂ ' + Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_UIN));
         end;
         vvPatientRevision:
         begin
-          CellText := 'Промяна на Пациента';
+          CellText := 'РџСЂРѕРјСЏРЅР° РЅР° РџР°С†РёРµРЅС‚Р°';
 
         end;
         vvAddres:
         begin
-          CellText := 'Адрес: ' + FNasMesto.addresColl.GetFullAddres(data.DataPos);
+          CellText := 'РђРґСЂРµСЃ: ' + FNasMesto.addresColl.GetFullAddres(data.DataPos);
         end;
       end;
     end;
@@ -24147,52 +24863,50 @@ begin
           ProcTemp.DataPos := Data.DataPos;
           if data.DataPos = 0 then
           begin
-            CellText :=  'потребителско';
+            CellText :=  'РїРѕС‚СЂРµР±РёС‚РµР»СЃРєРѕ';
             Exit;
           end;
-          CellText := ProcTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Procedures_CODE));
+          CellText := ProcTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(Procedures_CODE));
         end;
         vvPerformer:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_SNAME));
+          CellText := Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_SNAME));
         end;
         vvDeput:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_SNAME));
+          CellText := Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_SNAME));
         end;
         vvPatientNewRoot:
-          CellText := IntToStr(CollPatient.CntInADB) ;
+          CellText := IntToStr(ADB_DM.CollPatient.CntInADB) ;
         vvPatient:
         begin
-          dateBrd := CollPatient.getDateMap(Data.DataPos, word(PatientNew_BIRTH_DATE));
-          PatAge := PatientTemp.CalcAge(UserDate, dateBrd);
+          dateBrd := ADB_DM.CollPatient.getDateMap(Data.DataPos, word(PatientNew_BIRTH_DATE));
+          PatAge := TRealPatientNewItem.CalcAge(UserDate, dateBrd);
           case PatAge of
             0:
             begin
-              PatAgeDoub := PatientTemp.CalcAgeDouble(UserDate, dateBrd);
-              PatAgeStr := IntToStr(Floor(PatAgeDoub * 12)) + ' мес.';
+              PatAgeDoub := TRealPatientNewItem.CalcAgeDouble(UserDate, dateBrd);
+              PatAgeStr := IntToStr(Floor(PatAgeDoub * 12)) + ' РјРµСЃ.';
             end;
           else
-            PatAgeStr := IntToStr(PatAge) + ' год.';
+            PatAgeStr := IntToStr(PatAge) + ' РіРѕРґ.';
           end;
-          CellText := CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
-          CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
-          CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME))
+          CellText := ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_FNAME));
+          CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
+          CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME))
                       + ' ' + PatAgeStr;
         end;
         vvPregled:
         begin
           //p := pointer(PByte(CollPregled.buf) + (Data.DataPos  + 4*word(PregledNew_ID)));
           //ofset := p^ + CollPatient.posData;
-          CellText := 'НРН ' + CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN))  + ' от ' + DateToStr(CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
+          CellText := 'РќР Рќ ' + ADB_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN))  + ' РѕС‚ ' + DateToStr(ADB_DM.CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
         end;
         
         vvNZIS_PLANNED_TYPE:
         begin
-          startDate := CollNZIS_PLANNED_TYPE.getDateMap( data.DataPos, word(NZIS_PLANNED_TYPE_StartDate));
-          endDate := CollNZIS_PLANNED_TYPE.getDateMap( data.DataPos, word(NZIS_PLANNED_TYPE_EndDate));
+          startDate := ADB_DM.CollNZIS_PLANNED_TYPE.getDateMap( data.DataPos, word(NZIS_PLANNED_TYPE_StartDate));
+          endDate := ADB_DM.CollNZIS_PLANNED_TYPE.getDateMap( data.DataPos, word(NZIS_PLANNED_TYPE_EndDate));
           CellText := DateToStr(startDate) + ' - ' + DateToStr(endDate);
         end;
         vvNZIS_QUESTIONNAIRE_ANSWER:
@@ -24203,8 +24917,8 @@ begin
             exit;
           end;
           NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_QUESTIONNAIRE_ANSWERTemp.getCardMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
-          CellText := CL134Coll.getAnsiStringMap(nomenPos, Word(CL134_Description));
+          nomenPos := NZIS_QUESTIONNAIRE_ANSWERTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
+          CellText := ADB_DM.CL134Coll.getAnsiStringMap(nomenPos, Word(CL134_Description));
           CellText := CellText + '  ' + data.index.ToString;
         end;
         vvNZIS_ANSWER_VALUE:
@@ -24222,58 +24936,58 @@ begin
               exit;
             end;
             NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
               2:
               begin
-                nomenPos := NZIS_ANSWER_VALUETemp.getCardMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-                CellText := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+                nomenPos := NZIS_ANSWER_VALUETemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+                CellText := ADB_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
               end;
               3:
               begin
-                CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
+                CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
               end;
               4:
               begin
-                CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
+                CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
               end;
             end;
           end
           else
           begin
-            NZIS_ANSWER_VALUETemp.DataPos := CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            NZIS_ANSWER_VALUETemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
+            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
               2:
               begin
-                if  CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
+                if  ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
                 begin
-                  nomenPos := CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.NOMEN_POS;
+                  nomenPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.NOMEN_POS;
                 end
                 else
                 begin
-                  nomenPos := CollNZIS_ANSWER_VALUE.Items[data.index].getCardMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+                  nomenPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_NOMEN_POS));
                 end;
-                CellText := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+                CellText := ADB_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
               end;
               3:
               begin
-                if CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
+                if ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
                 begin
-                  CellText := CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_TEXT;
+                  CellText := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_TEXT;
                 end
                 else
                 begin
-                  CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
+                  CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
                 end;
               end;
               4:
               begin
-                if CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
+                if ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
                 begin
-                  CellText := DateToStr(CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_DATE);
+                  CellText := DateToStr(ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_DATE);
                 end
                 else
                 begin
-                  CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
+                  CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
                 end;
               end;
             end;
@@ -24288,9 +25002,9 @@ begin
             exit;
           end;
           NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_DIAGNOSTIC_REPORTTemp.getCardMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS));
+          nomenPos := NZIS_DIAGNOSTIC_REPORTTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS));
 
-          CellText := CL142Coll.getAnsiStringMap(nomenPos, Word(CL142_Description));
+          CellText := ADB_DM.CL142Coll.getAnsiStringMap(nomenPos, Word(CL142_Description));
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
@@ -24300,13 +25014,12 @@ begin
             exit;
           end;
           NZIS_Result_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_Result_DIAGNOSTIC_REPORTTemp.getCardMap(AspectsHipFile.Buf, CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-          CellText := CL144Coll.getAnsiStringMap(nomenPos, Word(CL144_Description));
+          nomenPos := NZIS_Result_DIAGNOSTIC_REPORTTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+          CellText := ADB_DM.CL144Coll.getAnsiStringMap(nomenPos, Word(CL144_Description));
         end;
         vvDiag:
         begin
-          DiagTemp.DataPos := Data.DataPos;
-          FieldText := (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_additionalCode_CL011)));
+          FieldText := Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_additionalCode_CL011));
           if FieldText <> '' then
           begin
             CellText := FieldText;
@@ -24315,18 +25028,18 @@ begin
         vvMDN:
         begin
           MDNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MDNTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(MDN_NRN)));
+          CellText := 'РќР Рќ ' + (MDNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NRN)));
         end;
         vvMedNapr:
         begin
           MNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MNTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(BLANKA_MED_NAPR_NRN)));
+          CellText := 'РќР Рќ ' + (MNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(BLANKA_MED_NAPR_NRN)));
         end;
 
         vvExamAnal:
         begin
           ExamAnalTemp.DataPos := Data.DataPos;
-          CellText := ExamAnalTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(ExamAnalysis_NZIS_DESCRIPTION_CL22));
+          CellText := ExamAnalTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(ExamAnalysis_NZIS_DESCRIPTION_CL22));
         end;
 
 
@@ -24344,7 +25057,7 @@ begin
         vvIncMN:
         begin
 
-          CellText := 'NRN ' + CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+          CellText := 'NRN ' + ADB_DM.CollIncMdn.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
         end;
       end;
     end;
@@ -24403,7 +25116,7 @@ begin
   end;
   if CharCode = VK_RETURN then
   begin
-    CharCode := 0;// да ходи на следващо попадение
+    CharCode := 0;// РґР° С…РѕРґРё РЅР° СЃР»РµРґРІР°С‰Рѕ РїРѕРїР°РґРµРЅРёРµ
 
     if KeyCNT then
     begin
@@ -24510,24 +25223,24 @@ begin
       case data.vid of
         vvPerformer:
         begin
-          CellText := 'изпълнител ' ;
+          CellText := 'РёР·РїСЉР»РЅРёС‚РµР» ' ;
         end;
         vvDeput:
         begin
           CellText := 'zamestnik ' ;
         end;
         vvPatientNewRoot:
-          CellText := 'Пациенти ' ;
+          CellText := 'РџР°С†РёРµРЅС‚Рё ' ;
         vvPatient:
         begin
           if data.index <> -1 then
           begin
-            pat := CollPatient.Items[Data.index];
-            CellText := 'ЕГН ' + pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+            pat := ADB_DM.CollPatient.Items[Data.index];
+            CellText := 'Р•Р“Рќ ' + pat.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
           end
           else
           begin
-            CellText := 'ЕГН ' + CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
+            CellText := 'Р•Р“Рќ ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
         end;
         vvPregled:
@@ -24535,25 +25248,25 @@ begin
           if data.index <> -1 then
           begin
             //preg := PregledCollFilter.Items[Data.index];
-            CollPregled.GetFieldText(Sender, word(PregledNew_AMB_LISTN), data.index, FieldText);
-            CellText := 'АЛ№ ' + FieldText;
+            ADB_DM.CollPregled.GetFieldText(Sender, word(PregledNew_AMB_LISTN), data.index, FieldText);
+            CellText := 'РђР›в„– ' + FieldText;
             if FieldText = '0' then
-              CellText := 'АЛ№ ' + FieldText;
-            //CellText := 'АЛ№ ' + inttostr(preg.FilterAMB_LISTN);
+              CellText := 'РђР›в„– ' + FieldText;
+            //CellText := 'РђР›в„– ' + inttostr(preg.FilterAMB_LISTN);
           end
           else
           begin
             if Data.DataPos <> 0 then
             begin
               patData := vtrProfReg.GetNodeData(Node.parent);
-              CellText := 'АЛ№ ' + IntToStr(CollPregled.getIntMap(Data.DataPos, word(PregledNew_AMB_LISTN)));
-              brdDate := CollPatient.getDateMap( patData.DataPos, word(PatientNew_BIRTH_DATE));
-              prgDate := CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE));
+              CellText := 'РђР›в„– ' + IntToStr(ADB_DM.CollPregled.getIntMap(Data.DataPos, word(PregledNew_AMB_LISTN)));
+              brdDate := ADB_DM.CollPatient.getDateMap( patData.DataPos, word(PatientNew_BIRTH_DATE));
+              prgDate := ADB_DM.CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE));
               CellText := CellText + '  ' + inttostr(YearsBetween(brdDate, prgDate));
             end
             else
             begin
-              CellText := 'АЛ№ НОВ';
+              CellText := 'РђР›в„– РќРћР’';
             end;
           end;
         end;
@@ -24563,30 +25276,28 @@ begin
           begin
             //preg := PregledCollFilter.Items[Data.index];
             //PregledNewColl.GetFieldText(Sender, word(PregledNew_AMB_LISTN), data.index, FieldText);
-//            CellText := 'АЛ№ ' + FieldText;
+//            CellText := 'РђР›в„– ' + FieldText;
 //            if FieldText = '0' then
-//              CellText := 'АЛ№ ' + FieldText;
-            //CellText := 'АЛ№ ' + inttostr(preg.FilterAMB_LISTN);
+//              CellText := 'РђР›в„– ' + FieldText;
+            //CellText := 'РђР›в„– ' + inttostr(preg.FilterAMB_LISTN);
           end
           else
           begin
-            DiagTemp.DataPos := Data.DataPos;
-            FieldText := (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_additionalCode_CL011)));
-            CellText := 'MKB ' + (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_code_CL011))) + FieldText;
-            //if CellText = 'АЛ№ 0' then
-//               CellText := 'АЛ№ 0';
+            FieldText := (Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_additionalCode_CL011)));
+            CellText := 'MKB ' + (Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011))) + FieldText;
+            //if CellText = 'РђР›в„– 0' then
+//               CellText := 'РђР›в„– 0';
 
           end;
         end;
         vvMDN:
         begin
           MDNTemp.DataPos := Data.DataPos;
-          CellText := 'МДН ' + inttostr(MDNTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(MDN_NUMBER)));
+          CellText := 'РњР”Рќ ' + inttostr(MDNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NUMBER)));
         end;
         vvDoctor:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := 'Лекар ' + DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_UIN));
+          CellText := 'Р›РµРєР°СЂ ' + Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_UIN));
         end;
       end;
     end;
@@ -24595,28 +25306,25 @@ begin
       case data.vid of
         vvPerformer:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_SNAME));
+          CellText := 'Р›РµРєР°СЂ ' + Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_SNAME));
         end;
         vvDeput:
         begin
-          DoctorTemp.DataPos := Data.DataPos;
-          CellText := DoctorTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(Doctor_SNAME));
+          CellText := 'Р›РµРєР°СЂ ' + Adb_DM.CollDoctor.getAnsiStringMap( Data.DataPos, word(Doctor_SNAME));
         end;
         vvPatient:
         begin
-          CellText := CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_FNAME));
-          CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
-          CellText := CellText + ' ' + CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
+          CellText := ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_FNAME));
+          CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
+          CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
         end;
         vvPregled:
         begin
-          CellText := 'от ' + DateToStr(CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
+          CellText := 'РѕС‚ ' + DateToStr(ADB_DM.CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
         end;
         vvDiag:
         begin
-          DiagTemp.DataPos := Data.DataPos;
-          FieldText := (DiagTemp.getAnsiStringMap(AspectsHipFile.Buf, CollDiag.posData, word(Diagnosis_additionalCode_CL011)));
+          FieldText := (Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_additionalCode_CL011)));
           if FieldText <> '' then
           begin
             CellText := FieldText;
@@ -24625,7 +25333,7 @@ begin
         vvMDN:
         begin
           MDNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MDNTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(MDN_NRN)));
+          CellText := 'РќР Рќ ' + (MDNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NRN)));
         end;
         
       end;
@@ -24707,7 +25415,7 @@ begin
     if vtrPregledPat.RootNode.ChildCount > 0 then
     begin
       pnlRoleView.ActivePanel := RolPnlDoctorSpec;
-      ActiveMainButton := pnlRoleView.BtnFromName('Прегледи');
+      ActiveMainButton := pnlRoleView.BtnFromName('РџСЂРµРіР»РµРґРё');
       ActiveMainButton.Click;
       ActiveMainButton.Down := True;
       vtrPregledPat.BeginUpdate;
@@ -24764,7 +25472,7 @@ begin
     case Column of
       0:
       begin
-        CellText := 'Избирани файлове'
+        CellText := 'РР·Р±РёСЂР°РЅРё С„Р°Р№Р»РѕРІРµ'
       end;
     end;
   end
@@ -24805,7 +25513,7 @@ begin
         begin
           if data.index < 0 then
           begin
-            CellText := 'Потребителски роли';
+            CellText := 'РџРѕС‚СЂРµР±РёС‚РµР»СЃРєРё СЂРѕР»Рё';
           end
           else
           begin
@@ -24852,11 +25560,11 @@ begin
 
   mmoTest.Lines.Add(Format('Addresi: %d', [FNasMesto.addresColl.Count]));
   FNasMesto.FillLinkNasMestoInAddres;
-  FNasMesto.FindMach;//NasMesto;
+  //FNasMesto.FindMach;//NasMesto;
   FillPatInDoctor;
   FillPregledInPat;
   FillIncMdnInPat;
-  CollIncMN.FillNzisSpec(CL006Coll);
+  ADB_DM.CollIncMN.FillNzisSpec(ADB_DM.CL006Coll);
   FillIncMNInPat;
   FillOtherDocInIncMN;
   FillIncMNInPRegNrn;
@@ -24877,76 +25585,76 @@ begin
   FillDoctorInPregled;
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('прегледи в пациенти: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РїСЂРµРіР»РµРґРё РІ РїР°С†РёРµРЅС‚Рё: %f', [Elapsed.TotalMilliseconds]));
 
 
   Stopwatch := TStopwatch.StartNew;
   //FillSpecNzisInMedNapr;
 //  FillMedNaprInPregled;
 //  Elapsed := Stopwatch.Elapsed;
-//  mmoTest.Lines.Add(Format('мед. напр. в прегледи: %f', [Elapsed.TotalMilliseconds]));
+//  mmoTest.Lines.Add(Format('РјРµРґ. РЅР°РїСЂ. РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
-  CollExamAnal.FillAnalInExamAnal(CL022Coll);
+  ADB_DM.CollExamAnal.FillAnalInExamAnal(ADB_DM.CL022Coll);
   FillExamAnalInMDN;
   FillMDN_inPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('МДН в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РњР”Рќ РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
-  CollMedNapr.FillSpecNzisInMedNapr(CL006Coll);
+  ADB_DM.CollMedNapr.FillSpecNzisInMedNapr(ADB_DM.CL006Coll);
   FillMedNaprInPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('мед. напр. в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РјРµРґ. РЅР°РїСЂ. РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
-  CollMedNapr3A.FillSpecNzisInMedNapr3A(CL006Coll);
+  ADB_DM.CollMedNapr3A.FillSpecNzisInMedNapr3A(ADB_DM.CL006Coll);
   FillMedNapr3AInPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('мед. напр. 3A в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РјРµРґ. РЅР°РїСЂ. 3A РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
  // CollMedNaprHosp.FillSpecNzisInMedNapr3A(CL006Coll);
   FillMedNaprHospInPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('мед. напр. hosp в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РјРµРґ. РЅР°РїСЂ. hosp РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
  // CollMedNaprHosp.FillSpecNzisInMedNapr3A(CL006Coll);
   FillMedNaprLkkInPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('мед. напр. LKK в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РјРµРґ. РЅР°РїСЂ. LKK РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
   FillImunInPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('имунизации. в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РёРјСѓРЅРёР·Р°С†РёРё. РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
   FillPrfCard_inPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('проф. карти в прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РїСЂРѕС„. РєР°СЂС‚Рё РІ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
 
   Stopwatch := TStopwatch.StartNew;
-  LnkFilename := AspectsHipFile.FileName.Replace('.adb', '.lnk');
+  LnkFilename := ADB_DM.AdbMain.FileName.Replace('.adb', '.lnk');
   DeleteFile(LnkFilename);
   fileStr := TFileStream.Create(LnkFilename, fmCreate);
   fileStr.Size := 500000000;
   fileStr.Free;
-  Aguid := AspectsHipFile.GUID;
+  Aguid := ADB_DM.AdbMain.GUID;
   //CollDoctor.ShowGrid(grdNom);
-  if Assigned(AspectsHipFile) then
+  if Assigned(ADB_DM.AdbMain) then
   begin
-    UnmapViewOfFile(AspectsHipFile.Buf);
-    FreeAndNil(AspectsHipFile);
+    UnmapViewOfFile(ADB_DM.AdbMain.Buf);
+    //FreeAndNil(ADB_DM.AdbMain);
   end;
   AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, Aguid);// AspectsHipFile.GUID);
 
   LoadVtrPregledOnPat;
   //LoadVtrPregled;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add(Format('дърво с прегледи: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add(Format('РґСЉСЂРІРѕ СЃ РїСЂРµРіР»РµРґРё: %f', [Elapsed.TotalMilliseconds]));
 
 
   LoadADB;
@@ -24978,7 +25686,7 @@ begin
     if vtrPregledPat.RootNode.ChildCount > 0 then
     begin
       pnlRoleView.ActivePanel := RolPnlDoctorSpec;
-      ActiveMainButton := pnlRoleView.BtnFromName('Прегледи');
+      ActiveMainButton := pnlRoleView.BtnFromName('РџСЂРµРіР»РµРґРё');
       ActiveMainButton.Click;
       ActiveMainButton.Down := True;
       vtrPregledPat.BeginUpdate;
@@ -24989,7 +25697,7 @@ begin
     else
     begin
       pnlRoleView.ActivePanel := RolPnlAdmin;
-      ActiveMainButton := pnlRoleView.BtnFromName('База данни(DB)');
+      ActiveMainButton := pnlRoleView.BtnFromName('Р‘Р°Р·Р° РґР°РЅРЅРё(DB)');
       ActiveMainButton.Click;
       pnlGridSearch.height := 1;
       splSearchGridMoved(nil);
@@ -24999,7 +25707,7 @@ begin
   else
   begin
     pnlRoleView.ActivePanel := RolPnlAdmin;
-    ActiveMainButton := pnlRoleView.BtnFromName('База данни(DB)');
+    ActiveMainButton := pnlRoleView.BtnFromName('Р‘Р°Р·Р° РґР°РЅРЅРё(DB)');
     ActiveMainButton.Click;
     pnlGridSearch.height := 1;
     splSearchGridMoved(nil);
@@ -25009,14 +25717,14 @@ begin
   //pgcTree.ActivePage := tsTreeRole;
 //  pgcRole.ActivePage := tsRoleSelect;
 //  pnlRoleView.ActivePanel := RolPnlDoctorSpec;
-//  ActiveMainButton := pnlRoleView.BtnFromName('Прегледи');
+//  ActiveMainButton := pnlRoleView.BtnFromName('РџСЂРµРіР»РµРґРё');
 //  ActiveMainButton.Click;
 //  grdSearch.height := 1;
 //  splSearchGridMoved(nil);
 //  pnlTreeResize(nil);
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('WmAfterShow  за %f',[ Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format('WmAfterShow  Р·Р° %f',[ Elapsed.TotalMilliseconds]));
   Self.BorderStyle := bsNone;
   SetStyle;
   Visible := True;
@@ -25048,7 +25756,7 @@ var
 begin
   Info := PMinMaxInfo(Msg.LParam);
 
-  // Взимаме работната област (без taskbar)
+  // Р’Р·РёРјР°РјРµ СЂР°Р±РѕС‚РЅР°С‚Р° РѕР±Р»Р°СЃС‚ (Р±РµР· taskbar)
   SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
 
   Info^.ptMaxPosition.X := WorkArea.Left;
@@ -25088,8 +25796,8 @@ var
   patID, PregID: Integer;
 begin
   if FmxProfForm = nil then Exit;
-  patID := FmxProfForm.Patient.getIntMap(AspectsHipFile.buf, CollPatient.posData, word(PatientNew_ID));
-  pregID := FmxProfForm.Pregled.getIntMap(AspectsHipFile.buf, CollPregled.posData, word(PregledNew_ID));
+  patID := FmxProfForm.Patient.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPatient.posData, word(PatientNew_ID));
+  pregID := FmxProfForm.Pregled.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPregled.posData, word(PregledNew_ID));
   PostMessage(HipHandle, WM_Hip_Deactivate, patID, pregID);
 end;
 
@@ -25108,7 +25816,7 @@ begin
   while run <> nil do
   begin
     data := pointer(PByte(run) + lenNode);
-    if CollPatient.getIntMap(data.DataPos, word(PatientNew_ID)) = Msg.WParam then
+    if ADB_DM.CollPatient.getIntMap(data.DataPos, word(PatientNew_ID)) = Msg.WParam then
     begin
       if data.DataPos <> FmxProfForm.Patient.DataPos then
       begin
@@ -25122,7 +25830,7 @@ begin
         case dataPreg.vid of
           vvPregled:
           begin
-            FindedCl132 := False;// свалям флага за намерено цл132
+            FindedCl132 := False;// СЃРІР°Р»СЏРј С„Р»Р°РіР° Р·Р° РЅР°РјРµСЂРµРЅРѕ С†Р»132
             cl132 := '';
             runCl132 := runPreg.FirstChild;
             while runCl132 <> nil do
@@ -25134,13 +25842,13 @@ begin
                   CL132Temp.DataPos := dataCL132.DataPos;
                   if not FindedCl132 then
                   begin
-                    FindedCl132 := true;// вдигам флага за намерено цл132 в тоя преглед
+                    FindedCl132 := true;// РІРґРёРіР°Рј С„Р»Р°РіР° Р·Р° РЅР°РјРµСЂРµРЅРѕ С†Р»132 РІ С‚РѕСЏ РїСЂРµРіР»РµРґ
                     PlanedPreg.PregledID :=
-                         CollPregled.getIntMap(dataPreg.DataPos, word(PregledNew_ID));
+                         ADB_DM.CollPregled.getIntMap(dataPreg.DataPos, word(PregledNew_ID));
                     PlanedPreg.IsDone := True;
                   end;
                   PlanedPreg.Cl132 :=
-                       cl132 + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key)) + '; ';
+                       cl132 + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) + '; ';
                 end;
               end;
               runCl132 := runCl132.NextSibling;
@@ -25225,7 +25933,7 @@ begin
   case data.vid of
     vvPregled:
     begin
-      status := CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
+      status := ADB_DM.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
     end;
   end;
   if (Msg.LParam = 0) and (status = 5) then //ok
@@ -25236,7 +25944,7 @@ begin
       //FmxProfForm.animNrnStatus.Enabled := true;
       if chkAutamatNzis.Checked then
       begin
-        CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),6);
+        ADB_DM.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),6);
         closePregX003(node);
       end;
     end;
@@ -25321,13 +26029,13 @@ begin
       begin
         BtnXMLtoCL000ForUpdate(v);
         FillCl088Update;
-        mmoTest.Lines.Add('CL088Coll.FCL088New.Count= ' + IntToStr(CL088Coll.FCL088New.Count));
+        mmoTest.Lines.Add('CL088Coll.FCL088New.Count= ' + IntToStr(ADB_DM.CL088Coll.FCL088New.Count));
       end;
     end;
   end
   else
   begin
-    syndtXML.Lines.LoadFromStream(ListNomenNzisNames[msg.LParam].xmlStream, TEncoding.UTF8);
+    syndtXML.Lines.LoadFromStream( Adb_DM.ListNomenNzisNames[msg.LParam].xmlStream, TEncoding.UTF8);
   end;
 end;
 
@@ -25344,25 +26052,8 @@ procedure TfrmSuperHip.WMShowGrid(var Msg: TMessage);
 var
   i: Integer;
 begin
-  //thrSearch.collPatForSearch.Buf := AspectsHipFile.Buf;
-//  thrSearch.collPatForSearch.posData := AspectsHipFile.FPosData;
-//  thrSearch.collPatForSearch.ShowLinksGrid(grdSearch);
-  //thrSearch.collPregForSearch.Buf := AspectsHipFile.Buf;
-  //thrSearch.collPregForSearch.posData := AspectsHipFile.FPosData;
-  //CollPregled.lastBottom := 20;
-  //Stopwatch := TStopwatch.StartNew;
-//  for i := 0 to 20 do
-//    CollPregled.SortListDataPos;
-//  Elapsed := Stopwatch.Elapsed;
-//  mmotest.Lines.Add(format( 'sortSearch %d за %f ', [CollPregled.ListDataPos.Count, Elapsed.TotalMilliseconds]));
-
-  case TVtrVid(grdSearch.Tag) of
-    vvPatient: thrSearch.CollPat.ShowLinksGrid(grdSearch);
-    vvPregled: thrSearch.collPreg.ShowLinksGrid(grdSearch);
-  end;
+  TBaseCollection(grdSearch.Tag).ShowLinksGrid(grdSearch);
   FmxFinderFrm.IsFinding := false;
-  //grdSearch.SetFocus;
-  //grdSearch.Selected.Row := -1;
   tlb1.Visible := False;
   tlb1.Visible := True;
 end;
@@ -25385,12 +26076,12 @@ end;
 
 procedure TfrmSuperHip.WM_NCCALCSIZE(var Msg: TMessage);
 begin
-  // Когато прозорецът е максимизиран, махни системните рамки (просвета)
+  // РљРѕРіР°С‚Рѕ РїСЂРѕР·РѕСЂРµС†СЉС‚ Рµ РјР°РєСЃРёРјРёР·РёСЂР°РЅ, РјР°С…РЅРё СЃРёСЃС‚РµРјРЅРёС‚Рµ СЂР°РјРєРё (РїСЂРѕСЃРІРµС‚Р°)
   if Msg.WParam <> 0 then
   begin
     if WindowState = wsMaximized then
     begin
-      // Зануляваме всички отстъпи – така формата заема целия WorkArea
+      // Р—Р°РЅСѓР»СЏРІР°РјРµ РІСЃРёС‡РєРё РѕС‚СЃС‚СЉРїРё вЂ“ С‚Р°РєР° С„РѕСЂРјР°С‚Р° Р·Р°РµРјР° С†РµР»РёСЏ WorkArea
       Msg.Result := 0;
       Exit;
     end;
@@ -25411,21 +26102,7 @@ begin
 //  WVBrowser1.CoreWebView2PrintSettings.ShouldPrintHeaderAndFooter := True;
 end;
 
-{ TNomenNzisRec }
 
-constructor TNomenNzisRec.Create;
-begin
-  inherited Create;
-  Cl000Coll := TCL000EntryCollection.Create(nil);
-  xmlStream := TMemoryStream.Create;
-end;
-
-destructor TNomenNzisRec.Destroy;
-begin
-  FreeAndNil(Cl000Coll);
-  FreeAndNil(xmlStream);
-  inherited;
-end;
 
 { TScrollBox }
 
@@ -25449,6 +26126,121 @@ begin
   inherited;
 
 end;
+
+{ TMyProvider }
+
+function TfrmSuperHip.GetADBBuffer: Pointer;
+begin
+  Result := ADB_DM.AdbMain.Buf;
+end;
+
+function TfrmSuperHip.GetCollectionByType(ACollType: Word): TBaseCollection;
+begin
+  Result := nil;
+  case TCollectionsType(ACollType) of
+
+    ctPractica:
+      Result := ADB_DM.CollPractica;
+
+    ctPregledNew:
+      Result := ADB_DM.CollPregled;
+
+    ctPatientNew:
+      Result := ADB_DM.CollPatient;
+
+    ctPatientNZOK:
+      Result := ADB_DM.CollPatPis;
+
+    ctDiagnosis:
+      Result := ADB_DM.CollDiag;
+
+    ctDiagnosisDel:
+      Result := ADB_DM.CollDiag;   // del в†’ СЃСЉС‰Р°С‚Р° СЃС‚СЂСѓРєС‚СѓСЂР°, СЃР°РјРѕ С‡Рµ Р·Р° РёР·С‚СЂРёС‚Рё Р·Р°РїРёСЃРё
+
+    ctMDN:
+      Result := ADB_DM.CollMDN;
+
+    ctDoctor:
+      Result := ADB_DM.CollDoctor;
+
+    ctOtherDoctor:
+      Result := ADB_DM.CollOtherDoctor;
+
+    ctUnfav:
+      Result := ADB_DM.CollUnfav;
+
+    ctUnfavDel:
+      Result := ADB_DM.CollUnfav;
+
+    ctMkb:
+      Result := ADB_DM.CollMkb;
+
+    ctExam_boln_list:
+      Result := ADB_DM.CollEbl;
+
+    ctExamAnalysis:
+      Result := ADB_DM.CollExamAnal;
+
+    ctExamImmunization:
+      Result := ADB_DM.CollExamImun;
+
+    ctProcedures:
+      Result := ADB_DM.ProceduresNomenColl;
+
+    ctKARTA_PROFILAKTIKA2017:
+      Result := ADB_DM.CollCardProf;
+
+    ctBLANKA_MED_NAPR:
+      Result := ADB_DM.CollMedNapr;
+
+    ctBLANKA_MED_NAPR_3A:
+      Result := ADB_DM.CollMedNapr3A;
+
+    ctHOSPITALIZATION:
+      Result := ADB_DM.CollMedNaprHosp;
+
+    ctEXAM_LKK:
+      Result := ADB_DM.CollMedNaprLkk;
+
+    ctINC_MDN:
+      Result := ADB_DM.CollIncMdn;
+
+    ctINC_NAPR:
+      Result := ADB_DM.CollIncMN;
+
+    ctNZIS_PLANNED_TYPE:
+      Result := ADB_DM.CollNZIS_PLANNED_TYPE;
+
+    ctNZIS_QUESTIONNAIRE_RESPONSE:
+      Result := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE;
+
+    ctNZIS_QUESTIONNAIRE_ANSWER:
+      Result := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER;
+
+    ctNZIS_DIAGNOSTIC_REPORT:
+      Result := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT;
+
+    ctNZIS_RESULT_DIAGNOSTIC_REPORT:
+      Result := ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT;
+
+    ctNZIS_ANSWER_VALUE:
+      Result := ADB_DM.CollNZIS_ANSWER_VALUE;
+
+    ctNzisToken:
+      Result := ADB_DM.CollNzisToken;
+
+    ctCertificates:
+      Result := ADB_DM.CollCertificates;
+
+    ctAddres:
+      Result := FNasMesto.addresColl;
+
+  else
+    //raise Exception.Create('Unknown collection type: ' +
+//      TRttiEnumerationType.GetName(TCollectionsType(ACollType)));
+  end;
+end;
+
 
 initialization
   // Enable raw mode (default mode uses stack frames which aren't always generated by the compiler)

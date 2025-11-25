@@ -284,18 +284,16 @@ object frmSuperHip: TfrmSuperHip
       Width = 437
       Height = 503
       Margins.Left = 82
-      ActivePage = tsTreePat
+      ActivePage = tsVtrSearch
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
       Style = tsFlatButtons
       TabOrder = 0
       OnChange = pgcTreeChange
-      ExplicitWidth = 517
       object tsTreePregledi: TTabSheet
         Caption = 'tsTreePregledi'
         TabVisible = False
-        ExplicitWidth = 509
         object vtrPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -454,7 +452,6 @@ object frmSuperHip: TfrmSuperHip
           Align = alTop
           Caption = 'pnlPregImportTool'
           TabOrder = 1
-          ExplicitWidth = 509
           object btnX006: TButton
             Left = 15
             Top = 10
@@ -473,7 +470,6 @@ object frmSuperHip: TfrmSuperHip
         Caption = 'tsTreePat'
         ImageIndex = 1
         OnShow = tsTreePatShow
-        ExplicitWidth = 509
         object vtrPregledPat: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -487,7 +483,8 @@ object frmSuperHip: TfrmSuperHip
           Color = clInfoBk
           Colors.GridLineColor = 12189116
           DefaultNodeHeight = 27
-          DragOperations = []
+          DragMode = dmAutomatic
+          DragOperations = [doMove]
           DragType = dtVCL
           Header.AutoSizeIndex = 0
           Header.Height = 35
@@ -618,7 +615,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAspect = 0
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
-          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -649,7 +645,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTreeRole: TTabSheet
         Caption = 'tsTreeRole'
         ImageIndex = 2
-        ExplicitWidth = 509
         object pgcRole: TPageControl
           Left = 0
           Top = 0
@@ -661,10 +656,8 @@ object frmSuperHip: TfrmSuperHip
           ParentDoubleBuffered = False
           TabOrder = 0
           TabPosition = tpBottom
-          ExplicitWidth = 509
           object tsRoleSelect: TTabSheet
             Caption = #1048#1079#1073#1086#1088' '#1085#1072' '#1088#1086#1083#1103
-            ExplicitWidth = 501
             object scrlbxRole: TScrollBox
               Left = 0
               Top = 0
@@ -680,7 +673,6 @@ object frmSuperHip: TfrmSuperHip
               TabOrder = 0
               OnClick = scrlbxRoleClick
               OnMouseWheel = scrlbxRoleMouseWheel
-              ExplicitWidth = 501
               object RolPnlDoktorOPL: TPanelRoles
                 Left = 24
                 Top = 659
@@ -7724,7 +7716,6 @@ object frmSuperHip: TfrmSuperHip
           object tsRoleManager: TTabSheet
             Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1085#1072' '#1088#1086#1083#1080#1090#1077
             ImageIndex = 1
-            ExplicitWidth = 501
             object vtrRole: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -7880,7 +7871,6 @@ object frmSuperHip: TfrmSuperHip
             Caption = #1055#1086#1084#1086#1097#1085#1072' '#1080#1085#1092'. '#1079#1072' '#1056#1086#1083#1080#1090#1077
             ImageIndex = 2
             OnShow = tsRoleDescrShow
-            ExplicitWidth = 501
             object vtrHelpHip: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -8036,7 +8026,6 @@ object frmSuperHip: TfrmSuperHip
           object tsFmxRoleSelect: TTabSheet
             Caption = 'tsFmxRoleSelect'
             ImageIndex = 3
-            ExplicitWidth = 501
             object fmxCntrRoleSelect: TFireMonkeyContainer
               Left = 0
               Top = 0
@@ -8044,7 +8033,6 @@ object frmSuperHip: TfrmSuperHip
               Height = 446
               OnCreateFMXForm = fmxCntrRoleSelectCreateFMXForm
               Align = alClient
-              ExplicitWidth = 501
             end
           end
         end
@@ -8052,7 +8040,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNomenNzis: TTabSheet
         Caption = 'tsNomenNzis'
         ImageIndex = 3
-        ExplicitWidth = 509
         object vtrNomenNzis: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -8186,7 +8173,6 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrNomenNzisDrawButton
           OnButtonClick = vtrNomenNzisButtonClick
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -8222,7 +8208,6 @@ object frmSuperHip: TfrmSuperHip
           Align = alTop
           Caption = 'pnlNomenNzisTool'
           TabOrder = 1
-          ExplicitWidth = 509
           object btnUpdateNomen: TButton
             Left = 15
             Top = 10
@@ -8237,7 +8222,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTreeDBFB: TTabSheet
         Caption = 'tsTreeDBFB'
         ImageIndex = 4
-        ExplicitWidth = 509
         object vtrFDB: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -8396,7 +8380,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTempVTR: TTabSheet
         Caption = 'tsTempVTR'
         ImageIndex = 5
-        ExplicitWidth = 509
         object vtrTemp: TVirtualStringTreeHipp
           Left = 0
           Top = 65
@@ -8540,7 +8523,6 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrTempDrawButton
           OnButtonClick = vtrTempButtonClick
-          ExplicitWidth = 509
           Columns = <
             item
               MinWidth = 100
@@ -8577,7 +8559,6 @@ object frmSuperHip: TfrmSuperHip
           PopupMenu = pmTempVtr
           ShowCaption = False
           TabOrder = 1
-          ExplicitWidth = 509
           object btn12: TButton
             Left = 2
             Top = 33
@@ -8601,7 +8582,6 @@ object frmSuperHip: TfrmSuperHip
             TabOrder = 1
             Text = #1082#1088#1098#1074#1086#1090#1074
             OnChange = edtFilterTempChangeMKB
-            ExplicitWidth = 487
           end
           object btnFilldiagInMkb: TButton
             Left = 43
@@ -8644,7 +8624,6 @@ object frmSuperHip: TfrmSuperHip
       object tsGraph: TTabSheet
         Caption = 'tsGraph'
         ImageIndex = 6
-        ExplicitWidth = 509
         object vtrGraph: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -8782,7 +8761,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -8821,7 +8799,6 @@ object frmSuperHip: TfrmSuperHip
           ShowCaption = False
           TabOrder = 1
           OnClick = pnlGraphClick
-          ExplicitWidth = 509
           DesignSize = (
             429
             41)
@@ -8856,14 +8833,12 @@ object frmSuperHip: TfrmSuperHip
             TabOrder = 0
             Text = '30'
             OnChange = edtGraphDayChange
-            ExplicitLeft = 377
           end
         end
       end
       object tsNomenAnal: TTabSheet
         Caption = 'tsNomenAnal'
         ImageIndex = 7
-        ExplicitWidth = 509
         object vtrNewAnal: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -8996,7 +8971,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = False
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9026,7 +9000,6 @@ object frmSuperHip: TfrmSuperHip
       object tsOptions: TTabSheet
         Caption = 'tsOptions'
         ImageIndex = 8
-        ExplicitWidth = 509
         object vtrOptions: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9157,7 +9130,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9187,34 +9159,36 @@ object frmSuperHip: TfrmSuperHip
       object tsVtrSearch: TTabSheet
         Caption = 'tsVtrSearch'
         ImageIndex = 9
-        ExplicitWidth = 509
-        object vtrSearch: TVirtualStringTreeHipp
+        object vtrSearch: TVirtualStringTreeAspect
           Left = 0
           Top = 0
-          Width = 473
+          Width = 429
           Height = 472
-          Hint = '22'#13#10'55'
-          Margins.Left = 10
-          Align = alLeft
-          AutoScrollInterval = 10
-          BorderStyle = bsNone
+          Align = alClient
+          AutoExpandDelay = 0
+          ChangeDelay = 10
           Color = clInfoBk
           Colors.GridLineColor = 12189116
-          Ctl3D = False
-          DefaultNodeHeight = 33
+          DefaultNodeHeight = 27
+          DragMode = dmAutomatic
+          DragOperations = [doMove]
+          DragType = dtVCL
           Header.AutoSizeIndex = 0
-          Header.Options = [hoColumnResize, hoDrag, hoShowSortGlyphs, hoVisible, hoAutoSpring]
-          Header.Style = hsFlatButtons
-          HintMode = hmTooltip
+          Header.Height = 35
+          Header.Options = [hoColumnResize, hoDrag, hoOwnerDraw, hoShowImages, hoShowSortGlyphs, hoVisible]
+          Images = imgList1
           Indent = 14
-          ParentCtl3D = False
+          StateImages = imgList1
           TabOrder = 0
+          TreeOptions.AutoOptions = [toAutoDropExpand, toAutoScrollOnExpand, toAutoTristateTracking, toAutoChangeScale]
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
-          TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
-          TreeOptions.SelectionOptions = [toFullRowSelect, toAlwaysSelectNode]
-          OnChange = vtrSearchChange
+          TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
+          TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
+          OnChecking = vtrLinkOptionsChecking
+          OnDragAllowed = vtrLinkOptionsDragAllowed
+          OnDragOver = vtrLinkOptionsDragOver
+          OnDragDrop = vtrLinkOptionsDragDrop
           OnGetText = vtrSearchGetText
-          OnInitNode = vtrPreglediInitNode
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -9314,28 +9288,33 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
+          OnDrawButton = vtrSearchDrawButton
+          OnButtonClick = vtrSearchButtonClick
+          OnShowHintButton = vtrSearchShowHintButton
+          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 0
-              Text = #1055#1088#1077#1075#1083#1077#1076#1080
-              Width = 152
+              Text = '....'
+              Width = 149
             end
             item
               Alignment = taRightJustify
               CaptionAlignment = taCenter
               Color = 15923186
+              ImageIndex = 29
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 1
               Text = #1044#1077#1090#1072#1081#1083#1080
-              Width = 144
+              Width = 233
             end
             item
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coShowDropMark, coVisible, coAllowFocus, coEditable]
               Position = 2
               Text = #1044#1077#1081#1089#1090#1074#1080#1103
-              Width = 102
+              Width = 400
             end>
           DefaultText = ''
         end
@@ -9343,7 +9322,6 @@ object frmSuperHip: TfrmSuperHip
       object tsVTRDoctors: TTabSheet
         Caption = 'tsVTRDoctors'
         ImageIndex = 10
-        ExplicitWidth = 509
         object vtrDoctor: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9476,7 +9454,6 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrDoctorDrawButton
           OnButtonClick = vtrDoctorButtonClick
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9506,7 +9483,6 @@ object frmSuperHip: TfrmSuperHip
       object tsProfReg: TTabSheet
         Caption = 'tsProfReg'
         ImageIndex = 11
-        ExplicitWidth = 509
         object vtrProfReg: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -9633,7 +9609,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9663,7 +9638,6 @@ object frmSuperHip: TfrmSuperHip
       object tsLinkOptions: TTabSheet
         Caption = 'tsLinkOptions'
         ImageIndex = 12
-        ExplicitWidth = 509
         object vtrLinkOptions: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -9676,6 +9650,8 @@ object frmSuperHip: TfrmSuperHip
           Colors.GridLineColor = 12189116
           DefaultNodeHeight = 27
           DragMode = dmAutomatic
+          DragOperations = [doMove]
+          DragType = dtVCL
           Header.AutoSizeIndex = 0
           Header.Height = 35
           Header.Options = [hoColumnResize, hoDrag, hoOwnerDraw, hoShowImages, hoShowSortGlyphs, hoVisible]
@@ -9686,6 +9662,7 @@ object frmSuperHip: TfrmSuperHip
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
           OnChange = vtrLinkOptionsChange
+          OnChecking = vtrLinkOptionsChecking
           OnDragAllowed = vtrLinkOptionsDragAllowed
           OnDragOver = vtrLinkOptionsDragOver
           OnDragDrop = vtrLinkOptionsDragDrop
@@ -9789,8 +9766,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          OnDragDropFMX = vtrLinkOptionsDragDropFMX
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -9821,7 +9796,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNasMesta: TTabSheet
         Caption = 'tsNasMesta'
         ImageIndex = 13
-        ExplicitWidth = 509
         object vtrLinkNasMesta: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -9948,7 +9922,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAspect = 0
           TakeFocus = True
           OnDragDropFMX = vtrLinkOptionsDragDropFMX
-          ExplicitWidth = 509
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -10297,7 +10270,6 @@ object frmSuperHip: TfrmSuperHip
             end>
         end>
       OnRoleButtonClick = pnlRoleViewRoleButtonClick
-      ExplicitLeft = 578
     end
     object tlbActions: TToolBar
       Left = 1
@@ -10315,7 +10287,6 @@ object frmSuperHip: TfrmSuperHip
       Transparent = False
       Wrapable = False
       OnClick = tlbActionsClick
-      ExplicitWidth = 578
       object btnCert: TToolButton
         Left = 0
         Top = 0
@@ -10436,8 +10407,6 @@ object frmSuperHip: TfrmSuperHip
     ParentDoubleBuffered = False
     ShowCaption = False
     TabOrder = 2
-    ExplicitLeft = 587
-    ExplicitWidth = 1002
     DesignSize = (
       1082
       547)
@@ -10460,22 +10429,19 @@ object frmSuperHip: TfrmSuperHip
       Top = 42
       Width = 1080
       Height = 325
-      ActivePage = tsHtml
+      ActivePage = tsTest
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
       TabOrder = 0
       OnChange = pgcWorkChange
       OnResize = pgcWorkResize
-      ExplicitWidth = 1000
       object tsDynPanel: TTabSheet
         Caption = 'tsDynPanel'
-        ExplicitWidth = 992
       end
       object tsMinaliPregledi: TTabSheet
         Caption = 'tsMinaliPregledi'
         ImageIndex = 1
-        ExplicitWidth = 992
         object vtrMinaliPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -10607,7 +10573,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAspect = 0
           TakeFocus = False
           OnDrawButton = vtrMinaliPreglediDrawButton
-          ExplicitWidth = 992
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -10656,7 +10621,6 @@ object frmSuperHip: TfrmSuperHip
         DoubleBuffered = True
         ImageIndex = 2
         ParentDoubleBuffered = False
-        ExplicitWidth = 992
         object vtrTestFilter: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -10817,7 +10781,6 @@ object frmSuperHip: TfrmSuperHip
       object tsMemo: TTabSheet
         Caption = 'tsMemo'
         ImageIndex = 3
-        ExplicitWidth = 992
         object mmoTest: TMemo
           Left = 0
           Top = 0
@@ -10836,13 +10799,11 @@ object frmSuperHip: TfrmSuperHip
           ScrollBars = ssBoth
           TabOrder = 0
           WordWrap = False
-          ExplicitWidth = 992
         end
       end
       object tsPdf: TTabSheet
         Caption = 'tsPdf'
         ImageIndex = 4
-        ExplicitWidth = 992
         object pnButtons: TPanel
           Left = 0
           Top = 54
@@ -10855,7 +10816,6 @@ object frmSuperHip: TfrmSuperHip
           ShowCaption = False
           ShowHint = True
           TabOrder = 1
-          ExplicitWidth = 992
           object btZPlus: TPaintBox
             Tag = 4
             AlignWithMargins = True
@@ -11005,7 +10965,6 @@ object frmSuperHip: TfrmSuperHip
           Caption = 'tlb1'
           Images = imgListPdf
           TabOrder = 0
-          ExplicitWidth = 986
           object btnBack: TToolButton
             Left = 0
             Top = 0
@@ -11082,7 +11041,6 @@ object frmSuperHip: TfrmSuperHip
       object tsSpisaci: TTabSheet
         Caption = 'tsSpisaci'
         ImageIndex = 5
-        ExplicitWidth = 992
         object vtrSpisyci: TVirtualStringTreeHipp
           Left = 0
           Top = 64
@@ -11230,7 +11188,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 123
           ColumnAspect = 0
           TakeFocus = False
-          ExplicitWidth = 992
           Columns = <>
           DefaultText = ''
         end
@@ -11244,7 +11201,6 @@ object frmSuperHip: TfrmSuperHip
           ParentBackground = False
           ShowCaption = False
           TabOrder = 1
-          ExplicitWidth = 992
           DesignSize = (
             1072
             64)
@@ -11486,7 +11442,6 @@ object frmSuperHip: TfrmSuperHip
         Tag = 32
         Caption = 'tsRTF'
         ImageIndex = 6
-        ExplicitWidth = 992
         object pnlEditRtf: TPanel
           Left = 0
           Top = 0
@@ -11496,7 +11451,6 @@ object frmSuperHip: TfrmSuperHip
           Caption = 'pnlEditRtf'
           ParentBackground = False
           TabOrder = 0
-          ExplicitWidth = 992
           object btnFind: TButton
             Left = 24
             Top = 8
@@ -11524,7 +11478,6 @@ object frmSuperHip: TfrmSuperHip
         ParentDoubleBuffered = False
         OnHide = tsVideoHide
         OnShow = tsVideoShow
-        ExplicitWidth = 992
         object MPHip: TWindowsMediaPlayer
           Left = 0
           Top = 41
@@ -11551,7 +11504,6 @@ object frmSuperHip: TfrmSuperHip
           Caption = 'pnlTopVideo'
           ParentBackground = False
           TabOrder = 1
-          ExplicitWidth = 992
           object btnGetSeek: TButton
             Left = 24
             Top = 8
@@ -11566,7 +11518,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTest: TTabSheet
         Caption = 'tsTest'
         ImageIndex = 8
-        ExplicitWidth = 992
         object pnlStatusDB: TPanel
           Left = 0
           Top = 0
@@ -11577,7 +11528,6 @@ object frmSuperHip: TfrmSuperHip
           ParentBackground = False
           ShowCaption = False
           TabOrder = 0
-          ExplicitWidth = 992
           object lblGuidDB: TLabel
             Left = 8
             Top = 2
@@ -11644,7 +11594,6 @@ object frmSuperHip: TfrmSuperHip
           ShowCaption = False
           TabOrder = 1
           Visible = False
-          ExplicitWidth = 992
           object lblGuidNomenNzis: TLabel
             Left = 8
             Top = 2
@@ -11837,7 +11786,6 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrRecentDBDrawButton
           OnButtonClick = vtrRecentDBButtonClick
-          ExplicitWidth = 992
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -11869,7 +11817,6 @@ object frmSuperHip: TfrmSuperHip
         DoubleBuffered = False
         ImageIndex = 9
         ParentDoubleBuffered = False
-        ExplicitWidth = 992
         object pnlTopExcel: TPanel
           Left = 0
           Top = 0
@@ -11878,7 +11825,6 @@ object frmSuperHip: TfrmSuperHip
           Align = alTop
           ParentBackground = False
           TabOrder = 0
-          ExplicitWidth = 992
           DesignSize = (
             1072
             49)
@@ -11901,14 +11847,12 @@ object frmSuperHip: TfrmSuperHip
             Caption = 'btnTop'
             TabOrder = 0
             Visible = False
-            ExplicitLeft = 1713
           end
         end
       end
       object tsGrid: TTabSheet
         Caption = 'tsGrid'
         ImageIndex = 10
-        ExplicitWidth = 992
         object grdNom: TTeeGrid
           AlignWithMargins = True
           Left = 3
@@ -11927,7 +11871,6 @@ object frmSuperHip: TfrmSuperHip
           ParentColor = False
           TabOrder = 0
           OnDblClick = grdNomDblClick
-          ExplicitWidth = 986
           _Headers = (
             1
             'TColumnHeaderBand'
@@ -11944,7 +11887,6 @@ object frmSuperHip: TfrmSuperHip
           Caption = 'pnlGridTool'
           ParentBackground = False
           TabOrder = 1
-          ExplicitWidth = 992
           object btn6: TButton
             Left = 32
             Top = 8
@@ -11985,7 +11927,6 @@ object frmSuperHip: TfrmSuperHip
       object tsVTR_XML: TTabSheet
         Caption = 'tsVTR_XML'
         ImageIndex = 11
-        ExplicitWidth = 992
         object treeview: TVirtualStringTree
           Left = 0
           Top = 0
@@ -12011,7 +11952,6 @@ object frmSuperHip: TfrmSuperHip
           TreeOptions.PaintOptions = [toShowButtons, toShowDropmark, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toUseBlendedSelection]
           TreeOptions.SelectionOptions = [toFullRowSelect, toMultiSelect]
           OnGetNodeDataSize = treeviewGetNodeDataSize
-          ExplicitWidth = 992
           Columns = <
             item
               Position = 0
@@ -12034,7 +11974,6 @@ object frmSuperHip: TfrmSuperHip
       object tsXML: TTabSheet
         Caption = 'tsXML'
         ImageIndex = 12
-        ExplicitWidth = 992
         object tlbXml: TToolBar
           Left = 0
           Top = 0
@@ -12046,7 +11985,6 @@ object frmSuperHip: TfrmSuperHip
           ParentColor = False
           TabOrder = 0
           Transparent = False
-          ExplicitWidth = 992
           object btnXMLSaveAs: TToolButton
             Left = 0
             Top = 0
@@ -12121,7 +12059,6 @@ object frmSuperHip: TfrmSuperHip
           TabWidth = 2
           WantTabs = True
           FontSmoothing = fsmNone
-          ExplicitWidth = 992
           RemovedKeystrokes = <
             item
               Command = ecLineBreak
@@ -12137,7 +12074,6 @@ object frmSuperHip: TfrmSuperHip
       object tsOptionsNotes: TTabSheet
         Caption = 'tsOptionsNotes'
         ImageIndex = 13
-        ExplicitWidth = 992
         object imgOptionNote: TImage
           Left = 640
           Top = 11
@@ -15537,7 +15473,6 @@ object frmSuperHip: TfrmSuperHip
         ParentDoubleBuffered = False
         OnMouseEnter = tsFMXFormMouseEnter
         OnResize = tsFMXFormResize
-        ExplicitWidth = 992
         object fmxCntrDyn: TFireMonkeyContainer
           Left = 0
           Top = 0
@@ -15549,13 +15484,11 @@ object frmSuperHip: TfrmSuperHip
           Align = alClient
           OnDragOver = fmxCntrDynDragOver
           OnActivateForm = fmxCntrDynActivateForm
-          ExplicitWidth = 992
         end
       end
       object tsExpression: TTabSheet
         Caption = 'tsExpression'
         ImageIndex = 15
-        ExplicitWidth = 992
         object mmoIn: TMemo
           Left = 40
           Top = 24
@@ -15585,7 +15518,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNZIS: TTabSheet
         Caption = 'tsNZIS'
         ImageIndex = 16
-        ExplicitWidth = 992
         object btnToken: TButton
           Left = 16
           Top = 3
@@ -15756,7 +15688,6 @@ object frmSuperHip: TfrmSuperHip
         Caption = 'tsHtml'
         ImageIndex = 17
         OnShow = tsHtmlShow
-        ExplicitWidth = 992
       end
     end
     object pnlNav: TPanel
@@ -15768,7 +15699,6 @@ object frmSuperHip: TfrmSuperHip
       Caption = 'pnlNav'
       TabOrder = 1
       Visible = False
-      ExplicitWidth = 1000
       object fmxCntr1: TFireMonkeyContainer
         Left = 1
         Top = 1
@@ -15776,7 +15706,6 @@ object frmSuperHip: TfrmSuperHip
         Height = 39
         OnCreateFMXForm = fmxCntr1CreateFMXForm
         Align = alClient
-        ExplicitWidth = 998
       end
       object Button2: TButton
         Left = 265
@@ -15827,7 +15756,6 @@ object frmSuperHip: TfrmSuperHip
       Caption = 'pnlNzisMessages'
       ShowCaption = False
       TabOrder = 3
-      ExplicitWidth = 1000
       object splNzisReqResp: TSplitter
         Left = 657
         Top = 30
@@ -15928,7 +15856,6 @@ object frmSuperHip: TfrmSuperHip
         TabWidth = 2
         WantTabs = True
         FontSmoothing = fsmNone
-        ExplicitWidth = 337
         RemovedKeystrokes = <
           item
             Command = ecLineBreak
@@ -15951,7 +15878,6 @@ object frmSuperHip: TfrmSuperHip
         ParentColor = False
         TabOrder = 2
         Transparent = False
-        ExplicitWidth = 998
       end
     end
     object pnlGridSearch: TPanel
@@ -15965,7 +15891,6 @@ object frmSuperHip: TfrmSuperHip
       ParentDoubleBuffered = False
       TabOrder = 4
       OnMouseMove = pnlGridSearchMouseMove
-      ExplicitWidth = 1000
       object grdSearch: TTeeGrid
         AlignWithMargins = True
         Left = 4
@@ -15981,6 +15906,11 @@ object frmSuperHip: TfrmSuperHip
             Header.Format.Brush.Color = x000000FF
             Header.ParentFormat = False
             ParentFormat = False
+          end
+          item
+            LoadOrder = 1
+            Width.Automatic = False
+            Width.Value = 100.000000000000000000
           end>
         Header.Format.Brush.Color = x000000FF
         ReadOnly = False
@@ -15993,7 +15923,6 @@ object frmSuperHip: TfrmSuperHip
         TabOrder = 0
         OnMouseDown = grdSearchMouseDown
         OnMouseUp = grdSearchMouseUp
-        ExplicitWidth = 875
         _Headers = (
           1
           'TColumnHeaderBand'
@@ -16015,7 +15944,6 @@ object frmSuperHip: TfrmSuperHip
         Images = imgList1
         TabOrder = 1
         Transparent = False
-        ExplicitLeft = 882
         object ToolButton2: TToolButton
           Left = 0
           Top = 0
@@ -16055,7 +15983,6 @@ object frmSuperHip: TfrmSuperHip
     Top = 160
     Width = 1589
     Height = 2
-    UseSystemFont = False
     Caption = 'actmmb1'
     Color = clMenuBar
     ColorMap.DisabledFontColor = 7171437
@@ -16063,7 +15990,7 @@ object frmSuperHip: TfrmSuperHip
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Segoe UI'
     Font.Style = []
@@ -40496,137 +40423,265 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C01016F0088044C1510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
-      000000000000360000002800000040000000C0010000010020000000000000C0
+      494C010170008804881510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      000000000000360000002800000040000000D0010000010020000000000000D0
       0100000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
       000000000000000000000000000000000000522200CC6E4A0FB92B1D0575001B
       00FF005400FF001B00FF00000000000000000000000000000000000000000000
       0000000000003274FF004E87FF003778FF003576FF003274FF004984FF00001C
       000000550000001C00000000000000000000000000000000000000000000E4E4
       E40099999900959595009F9F9F009E9E9E0098989800969696009E9E9E009595
-      9500E1E1E1000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      9500E1E1E100000000000000000000000000000000001E2733001F2834001F28
+      34001F2834001F2834001F2834001F2834001F2834001F2834001F2834001F28
+      34001F2834001F2834001C232B00888888000000000000000000000000000000
       000000000000000000001B0F036601020677642C00E5D2901AFFD2901AFF0054
       00FF00FF00FF005400FFBE8218F32613057E0000000000000000000000000000
       000000000000266CFF00DEE3FF005D98FF003073FF00286EFF00C6D3FF000055
       000000FF00000055000000000000000000000000000000000000C1C1C100CACA
       CA00D4D4D400FAFAFA0000000000000000000000000000000000E1ECE2000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000000B00C4690000B8640000B863
+      0000B8630000B8630000B8630000B8630000B8630000B8630000B8630000B863
+      0000B8630000BF67000073370000565C64000000000000000000000000000000
       00000000000000000000764114D4090E19FF6D3500FF001B00FF005400FF008E
       00FF00FF00FF008E00FF005400FF001B00FF3073FF003576FF003275FF003375
       FF003576FF002069FF00D1DBFF005392FF00296EFF00001C000000550000008E
       000000FF0000008E000000550000001C00000000000000000000F3F3F300D5D5
       D500EDEDED00000000000000000000000000000000000000000011980700E2F0
-      E300000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      E3000000000000000000000000000000000000021000EC820000DD7B0000DC7A
+      0000DC7A0000DC7A0000DC7A0000DC7A0000DC7A0000DC7A0000DB780000DB77
+      0000DC7A0000E58000008E4A0000565E68000000000000000000000000000000
       00000000000800000000734216CC070D19FF763B00FF005400FF00FF00FF00FF
       00FF00FF00FF00FF00FF00FF00FF005400FF5A90FF002F73FF004883FF004583
       FF003071FF004E8AFF00C7D4FF0081AFFF005F93FF000055000000FF000000FF
       000000FF000000FF000000FF0000005500000000000000000000EDEDED00C6C6
       C600F2F2F200DBDBDB0085C9870059C25A0051B94F0048B1430026A41A0038A7
-      2B00D2EBD1000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      2B00D2EBD10000000000000000000000000000021000E7800000D7770000D674
+      0000D6760000D7770000D7780000D7780000D6770000D5740000DB871C00DE91
+      3100D4710000E07D00008B480000565E68000000000000000000000000000000
       00001311CDFF00000000794813CA070D19FF793F00FF001B00FF005400FF008E
       00FF00FF00FF008E00FF005400FF001B00FFFAF7FF003079FF00C5D2FF00AECD
       FF003C75FF00F4FEFF00AFC4FF00FFFFFF00FFFFFF00001C000000550000008E
       000000FF0000008E000000550000001C00000000000000000000F1F1F100C6C6
       C600ECECEC00C1C1C10077C7750042BE3E003DB6360030AC26001E9E11004DAE
-      40003AA42B00C7E2C50000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      40003AA42B00C7E2C500000000000000000000021000E77F0000D87A0300DD90
+      2E00D7780100D5740000D7770000D6770000D5720000D6770000E8B06C00FFFF
+      FF00DC892200DF7900008B480000565E68000000000000000000000000000000
       00001311CDFF1317E8FF693C50F0070C17FF864708FFC48725FFD79621FF0054
       00FF00FF00FF005400FFD59523FFB3692BFFEBEEFF002A75FF00DDE3FF00CAE0
       FF003571FF00EBF7FF007EA3FF00FFFFFF00A3C0FF00C3D4FF00FDFFFF000055
       000000FF0000005500005889FF00DCEDFF00000000000000000000000000F0F0
       F00000000000E2E3E4006ABB65002EAB24002CA72100229F14001D990D0051AF
-      430042A13300C7E5C50000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000001D2AEBFF202BEBFF202AEBFF1F29
+      430042A13300C7E5C500000000000000000000021000E67E0000D87A0300FDF9
+      F500FAF1E500D77C0700D5730000D5710000E0963A00FCF6EE00FDF6F000FFFF
+      FF00E7AF6A00DE7600008B480000565E68001D2AEBFF202BEBFF202AEBFF1F29
       EBFF202AECFF212FF6FF1723F7FF0B0F0CFF884909FFC4CBDCFFC07715FF001B
       00FF005400FF001B00FFD79726FFB76E2DFFEBEEFF002572FF00FFFBFF00EEF9
       FF00316EFF00F5FDFF000956FF00FFFFFF000C5EFF005C8CFF00DCECFF00001C
       000000550000001C00005889FF00DCEDFF000000000000000000000000000000
       0000D5D5D500E9EAEC0062B55B0025A3190027A31B00229F17002C9F1C0043A5
-      3600D6EFD5000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000006D76EFFF2B44F4FF2B43F4FF2A42
+      3600D6EFD50000000000000000000000000000021000E7800000D7760000D268
+      0000EEC49000FBF4EA00D4720000DC8B2500FFFFFF00E19B4100DA861C00EDC4
+      9200D36B0000E07C00008B480000565E68006D76EFFF2B44F4FF2B43F4FF2A42
       F4FF2A40F4FF293FF4FF273CF4FF5A6DFFFF4D297BFFDFAD4BFFE0B052FFD99E
       30FFD99B2DFFD99C2FFFD99C2FFFBC7631FFEAEDFF002F74FF00FFFFFF00FFFD
       FF003171FF00F6FDFF000C5BFF00FFFDFF004285FF006391FF00E1EFFF00125C
       FF00FFFFFF000D5CFF005083FF00DCEDFF00000000000000000000000000F0F0
       F000E4E4E40000000000000000000000000000000000000000003A9F2E00DDF2
-      DD00000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000006E79F2FF2A46F4FF2A45F4FF2A43
+      DD000000000000000000000000000000000000021000E7800000D7780000D677
+      0000D36A0000F0CEA200FDF9F300D87C0A00DC8B2500D46F0000D6780000D570
+      0000D6770000E07D00008B480000565E68006E79F2FF2A46F4FF2A45F4FF2A43
       F4FF2A44F3FF2A43F4FF3650F5FF1918CFFF965617FFE0B254FFE0B254FFE1B4
       58FFDEAC49FFD99F34FFDAA035FFC17B33FFE6EBFF00588FFF00DBECFF00DCE2
       FF00548CFF00F2FBFF00105DFF00E1E5FF00619BFF00608FFF00E1EFFF00125C
       FF00FFFFFF007BA7FF00A3BDFF00D3E7FF000000000000000000000000000000
       000000000000E0E1E60000000000000000000000000000000000DFF2DF000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000003838EDFF494CEFFF484CEFFF494E
+      00000000000000000000000000000000000000021000E7800000D7780000D778
+      0000D5730000CF5F0000EDC28D00FCF8F200D36E0000D6750000D6750000D574
+      0000D7780000E07D00008B480000565E68003838EDFF494CEFFF484CEFFF494E
       EFFF3439EFFF94ACFEFF6043B7FF050A12FF9E6322FFE4B963FFE4B963FFE4B9
       63FFE4B963FFE4BA65FFE4B65EFFC88437FFE3E8FF0084ABFF00B5D1FF00B3C7
       FF0080AAFF00EFF8FF00125FFF00C9D5FF007AABFF005E8EFF00E1EFFF00115C
       FF00FFFFFF00FFFFFF00FFFFFF00C9DFFF000000000000000000001C00000055
       0000001C00007685B500A2AFE200A4B0E3008996D100707BAF00000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000E7800000D7780000D46E
+      0000DC8A2200FCF6EE00D4710000F0CDA300F9EAD800D46E0000DA841900DD90
+      2E00D5710000E07D00008B480000565E68000000000000000000000000000000
       00002729EFFF2325FAFF755112B8040914FFA46825FFE6BC6BFFE6BC6BFFE6BC
       6BFFE6BC6BFFE6BC6BFFE6BC6DFFCA8935FFDFE6FF00AAC6FF008FB8FF008BAB
       FF00AAC5FF00EBF6FF001460FF00B3C7FF0090B9FF005C8DFF00E1EFFF00125C
       FF00FFFFFF00A9C5FF00C5D5FF00D0E4FF0000000000000000000055000000FF
       0000005500008D97BF00B0BDE8009FABDA00ACB8E600818EC300F4F5F5000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000E77F0000D7760000E6AB
+      6200FFFFFF00E4A65800D5710000D46F0000F1CEA400FAF2E500E9B77800FFFF
+      FF00DC8A2300DF7900008B480000565E68000000000000000000000000000000
       00001610F1FF000000008A6228CC030813FFAF732CFFEAC67BFFEAC67BFFEAC6
       7BFFEAC67BFFEAC67BFFEAC67BFFD0903AFFDBE3FF00D5E3FF00679EFF006190
       FF00D5E2FF00E7F3FF001661FF00A3BCFF009FC3FF005B8CFF00E1EFFF00125C
       FF00FFFFFF000959FF004C81FF00DCEDFF00001C000000550000008E000000FF
       0000008E000000550000001C0000AFBBE40098A5D6006A74A500B7B7BC000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000E67F0000D87A0400F9E8
+      D600E3A35200D4700000D6770000D6760000D4700000E3A35200F8E6D100FFFF
+      FF00E6AC6400DE7700008B480000565E68000000000000000000000000000000
       000000000000000000008B632BCC020813FFB27830FFEDCA86FFEDCA86FFEDCA
       86FFEDCA86FFEDCA86FFEDCA86FFD3943BFFD8E1FF00FEFEFF004084FF003974
       FF00FFFFFF00E3F1FF001762FF0093B0FF00A7C9FF004B81FF00E1EFFF00125C
       FF00FFFFFF001863FF005889FF00DCEDFF000055000000FF000000FF000000FF
       000000FF000000FF000000550000CDD9FD00BAC7F10055597600C1C1C7000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000E7800000D7770000D36D
+      0000D5720000D6770000D7780000D7780000D6770000D46E0000DC8B2500EDC1
+      8C00D46E0000E07C00008B480000565E68000000000000000000000000000000
       000000000000000000008E6A2ECC020812FFC6903DFFF8DE9FFFF6DA9CFFF2D7
       99FFF2D799FFF2D799FFF2D799FFD89C3FFFD7E0FF00FFFFFF001F6AFF001D66
       FF00FFFFFF00E3F1FF001963FF007CA3FF00FFFFFF00ECF1FF00D3E5FF00125C
       FF00FFFFFF001863FF00598AFF00DCEDFF00001C000000550000008E000000FF
       0000008E000000550000001C0000AEB8D8009AA3C20061607200CDCED4000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000E7800000D8780000D778
+      0000D7780000D7780000D7780000D7780000D7780000D7770000D87A0300D674
+      0000D7770000E07D00008B480000565E68000000000000000000000000000000
       000000000000000000008F6D32CC020712FF241F1AFF90795BFFC8B182FFFEE8
       B0FFFAE4ADFFF7DFA9FFF6DFA7FFDBA043FFE2E7FF00F5FDFF002168FF00226A
       FF00EEEEFF00EDF9FF001C65FF006C97FF00FFFFFF00FFFFFF00D6E8FF00135D
       FF00FFFFFF001964FF005A8AFF00EBF7FF0000000000000000000055000000FF
       0000005500006164790073738800404052007B7A8A0062627300000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000000000021000F2860000E47F0000E37E
+      0000E37E0000E37E0000E37E0000E37E0000E37E0000E37E0000E37E0000E37E
+      0000E37E0000EC830000924C0000575E68000000000000000000000000000000
       00000000000000000000927234CCEAB753FFEBB853FFEBB853FFEBB853FFEAB7
       53FFE8B34FFFE3AD4CFFE3AC4BFFE4B04EFF2C70FF002B6FFF003576FF003576
       FF002C70FF002E71FF003476FF003073FF002E71FF002D71FF002E71FF003375
       FF002D71FF003475FF003174FF002E71FF000000000000000000001C00000055
       0000001C000000000000E6E6E900BFC0C600E9E9EA0000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
-      0000000000000000000000000000000000000000000000000000000000000000
+      000000000000000000000000000000000000090C1000321B00002D1900002D19
+      00002D1900002D1900002D1900002D1900002D1900002D1900002D1900002D19
+      00002D190000301A000015060000636568000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -44083,8 +44138,12 @@ object frmSuperHip: TfrmSuperHip
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFD1D1D4FF7C7C87FF60606BFF5A5A66FF72727DFFCFCFD2FFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF424D3E000000000000003E000000
-      2800000040000000C00100000100010000000000000E00000000000000000000
-      000000000000000000000000FFFFFF00FF03F803E0070000FC00F803C3DF0000
+      2800000040000000D00100000100010000000000800E00000000000000000000
+      000000000000000000000000FFFFFF0000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      0000000000000000000000000000000000000000000000000000000000000000
+      00000000000000000000000000000000FF03F803E0078000FC00F803C3DF0000
       FC000000C7CF0000F4000000C0070000F4000000C0030000F0000000E8030000
       00000000F007000000000000E7CF000000000000FBDF000000000000C03F0000
       F0000000C01F0000F4000000001F0000FC000000001F0000FC000000001F0000
@@ -44311,7 +44370,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 360
     Bitmap = {
-      494C010164006814101518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164006814441518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000006000000070020000010020000000000000A8
       0300000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -52147,7 +52206,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 720
     Top = 296
     Bitmap = {
-      494C010106000800080118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101060008003C0118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000003000000001002000000000000048
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

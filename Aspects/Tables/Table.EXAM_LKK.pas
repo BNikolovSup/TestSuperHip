@@ -107,6 +107,7 @@ TEXAM_LKKItem = class(TBaseItem)
 	PRecordSearch: ^TEXAM_LKKItem.TRecEXAM_LKK;
     ArrPropSearch: TArray<TEXAM_LKKItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TEXAM_LKKItem.TPropertyIndex>;
+	VisibleColl: TEXAM_LKKItem.TSetProp;
 	ArrayPropOrder: TArray<TEXAM_LKKItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -118,7 +119,7 @@ TEXAM_LKKItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; EXAM_LKK: TEXAM_LKKItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; EXAM_LKK: TEXAM_LKKItem; var AValue:String);
@@ -133,8 +134,9 @@ TEXAM_LKKItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
@@ -151,9 +153,15 @@ TEXAM_LKKItem = class(TBaseItem)
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalEXAM_LKKSet);
-	procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
-    procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -414,6 +422,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TEXAM_LKKColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TEXAM_LKKItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TEXAM_LKKColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -422,18 +450,20 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvEXAM_LKKRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -452,56 +482,67 @@ begin
     tempItem := Items[i];
     if tempItem.PRecord <> nil then
     begin
-	  if (EXAM_LKK_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(EXAM_LKK_DATA))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_ID))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(EXAM_LKK_NRN))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_NUMBER))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec1Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec1Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec1Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec2Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec2Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec2Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec3Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec3Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec3Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec4Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec4Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec4Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-          if (EXAM_LKK_Spec5Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec5Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec5Pos))) then
-      begin
-      inc(cnt);
-      exit;
-      end;
-      //    if (EXAM_LKK_Logical in tempItem.PRecord.setProp) and (tempItem.PRecord.Logical <> Self.getLogical16Map(tempItem.DataPos, word(EXAM_LKK_Logical))) then
-//      begin
-//      inc(cnt);
-//      exit;
-//      end;
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (EXAM_LKK_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(EXAM_LKK_DATA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(EXAM_LKK_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Spec1Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec1Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec1Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Spec2Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec2Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec2Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Spec3Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec3Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec3Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Spec4Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec4Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec4Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Spec5Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec5Pos <> Self.getIntMap(tempItem.DataPos, word(EXAM_LKK_Spec5Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (EXAM_LKK_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(EXAM_LKK_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
     end;
   end;
 end;
@@ -517,11 +558,10 @@ begin
   ListForFinder := TList<TEXAM_LKKItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := TEXAM_LKKItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -553,6 +593,27 @@ begin
     EXAM_LKK_Logical: Result := 'Logical';
   end;
 end;
+
+function TEXAM_LKKColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'NZIS_STATUS_None';
+    1: Result := 'NZIS_STATUS_Valid';
+    2: Result := 'NZIS_STATUS_NoValid';
+    3: Result := 'NZIS_STATUS_Sended';
+    4: Result := 'NZIS_STATUS_Err';
+    5: Result := 'NZIS_STATUS_Cancel';
+    6: Result := 'NZIS_STATUS_Edited';
+    7: Result := 'IS_PRINTED';
+    8: Result := 'LKK_TYPE_PodgLkk';
+    9: Result := 'LKK_TYPE_Lkk';
+    10: Result := 'LKK_TYPE_IskLkk';
+    11: Result := 'LKK_TYPE_Telk';
+  else
+    Result := '???';
+  end;
+end;
+
 
 procedure TEXAM_LKKColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
@@ -590,6 +651,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -616,15 +683,22 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvEXAM_LKKRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function TEXAM_LKKColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -737,17 +811,17 @@ end;
 
 procedure TEXAM_LKKColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: TEXAM_LKKItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -756,7 +830,7 @@ begin
     Exit;
   end;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TEXAM_LKKColl.GetCellFromRecord(propIndex: word; EXAM_LKK: TEXAM_LKKItem; var AValue: String);
@@ -836,6 +910,16 @@ begin
   begin
     GetCellFromMap(ACol, ARow, EXAM_LKK, AValue);
   end;
+end;
+
+function TEXAM_LKKColl.GetCollType: TCollectionsType;
+begin
+  Result := ctEXAM_LKK;
+end;
+
+function TEXAM_LKKColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctEXAM_LKKDel;
 end;
 
 procedure TEXAM_LKKColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -929,6 +1013,12 @@ begin
 
 end;
 
+function TEXAM_LKKColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TEXAM_LKKItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TEXAM_LKKColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TEXAM_LKKItem;
@@ -954,13 +1044,10 @@ begin
   end;
 end;
 
-procedure TEXAM_LKKColl.OnSetTextSearchDateEdt(date: TDate; field: Word;
-  Condition: TConditionSet);
-begin
-
-end;
-
+{=== TEXT SEARCH HANDLER ===}
 procedure TEXAM_LKKColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
 begin
   if Text = '' then
   begin
@@ -968,24 +1055,66 @@ begin
   end
   else
   begin
-    include(ListForFinder[0].PRecord.setProp, TEXAM_LKKItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TEXAM_LKKItem.TPropertyIndex(Field));
   end;
+
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-  if cotSens in Condition then
-  begin
-    //case TEXAM_LKKItem.TPropertyIndex(Field) of
-    //  EXAM_LKK_EGN: ListForFinder[0].PRecord.EGN  := Text;
-    //  
-    //end;
-  end
-  else
-  begin
-    //case TEXAM_LKKItem.TPropertyIndex(Field) of
-    //  EXAM_LKK_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
-    //end;
+
+  case TEXAM_LKKItem.TPropertyIndex(Field) of
+EXAM_LKK_NRN: ListForFinder[0].PRecord.NRN := AText;
   end;
 end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TEXAM_LKKColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TEXAM_LKKItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TEXAM_LKKItem.TPropertyIndex(Field) of
+EXAM_LKK_DATA: ListForFinder[0].PRecord.DATA := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TEXAM_LKKColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TEXAM_LKKItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TEXAM_LKKItem.TPropertyIndex(Field) of
+EXAM_LKK_ID: ListForFinder[0].PRecord.ID := Value;
+    EXAM_LKK_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+    EXAM_LKK_Spec1Pos: ListForFinder[0].PRecord.Spec1Pos := Value;
+    EXAM_LKK_Spec2Pos: ListForFinder[0].PRecord.Spec2Pos := Value;
+    EXAM_LKK_Spec3Pos: ListForFinder[0].PRecord.Spec3Pos := Value;
+    EXAM_LKK_Spec4Pos: ListForFinder[0].PRecord.Spec4Pos := Value;
+    EXAM_LKK_Spec5Pos: ListForFinder[0].PRecord.Spec5Pos := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TEXAM_LKKColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TEXAM_LKKItem.TPropertyIndex(Field) of
+    EXAM_LKK_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalEXAM_LKK(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalEXAM_LKK(logIndex))   
+    end;
+  end;
+end;
+
 
 procedure TEXAM_LKKColl.OnSetTextSearchLog(Log: TlogicalEXAM_LKKSet);
 begin
@@ -1003,18 +1132,19 @@ begin
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function TEXAM_LKKColl.PropType(propIndex: Word): TAsectTypeKind;
+function TEXAM_LKKColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TEXAM_LKKItem.TPropertyIndex(propIndex) of
@@ -1318,8 +1448,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

@@ -136,7 +136,20 @@ uses
   HISXMLHelper in 'HISXMLHelper.pas',
   msgX003 in 'XML\msgX003.pas',
   msgX013 in 'msgX013.pas',
-  msgR001 in 'msgR001.pas';
+  msgR001 in 'msgR001.pas',
+  InterruptibleSort in 'InterruptibleSort.pas',
+  uGridHelpers in 'uGridHelpers.pas',
+  uVSTSyncHelper in 'uVSTSyncHelper.pas',
+  uKeyThrottle in 'uKeyThrottle.pas',
+  FilterFieldGenerator in 'FilterFieldGenerator.pas',
+  uFilterTreeLoader in 'uFilterTreeLoader.pas',
+  uFilterTreeUtils in 'uFilterTreeUtils.pas',
+  uFilterTreeGenerator1 in 'uFilterTreeGenerator1.pas',
+  uFilterTreeGenerator2 in 'uFilterTreeGenerator2.pas',
+  uFilterMagicIndex in 'uFilterMagicIndex.pas',
+  uMagicQueryRunner in 'uMagicQueryRunner.pas',
+  Aspects.Attributes in 'Aspects\Aspects.Attributes.pas',
+  FastSearch in 'FastSearch.pas';
 
 {$R *.dres}
 {$R *.res}

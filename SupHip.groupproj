@@ -84,6 +84,9 @@
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\CompSign.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VCL\Custom Bands\TeeGrid_CustomBands.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -335,14 +338,23 @@
     <Target Name="CompSign:Make">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Tablet\CompSign.dproj" Targets="Make"/>
     </Target>
+    <Target Name="TeeGrid_CustomBands">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VCL\Custom Bands\TeeGrid_CustomBands.dproj"/>
+    </Target>
+    <Target Name="TeeGrid_CustomBands:Clean">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VCL\Custom Bands\TeeGrid_CustomBands.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TeeGrid_CustomBands:Make">
+        <MSBuild Projects="..\..\Components\Steema Software\Steema TeeGrid for VCL &amp; FMX Binary Version 1.07\demos\VCL\Custom Bands\TeeGrid_CustomBands.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll;TestAspGtp;Tablet;NZIS;CompSign"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll;TestAspGtp;Tablet;NZIS;CompSign;TeeGrid_CustomBands"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean;TestAspGtp:Clean;Tablet:Clean;NZIS:Clean;CompSign:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean;TestAspGtp:Clean;Tablet:Clean;NZIS:Clean;CompSign:Clean;TeeGrid_CustomBands:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make;TestAspGtp:Make;Tablet:Make;NZIS:Make;CompSign:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make;TestAspGtp:Make;Tablet:Make;NZIS:Make;CompSign:Make;TeeGrid_CustomBands:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

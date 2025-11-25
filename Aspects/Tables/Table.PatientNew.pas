@@ -146,6 +146,7 @@ TPatientNewItem = class(TBaseItem)
 	PRecordSearch: ^TPatientNewItem.TRecPatientNew;
     ArrPropSearch: TArray<TPatientNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPatientNewItem.TPropertyIndex>;
+	VisibleColl: TPatientNewItem.TSetProp;
 	ArrayPropOrder: TArray<TPatientNewItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -157,7 +158,7 @@ TPatientNewItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; PatientNew: TPatientNewItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; PatientNew: TPatientNewItem; var AValue:String);
@@ -174,12 +175,11 @@ TPatientNewItem = class(TBaseItem)
 	function DisplayName(propIndex: Word): string; override;
 	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
-	procedure OrderFieldsSearch(Grid: TTeeGrid);override;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
@@ -197,6 +197,9 @@ TPatientNewItem = class(TBaseItem)
     procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalPatientNewSet);
 	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
   end;
 
 implementation
@@ -489,6 +492,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TPatientNewColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TPatientNewItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TPatientNewColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -501,14 +524,16 @@ begin
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -651,11 +676,10 @@ begin
   ListForFinder := TList<TPatientNewItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := TPatientNewItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -776,6 +800,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -805,12 +835,19 @@ begin
     if data.vid = vvPatientNewRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function TPatientNewColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -923,17 +960,17 @@ end;
 
 procedure TPatientNewColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: TPatientNewItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -942,7 +979,7 @@ begin
     Exit;
   end;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TPatientNewColl.GetCellFromRecord(propIndex: word; PatientNew: TPatientNewItem; var AValue: String);
@@ -1030,6 +1067,11 @@ begin
   begin
     GetCellFromMap(ACol, ARow, PatientNew, AValue);
   end;
+end;
+
+function TPatientNewColl.GetCollType: TCollectionsType;
+begin
+  Result := ctPatientNew;
 end;
 
 procedure TPatientNewColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -1216,6 +1258,12 @@ begin
 
 end;
 
+function TPatientNewColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TPatientNewItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TPatientNewColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TPatientNewItem;
@@ -1284,7 +1332,7 @@ begin
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
   case TPatientNewItem.TPropertyIndex(Field) of
-    PatientNew_BIRTH_DATE: ListForFinder[0].PRecord.BIRTH_DATE := Value;
+PatientNew_BIRTH_DATE: ListForFinder[0].PRecord.BIRTH_DATE := Value;
     PatientNew_DATE_ZAPISVANE: ListForFinder[0].PRecord.DATE_ZAPISVANE := Value;
     PatientNew_DIE_DATE: ListForFinder[0].PRecord.DIE_DATE := Value;
   end;
@@ -1326,13 +1374,6 @@ begin
   ListForFinder[0].PRecord.Logical := Log;
 end;
 
-
-procedure TPatientNewColl.OrderFieldsSearch(Grid: TTeeGrid);
-begin
-  inherited;
-
-end;
-
 procedure TPatientNewColl.OrderFieldsSearch1(Grid: TTeeGrid);
 var
   FieldCollOptionNode, run: PVirtualNode;
@@ -1341,22 +1382,22 @@ var
   ArrCol: TArray<TColumn>;
 begin
   inherited;
-  exit;//zzzzzzzzzzzzzzzzzzzzzzzzzzzz
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function TPatientNewColl.PropType(propIndex: Word): TAsectTypeKind;
+function TPatientNewColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TPatientNewItem.TPropertyIndex(propIndex) of
@@ -1733,8 +1774,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

@@ -81,7 +81,7 @@ DiagnosticReport_Code
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; DiagnosticReport: TDiagnosticReportItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; DiagnosticReport: TDiagnosticReportItem; var AValue:String);
@@ -618,7 +618,7 @@ end;
 //  ListForFDB[0].PRecord.Logical := Log;
 //end;
 
-function TDiagnosticReportColl.PropType(propIndex: Word): TAsectTypeKind;
+function TDiagnosticReportColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TDiagnosticReportItem.TPropertyIndex(propIndex) of

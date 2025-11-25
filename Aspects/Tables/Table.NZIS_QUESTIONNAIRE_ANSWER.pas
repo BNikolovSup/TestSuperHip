@@ -2,10 +2,10 @@ unit Table.NZIS_QUESTIONNAIRE_ANSWER;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -21,24 +21,31 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
+TLogicalNZIS_QUESTIONNAIRE_ANSWER = (
+    Is_);
+TlogicalNZIS_QUESTIONNAIRE_ANSWERSet = set of TLogicalNZIS_QUESTIONNAIRE_ANSWER;
+
 
 TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-  NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE
-, NZIS_QUESTIONNAIRE_ANSWER_ID
-, NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID
-, NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS
-);
+       NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE
+       , NZIS_QUESTIONNAIRE_ANSWER_ID
+       , NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID
+       , NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS
+       , NZIS_QUESTIONNAIRE_ANSWER_Logical
+       );
 	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecNZIS_QUESTIONNAIRE_ANSWER = ^TRecNZIS_QUESTIONNAIRE_ANSWER;
       TRecNZIS_QUESTIONNAIRE_ANSWER = record
         CL134_QUESTION_CODE: AnsiString;
         ID: integer;
         QUESTIONNAIRE_RESPONSE_ID: integer;
-        NOMEN_POS: Cardinal;
+        NOMEN_POS: cardinal;
+        Logical: TlogicalNZIS_QUESTIONNAIRE_ANSWERSet;
         setProp: TSetProp;
       end;
 
@@ -54,8 +61,12 @@ TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
     destructor Destroy; override;
     procedure InsertNZIS_QUESTIONNAIRE_ANSWER;
     procedure UpdateNZIS_QUESTIONNAIRE_ANSWER;
-    procedure SaveNZIS_QUESTIONNAIRE_ANSWER(var dataPosition: Cardinal);
+    procedure SaveNZIS_QUESTIONNAIRE_ANSWER(var dataPosition: Cardinal)overload;
+	procedure SaveNZIS_QUESTIONNAIRE_ANSWER(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -63,17 +74,21 @@ TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TNZIS_QUESTIONNAIRE_ANSWERItem;
     function GetItem(Index: Integer): TNZIS_QUESTIONNAIRE_ANSWERItem;
     procedure SetItem(Index: Integer; const Value: TNZIS_QUESTIONNAIRE_ANSWERItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	tempItem: TNZIS_QUESTIONNAIRE_ANSWERItem;
-	ListForFDB: TList<TNZIS_QUESTIONNAIRE_ANSWERItem>;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TNZIS_QUESTIONNAIRE_ANSWERItem>;
     ListNZIS_QUESTIONNAIRE_ANSWERSearch: TList<TNZIS_QUESTIONNAIRE_ANSWERItem>;
 	PRecordSearch: ^TNZIS_QUESTIONNAIRE_ANSWERItem.TRecNZIS_QUESTIONNAIRE_ANSWER;
     ArrPropSearch: TArray<TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex>;
+	VisibleColl: TNZIS_QUESTIONNAIRE_ANSWERItem.TSetProp;
+	ArrayPropOrder: TArray<TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -83,7 +98,7 @@ TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; NZIS_QUESTIONNAIRE_ANSWER: TNZIS_QUESTIONNAIRE_ANSWERItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; NZIS_QUESTIONNAIRE_ANSWER: TNZIS_QUESTIONNAIRE_ANSWERItem; var AValue:String);
@@ -95,8 +110,17 @@ TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TNZIS_QUESTIONNAIRE_ANSWERItem>);
@@ -105,8 +129,18 @@ TNZIS_QUESTIONNAIRE_ANSWERItem = class(TBaseItem)
     procedure IndexValue(propIndex: TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex);
     property Items[Index: Integer]: TNZIS_QUESTIONNAIRE_ANSWERItem read GetItem write SetItem;
-    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+    procedure OnSetTextSearchLog(Log: TlogicalNZIS_QUESTIONNAIRE_ANSWERSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -123,6 +157,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERItem.GetCollType: TCollectionsType;
+begin
+  Result := ctNZIS_QUESTIONNAIRE_ANSWER;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERItem.InsertNZIS_QUESTIONNAIRE_ANSWER;
@@ -166,6 +229,7 @@ begin
             NZIS_QUESTIONNAIRE_ANSWER_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: SaveData(PRecord.QUESTIONNAIRE_RESPONSE_ID, PropPosition, metaPosition, dataPosition);
             NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: SaveData(PRecord.NOMEN_POS, PropPosition, metaPosition, dataPosition);
+            NZIS_QUESTIONNAIRE_ANSWER_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -194,17 +258,31 @@ begin
     if Result = false then
       Exit;
     pidx := TNZIS_QUESTIONNAIRE_ANSWERColl(coll).ArrPropSearchClc[i];
-	ATempItem := TNZIS_QUESTIONNAIRE_ANSWERColl(coll).ListForFDB.Items[0];
+	ATempItem := TNZIS_QUESTIONNAIRE_ANSWERColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
         NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: Result := IsFinded(ATempItem.PRecord.CL134_QUESTION_CODE, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE), cot);
-        NZIS_QUESTIONNAIRE_ANSWER_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_ID), cot);
-        NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: Result := IsFinded(ATempItem.PRecord.QUESTIONNAIRE_RESPONSE_ID, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID), cot);
-        NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: Result := IsFinded(ATempItem.PRecord.NOMEN_POS, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS), cot);
+            NZIS_QUESTIONNAIRE_ANSWER_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_ID), cot);
+            NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: Result := IsFinded(ATempItem.PRecord.QUESTIONNAIRE_RESPONSE_ID, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID), cot);
+            NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: Result := IsFinded(ATempItem.PRecord.NOMEN_POS, buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS), cot);
+            NZIS_QUESTIONNAIRE_ANSWER_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(NZIS_QUESTIONNAIRE_ANSWER_Logical), cot);
       end;
     end;
   end;
+end;
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERItem.SaveNZIS_QUESTIONNAIRE_ANSWER(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveNZIS_QUESTIONNAIRE_ANSWER(dataPosition);
 end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERItem.SaveNZIS_QUESTIONNAIRE_ANSWER(var dataPosition: Cardinal);
@@ -229,6 +307,7 @@ begin
             NZIS_QUESTIONNAIRE_ANSWER_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: SaveData(PRecord.QUESTIONNAIRE_RESPONSE_ID, PropPosition, metaPosition, dataPosition);
             NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: SaveData(PRecord.NOMEN_POS, PropPosition, metaPosition, dataPosition);
+            NZIS_QUESTIONNAIRE_ANSWER_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -298,25 +377,129 @@ begin
 
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
-  Result := ListForFDB.Add(ItemForSearch);
+  ItemForSearch.PRecord.Logical := [];
+  Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvNZIS_QUESTIONNAIRE_ANSWERRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TNZIS_QUESTIONNAIRE_ANSWERItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE in tempItem.PRecord.setProp) and (tempItem.PRecord.CL134_QUESTION_CODE <> Self.getAnsiStringMap(tempItem.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NZIS_QUESTIONNAIRE_ANSWER_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.QUESTIONNAIRE_RESPONSE_ID <> Self.getIntMap(tempItem.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMEN_POS <> Self.getIntMap(tempItem.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NZIS_QUESTIONNAIRE_ANSWER_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
+
 constructor TNZIS_QUESTIONNAIRE_ANSWERColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
   tempItem := TNZIS_QUESTIONNAIRE_ANSWERItem.Create(nil);
   ListNZIS_QUESTIONNAIRE_ANSWERSearch := TList<TNZIS_QUESTIONNAIRE_ANSWERItem>.Create;
-  ListForFDB := TList<TNZIS_QUESTIONNAIRE_ANSWERItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TNZIS_QUESTIONNAIRE_ANSWERItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TNZIS_QUESTIONNAIRE_ANSWERColl.destroy;
 begin
   FreeAndNil(ListNZIS_QUESTIONNAIRE_ANSWERSearch);
-  FreeAndNil(ListForFDB);
+  FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -331,13 +514,191 @@ begin
     NZIS_QUESTIONNAIRE_ANSWER_ID: Result := 'ID';
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: Result := 'QUESTIONNAIRE_RESPONSE_ID';
     NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: Result := 'NOMEN_POS';
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: Result := 'Logical';
   end;
 end;
 
-function TNZIS_QUESTIONNAIRE_ANSWERColl.FieldCount: Integer;
+function TNZIS_QUESTIONNAIRE_ANSWERColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'Is_';
+  else
+    Result := '???';
+  end;
+end;
+
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
 begin
   inherited;
-  Result := 4;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
+
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.FieldCount: Integer; 
+begin
+  inherited;
+  Result := 5;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvNZIS_QUESTIONNAIRE_ANSWERRoot then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -363,16 +724,26 @@ end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol: Integer;
+  RowSelect: Integer;
   prop: TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex;
 begin
   inherited;
-  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if (ListDataPos.count - 1) < ARow then exit;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
 
-  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
-  prop := TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, ARow, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.GetCellFromRecord(propIndex: word; NZIS_QUESTIONNAIRE_ANSWER: TNZIS_QUESTIONNAIRE_ANSWERItem; var AValue: String);
@@ -384,6 +755,7 @@ begin
     NZIS_QUESTIONNAIRE_ANSWER_ID: str := inttostr(NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID);
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: str := inttostr(NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID);
     NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: str := inttostr(NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS);
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: str := NZIS_QUESTIONNAIRE_ANSWER.Logical08ToStr(TLogicalData08(NZIS_QUESTIONNAIRE_ANSWER.PRecord.Logical));
   else
     begin
       str := '';
@@ -399,9 +771,9 @@ var
   prop: TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFDB.Count = 0 then Exit;
+  if ListForFinder.Count = 0 then Exit;
 
-  AtempItem := ListForFDB[ARow];
+  AtempItem := ListForFinder[ARow];
   prop := TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -448,6 +820,16 @@ begin
   end;
 end;
 
+function TNZIS_QUESTIONNAIRE_ANSWERColl.GetCollType: TCollectionsType;
+begin
+  Result := ctNZIS_QUESTIONNAIRE_ANSWER;
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctNZIS_QUESTIONNAIRE_ANSWERDel;
+end;
+
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   NZIS_QUESTIONNAIRE_ANSWER: TNZIS_QUESTIONNAIRE_ANSWERItem;
@@ -482,7 +864,8 @@ begin
     NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: str :=  NZIS_QUESTIONNAIRE_ANSWER.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     NZIS_QUESTIONNAIRE_ANSWER_ID: str :=  inttostr(NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, propIndex));
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: str :=  inttostr(NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, propIndex));
-    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: str :=  inttostr(NZIS_QUESTIONNAIRE_ANSWER.getCardMap(Self.Buf, Self.posData, propIndex));
+    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: str :=  inttostr(NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, propIndex));
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: str :=  NZIS_QUESTIONNAIRE_ANSWER.Logical08ToStr(NZIS_QUESTIONNAIRE_ANSWER.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -508,18 +891,17 @@ begin
     TempItem := self.Items[i];
     case propIndex of
       NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE:
-      begin
-        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-        if TempItem.IndexAnsiStr <> nil then
-        begin
-          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-        end
-        else
-          TempItem.IndexAnsiStr1 := '';
-      end;
+begin
+  TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+  if TempItem.IndexAnsiStr <> nil then
+  begin
+    TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+  end
+  else
+    TempItem.IndexAnsiStr1 := '';
+end;
       NZIS_QUESTIONNAIRE_ANSWER_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
       NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: TempItem.IndexInt :=  TempItem.getPCardMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -528,6 +910,12 @@ procedure TNZIS_QUESTIONNAIRE_ANSWERColl.IndexValueListNodes(propIndex: TNZIS_QU
 begin
 
 end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
@@ -554,19 +942,119 @@ begin
   end;
 end;
 
+{=== TEXT SEARCH HANDLER ===}
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field) of
+NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: ListForFinder[0].PRecord.CL134_QUESTION_CODE := AText;
+  end;
+end;
 
 
-function TNZIS_QUESTIONNAIRE_ANSWERColl.PropType(propIndex: Word): TAsectTypeKind;
+{=== DATE SEARCH HANDLER ===}
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+//
+//  case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field) of
+//
+//  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field) of
+NZIS_QUESTIONNAIRE_ANSWER_ID: ListForFinder[0].PRecord.ID := Value;
+    NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: ListForFinder[0].PRecord.QUESTIONNAIRE_RESPONSE_ID := Value;
+    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: ListForFinder[0].PRecord.NOMEN_POS := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(Field) of
+    NZIS_QUESTIONNAIRE_ANSWER_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalNZIS_QUESTIONNAIRE_ANSWER(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalNZIS_QUESTIONNAIRE_ANSWER(logIndex))   
+    end;
+  end;
+end;
+
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OnSetTextSearchLog(Log: TlogicalNZIS_QUESTIONNAIRE_ANSWERSet);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
+end;
+
+procedure TNZIS_QUESTIONNAIRE_ANSWERColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(propIndex) of
     NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: Result := actAnsiString;
     NZIS_QUESTIONNAIRE_ANSWER_ID: Result := actinteger;
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: Result := actinteger;
-    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: Result := actCardinal;
+    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: Result := actcardinal;
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: Result := actLogical;
   else
     Result := actNone;
   end
+end;
+
+function TNZIS_QUESTIONNAIRE_ANSWERColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure TNZIS_QUESTIONNAIRE_ANSWERColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -577,7 +1065,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   NZIS_QUESTIONNAIRE_ANSWER := Items[ARow];
   if not Assigned(NZIS_QUESTIONNAIRE_ANSWER.PRecord) then
   begin
@@ -587,12 +1075,11 @@ begin
   end
   else
   begin
-    isOld := False;
     case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(ACol) of
       NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-      NZIS_QUESTIONNAIRE_ANSWER_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    NZIS_QUESTIONNAIRE_ANSWER_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -612,6 +1099,7 @@ begin
     NZIS_QUESTIONNAIRE_ANSWER_ID: NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID := StrToInt(AValue);
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID := StrToInt(AValue);
     NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS := StrToInt(AValue);
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: NZIS_QUESTIONNAIRE_ANSWER.PRecord.Logical := tlogicalNZIS_QUESTIONNAIRE_ANSWERSet(NZIS_QUESTIONNAIRE_ANSWER.StrToLogical08(AValue));
   end;
 end;
 
@@ -621,7 +1109,7 @@ var
   NZIS_QUESTIONNAIRE_ANSWER: TNZIS_QUESTIONNAIRE_ANSWERItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   NZIS_QUESTIONNAIRE_ANSWER := Items[ARow];
   if not Assigned(NZIS_QUESTIONNAIRE_ANSWER.PRecord) then
   begin
@@ -631,12 +1119,11 @@ begin
   end
   else
   begin
-    isOld := False;
     case TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(ACol) of
       NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-      NZIS_QUESTIONNAIRE_ANSWER_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    NZIS_QUESTIONNAIRE_ANSWER_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: isOld :=  NZIS_QUESTIONNAIRE_ANSWER.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -656,6 +1143,7 @@ begin
     NZIS_QUESTIONNAIRE_ANSWER_ID: NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID := StrToInt(AFieldText);
     NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID := StrToInt(AFieldText);
     NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS := StrToInt(AFieldText);
+    NZIS_QUESTIONNAIRE_ANSWER_Logical: NZIS_QUESTIONNAIRE_ANSWER.PRecord.Logical := tlogicalNZIS_QUESTIONNAIRE_ANSWERSet(NZIS_QUESTIONNAIRE_ANSWER.StrToLogical08(AFieldText));
   end;
 end;
 
@@ -673,14 +1161,14 @@ begin
   for i := 0 to self.Count - 1 do
   begin
     case  TNZIS_QUESTIONNAIRE_ANSWERItem.TPropertyIndex(self.FindedRes.PropIndex) of
-      NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListNZIS_QUESTIONNAIRE_ANSWERSearch.Add(self.Items[i]);
-        end;
-      end;
-      NZIS_QUESTIONNAIRE_ANSWER_ID:
+	  NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE:
+begin
+  if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+  begin
+    ListNZIS_QUESTIONNAIRE_ANSWERSearch.Add(self.Items[i]);
+  end;
+end;
+      NZIS_QUESTIONNAIRE_ANSWER_ID: 
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -688,13 +1176,6 @@ begin
         end;
       end;
       NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListNZIS_QUESTIONNAIRE_ANSWERSearch.Add(self.Items[i]);
-        end;
-      end;
-      NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS:
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -737,7 +1218,7 @@ var
   i: word;
 
 begin
-  ListForFDB := LST;
+  ListForFinder := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -801,8 +1282,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -911,9 +1392,8 @@ procedure TNZIS_QUESTIONNAIRE_ANSWERColl.SortByIndexValue(propIndex: TNZIS_QUEST
 begin
   case propIndex of
     NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE: SortByIndexAnsiString;
-    NZIS_QUESTIONNAIRE_ANSWER_ID: SortByIndexInt;
-    NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: SortByIndexInt;
-    NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS: SortByIndexInt;
+      NZIS_QUESTIONNAIRE_ANSWER_ID: SortByIndexInt;
+      NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID: SortByIndexInt;
   end;
 end;
 

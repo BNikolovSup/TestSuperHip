@@ -228,8 +228,8 @@ public
 
   constructor Create(Collection: TCollection); override;
   destructor destroy; override;
-  function CalcAge(CurrentDate, BirthDate: TDate): Integer;
-  function CalcAgeDouble(CurrentDate, BirthDate: TDate): Double;
+  class function CalcAge(CurrentDate, BirthDate: TDate): Integer;
+  class function CalcAgeDouble(CurrentDate, BirthDate: TDate): Double;
   procedure FillMsgSubject(sbjct: msgX001.IXMLSubjectType);
 
   property PatID: Integer read FPatID write FPatID;
@@ -1347,7 +1347,7 @@ TRealUnfavColl = class(TUnfavColl)
   private
 
   public
-   procedure InsertNZIS_ANSWER_VALUE; override;
+   //procedure InsertNZIS_ANSWER_VALUE; override;
   end;
 
   TRealNZIS_ANSWER_VALUEColl = class(TNZIS_ANSWER_VALUEColl)
@@ -1399,11 +1399,16 @@ TRealUnfavColl = class(TUnfavColl)
 
   TRealMkbColl = class(TMkbColl)
   private
+    FIsSortedMKB: Boolean;
     function GetItem(Index: Integer): TMkbItem;
     procedure SetItem(Index: Integer; const Value: TMkbItem);
   public
+    MkbGroups, MkbSubGroups: TStringList;
+    constructor Create(ItemClass: TCollectionItemClass);override;
+    destructor destroy; override;
     procedure UpdateMkb;
     property Items[Index: Integer]: TMkbItem read GetItem write SetItem;
+    property IsSortedMKB: Boolean read FIsSortedMKB write FIsSortedMKB;
   end;
   const
   NaprMask_None            = 1 shl Ord(NZIS_STATUS_None);
@@ -2298,7 +2303,7 @@ end;
 
 { TRealPatientNewItem }
 
-function TRealPatientNewItem.CalcAge(CurrentDate, BirthDate: TDate): Integer;
+class function TRealPatientNewItem.CalcAge(CurrentDate, BirthDate: TDate): Integer;
 var
   d, m, y: Word;
   d1, m1, y1: Word;
@@ -2321,7 +2326,7 @@ begin
 end;
 
 
-function TRealPatientNewItem.CalcAgeDouble(CurrentDate, BirthDate: TDate): Double;
+class function TRealPatientNewItem.CalcAgeDouble(CurrentDate, BirthDate: TDate): Double;
 var
   d, m, y: Word;
   d1, m1, y1: Word;
@@ -5257,15 +5262,15 @@ end;
 
 { TRealNZIS_ANSWER_VALUEItem }
 
-procedure TRealNZIS_ANSWER_VALUEItem.InsertNZIS_ANSWER_VALUE;
-begin
-  inherited;
-  if TBaseCollection(Collection).CmdFile <> nil then
-  begin
-    TBaseCollection(Collection).streamComm.Len := TBaseCollection(Collection).streamComm.Size;
-    TBaseCollection(Collection).CmdFile.CopyFrom(TBaseCollection(Collection).streamComm, 0);
-  end;
-end;
+//procedure TRealNZIS_ANSWER_VALUEItem.InsertNZIS_ANSWER_VALUE;
+//begin
+//  inherited;
+//  if TBaseCollection(Collection).CmdFile <> nil then
+//  begin
+//    TBaseCollection(Collection).streamComm.Len := TBaseCollection(Collection).streamComm.Size;
+//    TBaseCollection(Collection).CmdFile.CopyFrom(TBaseCollection(Collection).streamComm, 0);
+//  end;
+//end;
 
 { TRealNZIS_PLANNED_TYPEItem }
 
@@ -5524,6 +5529,20 @@ begin
 end;
 
 { TRealMkbColl }
+
+constructor TRealMkbColl.Create(ItemClass: TCollectionItemClass);
+begin
+  inherited;
+  MkbGroups := TStringList.Create;
+  MkbSubGroups := TStringList.Create;
+end;
+
+destructor TRealMkbColl.destroy;
+begin
+  MkbGroups.Free;
+  MkbSubGroups.Free;
+  inherited;
+end;
 
 function TRealMkbColl.GetItem(Index: Integer): TMkbItem;
 begin

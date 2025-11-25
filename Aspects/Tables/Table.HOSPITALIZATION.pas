@@ -85,6 +85,9 @@ THOSPITALIZATIONItem = class(TBaseItem)
     procedure SaveHOSPITALIZATION(var dataPosition: Cardinal)overload;
 	procedure SaveHOSPITALIZATION(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -104,6 +107,7 @@ THOSPITALIZATIONItem = class(TBaseItem)
 	PRecordSearch: ^THOSPITALIZATIONItem.TRecHOSPITALIZATION;
     ArrPropSearch: TArray<THOSPITALIZATIONItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<THOSPITALIZATIONItem.TPropertyIndex>;
+	VisibleColl: THOSPITALIZATIONItem.TSetProp;
 	ArrayPropOrder: TArray<THOSPITALIZATIONItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -115,7 +119,7 @@ THOSPITALIZATIONItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; HOSPITALIZATION: THOSPITALIZATIONItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; HOSPITALIZATION: THOSPITALIZATIONItem; var AValue:String);
@@ -130,7 +134,9 @@ THOSPITALIZATIONItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
@@ -147,7 +153,15 @@ THOSPITALIZATIONItem = class(TBaseItem)
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalHOSPITALIZATIONSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -164,6 +178,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure THOSPITALIZATIONItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function THOSPITALIZATIONItem.GetCollType: TCollectionsType;
+begin
+  Result := ctHOSPITALIZATION;
+end;
+
+function THOSPITALIZATIONItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure THOSPITALIZATIONItem.InsertHOSPITALIZATION;
@@ -371,6 +414,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure THOSPITALIZATIONColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, THOSPITALIZATIONItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function THOSPITALIZATIONColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -379,18 +442,20 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvHOSPITALIZATIONRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -398,6 +463,70 @@ begin
     // при евентуално добавена колонка...
   end;  
 end;
+
+procedure THOSPITALIZATIONColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: THOSPITALIZATIONItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (HOSPITALIZATION_AMB_PROCEDURE in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_PROCEDURE <> Self.getAnsiStringMap(tempItem.DataPos, word(HOSPITALIZATION_AMB_PROCEDURE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_CLINICAL_PATH in tempItem.PRecord.setProp) and (tempItem.PRecord.CLINICAL_PATH <> Self.getAnsiStringMap(tempItem.DataPos, word(HOSPITALIZATION_CLINICAL_PATH))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_DIRECT_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.DIRECT_DATE <> Self.getDateMap(tempItem.DataPos, word(HOSPITALIZATION_DIRECT_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(HOSPITALIZATION_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_NOTES in tempItem.PRecord.setProp) and (tempItem.PRecord.NOTES <> Self.getAnsiStringMap(tempItem.DataPos, word(HOSPITALIZATION_NOTES))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(HOSPITALIZATION_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(HOSPITALIZATION_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (HOSPITALIZATION_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(HOSPITALIZATION_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
 
 constructor THOSPITALIZATIONColl.Create(ItemClass: TCollectionItemClass);
 var
@@ -409,11 +538,10 @@ begin
   ListForFinder := TList<THOSPITALIZATIONItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := THOSPITALIZATIONItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -443,6 +571,31 @@ begin
     HOSPITALIZATION_Logical: Result := 'Logical';
   end;
 end;
+
+function THOSPITALIZATIONColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'NZIS_STATUS_None';
+    1: Result := 'NZIS_STATUS_Valid';
+    2: Result := 'NZIS_STATUS_NoValid';
+    3: Result := 'NZIS_STATUS_Sended';
+    4: Result := 'NZIS_STATUS_Err';
+    5: Result := 'NZIS_STATUS_Cancel';
+    6: Result := 'NZIS_STATUS_Edited';
+    7: Result := 'DIRECTED_BY_OPL';
+    8: Result := 'DIRECTED_BY_SIMP';
+    9: Result := 'DIRECTED_BY_HOSP';
+    10: Result := 'DIRECTED_BY_EMERG';
+    11: Result := 'IS_MZ';
+    12: Result := 'IS_PLANNED';
+    13: Result := 'IS_PRINTED';
+    14: Result := 'IS_REJECTED';
+    15: Result := 'IS_URGENT';
+  else
+    Result := '???';
+  end;
+end;
+
 
 procedure THOSPITALIZATIONColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
@@ -480,6 +633,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -506,15 +665,22 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvHOSPITALIZATIONRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function THOSPITALIZATIONColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -627,17 +793,17 @@ end;
 
 procedure THOSPITALIZATIONColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: THOSPITALIZATIONItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -646,7 +812,7 @@ begin
     Exit;
   end;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure THOSPITALIZATIONColl.GetCellFromRecord(propIndex: word; HOSPITALIZATION: THOSPITALIZATIONItem; var AValue: String);
@@ -726,6 +892,16 @@ begin
   end;
 end;
 
+function THOSPITALIZATIONColl.GetCollType: TCollectionsType;
+begin
+  Result := ctHOSPITALIZATION;
+end;
+
+function THOSPITALIZATIONColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctHOSPITALIZATIONDel;
+end;
+
 procedure THOSPITALIZATIONColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   HOSPITALIZATION: THOSPITALIZATIONItem;
@@ -764,7 +940,7 @@ begin
     HOSPITALIZATION_NOTES: str :=  HOSPITALIZATION.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     HOSPITALIZATION_NRN: str :=  HOSPITALIZATION.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     HOSPITALIZATION_NUMBER: str :=  inttostr(HOSPITALIZATION.getIntMap(Self.Buf, Self.posData, propIndex));
-    HOSPITALIZATION_Logical: str :=  HOSPITALIZATION.Logical24ToStr(HOSPITALIZATION.getLogical24Map(Self.Buf, Self.posData, propIndex));
+    HOSPITALIZATION_Logical: str :=  HOSPITALIZATION.Logical16ToStr(HOSPITALIZATION.getLogical16Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -840,6 +1016,12 @@ begin
 
 end;
 
+function THOSPITALIZATIONColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := THOSPITALIZATIONItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure THOSPITALIZATIONColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: THOSPITALIZATIONItem;
@@ -865,9 +1047,10 @@ begin
   end;
 end;
 
-
-
+{=== TEXT SEARCH HANDLER ===}
 procedure THOSPITALIZATIONColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
 begin
   if Text = '' then
   begin
@@ -875,23 +1058,64 @@ begin
   end
   else
   begin
-    include(ListForFinder[0].PRecord.setProp, THOSPITALIZATIONItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, THOSPITALIZATIONItem.TPropertyIndex(Field));
   end;
+
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-  if cotSens in Condition then
-  begin
-    case THOSPITALIZATIONItem.TPropertyIndex(Field) of
-      HOSPITALIZATION_NRN: ListForFinder[0].PRecord.NRN  := Text;
-    end;
-  end
-  else
-  begin
-    case THOSPITALIZATIONItem.TPropertyIndex(Field) of
-      HOSPITALIZATION_NRN: ListForFinder[0].PRecord.NRN  := AnsiUpperCase(Text);
+
+  case THOSPITALIZATIONItem.TPropertyIndex(Field) of
+HOSPITALIZATION_AMB_PROCEDURE: ListForFinder[0].PRecord.AMB_PROCEDURE := AText;
+    HOSPITALIZATION_CLINICAL_PATH: ListForFinder[0].PRecord.CLINICAL_PATH := AText;
+    HOSPITALIZATION_NOTES: ListForFinder[0].PRecord.NOTES := AText;
+    HOSPITALIZATION_NRN: ListForFinder[0].PRecord.NRN := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure THOSPITALIZATIONColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, THOSPITALIZATIONItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case THOSPITALIZATIONItem.TPropertyIndex(Field) of
+HOSPITALIZATION_DIRECT_DATE: ListForFinder[0].PRecord.DIRECT_DATE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure THOSPITALIZATIONColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, THOSPITALIZATIONItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case THOSPITALIZATIONItem.TPropertyIndex(Field) of
+HOSPITALIZATION_ID: ListForFinder[0].PRecord.ID := Value;
+    HOSPITALIZATION_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure THOSPITALIZATIONColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case THOSPITALIZATIONItem.TPropertyIndex(Field) of
+    HOSPITALIZATION_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalHOSPITALIZATION(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalHOSPITALIZATION(logIndex))   
     end;
   end;
 end;
+
 
 procedure THOSPITALIZATIONColl.OnSetTextSearchLog(Log: TlogicalHOSPITALIZATIONSet);
 begin
@@ -909,18 +1133,19 @@ begin
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function THOSPITALIZATIONColl.PropType(propIndex: Word): TAsectTypeKind;
+function THOSPITALIZATIONColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case THOSPITALIZATIONItem.TPropertyIndex(propIndex) of
@@ -935,6 +1160,11 @@ begin
   else
     Result := actNone;
   end
+end;
+
+function THOSPITALIZATIONColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure THOSPITALIZATIONColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1195,8 +1425,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

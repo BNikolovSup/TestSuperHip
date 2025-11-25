@@ -68,7 +68,7 @@ CL144_Key
     procedure UpdateCL144;
     procedure SaveCL144(var dataPosition: Cardinal);
 	  function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
-    procedure FillPropCl142(propindex: TPropertyIndex; stream: TStream);
+    procedure FillPropCl144(propindex: TPropertyIndex; stream: TStream);
     procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
   end;
 
@@ -97,7 +97,7 @@ CL144_Key
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; CL144: TCL144Item; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; CL144: TCL144Item; var AValue:String);
@@ -139,7 +139,7 @@ begin
   inherited;
 end;
 
-procedure TCL144Item.FillPropCl142(propindex: TPropertyIndex;
+procedure TCL144Item.FillPropCl144(propindex: TPropertyIndex;
   stream: TStream);
 var
   lenStr: Word;
@@ -332,7 +332,7 @@ begin
       dataCmdProp.index := word(propindexcl144);
       dataCmdProp.vid := vvCl144;
     end;
-    self.FillPropCl142(propindexcl144, stream);
+    self.FillPropCl144(propindexcl144, stream);
   end;
 
   CmdItem.AdbItem := self;
@@ -806,7 +806,7 @@ end;
 
 
 
-function TCL144Coll.PropType(propIndex: Word): TAsectTypeKind;
+function TCL144Coll.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TCL144Item.TPropertyIndex(propIndex) of

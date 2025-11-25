@@ -146,6 +146,7 @@ TPatientNewItem = class(TBaseItem)
 	PRecordSearch: ^TPatientNewItem.TRecPatientNew;
     ArrPropSearch: TArray<TPatientNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPatientNewItem.TPropertyIndex>;
+	VisibleColl: TPatientNewItem.TSetProp;
 	ArrayPropOrder: TArray<TPatientNewItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -157,7 +158,7 @@ TPatientNewItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; PatientNew: TPatientNewItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; PatientNew: TPatientNewItem; var AValue:String);
@@ -174,12 +175,11 @@ TPatientNewItem = class(TBaseItem)
 	function DisplayName(propIndex: Word): string; override;
 	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
-	procedure OrderFieldsSearch(Grid: TTeeGrid);override;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
@@ -194,9 +194,12 @@ TPatientNewItem = class(TBaseItem)
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
     procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
-    procedure OnSetLogicalSearchEDT(Value: Boolean; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalPatientNewSet);
 	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
   end;
 
 implementation
@@ -489,6 +492,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TPatientNewColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TPatientNewItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TPatientNewColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -501,14 +524,16 @@ begin
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -754,11 +779,11 @@ begin
   pTarget := nil;
   while run <> nil do
   begin
-    if run.Index = NewPos - 1 then
+    if run.Dummy = NewPos - 1 then
     begin
       pTarget := run;
     end;
-    if run.index = OldPos - 1 then
+    if run.Dummy = OldPos - 1 then
     begin
       pSource := run;
     end;
@@ -767,8 +792,8 @@ begin
 
   if pTarget = nil then Exit;
   if pSource = nil then Exit;
-  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
-  if pSource.Index < pTarget.Index then
+  DebugMsg(Format('pSource = %d, pTarget = %d', [pSource.Dummy, pTarget.Dummy]));
+  if pSource.Dummy < pTarget.Dummy then
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
   end
@@ -1032,6 +1057,11 @@ begin
   end;
 end;
 
+function TPatientNewColl.GetCollType: TCollectionsType;
+begin
+  Result := ctPatientNew;
+end;
+
 procedure TPatientNewColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   PatientNew: TPatientNewItem;
@@ -1216,6 +1246,12 @@ begin
 
 end;
 
+function TPatientNewColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TPatientNewItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TPatientNewColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TPatientNewItem;
@@ -1307,13 +1343,16 @@ end;
 
 
 {=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
-procedure TPatientNewColl.OnSetLogicalSearchEDT(Value: Boolean; field: Word; Condition: TConditionSet);
+procedure TPatientNewColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
 begin
-  Include(ListForFinder[0].PRecord.setProp, TPatientNewItem.TPropertyIndex(Field));
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
   case TPatientNewItem.TPropertyIndex(Field) of
-PatientNew_Logical: ListForFinder[0].PRecord.Logical := Value;
+    PatientNew_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalPatientNew(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalPatientNew(logIndex))   
+    end;
   end;
 end;
 
@@ -1338,7 +1377,6 @@ var
   ArrCol: TArray<TColumn>;
 begin
   inherited;
-  exit;//zzzzzzzzzzzzzzzzzzzzzzzzzzzz
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
@@ -1353,7 +1391,7 @@ begin
 
 end;
 
-function TPatientNewColl.PropType(propIndex: Word): TAsectTypeKind;
+function TPatientNewColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TPatientNewItem.TPropertyIndex(propIndex) of
@@ -1730,8 +1768,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

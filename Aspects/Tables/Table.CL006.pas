@@ -90,7 +90,7 @@ CL006_Key
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; CL006: TCL006Item; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; CL006: TCL006Item; var AValue:String);
@@ -643,7 +643,7 @@ begin
 end;
 
 
-function TCL006Coll.PropType(propIndex: Word): TAsectTypeKind;
+function TCL006Coll.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TCL006Item.TPropertyIndex(propIndex) of

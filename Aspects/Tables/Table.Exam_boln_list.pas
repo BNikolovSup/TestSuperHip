@@ -2,10 +2,10 @@ unit Table.Exam_boln_list;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -20,6 +20,7 @@ TFindedResult = record
 end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
+
 TLogicalExam_boln_list = (
     ASSISTED_PERSON_IS_EGN,
     EFFECTIVE,
@@ -36,48 +37,51 @@ TlogicalExam_boln_listSet = set of TLogicalExam_boln_list;
 TExam_boln_listItem = class(TBaseItem)
   public
     type
-      TPropertyIndex = (Exam_boln_list_AMB_JOURNAL_NUMBER
-, Exam_boln_list_ASSISTED_PERSON_NAME
-, Exam_boln_list_ASSISTED_PERSON_PID
-, Exam_boln_list_CUSTOMIZE
-, Exam_boln_list_DATA
-, Exam_boln_list_DATEOFBIRTH
-, Exam_boln_list_DAYS_FREE
-, Exam_boln_list_DAYS_HOME
-, Exam_boln_list_DAYS_HOSPITAL
-, Exam_boln_list_DAYS_IN_WORDS
-, Exam_boln_list_DAYS_SANATORIUM
-, Exam_boln_list_EL_NUMBER
-, Exam_boln_list_FORM_LETTER
-, Exam_boln_list_FORM_NUMBER
-, Exam_boln_list_IAVIAVANE_PREGLED_DATE
-, Exam_boln_list_ID
-, Exam_boln_list_IST_ZABOL_NO
-, Exam_boln_list_IZDADEN_OT
-, Exam_boln_list_LAK_NUMBER
-, Exam_boln_list_LKK_TYPE
-, Exam_boln_list_NERABOTOSP_ID
-, Exam_boln_list_NOTES
-, Exam_boln_list_NOTES_ID
-, Exam_boln_list_NUMBER
-, Exam_boln_list_NUMBER_ANUL
-, Exam_boln_list_OTHER_PRACTICA_ID
-, Exam_boln_list_PATIENT_EGN
-, Exam_boln_list_PATIENT_LNCH
-, Exam_boln_list_PREGLED_ID
-, Exam_boln_list_REALATIONSHIP
-, Exam_boln_list_REL_SHIP_CODE
-, Exam_boln_list_RESHENIEDATE
-, Exam_boln_list_RESHENIEDATE_TELK
-, Exam_boln_list_RESHENIENO
-, Exam_boln_list_RESHENIENO_TELK
-, Exam_boln_list_SICK_LEAVE_END
-, Exam_boln_list_SICK_LEAVE_START
-, Exam_boln_list_TERMIN_DATE
-, Exam_boln_list_TREATMENT_REGIMEN
-, Exam_boln_list_Logical
-);
+      TPropertyIndex = (
+       Exam_boln_list_AMB_JOURNAL_NUMBER
+       , Exam_boln_list_ASSISTED_PERSON_NAME
+       , Exam_boln_list_ASSISTED_PERSON_PID
+       , Exam_boln_list_CUSTOMIZE
+       , Exam_boln_list_DATA
+       , Exam_boln_list_DATEOFBIRTH
+       , Exam_boln_list_DAYS_FREE
+       , Exam_boln_list_DAYS_HOME
+       , Exam_boln_list_DAYS_HOSPITAL
+       , Exam_boln_list_DAYS_IN_WORDS
+       , Exam_boln_list_DAYS_SANATORIUM
+       , Exam_boln_list_EL_NUMBER
+       , Exam_boln_list_FORM_LETTER
+       , Exam_boln_list_FORM_NUMBER
+       , Exam_boln_list_IAVIAVANE_PREGLED_DATE
+       , Exam_boln_list_ID
+       , Exam_boln_list_IST_ZABOL_NO
+       , Exam_boln_list_IZDADEN_OT
+       , Exam_boln_list_LAK_NUMBER
+       , Exam_boln_list_LKK_TYPE
+       , Exam_boln_list_NERABOTOSP_ID
+       , Exam_boln_list_NOTES
+       , Exam_boln_list_NOTES_ID
+       , Exam_boln_list_NUMBER
+       , Exam_boln_list_NUMBER_ANUL
+       , Exam_boln_list_OTHER_PRACTICA_ID
+       , Exam_boln_list_PATIENT_EGN
+       , Exam_boln_list_PATIENT_LNCH
+       , Exam_boln_list_PREGLED_ID
+       , Exam_boln_list_REALATIONSHIP
+       , Exam_boln_list_REL_SHIP_CODE
+       , Exam_boln_list_RESHENIEDATE
+       , Exam_boln_list_RESHENIEDATE_TELK
+       , Exam_boln_list_RESHENIENO
+       , Exam_boln_list_RESHENIENO_TELK
+       , Exam_boln_list_SICK_LEAVE_END
+       , Exam_boln_list_SICK_LEAVE_START
+       , Exam_boln_list_TERMIN_DATE
+       , Exam_boln_list_TREATMENT_REGIMEN
+       , Exam_boln_list_Logical
+       );
+	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecExam_boln_list = ^TRecExam_boln_list;
       TRecExam_boln_list = record
         AMB_JOURNAL_NUMBER: integer;
@@ -126,7 +130,7 @@ TExam_boln_listItem = class(TBaseItem)
   public
     PRecord: ^TRecExam_boln_list;
 	IndexInt: Integer;
-	IndexWord: word;
+	IndexWord: Word;
 	IndexAnsiStr: PAnsiChar;
     IndexAnsiStr1: AnsiString;
     IndexField: TPropertyIndex;
@@ -135,7 +139,12 @@ TExam_boln_listItem = class(TBaseItem)
     destructor Destroy; override;
     procedure InsertExam_boln_list;
     procedure UpdateExam_boln_list;
-    procedure SaveExam_boln_list(var dataPosition: Cardinal);
+    procedure SaveExam_boln_list(var dataPosition: Cardinal)overload;
+	procedure SaveExam_boln_list(Abuf: Pointer; var dataPosition: Cardinal)overload;
+	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -143,40 +152,73 @@ TExam_boln_listItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TExam_boln_listItem;
     function GetItem(Index: Integer): TExam_boln_listItem;
     procedure SetItem(Index: Integer; const Value: TExam_boln_listItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	tempItem: TExam_boln_listItem;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TExam_boln_listItem>;
     ListExam_boln_listSearch: TList<TExam_boln_listItem>;
+	PRecordSearch: ^TExam_boln_listItem.TRecExam_boln_list;
+    ArrPropSearch: TArray<TExam_boln_listItem.TPropertyIndex>;
+    ArrPropSearchClc: TArray<TExam_boln_listItem.TPropertyIndex>;
+	VisibleColl: TExam_boln_listItem.TSetProp;
+	ArrayPropOrder: TArray<TExam_boln_listItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
 
     function AddItem(ver: word):TExam_boln_listItem;
+	function AddItemForSearch: Integer;
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-    procedure GetCellFromMap(propIndex: word; ARow: Integer; Exam_boln_list: TExam_boln_listItem; var AValue:String);
+    procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
+    procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetCellFromMap(propIndex: word; ARow: Integer; Exam_boln_list: TExam_boln_listItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; Exam_boln_list: TExam_boln_listItem; var AValue:String);
 	procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-	procedure DynControlEnter(Sender: TObject);
     procedure SortByIndexValue(propIndex: TExam_boln_listItem.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
+	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TExam_boln_listItem>);
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
     
     procedure IndexValue(propIndex: TExam_boln_listItem.TPropertyIndex);
+	procedure IndexValueListNodes(propIndex:  TExam_boln_listItem.TPropertyIndex);
     property Items[Index: Integer]: TExam_boln_listItem read GetItem write SetItem;
+	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+    procedure OnSetTextSearchLog(Log: TlogicalExam_boln_listSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -193,6 +235,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TExam_boln_listItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TExam_boln_listItem.GetCollType: TCollectionsType;
+begin
+  Result := ctExam_boln_list;
+end;
+
+function TExam_boln_listItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TExam_boln_listItem.InsertExam_boln_list;
@@ -287,6 +358,81 @@ begin
   end;
 end;
 
+function  TExam_boln_listItem.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
+var
+  i: Integer;
+  pidx:  TExam_boln_listItem.TPropertyIndex;
+  cot: TConditionSet;
+  ATempItem: TExam_boln_listItem;
+begin
+  Result := True;
+  for i := 0 to Length(TExam_boln_listColl(coll).ArrPropSearchClc) - 1 do
+  begin
+    if Result = false then
+      Exit;
+    pidx := TExam_boln_listColl(coll).ArrPropSearchClc[i];
+	ATempItem := TExam_boln_listColl(coll).ListForFinder.Items[0];
+    cot := ATempItem.ArrCondition[word(pidx)];
+    begin
+      case pidx of
+        Exam_boln_list_AMB_JOURNAL_NUMBER: Result := IsFinded(ATempItem.PRecord.AMB_JOURNAL_NUMBER, buf, FPosDataADB, word(Exam_boln_list_AMB_JOURNAL_NUMBER), cot);
+            Exam_boln_list_ASSISTED_PERSON_NAME: Result := IsFinded(ATempItem.PRecord.ASSISTED_PERSON_NAME, buf, FPosDataADB, word(Exam_boln_list_ASSISTED_PERSON_NAME), cot);
+            Exam_boln_list_ASSISTED_PERSON_PID: Result := IsFinded(ATempItem.PRecord.ASSISTED_PERSON_PID, buf, FPosDataADB, word(Exam_boln_list_ASSISTED_PERSON_PID), cot);
+            Exam_boln_list_CUSTOMIZE: Result := IsFinded(ATempItem.PRecord.CUSTOMIZE, buf, FPosDataADB, word(Exam_boln_list_CUSTOMIZE), cot);
+            Exam_boln_list_DATA: Result := IsFinded(ATempItem.PRecord.DATA, buf, FPosDataADB, word(Exam_boln_list_DATA), cot);
+            Exam_boln_list_DATEOFBIRTH: Result := IsFinded(ATempItem.PRecord.DATEOFBIRTH, buf, FPosDataADB, word(Exam_boln_list_DATEOFBIRTH), cot);
+            Exam_boln_list_DAYS_FREE: Result := IsFinded(ATempItem.PRecord.DAYS_FREE, buf, FPosDataADB, word(Exam_boln_list_DAYS_FREE), cot);
+            Exam_boln_list_DAYS_HOME: Result := IsFinded(ATempItem.PRecord.DAYS_HOME, buf, FPosDataADB, word(Exam_boln_list_DAYS_HOME), cot);
+            Exam_boln_list_DAYS_HOSPITAL: Result := IsFinded(ATempItem.PRecord.DAYS_HOSPITAL, buf, FPosDataADB, word(Exam_boln_list_DAYS_HOSPITAL), cot);
+            Exam_boln_list_DAYS_IN_WORDS: Result := IsFinded(ATempItem.PRecord.DAYS_IN_WORDS, buf, FPosDataADB, word(Exam_boln_list_DAYS_IN_WORDS), cot);
+            Exam_boln_list_DAYS_SANATORIUM: Result := IsFinded(ATempItem.PRecord.DAYS_SANATORIUM, buf, FPosDataADB, word(Exam_boln_list_DAYS_SANATORIUM), cot);
+            Exam_boln_list_EL_NUMBER: Result := IsFinded(ATempItem.PRecord.EL_NUMBER, buf, FPosDataADB, word(Exam_boln_list_EL_NUMBER), cot);
+            Exam_boln_list_FORM_LETTER: Result := IsFinded(ATempItem.PRecord.FORM_LETTER, buf, FPosDataADB, word(Exam_boln_list_FORM_LETTER), cot);
+            Exam_boln_list_FORM_NUMBER: Result := IsFinded(ATempItem.PRecord.FORM_NUMBER, buf, FPosDataADB, word(Exam_boln_list_FORM_NUMBER), cot);
+            Exam_boln_list_IAVIAVANE_PREGLED_DATE: Result := IsFinded(ATempItem.PRecord.IAVIAVANE_PREGLED_DATE, buf, FPosDataADB, word(Exam_boln_list_IAVIAVANE_PREGLED_DATE), cot);
+            Exam_boln_list_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(Exam_boln_list_ID), cot);
+            Exam_boln_list_IST_ZABOL_NO: Result := IsFinded(ATempItem.PRecord.IST_ZABOL_NO, buf, FPosDataADB, word(Exam_boln_list_IST_ZABOL_NO), cot);
+            Exam_boln_list_IZDADEN_OT: Result := IsFinded(ATempItem.PRecord.IZDADEN_OT, buf, FPosDataADB, word(Exam_boln_list_IZDADEN_OT), cot);
+            Exam_boln_list_LAK_NUMBER: Result := IsFinded(ATempItem.PRecord.LAK_NUMBER, buf, FPosDataADB, word(Exam_boln_list_LAK_NUMBER), cot);
+            Exam_boln_list_LKK_TYPE: Result := IsFinded(ATempItem.PRecord.LKK_TYPE, buf, FPosDataADB, word(Exam_boln_list_LKK_TYPE), cot);
+            Exam_boln_list_NERABOTOSP_ID: Result := IsFinded(ATempItem.PRecord.NERABOTOSP_ID, buf, FPosDataADB, word(Exam_boln_list_NERABOTOSP_ID), cot);
+            Exam_boln_list_NOTES: Result := IsFinded(ATempItem.PRecord.NOTES, buf, FPosDataADB, word(Exam_boln_list_NOTES), cot);
+            Exam_boln_list_NOTES_ID: Result := IsFinded(ATempItem.PRecord.NOTES_ID, buf, FPosDataADB, word(Exam_boln_list_NOTES_ID), cot);
+            Exam_boln_list_NUMBER: Result := IsFinded(ATempItem.PRecord.NUMBER, buf, FPosDataADB, word(Exam_boln_list_NUMBER), cot);
+            Exam_boln_list_NUMBER_ANUL: Result := IsFinded(ATempItem.PRecord.NUMBER_ANUL, buf, FPosDataADB, word(Exam_boln_list_NUMBER_ANUL), cot);
+            Exam_boln_list_OTHER_PRACTICA_ID: Result := IsFinded(ATempItem.PRecord.OTHER_PRACTICA_ID, buf, FPosDataADB, word(Exam_boln_list_OTHER_PRACTICA_ID), cot);
+            Exam_boln_list_PATIENT_EGN: Result := IsFinded(ATempItem.PRecord.PATIENT_EGN, buf, FPosDataADB, word(Exam_boln_list_PATIENT_EGN), cot);
+            Exam_boln_list_PATIENT_LNCH: Result := IsFinded(ATempItem.PRecord.PATIENT_LNCH, buf, FPosDataADB, word(Exam_boln_list_PATIENT_LNCH), cot);
+            Exam_boln_list_PREGLED_ID: Result := IsFinded(ATempItem.PRecord.PREGLED_ID, buf, FPosDataADB, word(Exam_boln_list_PREGLED_ID), cot);
+            Exam_boln_list_REALATIONSHIP: Result := IsFinded(ATempItem.PRecord.REALATIONSHIP, buf, FPosDataADB, word(Exam_boln_list_REALATIONSHIP), cot);
+            Exam_boln_list_REL_SHIP_CODE: Result := IsFinded(ATempItem.PRecord.REL_SHIP_CODE, buf, FPosDataADB, word(Exam_boln_list_REL_SHIP_CODE), cot);
+            Exam_boln_list_RESHENIEDATE: Result := IsFinded(ATempItem.PRecord.RESHENIEDATE, buf, FPosDataADB, word(Exam_boln_list_RESHENIEDATE), cot);
+            Exam_boln_list_RESHENIEDATE_TELK: Result := IsFinded(ATempItem.PRecord.RESHENIEDATE_TELK, buf, FPosDataADB, word(Exam_boln_list_RESHENIEDATE_TELK), cot);
+            Exam_boln_list_RESHENIENO: Result := IsFinded(ATempItem.PRecord.RESHENIENO, buf, FPosDataADB, word(Exam_boln_list_RESHENIENO), cot);
+            Exam_boln_list_RESHENIENO_TELK: Result := IsFinded(ATempItem.PRecord.RESHENIENO_TELK, buf, FPosDataADB, word(Exam_boln_list_RESHENIENO_TELK), cot);
+            Exam_boln_list_SICK_LEAVE_END: Result := IsFinded(ATempItem.PRecord.SICK_LEAVE_END, buf, FPosDataADB, word(Exam_boln_list_SICK_LEAVE_END), cot);
+            Exam_boln_list_SICK_LEAVE_START: Result := IsFinded(ATempItem.PRecord.SICK_LEAVE_START, buf, FPosDataADB, word(Exam_boln_list_SICK_LEAVE_START), cot);
+            Exam_boln_list_TERMIN_DATE: Result := IsFinded(ATempItem.PRecord.TERMIN_DATE, buf, FPosDataADB, word(Exam_boln_list_TERMIN_DATE), cot);
+            Exam_boln_list_TREATMENT_REGIMEN: Result := IsFinded(ATempItem.PRecord.TREATMENT_REGIMEN, buf, FPosDataADB, word(Exam_boln_list_TREATMENT_REGIMEN), cot);
+            Exam_boln_list_Logical: Result := IsFinded(TLogicalData16(ATempItem.PRecord.Logical), buf, FPosDataADB, word(Exam_boln_list_Logical), cot);
+      end;
+    end;
+  end;
+end;
+
+procedure TExam_boln_listItem.SaveExam_boln_list(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveExam_boln_list(dataPosition);
+end;
+
 procedure TExam_boln_listItem.SaveExam_boln_list(var dataPosition: Cardinal);
 var
   CollType: TCollectionsType;
@@ -294,6 +440,7 @@ var
   propIndx: TPropertyIndex;
 begin
   CollType := ctExam_boln_list;
+  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
     begin
@@ -439,25 +586,357 @@ begin
   end;
 end;
 
+function TExam_boln_listColl.AddItemForSearch: Integer;
+var
+  ItemForSearch: TExam_boln_listItem;
+begin
+  ItemForSearch := TExam_boln_listItem.Create(nil);
+  SetLength(ItemForSearch.ArrCondition, self.FieldCount);
+
+  New(ItemForSearch.PRecord);
+  ItemForSearch.PRecord.setProp := [];
+  ItemForSearch.PRecord.Logical := [];
+  Result := ListForFinder.Add(ItemForSearch);
+end;
+
+procedure TExam_boln_listColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TExam_boln_listItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TExam_boln_listColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvExam_boln_listRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TExam_boln_listColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TExam_boln_listItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (Exam_boln_list_AMB_JOURNAL_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_JOURNAL_NUMBER <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_AMB_JOURNAL_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_ASSISTED_PERSON_NAME in tempItem.PRecord.setProp) and (tempItem.PRecord.ASSISTED_PERSON_NAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_ASSISTED_PERSON_NAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_ASSISTED_PERSON_PID in tempItem.PRecord.setProp) and (tempItem.PRecord.ASSISTED_PERSON_PID <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_ASSISTED_PERSON_PID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_CUSTOMIZE in tempItem.PRecord.setProp) and (tempItem.PRecord.CUSTOMIZE <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_CUSTOMIZE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_DATA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DATEOFBIRTH in tempItem.PRecord.setProp) and (tempItem.PRecord.DATEOFBIRTH <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_DATEOFBIRTH))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DAYS_FREE in tempItem.PRecord.setProp) and (tempItem.PRecord.DAYS_FREE <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_DAYS_FREE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DAYS_HOME in tempItem.PRecord.setProp) and (tempItem.PRecord.DAYS_HOME <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_DAYS_HOME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DAYS_HOSPITAL in tempItem.PRecord.setProp) and (tempItem.PRecord.DAYS_HOSPITAL <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_DAYS_HOSPITAL))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DAYS_IN_WORDS in tempItem.PRecord.setProp) and (tempItem.PRecord.DAYS_IN_WORDS <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_DAYS_IN_WORDS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_DAYS_SANATORIUM in tempItem.PRecord.setProp) and (tempItem.PRecord.DAYS_SANATORIUM <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_DAYS_SANATORIUM))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_EL_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.EL_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_EL_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_FORM_LETTER in tempItem.PRecord.setProp) and (tempItem.PRecord.FORM_LETTER <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_FORM_LETTER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_FORM_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.FORM_NUMBER <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_FORM_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_IAVIAVANE_PREGLED_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.IAVIAVANE_PREGLED_DATE <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_IAVIAVANE_PREGLED_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_IST_ZABOL_NO in tempItem.PRecord.setProp) and (tempItem.PRecord.IST_ZABOL_NO <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_IST_ZABOL_NO))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_IZDADEN_OT in tempItem.PRecord.setProp) and (tempItem.PRecord.IZDADEN_OT <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_IZDADEN_OT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_LAK_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.LAK_NUMBER <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_LAK_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_LKK_TYPE in tempItem.PRecord.setProp) and (tempItem.PRecord.LKK_TYPE <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_LKK_TYPE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_NERABOTOSP_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.NERABOTOSP_ID <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_NERABOTOSP_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_NOTES in tempItem.PRecord.setProp) and (tempItem.PRecord.NOTES <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_NOTES))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_NOTES_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.NOTES_ID <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_NOTES_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_NUMBER_ANUL in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER_ANUL <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_NUMBER_ANUL))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_OTHER_PRACTICA_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.OTHER_PRACTICA_ID <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_OTHER_PRACTICA_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_PATIENT_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.PATIENT_EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_PATIENT_EGN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_PATIENT_LNCH in tempItem.PRecord.setProp) and (tempItem.PRecord.PATIENT_LNCH <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_PATIENT_LNCH))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_PREGLED_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.PREGLED_ID <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_PREGLED_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_REALATIONSHIP in tempItem.PRecord.setProp) and (tempItem.PRecord.REALATIONSHIP <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_REALATIONSHIP))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_REL_SHIP_CODE in tempItem.PRecord.setProp) and (tempItem.PRecord.REL_SHIP_CODE <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_REL_SHIP_CODE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_RESHENIEDATE in tempItem.PRecord.setProp) and (tempItem.PRecord.RESHENIEDATE <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_RESHENIEDATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_RESHENIEDATE_TELK in tempItem.PRecord.setProp) and (tempItem.PRecord.RESHENIEDATE_TELK <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_RESHENIEDATE_TELK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_RESHENIENO in tempItem.PRecord.setProp) and (tempItem.PRecord.RESHENIENO <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_RESHENIENO))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_RESHENIENO_TELK in tempItem.PRecord.setProp) and (tempItem.PRecord.RESHENIENO_TELK <> Self.getAnsiStringMap(tempItem.DataPos, word(Exam_boln_list_RESHENIENO_TELK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_SICK_LEAVE_END in tempItem.PRecord.setProp) and (tempItem.PRecord.SICK_LEAVE_END <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_SICK_LEAVE_END))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_SICK_LEAVE_START in tempItem.PRecord.setProp) and (tempItem.PRecord.SICK_LEAVE_START <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_SICK_LEAVE_START))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_TERMIN_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.TERMIN_DATE <> Self.getDateMap(tempItem.DataPos, word(Exam_boln_list_TERMIN_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_TREATMENT_REGIMEN in tempItem.PRecord.setProp) and (tempItem.PRecord.TREATMENT_REGIMEN <> Self.getIntMap(tempItem.DataPos, word(Exam_boln_list_TREATMENT_REGIMEN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Exam_boln_list_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(Exam_boln_list_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
 
 constructor TExam_boln_listColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
-  ListExam_boln_listSearch := TList<TExam_boln_listItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
   tempItem := TExam_boln_listItem.Create(nil);
+  ListExam_boln_listSearch := TList<TExam_boln_listItem>.Create;
+  ListForFinder := TList<TExam_boln_listItem>.Create;
+  New(PRecordSearch);
+  PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TExam_boln_listColl.destroy;
 begin
   FreeAndNil(ListExam_boln_listSearch);
-  FreeAndNil(tempItem);
+  FreeAndNil(ListForFinder);
+  FreeAndNil(TempItem);
+  Dispose(PRecordSearch);
+  PRecordSearch := nil;
   inherited;
 end;
 
 function TExam_boln_listColl.DisplayName(propIndex: Word): string;
 begin
+  inherited;
   case TExam_boln_listItem.TPropertyIndex(propIndex) of
     Exam_boln_list_AMB_JOURNAL_NUMBER: Result := 'AMB_JOURNAL_NUMBER';
     Exam_boln_list_ASSISTED_PERSON_NAME: Result := 'ASSISTED_PERSON_NAME';
@@ -502,16 +981,195 @@ begin
   end;
 end;
 
-procedure TExam_boln_listColl.DynControlEnter(Sender: TObject);
+function TExam_boln_listColl.DisplayLogicalName(flagIndex: Integer): string;
 begin
-  self.FindedRes.DataPos := 0;
-  //self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
-  self.IndexValue(TExam_boln_listItem.TPropertyIndex(self.FindedRes.PropIndex));
+  case flagIndex of
+0: Result := 'ASSISTED_PERSON_IS_EGN';
+    1: Result := 'EFFECTIVE';
+    2: Result := 'IS_CHECKED_NOI';
+    3: Result := 'IS_LKK';
+    4: Result := 'IS_PRIMARY';
+    5: Result := 'IS_PRINTED';
+    6: Result := 'IS_SENDED_NOI';
+    7: Result := 'PATIENT_IS_EGN';
+    8: Result := 'PATIENT_SEX_TYPE_M';
+  else
+    Result := '???';
+  end;
 end;
+
+
+procedure TExam_boln_listColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
+begin
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
+
 
 function TExam_boln_listColl.FieldCount: Integer; 
 begin
+  inherited;
   Result := 40;
+end;
+
+function TExam_boln_listColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvExam_boln_listRoot then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TExam_boln_listColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TExam_boln_listColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TExam_boln_listColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TExam_boln_listColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -535,6 +1193,30 @@ begin
   end;
 end;
 
+procedure TExam_boln_listColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
+var
+  RowSelect: Integer;
+  prop: TExam_boln_listItem.TPropertyIndex;
+begin
+  inherited;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
+
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
+end;
+
 procedure TExam_boln_listColl.GetCellFromRecord(propIndex: word; Exam_boln_list: TExam_boln_listItem; var AValue: String);
 var
   str: string;
@@ -544,8 +1226,8 @@ begin
     Exam_boln_list_ASSISTED_PERSON_NAME: str := (Exam_boln_list.PRecord.ASSISTED_PERSON_NAME);
     Exam_boln_list_ASSISTED_PERSON_PID: str := (Exam_boln_list.PRecord.ASSISTED_PERSON_PID);
     Exam_boln_list_CUSTOMIZE: str := inttostr(Exam_boln_list.PRecord.CUSTOMIZE);
-    Exam_boln_list_DATA: str := DateToStr(Exam_boln_list.PRecord.DATA);
-    Exam_boln_list_DATEOFBIRTH: str := DateToStr(Exam_boln_list.PRecord.DATEOFBIRTH);
+    Exam_boln_list_DATA: str := AspDateToStr(Exam_boln_list.PRecord.DATA);
+    Exam_boln_list_DATEOFBIRTH: str := AspDateToStr(Exam_boln_list.PRecord.DATEOFBIRTH);
     Exam_boln_list_DAYS_FREE: str := inttostr(Exam_boln_list.PRecord.DAYS_FREE);
     Exam_boln_list_DAYS_HOME: str := inttostr(Exam_boln_list.PRecord.DAYS_HOME);
     Exam_boln_list_DAYS_HOSPITAL: str := inttostr(Exam_boln_list.PRecord.DAYS_HOSPITAL);
@@ -554,7 +1236,7 @@ begin
     Exam_boln_list_EL_NUMBER: str := (Exam_boln_list.PRecord.EL_NUMBER);
     Exam_boln_list_FORM_LETTER: str := (Exam_boln_list.PRecord.FORM_LETTER);
     Exam_boln_list_FORM_NUMBER: str := inttostr(Exam_boln_list.PRecord.FORM_NUMBER);
-    Exam_boln_list_IAVIAVANE_PREGLED_DATE: str := DateToStr(Exam_boln_list.PRecord.IAVIAVANE_PREGLED_DATE);
+    Exam_boln_list_IAVIAVANE_PREGLED_DATE: str := AspDateToStr(Exam_boln_list.PRecord.IAVIAVANE_PREGLED_DATE);
     Exam_boln_list_ID: str := inttostr(Exam_boln_list.PRecord.ID);
     Exam_boln_list_IST_ZABOL_NO: str := (Exam_boln_list.PRecord.IST_ZABOL_NO);
     Exam_boln_list_IZDADEN_OT: str := (Exam_boln_list.PRecord.IZDADEN_OT);
@@ -571,13 +1253,13 @@ begin
     Exam_boln_list_PREGLED_ID: str := inttostr(Exam_boln_list.PRecord.PREGLED_ID);
     Exam_boln_list_REALATIONSHIP: str := (Exam_boln_list.PRecord.REALATIONSHIP);
     Exam_boln_list_REL_SHIP_CODE: str := inttostr(Exam_boln_list.PRecord.REL_SHIP_CODE);
-    Exam_boln_list_RESHENIEDATE: str := DateToStr(Exam_boln_list.PRecord.RESHENIEDATE);
-    Exam_boln_list_RESHENIEDATE_TELK: str := DateToStr(Exam_boln_list.PRecord.RESHENIEDATE_TELK);
+    Exam_boln_list_RESHENIEDATE: str := AspDateToStr(Exam_boln_list.PRecord.RESHENIEDATE);
+    Exam_boln_list_RESHENIEDATE_TELK: str := AspDateToStr(Exam_boln_list.PRecord.RESHENIEDATE_TELK);
     Exam_boln_list_RESHENIENO: str := (Exam_boln_list.PRecord.RESHENIENO);
     Exam_boln_list_RESHENIENO_TELK: str := (Exam_boln_list.PRecord.RESHENIENO_TELK);
-    Exam_boln_list_SICK_LEAVE_END: str := DateToStr(Exam_boln_list.PRecord.SICK_LEAVE_END);
-    Exam_boln_list_SICK_LEAVE_START: str := DateToStr(Exam_boln_list.PRecord.SICK_LEAVE_START);
-    Exam_boln_list_TERMIN_DATE: str := DateToStr(Exam_boln_list.PRecord.TERMIN_DATE);
+    Exam_boln_list_SICK_LEAVE_END: str := AspDateToStr(Exam_boln_list.PRecord.SICK_LEAVE_END);
+    Exam_boln_list_SICK_LEAVE_START: str := AspDateToStr(Exam_boln_list.PRecord.SICK_LEAVE_START);
+    Exam_boln_list_TERMIN_DATE: str := AspDateToStr(Exam_boln_list.PRecord.TERMIN_DATE);
     Exam_boln_list_TREATMENT_REGIMEN: str := inttostr(Exam_boln_list.PRecord.TREATMENT_REGIMEN);
     Exam_boln_list_Logical: str := Exam_boln_list.Logical16ToStr(TLogicalData16(Exam_boln_list.PRecord.Logical));
   else
@@ -588,9 +1270,29 @@ begin
   AValue := str;
 end;
 
+procedure TExam_boln_listColl.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  AtempItem: TExam_boln_listItem;
+  ACol: Integer;
+  prop: TExam_boln_listItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if ListForFinder.Count = 0 then Exit;
+
+  AtempItem := ListForFinder[ARow];
+  prop := TExam_boln_listItem.TPropertyIndex(ACol);
+  if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, AtempItem, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, AtempItem, AValue);
+  end;
+end;
+
 procedure TExam_boln_listColl.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-
   ACol: Integer;
   prop: TExam_boln_listItem.TPropertyIndex;
 begin
@@ -598,9 +1300,9 @@ begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListNodes.count - 1) < ARow then exit;
   
-  tempItem.DataPos := ListNodes[ARow].DataPos;
+  TempItem.DataPos := ListNodes[ARow].DataPos;
   prop := TExam_boln_listItem.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, ARow, tempItem, AValue);
+  GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
 
 procedure TExam_boln_listColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -622,6 +1324,16 @@ begin
   begin
     GetCellFromMap(ACol, ARow, Exam_boln_list, AValue);
   end;
+end;
+
+function TExam_boln_listColl.GetCollType: TCollectionsType;
+begin
+  Result := ctExam_boln_list;
+end;
+
+function TExam_boln_listColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctExam_boln_listDel;
 end;
 
 procedure TExam_boln_listColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -659,8 +1371,8 @@ begin
     Exam_boln_list_ASSISTED_PERSON_NAME: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_ASSISTED_PERSON_PID: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_CUSTOMIZE: str :=  inttostr(Exam_boln_list.getIntMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_DATA: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_DATEOFBIRTH: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_DATA: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_DATEOFBIRTH: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_DAYS_FREE: str :=  inttostr(Exam_boln_list.getWordMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_DAYS_HOME: str :=  inttostr(Exam_boln_list.getWordMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_DAYS_HOSPITAL: str :=  inttostr(Exam_boln_list.getWordMap(Self.Buf, Self.posData, propIndex));
@@ -669,7 +1381,7 @@ begin
     Exam_boln_list_EL_NUMBER: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_FORM_LETTER: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_FORM_NUMBER: str :=  inttostr(Exam_boln_list.getIntMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_IAVIAVANE_PREGLED_DATE: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_IAVIAVANE_PREGLED_DATE: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_ID: str :=  inttostr(Exam_boln_list.getIntMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_IST_ZABOL_NO: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_IZDADEN_OT: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -686,15 +1398,15 @@ begin
     Exam_boln_list_PREGLED_ID: str :=  inttostr(Exam_boln_list.getIntMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_REALATIONSHIP: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_REL_SHIP_CODE: str :=  inttostr(Exam_boln_list.getWordMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_RESHENIEDATE: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_RESHENIEDATE_TELK: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_RESHENIEDATE: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_RESHENIEDATE_TELK: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_RESHENIENO: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Exam_boln_list_RESHENIENO_TELK: str :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    Exam_boln_list_SICK_LEAVE_END: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_SICK_LEAVE_START: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_TERMIN_DATE: str :=  DateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_SICK_LEAVE_END: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_SICK_LEAVE_START: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_TERMIN_DATE: str :=  AspDateToStr(Exam_boln_list.getDateMap(Self.Buf, Self.posData, propIndex));
     Exam_boln_list_TREATMENT_REGIMEN: str :=  inttostr(Exam_boln_list.getWordMap(Self.Buf, Self.posData, propIndex));
-    Exam_boln_list_Logical: str :=  Exam_boln_list.Logical32ToStr(Exam_boln_list.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    Exam_boln_list_Logical: str :=  Exam_boln_list.Logical16ToStr(Exam_boln_list.getLogical16Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -889,6 +1601,226 @@ begin
   end;
 end;
 
+procedure TExam_boln_listColl.IndexValueListNodes(propIndex: TExam_boln_listItem.TPropertyIndex);
+begin
+
+end;
+
+function TExam_boln_listColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TExam_boln_listItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
+procedure TExam_boln_listColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+var
+  Tempitem: TExam_boln_listItem;
+begin
+  if index < 0 then
+  begin
+    Tempitem := TExam_boln_listItem.Create(nil);
+    Tempitem.DataPos := datapos;
+    GetCellFromMap(field, -1, Tempitem, value);
+    Tempitem.Free;
+  end
+  else
+  begin
+    Tempitem := Self.Items[index];
+    if Assigned(Tempitem.PRecord) then
+    begin
+      GetCellFromRecord(field, Tempitem, value);
+    end
+    else
+    begin
+      GetCellFromMap(field, index, Tempitem, value);
+    end;
+  end;
+end;
+
+{=== TEXT SEARCH HANDLER ===}
+procedure TExam_boln_listColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TExam_boln_listItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TExam_boln_listItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TExam_boln_listItem.TPropertyIndex(Field) of
+Exam_boln_list_ASSISTED_PERSON_NAME: ListForFinder[0].PRecord.ASSISTED_PERSON_NAME := AText;
+    Exam_boln_list_ASSISTED_PERSON_PID: ListForFinder[0].PRecord.ASSISTED_PERSON_PID := AText;
+    Exam_boln_list_DAYS_IN_WORDS: ListForFinder[0].PRecord.DAYS_IN_WORDS := AText;
+    Exam_boln_list_EL_NUMBER: ListForFinder[0].PRecord.EL_NUMBER := AText;
+    Exam_boln_list_FORM_LETTER: ListForFinder[0].PRecord.FORM_LETTER := AText;
+    Exam_boln_list_IST_ZABOL_NO: ListForFinder[0].PRecord.IST_ZABOL_NO := AText;
+    Exam_boln_list_IZDADEN_OT: ListForFinder[0].PRecord.IZDADEN_OT := AText;
+    Exam_boln_list_LKK_TYPE: ListForFinder[0].PRecord.LKK_TYPE := AText;
+    Exam_boln_list_NOTES: ListForFinder[0].PRecord.NOTES := AText;
+    Exam_boln_list_NUMBER_ANUL: ListForFinder[0].PRecord.NUMBER_ANUL := AText;
+    Exam_boln_list_PATIENT_EGN: ListForFinder[0].PRecord.PATIENT_EGN := AText;
+    Exam_boln_list_PATIENT_LNCH: ListForFinder[0].PRecord.PATIENT_LNCH := AText;
+    Exam_boln_list_REALATIONSHIP: ListForFinder[0].PRecord.REALATIONSHIP := AText;
+    Exam_boln_list_RESHENIENO: ListForFinder[0].PRecord.RESHENIENO := AText;
+    Exam_boln_list_RESHENIENO_TELK: ListForFinder[0].PRecord.RESHENIENO_TELK := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TExam_boln_listColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TExam_boln_listItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TExam_boln_listItem.TPropertyIndex(Field) of
+Exam_boln_list_DATA: ListForFinder[0].PRecord.DATA := Value;
+    Exam_boln_list_DATEOFBIRTH: ListForFinder[0].PRecord.DATEOFBIRTH := Value;
+    Exam_boln_list_IAVIAVANE_PREGLED_DATE: ListForFinder[0].PRecord.IAVIAVANE_PREGLED_DATE := Value;
+    Exam_boln_list_RESHENIEDATE: ListForFinder[0].PRecord.RESHENIEDATE := Value;
+    Exam_boln_list_RESHENIEDATE_TELK: ListForFinder[0].PRecord.RESHENIEDATE_TELK := Value;
+    Exam_boln_list_SICK_LEAVE_END: ListForFinder[0].PRecord.SICK_LEAVE_END := Value;
+    Exam_boln_list_SICK_LEAVE_START: ListForFinder[0].PRecord.SICK_LEAVE_START := Value;
+    Exam_boln_list_TERMIN_DATE: ListForFinder[0].PRecord.TERMIN_DATE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TExam_boln_listColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TExam_boln_listItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TExam_boln_listItem.TPropertyIndex(Field) of
+Exam_boln_list_AMB_JOURNAL_NUMBER: ListForFinder[0].PRecord.AMB_JOURNAL_NUMBER := Value;
+    Exam_boln_list_CUSTOMIZE: ListForFinder[0].PRecord.CUSTOMIZE := Value;
+    Exam_boln_list_DAYS_FREE: ListForFinder[0].PRecord.DAYS_FREE := Value;
+    Exam_boln_list_DAYS_HOME: ListForFinder[0].PRecord.DAYS_HOME := Value;
+    Exam_boln_list_DAYS_HOSPITAL: ListForFinder[0].PRecord.DAYS_HOSPITAL := Value;
+    Exam_boln_list_DAYS_SANATORIUM: ListForFinder[0].PRecord.DAYS_SANATORIUM := Value;
+    Exam_boln_list_FORM_NUMBER: ListForFinder[0].PRecord.FORM_NUMBER := Value;
+    Exam_boln_list_ID: ListForFinder[0].PRecord.ID := Value;
+    Exam_boln_list_LAK_NUMBER: ListForFinder[0].PRecord.LAK_NUMBER := Value;
+    Exam_boln_list_NERABOTOSP_ID: ListForFinder[0].PRecord.NERABOTOSP_ID := Value;
+    Exam_boln_list_NOTES_ID: ListForFinder[0].PRecord.NOTES_ID := Value;
+    Exam_boln_list_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+    Exam_boln_list_OTHER_PRACTICA_ID: ListForFinder[0].PRecord.OTHER_PRACTICA_ID := Value;
+    Exam_boln_list_PREGLED_ID: ListForFinder[0].PRecord.PREGLED_ID := Value;
+    Exam_boln_list_REL_SHIP_CODE: ListForFinder[0].PRecord.REL_SHIP_CODE := Value;
+    Exam_boln_list_TREATMENT_REGIMEN: ListForFinder[0].PRecord.TREATMENT_REGIMEN := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TExam_boln_listColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TExam_boln_listItem.TPropertyIndex(Field) of
+    Exam_boln_list_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalExam_boln_list(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalExam_boln_list(logIndex))   
+    end;
+  end;
+end;
+
+
+procedure TExam_boln_listColl.OnSetTextSearchLog(Log: TlogicalExam_boln_listSet);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
+end;
+
+procedure TExam_boln_listColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
+
+function TExam_boln_listColl.PropType(propIndex: Word): TAspectTypeKind;
+begin
+  inherited;
+  case TExam_boln_listItem.TPropertyIndex(propIndex) of
+    Exam_boln_list_AMB_JOURNAL_NUMBER: Result := actinteger;
+    Exam_boln_list_ASSISTED_PERSON_NAME: Result := actAnsiString;
+    Exam_boln_list_ASSISTED_PERSON_PID: Result := actAnsiString;
+    Exam_boln_list_CUSTOMIZE: Result := actinteger;
+    Exam_boln_list_DATA: Result := actTDate;
+    Exam_boln_list_DATEOFBIRTH: Result := actTDate;
+    Exam_boln_list_DAYS_FREE: Result := actword;
+    Exam_boln_list_DAYS_HOME: Result := actword;
+    Exam_boln_list_DAYS_HOSPITAL: Result := actword;
+    Exam_boln_list_DAYS_IN_WORDS: Result := actAnsiString;
+    Exam_boln_list_DAYS_SANATORIUM: Result := actword;
+    Exam_boln_list_EL_NUMBER: Result := actAnsiString;
+    Exam_boln_list_FORM_LETTER: Result := actAnsiString;
+    Exam_boln_list_FORM_NUMBER: Result := actinteger;
+    Exam_boln_list_IAVIAVANE_PREGLED_DATE: Result := actTDate;
+    Exam_boln_list_ID: Result := actinteger;
+    Exam_boln_list_IST_ZABOL_NO: Result := actAnsiString;
+    Exam_boln_list_IZDADEN_OT: Result := actAnsiString;
+    Exam_boln_list_LAK_NUMBER: Result := actinteger;
+    Exam_boln_list_LKK_TYPE: Result := actAnsiString;
+    Exam_boln_list_NERABOTOSP_ID: Result := actword;
+    Exam_boln_list_NOTES: Result := actAnsiString;
+    Exam_boln_list_NOTES_ID: Result := actinteger;
+    Exam_boln_list_NUMBER: Result := actinteger;
+    Exam_boln_list_NUMBER_ANUL: Result := actAnsiString;
+    Exam_boln_list_OTHER_PRACTICA_ID: Result := actinteger;
+    Exam_boln_list_PATIENT_EGN: Result := actAnsiString;
+    Exam_boln_list_PATIENT_LNCH: Result := actAnsiString;
+    Exam_boln_list_PREGLED_ID: Result := actinteger;
+    Exam_boln_list_REALATIONSHIP: Result := actAnsiString;
+    Exam_boln_list_REL_SHIP_CODE: Result := actword;
+    Exam_boln_list_RESHENIEDATE: Result := actTDate;
+    Exam_boln_list_RESHENIEDATE_TELK: Result := actTDate;
+    Exam_boln_list_RESHENIENO: Result := actAnsiString;
+    Exam_boln_list_RESHENIENO_TELK: Result := actAnsiString;
+    Exam_boln_list_SICK_LEAVE_END: Result := actTDate;
+    Exam_boln_list_SICK_LEAVE_START: Result := actTDate;
+    Exam_boln_list_TERMIN_DATE: Result := actTDate;
+    Exam_boln_list_TREATMENT_REGIMEN: Result := actword;
+    Exam_boln_list_Logical: Result := actLogical;
+  else
+    Result := actNone;
+  end
+end;
+
+function TExam_boln_listColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
+end;
+
 procedure TExam_boln_listColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   isOld: Boolean;
@@ -897,7 +1829,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   Exam_boln_list := Items[ARow];
   if not Assigned(Exam_boln_list.PRecord) then
   begin
@@ -907,7 +1839,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TExam_boln_listItem.TPropertyIndex(ACol) of
       Exam_boln_list_AMB_JOURNAL_NUMBER: isOld :=  Exam_boln_list.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     Exam_boln_list_ASSISTED_PERSON_NAME: isOld :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1012,7 +1943,7 @@ var
   Exam_boln_list: TExam_boln_listItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   Exam_boln_list := Items[ARow];
   if not Assigned(Exam_boln_list.PRecord) then
   begin
@@ -1022,7 +1953,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TExam_boln_listItem.TPropertyIndex(ACol) of
       Exam_boln_list_AMB_JOURNAL_NUMBER: isOld :=  Exam_boln_list.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     Exam_boln_list_ASSISTED_PERSON_NAME: isOld :=  Exam_boln_list.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1383,6 +2313,34 @@ begin
 
 end;
 
+procedure TExam_boln_listColl.ShowGridFromList(Grid: TTeeGrid; LST: TList<TExam_boln_listItem>);
+var
+  i: word;
+
+begin
+  ListForFinder := LST;
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellList;
+  TVirtualModeData(Grid.Data).OnSetValue:=nil;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 100;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 50;
+  Grid.Columns[self.FieldCount].Index := 0;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width + 1;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width - 1;
+
+end;
+
 procedure TExam_boln_listColl.ShowSearchedGrid(Grid: TTeeGrid);
 var
   i: word;
@@ -1405,7 +2363,9 @@ begin
 
   Grid.Columns[self.FieldCount].Width.Value := 90;
   Grid.Columns[self.FieldCount].Index := 0;
-
+  grid.Margins.Left := 100;
+  grid.Margins.Left := 0;
+  grid.Scrolling.Active := true;
 end;
 
 procedure TExam_boln_listColl.SortByIndexAnsiString;
@@ -1422,8 +2382,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

@@ -23,13 +23,7 @@ uses
 
 
   public
-    CollPreg: TRealPregledNewColl;
-    CollPat: TRealPatientNewColl;
-    CollDoctor: TRealDoctorColl;
-    CollEbl: TRealExam_boln_listColl;
-    CollDiag: TRealDiagnosisColl;
-    CollMdn: TRealMDNColl;
-    collCl022: TCL022Coll;
+
     AdbHip: TMappedFile;
     AdbNomenNzis: TMappedFile;
     AdbLink: TMappedFile;
@@ -37,7 +31,7 @@ uses
     Vtr: TVirtualStringTreeAspect;
     Fdm: TDUNzis;
     NasMesto: TRealNasMestoAspects;
-    AdbDM: TADBDataModule;
+    Adb_DM: TADBDataModule;
     mkbColl: TRealMkbColl;
 
 
@@ -107,12 +101,12 @@ begin
     case data.vid of
       vvDiag:
       begin
-        diag := TRealDiagnosisItem.Create(CollDiag);
+        diag := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
         diag.DataPos := data.DataPos;
         case diag.getWordMap(buf, datPos, word(Diagnosis_rank)) of
           0: //  основна диагноза
           begin
-            diag0 := TRealDiagnosisItem.Create(CollDiag);
+            diag0 := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
             diag0.Node := diagNode;
             diag0.DataPos := data.DataPos;
             diag0.MainMkb := Diag.getAnsiStringMap(buf, datPos, word(Diagnosis_code_CL011));
@@ -121,7 +115,7 @@ begin
           end;
           1: // първа придружаваща
           begin
-            diag1 := TRealDiagnosisItem.Create(CollDiag);
+            diag1 := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
             diag1.Node := diagNode;
             diag1.DataPos := data.DataPos;
             diag1.MainMkb := Diag.getAnsiStringMap(buf, datPos, word(Diagnosis_code_CL011));
@@ -130,7 +124,7 @@ begin
           end;
           2: // втора придружаваща
           begin
-            diag2 := TRealDiagnosisItem.Create(CollDiag);
+            diag2 := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
             diag2.Node := diagNode;
             diag2.DataPos := data.DataPos;
             diag2.MainMkb := Diag.getAnsiStringMap(buf, datPos, word(Diagnosis_code_CL011));
@@ -139,7 +133,7 @@ begin
           end;
           3: // трета придружаваща
           begin
-            diag3 := TRealDiagnosisItem.Create(CollDiag);
+            diag3 := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
             diag3.DataPos := data.DataPos;
             diag3.Node := diagNode;
             diag3.MainMkb := Diag.getAnsiStringMap(buf, datPos, word(Diagnosis_code_CL011));
@@ -148,7 +142,7 @@ begin
           end;
           4: // четвърта придружаваща
           begin
-            diag4 := TRealDiagnosisItem.Create(CollDiag);
+            diag4 := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
             diag4.Node := diagNode;
             diag4.DataPos := data.DataPos;
             diag4.MainMkb := Diag.getAnsiStringMap(buf, datPos, word(Diagnosis_code_CL011));
@@ -244,7 +238,7 @@ var
   iEvn: Integer;
 begin
   ibsqlDoctor := ibsql;
-    TempItem := TRealDoctorItem(CollDoctor.Add);
+    TempItem := TRealDoctorItem(Adb_DM.CollDoctor.Add);
     New(TempItem.PRecord);
     TempItem.PRecord.setProp := [];
     if not ibsqlDoctor.Fields[0].IsNull then
@@ -282,8 +276,8 @@ begin
 
 
     TempItem.InsertDoctor;
-    CollDoctor.streamComm.Len := CollDoctor.streamComm.Size;
-    CmdFile.CopyFrom(CollDoctor.streamComm, 0);
+    Adb_DM.CollDoctor.streamComm.Len := Adb_DM.CollDoctor.streamComm.Size;
+    CmdFile.CopyFrom(Adb_DM.CollDoctor.streamComm, 0);
     Dispose(TempItem.PRecord);
     TempItem.PRecord := nil;
     ibsqlDoctor.Next;
@@ -511,30 +505,30 @@ var
   begin
     ibsqlExamAnalysis := ibsql;
 
-    if (not ibsqlExamAnalysis.Fields[0].IsNull)
-    then
-    begin
-      TempItem.PRecord.ANALYSIS_ID := ibsqlExamAnalysis.Fields[0].AsInteger;
-      Include(TempItem.PRecord.setProp, ExamAnalysis_ANALYSIS_ID);
-    end;
-    if (not ibsqlExamAnalysis.Fields[1].IsNull)
-    then
-    begin
-       TempItem.PRecord.BLANKA_MDN_ID := ibsqlExamAnalysis.Fields[1].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_BLANKA_MDN_ID);
-    end;
+   // if (not ibsqlExamAnalysis.Fields[0].IsNull)
+//    then
+//    begin
+//      TempItem.PRecord.ANALYSIS_ID := ibsqlExamAnalysis.Fields[0].AsInteger;
+//      Include(TempItem.PRecord.setProp, ExamAnalysis_ANALYSIS_ID);
+//    end;
+//    if (not ibsqlExamAnalysis.Fields[1].IsNull)
+//    then
+//    begin
+//       TempItem.PRecord.BLANKA_MDN_ID := ibsqlExamAnalysis.Fields[1].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_BLANKA_MDN_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[2].IsNull)
     then
     begin
       TempItem.PRecord.DATA := ibsqlExamAnalysis.Fields[2].AsDate;
       Include(TempItem.PRecord.setProp, ExamAnalysis_DATA);
     end;
-    if (not ibsqlExamAnalysis.Fields[3].IsNull)
-    then
-    begin
-       TempItem.PRecord.EMDN_ID := ibsqlExamAnalysis.Fields[3].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_EMDN_ID);
-    end;
+    //if (not ibsqlExamAnalysis.Fields[3].IsNull)
+//    then
+//    begin
+//       TempItem.PRecord.EMDN_ID := ibsqlExamAnalysis.Fields[3].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_EMDN_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[4].IsNull)
     then
     begin
@@ -553,12 +547,12 @@ var
       TempItem.PRecord.NZIS_DESCRIPTION_CL22 := ibsqlExamAnalysis.Fields[6].AsString;
       Include(TempItem.PRecord.setProp, ExamAnalysis_NZIS_DESCRIPTION_CL22);
     end;
-    if (not ibsqlExamAnalysis.Fields[7].IsNull)
-    then
-    begin
-       TempItem.PRecord.PREGLED_ID := ibsqlExamAnalysis.Fields[7].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_PREGLED_ID);
-    end;
+    //if (not ibsqlExamAnalysis.Fields[7].IsNull)
+//    then
+//    begin
+//       TempItem.PRecord.PREGLED_ID := ibsqlExamAnalysis.Fields[7].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_PREGLED_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[8].IsNull)
     then
     begin
@@ -2163,20 +2157,20 @@ begin
     if (not ibsqlPractica.Fields[14].IsNull)
     then
     begin
-      TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
-      Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
+      //TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
+//      Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
     end;
     if (not ibsqlPractica.Fields[15].IsNull)
     then
     begin
-      TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
-      Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
+      //TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
+//      Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
     end;
     if (not ibsqlPractica.Fields[16].IsNull)
     then
     begin
-      TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
-      Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
+      //TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
+//      Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
     end;
     if (not ibsqlPractica.Fields[17].IsNull)
     then
@@ -2247,8 +2241,8 @@ begin
     if (not ibsqlPractica.Fields[29].IsNull)
     then
     begin
-      TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
-      Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
+      //TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
+//      Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
     end;
     if (not ibsqlPractica.Fields[30].IsNull)
     then
@@ -2511,6 +2505,8 @@ procedure TDbHelper.InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewI
 
 
 
+
+
     TempItem.DoctorID := ibsqlPregledNew.Fields[41].Asinteger;
 
     TempItem.IS_ZAMESTVASHT := ibsqlPregledNew.Fields[42].AsString = 'Y';
@@ -2547,17 +2543,20 @@ procedure TDbHelper.InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewI
     TempItem.IS_VSD := ibsqlPregledNew.Fields[71].AsString = 'Y';
     TempItem.PAY := ibsqlPregledNew.Fields[72].AsString = 'Y';
     TempItem.TO_BE_DISPANSERED := ibsqlPregledNew.Fields[73].AsString = 'Y';
+
     TempItem.PROCEDURE1_MKB := ibsqlPregledNew.Fields[74].AsString;
     TempItem.PROCEDURE2_MKB := ibsqlPregledNew.Fields[75].AsString;
     TempItem.PROCEDURE3_MKB := ibsqlPregledNew.Fields[76].AsString;
     TempItem.PROCEDURE4_MKB := ibsqlPregledNew.Fields[77].AsString;
     TempItem.RECKNNO := ibsqlPregledNew.Fields[78].AsString;
     TempItem.PREVENTIVE_TYPE := ibsqlPregledNew.Fields[17].AsInteger;//1-детско, 2-над 18, 3-майчино
+
     TempItem.COPIED_FROM_NRN := ibsqlPregledNew.Fields[2].AsString;
     if not Fdm.IsGP then
     begin
       TempItem.IncNaprNom := ibsqlPregledNew.Fields[79].AsInteger;
     end;
+
     //TempItem.CalcPorpuse(AdbHip.Buf, AdbHip.FPosData);
 
 
@@ -2586,11 +2585,11 @@ begin
   cl22Code := ExamAnal.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(ExamAnalysis_NZIS_CODE_CL22));
   if cl22Code.Contains  ('.') then
   begin
-    for i := 0 to collCl022.Count - 1 do
+    for i := 0 to Adb_DM.CL022Coll.Count - 1 do
     begin
-      if collCl022.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_NHIF_Code)) = cl22Code then
+      if Adb_DM.CL022Coll.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_NHIF_Code)) = cl22Code then
       begin
-        cl22Code := collCl022.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_Key));
+        cl22Code := Adb_DM.CL022Coll.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_Key));
         Break;
       end;
     end;
@@ -2640,8 +2639,8 @@ begin
       vvDiag:
       begin
         DiagData := rundata;
-        diagStr := CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_code_CL011));
-        diagAddStr := CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_additionalCode_CL011));
+        diagStr := Adb_DM.CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_code_CL011));
+        diagAddStr := Adb_DM.CollDiag.getAnsiStringMap(DiagData.DataPos, word(Diagnosis_additionalCode_CL011));
       end;
       vvAnal:
       begin
@@ -2650,13 +2649,13 @@ begin
     end;
      run := run.NextSibling;
   end;
-  logData24 := CollMdn.getLogical24Map(mdn.DataPos, word(Mdn_Logical));
+  logData24 := Adb_DM.CollMdn.getLogical24Map(mdn.DataPos, word(Mdn_Logical));
   logMdn := TlogicalMDNSet(logData24);
   ibsql.Close;
   ibsql.SQL.Text := 'select gen_id(gen_blanka_mdn, 1) from rdb$database';
   ibsql.ExecQuery;
   mdn.MdnId  := ibsql.Fields[0].AsInteger;
-  CollMdn.SetIntMap(mdn.DataPos, word(MDN_ID), mdn.MdnId); // трябва инсърта в АДБ да му е направил място
+  Adb_DM.CollMdn.SetIntMap(mdn.DataPos, word(MDN_ID), mdn.MdnId); // трябва инсърта в АДБ да му е направил място
   //mdn.GetIntMap(AdbHip.Buf, AdbHip.FPosData, word(mdn_ID));
   ibsql.Close;
   ibsql.SQL.Text :=
@@ -2671,9 +2670,9 @@ begin
   end;
   ibsql.ParamByName('ID').AsInteger := mdn.MdnId;
   ibsql.ParamByName('PREGLED_ID').AsInteger := mdn.FPregled.PregledID;
-  ibsql.ParamByName('NUMBER').AsInteger := CollMdn.getIntMap(mdn.DataPos, word(MDN_NUMBER));
-  ibsql.ParamByName('DATA').AsDate := CollMdn.getDateMap(mdn.DataPos, word(MDN_DATA));      //  mdn.getdateMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_DATA));
-  ibsql.ParamByName('NRN').AsString := CollMdn.getAnsiStringMap(mdn.DataPos, word(MDN_NRN));
+  ibsql.ParamByName('NUMBER').AsInteger := Adb_DM.CollMdn.getIntMap(mdn.DataPos, word(MDN_NUMBER));
+  ibsql.ParamByName('DATA').AsDate := Adb_DM.CollMdn.getDateMap(mdn.DataPos, word(MDN_DATA));      //  mdn.getdateMap(AdbHip.Buf, AdbHip.FPosData, word(MDN_DATA));
+  ibsql.ParamByName('NRN').AsString := Adb_DM.CollMdn.getAnsiStringMap(mdn.DataPos, word(MDN_NRN));
   ibsql.ParamByName('NZIS_STATUS').Asinteger := 3;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   ibsql.ParamByName('MED_DIAG_NAPR_TYPE_ID').AsInteger := 1;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   ibsql.ParamByName('IS_PRINTED').Asstring := 'Y';
@@ -2695,7 +2694,7 @@ var
   dataDoc, dataAddr: PAspRec;
   nasMest: TRealNasMestoItem;
 begin
-  PatNodes := AdbDM.GetPatNodes(Pat.FNode);
+  PatNodes := Adb_DM.GetPatNodes(Pat.FNode);
   dataDoc := Pointer(PByte(PatNodes.docNode) + lenNode);
   dataAddr := Pointer(PByte(PatNodes.addresses[0]) + lenNode);
   nasMest := NasMesto.FindNasMestFromDataPos(AddresLinkPos);
@@ -2709,7 +2708,7 @@ begin
   ibsql.Close;
   if Fdm.IsGP then
   begin
-    pat.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+    pat.DoctorID := Adb_DM.CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
   end;
   //addr := Pat.FAdresi[0];
   AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddr.DataPos, word(Addres_LinkPos));
@@ -2776,7 +2775,7 @@ begin
 
   ibsql.ExecQuery;
   ibsql.Transaction.CommitRetaining;
-  CollPat.SetIntMap(Pat.DataPos, word(PatientNew_ID), pat.PatID);
+  Adb_DM.CollPatient.SetIntMap(Pat.DataPos, word(PatientNew_ID), pat.PatID);
 end;
 //////////////////////////////////////////////////////////////////////////////
 
@@ -2794,7 +2793,7 @@ var
   IncNaprlog: TlogicalINC_NAPRSet;
   intSet: TNaprType;
 begin
-  pregNodes := AdbDM.GetPregNodes(preg.FNode);
+  pregNodes := Adb_DM.GetPregNodes(preg.FNode);
   datapat := Pointer(PByte(pregNodes.patNode) + lenNode);
   dataPreg :=  Pointer(PByte(pregNodes.pregNode) + lenNode);
   logData40 := preg.getLogical40Map(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_Logical));
@@ -2803,7 +2802,7 @@ begin
   ibsql.SQL.Text := 'select gen_id(gen_pregled, 1) from rdb$database';
   ibsql.ExecQuery;
   preg.PregledID  := ibsql.Fields[0].AsInteger;
-  CollPreg.SetIntMap(dataPreg.DataPos, word(PregledNew_ID), preg.PregledID);
+  Adb_DM.CollPregled.SetIntMap(dataPreg.DataPos, word(PregledNew_ID), preg.PregledID);
 
   ibsql.Close;
   ibsql.SQL.Text :=
@@ -2820,7 +2819,7 @@ begin
   end
   else
   begin
-    preg.DoctorID := CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
+    preg.DoctorID := Adb_DM.CollDoctor.getIntMap(dataDoc.DataPos, word(Doctor_ID));
   end;
   ibsql.ParamByName('DOCTORID').AsInteger := preg.DoctorID;
   ibsql.ExecQuery;
@@ -2834,11 +2833,11 @@ begin
   // място му е направено, но няма кой да го запише в цмд-то. Затова пишемммм.
   SetProp := [PregledNew_AMB_LISTN, PregledNew_ID];
   preg.SaveAnyStreamCommand(@SetProp, SizeOf(SetProp), ctPregledNew, toChange, preg.Version, preg.DataPos);
-  CollPreg.streamComm.Write(preg.AMB_LISTN, 4);
-  CollPreg.streamComm.Write(preg.PregledID, 4);
+  Adb_DM.CollPregled.streamComm.Write(preg.AMB_LISTN, 4);
+  Adb_DM.CollPregled.streamComm.Write(preg.PregledID, 4);
 
-  CollPreg.streamComm.Len := CollPreg.streamComm.Size;
-  cmdFile.CopyFrom(CollPreg.streamComm, 0);
+  Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
+  cmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
 
 
   ibsql.Close;  //simp_napr
@@ -2924,9 +2923,9 @@ begin
   for i := 0 to pregNodes.diags.Count - 1 do
   begin
     dataDiag := Pointer(PByte(pregNodes.diags[i]) + lenNode);
-    mkb  := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
-    rankDiag := CollDiag.getwordMap(dataDiag.DataPos, word(Diagnosis_rank));
-    mkbPos := CollDiag.getCardMap(dataDiag.DataPos, word(Diagnosis_MkbPos));
+    mkb  := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+    rankDiag := Adb_DM.CollDiag.getwordMap(dataDiag.DataPos, word(Diagnosis_rank));
+    mkbPos := Adb_DM.CollDiag.getCardMap(dataDiag.DataPos, word(Diagnosis_MkbPos));
 
     if rankDiag = 0 then
     begin
@@ -2935,9 +2934,9 @@ begin
       ibsql.ParamByName('MAIN_DIAG_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
       //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
     end;
-      ibsql.ParamByName('main_diag_mkb').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
-      if CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
-        ibsql.ParamByName('main_diag_mkb_add').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
+      ibsql.ParamByName('main_diag_mkb').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+      if Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
+        ibsql.ParamByName('main_diag_mkb_add').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
     end
     else
     begin
@@ -2946,9 +2945,9 @@ begin
         ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
         //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
       end;
-      ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
-      if CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
-        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB_ADD').Asstring := CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
+      ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
+      if Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011)) <> '' then
+        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB_ADD').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_additionalCode_CL011));
     end;
   end;
   ibsql.ParamByName('PrimNrn').Asstring := '---------';
@@ -2961,19 +2960,19 @@ begin
     dataRequester :=  Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
 
     ibsql.ParamByName('copied_from_nrn').AsString :=
-         CollPreg.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_NRN));
+         Adb_DM.CollPregled.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_NRN));
     //ibsql.ParamByName('simp_napr_nrn').AsString :=
 //         CollPreg.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_AMB_LIST_NRN));
     ibsql.ParamByName('simp_form_date').AsDate :=
-         CollPreg.getDateMap(dataIncMN.DataPos, word(INC_NAPR_ISSUE_DATE));
+         Adb_DM.CollPregled.getDateMap(dataIncMN.DataPos, word(INC_NAPR_ISSUE_DATE));
     ibsql.ParamByName('simp_praktika').AsString :=
-         CollPreg.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_NOMER_LZ));
+         Adb_DM.CollPregled.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_NOMER_LZ));
     ibsql.ParamByName('simp_uin').AsString :=
-         CollPreg.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_UIN));
+         Adb_DM.CollPregled.getAnsiStringMap(dataRequester.DataPos, word(OtherDoctor_UIN));
     ibsql.ParamByName('simp_speciality_code').AsInteger :=
-         CollPreg.getIntMap(dataRequester.DataPos, word(OtherDoctor_SPECIALITY));
+         Adb_DM.CollPregled.getIntMap(dataRequester.DataPos, word(OtherDoctor_SPECIALITY));
 
-    IncNaprlog := TlogicalINC_NAPRSet(CollPreg.getLogical24Map(dataIncMN.DataPos, Word(INC_NAPR_Logical)));
+    IncNaprlog := TlogicalINC_NAPRSet(Adb_DM.CollPregled.getLogical24Map(dataIncMN.DataPos, Word(INC_NAPR_Logical)));
   //intSet := IncNaprColl.GetNaprCode_Quick(IncNaprlog);
     intSet := NativeUInt(NaprGroup * IncNaprLog);
     case intSet of
@@ -2999,7 +2998,7 @@ begin
   ibsql.ParamByName('NZIS_STATUS').AsInteger := 6;//zzzzzzzzzzzzzzzzz preg.getWordMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_NZIS_STATUS));
   ibsql.ParamByName('START_DATE').AsDate := preg.getDateMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_DATE));
   ibsql.ParamByName('START_TIME').AsTime := 3 + preg.getTimeMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_START_TIME));
-  ibsql.ParamByName('PACIENT_ID').AsInteger := CollPreg.getIntMap(datapat.DataPos, word(PatientNew_ID));
+  ibsql.ParamByName('PACIENT_ID').AsInteger := Adb_DM.CollPregled.getIntMap(datapat.DataPos, word(PatientNew_ID));
   ibsql.ParamByName('ANAMN').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_ANAMN));
   ibsql.ParamByName('SYST').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_SYST));
   ibsql.ParamByName('IZSL').AsString := preg.getAnsiStringMap(AdbHip.Buf, AdbHip.FPosData, word(PregledNew_IZSL));
@@ -3131,8 +3130,8 @@ begin
     else
     begin
       ibsql.ParamByName('AMB_PR').AsInteger := 2;
-      ibsql.ParamByName('SIMP_PRIMARY_AMBLIST_NRN').Asstring := CollPreg.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
-      ibsql.ParamByName('PrimNrn').Asstring := CollPreg.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
+      ibsql.ParamByName('SIMP_PRIMARY_AMBLIST_NRN').Asstring := Adb_DM.CollPregled.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
+      ibsql.ParamByName('PrimNrn').Asstring := Adb_DM.CollPregled.getAnsiStringMap(dataPreg.DataPos, word(PregledNew_COPIED_FROM_NRN));
     end;
   end
   else
@@ -3203,7 +3202,7 @@ begin
     // diag e nil, ако и MainMkb е нищо, то значи, че нищо не трябва да се прави
     if MainMkb = '' then Exit;
 
-    diag := TRealDiagnosisItem.Create(CollDiag);
+    diag := TRealDiagnosisItem.Create(Adb_DM.CollDiag);
     diag.MainMkb := '';
     diag.AddMkb := '';
     diag.rank := rank;
@@ -3226,7 +3225,7 @@ begin
     end
     else //  тука вкарвам логиката, че ако няма основна диагноза, то няма никаква. Маркирам я за изтрита
     begin
-      diag.MarkDelete;
+      Adb_DM.CollDiag.MarkDelete(diag.DataPos);
       diag.IsDeleted := True;
     end;
   end;
@@ -3245,8 +3244,8 @@ begin
     diag.PRecord.rank := rank;
     Include(diag.PRecord.setProp, Diagnosis_rank);
     diag.InsertDiagnosis;
-    CollDiag.streamComm.Len := CollDiag.streamComm.Size;
-    CmdFile.CopyFrom(CollDiag.streamComm, 0);// това е за диагнозата
+    Adb_DM.CollDiag.streamComm.Len := Adb_DM.CollDiag.streamComm.Size;
+    CmdFile.CopyFrom(Adb_DM.CollDiag.streamComm, 0);// това е за диагнозата
     Dispose(diag.PRecord);
     diag.PRecord := nil;
 
@@ -3275,8 +3274,8 @@ begin
     if (diag.PRecord <> nil)  then
     begin
       diag.SaveDiagnosis(buf, dataPosition);
-      CollDiag.streamComm.Len := CollDiag.streamComm.Size;
-      CmdFile.CopyFrom(CollDiag.streamComm, 0);
+      Adb_DM.CollDiag.streamComm.Len := Adb_DM.CollDiag.streamComm.Size;
+      CmdFile.CopyFrom(Adb_DM.CollDiag.streamComm, 0);
       pCardinalData := pointer(PByte(buf) + 12);
       pCardinalData^  := dataPosition - datPos;
     end;
@@ -3372,20 +3371,20 @@ var
     buf := AdbHip.Buf;
     datPos := AdbHip.FPosData;
 
-    if (not ibsqlExamAnalysis.Fields[0].IsNull)
-        and (TempItem.getWordMap(buf, datPos, word(ExamAnalysis_ANALYSIS_ID))<>ibsqlExamAnalysis.Fields[0].AsInteger)
-    then
-    begin
-      TempItem.PRecord.ANALYSIS_ID := ibsqlExamAnalysis.Fields[0].AsInteger;
-      Include(TempItem.PRecord.setProp, ExamAnalysis_ANALYSIS_ID);
-    end;
-    if (not ibsqlExamAnalysis.Fields[1].IsNull)
-        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_BLANKA_MDN_ID))<>ibsqlExamAnalysis.Fields[1].AsInteger)
-    then
-    begin
-       TempItem.PRecord.BLANKA_MDN_ID := ibsqlExamAnalysis.Fields[1].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_BLANKA_MDN_ID);
-    end;
+    //if (not ibsqlExamAnalysis.Fields[0].IsNull)
+//        and (TempItem.getWordMap(buf, datPos, word(ExamAnalysis_ANALYSIS_ID))<>ibsqlExamAnalysis.Fields[0].AsInteger)
+//    then
+//    begin
+//      TempItem.PRecord.ANALYSIS_ID := ibsqlExamAnalysis.Fields[0].AsInteger;
+//      Include(TempItem.PRecord.setProp, ExamAnalysis_ANALYSIS_ID);
+//    end;
+//    if (not ibsqlExamAnalysis.Fields[1].IsNull)
+//        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_BLANKA_MDN_ID))<>ibsqlExamAnalysis.Fields[1].AsInteger)
+//    then
+//    begin
+//       TempItem.PRecord.BLANKA_MDN_ID := ibsqlExamAnalysis.Fields[1].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_BLANKA_MDN_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[2].IsNull)
         and (TempItem.getDateMap(buf, datPos, word(ExamAnalysis_DATA))<>ibsqlExamAnalysis.Fields[2].AsDate)
     then
@@ -3393,13 +3392,13 @@ var
       TempItem.PRecord.DATA := ibsqlExamAnalysis.Fields[2].AsDate;
       Include(TempItem.PRecord.setProp, ExamAnalysis_DATA);
     end;
-    if (not ibsqlExamAnalysis.Fields[3].IsNull)
-        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_EMDN_ID))<>ibsqlExamAnalysis.Fields[3].AsInteger)
-    then
-    begin
-       TempItem.PRecord.EMDN_ID := ibsqlExamAnalysis.Fields[3].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_EMDN_ID);
-    end;
+    //if (not ibsqlExamAnalysis.Fields[3].IsNull)
+//        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_EMDN_ID))<>ibsqlExamAnalysis.Fields[3].AsInteger)
+//    then
+//    begin
+//       TempItem.PRecord.EMDN_ID := ibsqlExamAnalysis.Fields[3].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_EMDN_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[4].IsNull)
         and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_ID))<>ibsqlExamAnalysis.Fields[4].AsInteger)
     then
@@ -3421,13 +3420,13 @@ var
       TempItem.PRecord.NZIS_DESCRIPTION_CL22 := ibsqlExamAnalysis.Fields[6].AsString;
       Include(TempItem.PRecord.setProp, ExamAnalysis_NZIS_DESCRIPTION_CL22);
     end;
-    if (not ibsqlExamAnalysis.Fields[7].IsNull)
-        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_PREGLED_ID))<>ibsqlExamAnalysis.Fields[7].AsInteger)
-    then
-    begin
-       TempItem.PRecord.PREGLED_ID := ibsqlExamAnalysis.Fields[7].AsInteger;
-       Include(TempItem.PRecord.setProp, ExamAnalysis_PREGLED_ID);
-    end;
+    //if (not ibsqlExamAnalysis.Fields[7].IsNull)
+//        and (TempItem.getIntMap(buf, datPos, word(ExamAnalysis_PREGLED_ID))<>ibsqlExamAnalysis.Fields[7].AsInteger)
+//    then
+//    begin
+//       TempItem.PRecord.PREGLED_ID := ibsqlExamAnalysis.Fields[7].AsInteger;
+//       Include(TempItem.PRecord.setProp, ExamAnalysis_PREGLED_ID);
+//    end;
     if (not ibsqlExamAnalysis.Fields[8].IsNull)
         and (TempItem.getAnsiStringMap(buf, datPos, word(ExamAnalysis_RESULT))<>ibsqlExamAnalysis.Fields[8].AsString)
     then
@@ -4254,27 +4253,27 @@ begin
     TempItem.PRecord.FULLNAME := ibsqlPractica.Fields[13].AsString;
     Include(TempItem.PRecord.setProp, Practica_FULLNAME);
   end;
-  if (not ibsqlPractica.Fields[14].IsNull)
-      and (TempItem.getBooleanMap(buf, datPos, word(Practica_INVOICECOMPANY))<>(ibsqlPractica.Fields[14].Asstring = 'Y'))
-  then
-  begin
-    TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
-    Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
-  end;
-  if (not ibsqlPractica.Fields[15].IsNull)
-      and (TempItem.getBooleanMap(buf, datPos, word(Practica_ISSUER_TYPE))<>(ibsqlPractica.Fields[15].Asstring = 'Y'))
-  then
-  begin
-    TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
-    Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
-  end;
-  if (not ibsqlPractica.Fields[16].IsNull)
-      and (TempItem.getBooleanMap(buf, datPos, word(Practica_IS_SAMOOSIG))<>(ibsqlPractica.Fields[16].Asstring = 'Y'))
-  then
-  begin
-    TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
-    Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
-  end;
+  //if (not ibsqlPractica.Fields[14].IsNull)
+//      and (TempItem.getBooleanMap(buf, datPos, word(Practica_INVOICECOMPANY))<>(ibsqlPractica.Fields[14].Asstring = 'Y'))
+//  then
+//  begin
+//    TempItem.PRecord.INVOICECOMPANY := ibsqlPractica.Fields[14].AsString = 'Y';
+//    Include(TempItem.PRecord.setProp, Practica_INVOICECOMPANY);
+//  end;
+//  if (not ibsqlPractica.Fields[15].IsNull)
+//      and (TempItem.getBooleanMap(buf, datPos, word(Practica_ISSUER_TYPE))<>(ibsqlPractica.Fields[15].Asstring = 'Y'))
+//  then
+//  begin
+//    TempItem.PRecord.ISSUER_TYPE := ibsqlPractica.Fields[15].AsString = 'Y';
+//    Include(TempItem.PRecord.setProp, Practica_ISSUER_TYPE);
+//  end;
+//  if (not ibsqlPractica.Fields[16].IsNull)
+//      and (TempItem.getBooleanMap(buf, datPos, word(Practica_IS_SAMOOSIG))<>(ibsqlPractica.Fields[16].Asstring = 'Y'))
+//  then
+//  begin
+//    TempItem.PRecord.IS_SAMOOSIG := ibsqlPractica.Fields[16].AsString = 'Y';
+//    Include(TempItem.PRecord.setProp, Practica_IS_SAMOOSIG);
+//  end;
   if (not ibsqlPractica.Fields[17].IsNull)
       and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_KOD_RAJON))<>ibsqlPractica.Fields[17].AsString)
   then
@@ -4352,13 +4351,13 @@ begin
     TempItem.PRecord.OBSHTINA := ibsqlPractica.Fields[28].AsString;
     Include(TempItem.PRecord.setProp, Practica_OBSHTINA);
   end;
-  if (not ibsqlPractica.Fields[29].IsNull)
-      and (TempItem.getBooleanMap(buf, datPos, word(Practica_SELF_INSURED_DECLARATION))<>(ibsqlPractica.Fields[29].Asstring = 'Y'))
-  then
-  begin
-    TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
-    Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
-  end;
+  //if (not ibsqlPractica.Fields[29].IsNull)
+//      and (TempItem.getBooleanMap(buf, datPos, word(Practica_SELF_INSURED_DECLARATION))<>(ibsqlPractica.Fields[29].Asstring = 'Y'))
+//  then
+//  begin
+//    TempItem.PRecord.SELF_INSURED_DECLARATION := ibsqlPractica.Fields[29].AsString = 'Y';
+//    Include(TempItem.PRecord.setProp, Practica_SELF_INSURED_DECLARATION);
+//  end;
   if (not ibsqlPractica.Fields[30].IsNull)
       and (TempItem.getAnsiStringMap(buf, datPos, word(Practica_SMETKA))<>ibsqlPractica.Fields[30].AsString)
   then

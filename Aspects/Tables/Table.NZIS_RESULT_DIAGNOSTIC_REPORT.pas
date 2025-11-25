@@ -97,7 +97,7 @@ NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; NZIS_RESULT_DIAGNOSTIC_REPORT: TNZIS_RESULT_DIAGNOSTIC_REPORTItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; NZIS_RESULT_DIAGNOSTIC_REPORT: TNZIS_RESULT_DIAGNOSTIC_REPORTItem; var AValue:String);
@@ -660,7 +660,7 @@ end;
 
 
 
-function TNZIS_RESULT_DIAGNOSTIC_REPORTColl.PropType(propIndex: Word): TAsectTypeKind;
+function TNZIS_RESULT_DIAGNOSTIC_REPORTColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TNZIS_RESULT_DIAGNOSTIC_REPORTItem.TPropertyIndex(propIndex) of

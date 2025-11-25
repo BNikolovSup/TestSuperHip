@@ -2,7 +2,7 @@ unit Table.PregledNew;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types, Vcl.Dialogs,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
   VirtualTrees, VCLTee.Control, System.Generics.Defaults;
@@ -148,6 +148,9 @@ TPregledNewItem = class(TBaseItem)
     procedure SavePregledNew(var dataPosition: Cardinal)overload;
 	procedure SavePregledNew(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -167,8 +170,7 @@ TPregledNewItem = class(TBaseItem)
 	PRecordSearch: ^TPregledNewItem.TRecPregledNew;
     ArrPropSearch: TArray<TPregledNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPregledNewItem.TPropertyIndex>;
-	ArrayPropOrder: TArray<TPregledNewItem.TPropertyIndex>;
-    ArrayPropOrderSearchOptions: TArray<integer>;
+	VisibleColl: TPregledNewItem.TSetProp;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -178,7 +180,7 @@ TPregledNewItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; PregledNew: TPregledNewItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; PregledNew: TPregledNewItem; var AValue:String);
@@ -193,13 +195,13 @@ TPregledNewItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
-    procedure OrderFieldsSearch(Grid: TTeeGrid);override;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
@@ -211,8 +213,15 @@ TPregledNewItem = class(TBaseItem)
     property Items[Index: Integer]: TPregledNewItem read GetItem write SetItem;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
-	    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalPregledNewSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 implementation
@@ -229,6 +238,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TPregledNewItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TPregledNewItem.GetCollType: TCollectionsType;
+begin
+  Result := ctPregledNew;
+end;
+
+function TPregledNewItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TPregledNewItem.InsertPregledNew;
@@ -520,6 +558,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TPregledNewColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TPregledNewItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TPregledNewColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -528,18 +586,20 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvPregledNewRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -547,6 +607,196 @@ begin
     // при евентуално добавена колонка...
   end;  
 end;
+
+procedure TPregledNewColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TPregledNewItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (PregledNew_AMB_LISTN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_LISTN <> Self.getIntMap(tempItem.DataPos, word(PregledNew_AMB_LISTN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_ANAMN in tempItem.PRecord.setProp) and (tempItem.PRecord.ANAMN <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_ANAMN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_COPIED_FROM_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.COPIED_FROM_NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_COPIED_FROM_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_GS in tempItem.PRecord.setProp) and (tempItem.PRecord.GS <> Self.getIntMap(tempItem.DataPos, word(PregledNew_GS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(PregledNew_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_IZSL in tempItem.PRecord.setProp) and (tempItem.PRecord.IZSL <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_IZSL))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_MEDTRANSKM in tempItem.PRecord.setProp) and (tempItem.PRecord.MEDTRANSKM <> Self.getIntMap(tempItem.DataPos, word(PregledNew_MEDTRANSKM))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NAPRAVLENIE_AMBL_NOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.NAPRAVLENIE_AMBL_NOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_NAPRAVLENIE_AMBL_NOMER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NAPR_TYPE_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.NAPR_TYPE_ID <> Self.getIntMap(tempItem.DataPos, word(PregledNew_NAPR_TYPE_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NOMERBELEGKA in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERBELEGKA <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_NOMERBELEGKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NOMERKASHAPARAT in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERKASHAPARAT <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_NOMERKASHAPARAT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NRD in tempItem.PRecord.setProp) and (tempItem.PRecord.NRD <> Self.getIntMap(tempItem.DataPos, word(PregledNew_NRD))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NRN_LRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN_LRN <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_NRN_LRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_NZIS_STATUS in tempItem.PRecord.setProp) and (tempItem.PRecord.NZIS_STATUS <> Self.getIntMap(tempItem.DataPos, word(PregledNew_NZIS_STATUS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_OBSHTAPR in tempItem.PRecord.setProp) and (tempItem.PRecord.OBSHTAPR <> Self.getIntMap(tempItem.DataPos, word(PregledNew_OBSHTAPR))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_PATIENTOF_NEOTL in tempItem.PRecord.setProp) and (tempItem.PRecord.PATIENTOF_NEOTL <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_PATIENTOF_NEOTL))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_PATIENTOF_NEOTLID in tempItem.PRecord.setProp) and (tempItem.PRecord.PATIENTOF_NEOTLID <> Self.getIntMap(tempItem.DataPos, word(PregledNew_PATIENTOF_NEOTLID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_PREVENTIVE_TYPE in tempItem.PRecord.setProp) and (tempItem.PRecord.PREVENTIVE_TYPE <> Self.getIntMap(tempItem.DataPos, word(PregledNew_PREVENTIVE_TYPE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_REH_FINISHED_AT in tempItem.PRecord.setProp) and (tempItem.PRecord.REH_FINISHED_AT <> Self.getDateMap(tempItem.DataPos, word(PregledNew_REH_FINISHED_AT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_START_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.START_DATE <> Self.getDateMap(tempItem.DataPos, word(PregledNew_START_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_START_TIME in tempItem.PRecord.setProp) and (tempItem.PRecord.START_TIME <> Self.getDateMap(tempItem.DataPos, word(PregledNew_START_TIME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_SYST in tempItem.PRecord.setProp) and (tempItem.PRecord.SYST <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_SYST))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_TALON_LKK in tempItem.PRecord.setProp) and (tempItem.PRecord.TALON_LKK <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_TALON_LKK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_TERAPY in tempItem.PRecord.setProp) and (tempItem.PRecord.TERAPY <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_TERAPY))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_THREAD_IDS in tempItem.PRecord.setProp) and (tempItem.PRecord.THREAD_IDS <> Self.getAnsiStringMap(tempItem.DataPos, word(PregledNew_THREAD_IDS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_VISIT_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.VISIT_ID <> Self.getIntMap(tempItem.DataPos, word(PregledNew_VISIT_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_VISIT_TYPE_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.VISIT_TYPE_ID <> Self.getIntMap(tempItem.DataPos, word(PregledNew_VISIT_TYPE_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_VSD_TYPE in tempItem.PRecord.setProp) and (tempItem.PRecord.VSD_TYPE <> Self.getIntMap(tempItem.DataPos, word(PregledNew_VSD_TYPE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (PregledNew_Logical in tempItem.PRecord.setProp) and (TLogicalData40(tempItem.PRecord.Logical) <> Self.getLogical40Map(tempItem.DataPos, word(PregledNew_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
 
 constructor TPregledNewColl.Create(ItemClass: TCollectionItemClass);
 var
@@ -558,11 +808,10 @@ begin
   ListForFinder := TList<TPregledNewItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := TPregledNewItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -575,8 +824,6 @@ begin
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
-  //ArrayPropOrderSearchOptions.Free;
-  //ArrayPropOrder.free;
   inherited;
 end;
 
@@ -616,6 +863,52 @@ begin
   end;
 end;
 
+function TPregledNewColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'INCIDENTALLY';
+    1: Result := 'IS_ANALYSIS';
+    2: Result := 'IS_BABY_CARE';
+    3: Result := 'IS_CONSULTATION';
+    4: Result := 'IS_DISPANSERY';
+    5: Result := 'IS_EMERGENCY';
+    6: Result := 'IS_EPIKRIZA';
+    7: Result := 'IS_EXPERTIZA';
+    8: Result := 'IS_FORM_VALID';
+    9: Result := 'IS_HOSPITALIZATION';
+    10: Result := 'IS_MANIPULATION';
+    11: Result := 'IS_MEDBELEJKA';
+    12: Result := 'IS_NAET';
+    13: Result := 'IS_NAPR_TELK';
+    14: Result := 'IS_NEW';
+    15: Result := 'IS_NOTIFICATION';
+    16: Result := 'IS_NO_DELAY';
+    17: Result := 'IS_OPERATION';
+    18: Result := 'IS_PODVIZHNO_LZ';
+    19: Result := 'IS_PREVENTIVE';
+    20: Result := 'IS_PRINTED';
+    21: Result := 'IS_RECEPTA_HOSPIT';
+    22: Result := 'IS_REGISTRATION';
+    23: Result := 'IS_REHABILITATION';
+    24: Result := 'IS_RISK_GROUP';
+    25: Result := 'IS_TELK';
+    26: Result := 'IS_VSD';
+    27: Result := 'IS_ZAMESTVASHT';
+    28: Result := 'IS_PRIMARY';
+    29: Result := 'IS_AMB_PR';
+    30: Result := 'IS_DOM_PR';
+    31: Result := 'PAY';
+    32: Result := 'TO_BE_DISPANSERED';
+    33: Result := 'IS_PREVENTIVE_Maternal';
+    34: Result := 'IS_PREVENTIVE_Childrens';
+    35: Result := 'IS_PREVENTIVE_Adults';
+    36: Result := 'IS_Screening';
+  else
+    Result := '???';
+  end;
+end;
+
+
 procedure TPregledNewColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
   FieldCollOptionNode, run: PVirtualNode;
@@ -652,6 +945,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -678,15 +977,22 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvPregledNewRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function TPregledNewColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -799,20 +1105,17 @@ end;
 
 procedure TPregledNewColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  PregledNew: TPregledNewItem;
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: TPregledNewItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
-
-  //TVirtualModeData(Sender).ColumnList[0].TagObject
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -821,11 +1124,7 @@ begin
     Exit;
   end;
 
-
-
-  //prop := ArrayPropOrderSearchOptions[ACol];
-  //prop := TPregledNewItem.TPropertyIndex(ACol);
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TPregledNewColl.GetCellFromRecord(propIndex: word; PregledNew: TPregledNewItem; var AValue: String);
@@ -851,8 +1150,8 @@ begin
     PregledNew_PATIENTOF_NEOTL: str := (PregledNew.PRecord.PATIENTOF_NEOTL);
     PregledNew_PATIENTOF_NEOTLID: str := inttostr(PregledNew.PRecord.PATIENTOF_NEOTLID);
     PregledNew_PREVENTIVE_TYPE: str := inttostr(PregledNew.PRecord.PREVENTIVE_TYPE);
-    PregledNew_REH_FINISHED_AT: str := DateToStr(PregledNew.PRecord.REH_FINISHED_AT);
-    PregledNew_START_DATE: str := DateToStr(PregledNew.PRecord.START_DATE);
+    PregledNew_REH_FINISHED_AT: str := AspDateToStr(PregledNew.PRecord.REH_FINISHED_AT);
+    PregledNew_START_DATE: str := AspDateToStr(PregledNew.PRecord.START_DATE);
     PregledNew_START_TIME: str := TimeToStr(PregledNew.PRecord.START_TIME);
     PregledNew_SYST: str := (PregledNew.PRecord.SYST);
     PregledNew_TALON_LKK: str := (PregledNew.PRecord.TALON_LKK);
@@ -899,6 +1198,7 @@ begin
   inherited;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListNodes.count - 1) < ARow then exit;
+  
   TempItem.DataPos := ListNodes[ARow].DataPos;
   prop := TPregledNewItem.TPropertyIndex(ACol);
   GetCellFromMap(ACol, ARow, TempItem, AValue);
@@ -923,6 +1223,11 @@ begin
   begin
     GetCellFromMap(ACol, ARow, PregledNew, AValue);
   end;
+end;
+
+function TPregledNewColl.GetCollType: TCollectionsType;
+begin
+  Result := ctPregledNew;
 end;
 
 procedure TPregledNewColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -974,8 +1279,8 @@ begin
     PregledNew_PATIENTOF_NEOTL: str :=  PregledNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     PregledNew_PATIENTOF_NEOTLID: str :=  inttostr(PregledNew.getIntMap(Self.Buf, Self.posData, propIndex));
     PregledNew_PREVENTIVE_TYPE: str :=  inttostr(PregledNew.getWordMap(Self.Buf, Self.posData, propIndex));
-    PregledNew_REH_FINISHED_AT: str :=  DateToStr(PregledNew.getDateMap(Self.Buf, Self.posData, propIndex));
-    PregledNew_START_DATE: str :=  DateToStr(PregledNew.getDateMap(Self.Buf, Self.posData, propIndex));
+    PregledNew_REH_FINISHED_AT: str :=  AspDateToStr(PregledNew.getDateMap(Self.Buf, Self.posData, propIndex));
+    PregledNew_START_DATE: str :=  AspDateToStr(PregledNew.getDateMap(Self.Buf, Self.posData, propIndex));
     PregledNew_START_TIME: str :=  TimeToStr(PregledNew.getTimeMap(Self.Buf, Self.posData, propIndex));
     PregledNew_SYST: str :=  PregledNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     PregledNew_TALON_LKK: str :=  PregledNew.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -1150,6 +1455,13 @@ procedure TPregledNewColl.IndexValueListNodes(propIndex: TPregledNewItem.TProper
 begin
 
 end;
+
+function TPregledNewColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TPregledNewItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TPregledNewColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TPregledNewItem;
@@ -1159,7 +1471,6 @@ begin
     Tempitem := TPregledNewItem.Create(nil);
     Tempitem.DataPos := datapos;
     GetCellFromMap(field, -1, Tempitem, value);
-    //value := Tempitem.getAnsiStringMap(Buf, posData, field);
     Tempitem.Free;
   end
   else
@@ -1176,66 +1487,100 @@ begin
   end;
 end;
 
-procedure TPregledNewColl.OrderFieldsSearch(Grid: TTeeGrid);
+{=== TEXT SEARCH HANDLER ===}
+procedure TPregledNewColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 var
-  FieldCollOptionNode, run: PVirtualNode;
-  Comparison: TComparison<PVirtualNode>;
-  lstNode: TList<PVirtualNode>;
-  i, index, rank: Integer;
-  ArrCol: TArray<TColumn>;
+  AText: string;
 begin
-  inherited;
-  if linkOptions = nil then  Exit;
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TPregledNewItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
 
-  Comparison :=
-    function(const Left, Right: PVirtualNode): Integer
+    Include(ListForFinder[0].PRecord.setProp, TPregledNewItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPregledNewItem.TPropertyIndex(Field) of
+PregledNew_ANAMN: ListForFinder[0].PRecord.ANAMN := AText;
+    PregledNew_COPIED_FROM_NRN: ListForFinder[0].PRecord.COPIED_FROM_NRN := AText;
+    PregledNew_IZSL: ListForFinder[0].PRecord.IZSL := AText;
+    PregledNew_NAPRAVLENIE_AMBL_NOMER: ListForFinder[0].PRecord.NAPRAVLENIE_AMBL_NOMER := AText;
+    PregledNew_NOMERBELEGKA: ListForFinder[0].PRecord.NOMERBELEGKA := AText;
+    PregledNew_NOMERKASHAPARAT: ListForFinder[0].PRecord.NOMERKASHAPARAT := AText;
+    PregledNew_NRN_LRN: ListForFinder[0].PRecord.NRN_LRN := AText;
+    PregledNew_PATIENTOF_NEOTL: ListForFinder[0].PRecord.PATIENTOF_NEOTL := AText;
+    PregledNew_SYST: ListForFinder[0].PRecord.SYST := AText;
+    PregledNew_TALON_LKK: ListForFinder[0].PRecord.TALON_LKK := AText;
+    PregledNew_TERAPY: ListForFinder[0].PRecord.TERAPY := AText;
+    PregledNew_THREAD_IDS: ListForFinder[0].PRecord.THREAD_IDS := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TPregledNewColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPregledNewItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPregledNewItem.TPropertyIndex(Field) of
+PregledNew_REH_FINISHED_AT: ListForFinder[0].PRecord.REH_FINISHED_AT := Value;
+    PregledNew_START_DATE: ListForFinder[0].PRecord.START_DATE := Value;
+    PregledNew_START_TIME: ListForFinder[0].PRecord.START_TIME := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TPregledNewColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPregledNewItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPregledNewItem.TPropertyIndex(Field) of
+PregledNew_AMB_LISTN: ListForFinder[0].PRecord.AMB_LISTN := Value;
+    PregledNew_GS: ListForFinder[0].PRecord.GS := Value;
+    PregledNew_ID: ListForFinder[0].PRecord.ID := Value;
+    PregledNew_MEDTRANSKM: ListForFinder[0].PRecord.MEDTRANSKM := Value;
+    PregledNew_NAPR_TYPE_ID: ListForFinder[0].PRecord.NAPR_TYPE_ID := Value;
+    PregledNew_NRD: ListForFinder[0].PRecord.NRD := Value;
+    PregledNew_NZIS_STATUS: ListForFinder[0].PRecord.NZIS_STATUS := Value;
+    PregledNew_OBSHTAPR: ListForFinder[0].PRecord.OBSHTAPR := Value;
+    PregledNew_PATIENTOF_NEOTLID: ListForFinder[0].PRecord.PATIENTOF_NEOTLID := Value;
+    PregledNew_PREVENTIVE_TYPE: ListForFinder[0].PRecord.PREVENTIVE_TYPE := Value;
+    PregledNew_VISIT_ID: ListForFinder[0].PRecord.VISIT_ID := Value;
+    PregledNew_VISIT_TYPE_ID: ListForFinder[0].PRecord.VISIT_TYPE_ID := Value;
+    PregledNew_VSD_TYPE: ListForFinder[0].PRecord.VSD_TYPE := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TPregledNewColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TPregledNewItem.TPropertyIndex(Field) of
+    PregledNew_Logical:
     begin
-      Result := Right.Dummy  - Left.Dummy;
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalPregledNew(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalPregledNew(logIndex))   
     end;
+  end;
+end;
 
-  FieldCollOptionNode := FindSearchFieldCollOptionNode;
-  run := FieldCollOptionNode.FirstChild;
-  lstNode := TList<PVirtualNode>.create;
-  SetLength(ArrCol, FieldCount);
-  for i := 0 to FieldCount - 1 do
-  begin
-    ArrCol[i] := Grid.Columns[i+ 1];
-  end;
-  for i := 1 to Length(ArrCol) - 1 do
-  begin
-    index := TVirtualModeData(Grid.Data).IndexOf(ArrCol[i]);
-    ArrCol[i].Header.Text := ArrCol[i].Header.Text  + ' ' + IntToStr(index);
-    ArrCol[index].Index := run.Dummy ;
-    run := run.NextSibling;
-  end;
-  //Grid.Columns.beginUpdate;
-  while run <> nil do
-  begin
-    lstNode.Add(run);
-    //index := TVirtualModeData(Grid.Data).IndexOf(Grid.Columns[run.index + 1]);
-    //Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    //TVirtualModeData(Grid.Data).IndexOf(Grid.Columns[run.index + 1]);
-    //Grid.Columns[run.index].tag := run.Dummy + 1;
-    //ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
-    //Grid.Columns[index].Index:= run.Dummy + 1;
-    run := run.NextSibling;
-  end;
-  //Grid.Columns.EndUpdate;
-  //lstNode.Sort(TComparer<PVirtualNode>.Construct(Comparison));
-//  for i := 1 to lstNode.Count - 1 do
-//  begin
-//    rank := lstNode[i].Dummy + 1;
-//    index :=  lstNode[i].Index + 1;
-//    Grid.Columns.Items[i].Index := rank;
-//   // Grid.Columns[index].Index:= rank;
-//  end;
-  lstNode.Free;
-  //Grid.Columns[5].Index:= 1;
-  //Grid.Columns[2].Visible:= False;
-//  Grid.Columns[6].Visible:= False;
-//  Grid.Columns[0].Locked := TColumnLocked.Left;
-//  Grid.Columns[1].Locked := TColumnLocked.Left;
-//  Grid.Columns[2].Locked := TColumnLocked.Left;
+
+procedure TPregledNewColl.OnSetTextSearchLog(Log: TlogicalPregledNewSet);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
 end;
 
 procedure TPregledNewColl.OrderFieldsSearch1(Grid: TTeeGrid);
@@ -1249,18 +1594,19 @@ begin
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function TPregledNewColl.PropType(propIndex: Word): TAsectTypeKind;
+function TPregledNewColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TPregledNewItem.TPropertyIndex(propIndex) of
@@ -1271,6 +1617,8 @@ begin
     PregledNew_ID: Result := actinteger;
     PregledNew_IZSL: Result := actAnsiString;
     PregledNew_MEDTRANSKM: Result := actinteger;
+    PregledNew_NAPRAVLENIE_AMBL_NOMER: Result := actAnsiString;
+    PregledNew_NAPR_TYPE_ID: Result := actword;
     PregledNew_NOMERBELEGKA: Result := actAnsiString;
     PregledNew_NOMERKASHAPARAT: Result := actAnsiString;
     PregledNew_NRD: Result := actword;
@@ -1280,12 +1628,15 @@ begin
     PregledNew_PATIENTOF_NEOTL: Result := actAnsiString;
     PregledNew_PATIENTOF_NEOTLID: Result := actinteger;
     PregledNew_PREVENTIVE_TYPE: Result := actword;
+    PregledNew_REH_FINISHED_AT: Result := actTDate;
     PregledNew_START_DATE: Result := actTDate;
-    PregledNew_START_TIME: Result := actTime;
+    PregledNew_START_TIME: Result := actTTime;
     PregledNew_SYST: Result := actAnsiString;
     PregledNew_TALON_LKK: Result := actAnsiString;
     PregledNew_TERAPY: Result := actAnsiString;
     PregledNew_THREAD_IDS: Result := actAnsiString;
+    PregledNew_VISIT_ID: Result := actinteger;
+    PregledNew_VISIT_TYPE_ID: Result := actword;
     PregledNew_VSD_TYPE: Result := actword;
     PregledNew_Logical: Result := actLogical;
   else
@@ -1306,7 +1657,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   PregledNew := Items[ARow];
   if not Assigned(PregledNew.PRecord) then
   begin
@@ -1316,7 +1667,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TPregledNewItem.TPropertyIndex(ACol) of
       PregledNew_AMB_LISTN: isOld :=  PregledNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     PregledNew_ANAMN: isOld :=  PregledNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1399,7 +1749,7 @@ var
   PregledNew: TPregledNewItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   PregledNew := Items[ARow];
   if not Assigned(PregledNew.PRecord) then
   begin
@@ -1409,7 +1759,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TPregledNewItem.TPropertyIndex(ACol) of
       PregledNew_AMB_LISTN: isOld :=  PregledNew.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     PregledNew_ANAMN: isOld :=  PregledNew.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1703,7 +2052,7 @@ begin
   Grid.Columns[self.FieldCount].Index := 0;
   TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width + 1;
   TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width - 1;
-  Grid.Columns[self.FieldCount].Selectable := False;
+
 end;
 
 procedure TPregledNewColl.ShowGridFromList(Grid: TTeeGrid; LST: TList<TPregledNewItem>);
@@ -1775,8 +2124,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -1913,20 +2262,3 @@ begin
 end;
 
 end.
-
-{
-PATIENTOF_NEOTL=AnsiString
-PATIENTOF_NEOTLID=integer
-PREVENTIVE_TYPE=word
-REH_FINISHED_AT=TDate
-START_DATE=TDate
-START_TIME=TTime
-SYST=AnsiString
-TALON_LKK=AnsiString
-TERAPY=AnsiString
-THREAD_IDS=AnsiString
-VISIT_ID=integer
-VISIT_TYPE_ID=word
-VSD_TYPE=word
-Logical=tLogicalSet:INCIDENTALLY,IS_ANALYSIS,IS_BABY_CARE,IS_CONSULTATION, IS_DISPANSERY,IS_EMERGENCY,IS_EPIKRIZA,IS_EXPERTIZA,IS_FORM_VALID,   IS_HOSPITALIZATION,IS_MANIPULATION,IS_MEDBELEJKA,IS_NAET,IS_NAPR_TELK,IS_NEW,              IS_NOTIFICATION,IS_NO_DELAY,IS_OPERATION,IS_PODVIZHNO_LZ,IS_PREVENTIVE,IS_PRINTED,          IS_RECEPTA_HOSPIT,IS_REGISTRATION,IS_REHABILITATION,IS_RISK_GROUP,IS_TELK,IS_VSD,IS_ZAMESTVASHT,IS_PRIMARY,IS_AMB_PR,           IS_DOM_PR,PAY,TO_BE_DISPANSERED,IS_PREVENTIVE_Maternal,IS_PREVENTIVE_Childrens,IS_PREVENTIVE_Adults,IS_Screening
-}

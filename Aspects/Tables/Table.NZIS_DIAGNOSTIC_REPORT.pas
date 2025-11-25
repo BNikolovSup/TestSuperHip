@@ -85,7 +85,7 @@ NZIS_DIAGNOSTIC_REPORT_CL083_STATUS
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; NZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; NZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem; var AValue:String);
@@ -566,7 +566,7 @@ begin
 end;
 
 
-function TNZIS_DIAGNOSTIC_REPORTColl.PropType(propIndex: Word): TAsectTypeKind;
+function TNZIS_DIAGNOSTIC_REPORTColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(propIndex) of

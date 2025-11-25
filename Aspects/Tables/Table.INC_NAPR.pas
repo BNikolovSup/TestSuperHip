@@ -130,6 +130,7 @@ TINC_NAPRItem = class(TBaseItem)
 	PRecordSearch: ^TINC_NAPRItem.TRecINC_NAPR;
     ArrPropSearch: TArray<TINC_NAPRItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TINC_NAPRItem.TPropertyIndex>;
+	VisibleColl: TINC_NAPRItem.TSetProp;
 	ArrayPropOrder: TArray<TINC_NAPRItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -141,7 +142,7 @@ TINC_NAPRItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; INC_NAPR: TINC_NAPRItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; INC_NAPR: TINC_NAPRItem; var AValue:String);
@@ -156,8 +157,9 @@ TINC_NAPRItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
 	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
@@ -174,9 +176,15 @@ TINC_NAPRItem = class(TBaseItem)
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalINC_NAPRSet);
-	procedure OnSetTextSearchDateEdt(date: TDate; field: Word; Condition: TConditionSet);
-    procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -461,6 +469,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TINC_NAPRColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TINC_NAPRItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TINC_NAPRColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -469,18 +497,20 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvINC_NAPRRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -499,86 +529,103 @@ begin
     tempItem := Items[i];
     if tempItem.PRecord <> nil then
     begin
-	  if (INC_NAPR_AMB_LISTN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_LISTN <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_AMB_LISTN))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_AMB_LIST_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_LIST_NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_AMB_LIST_NRN))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_ID))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_ISSUE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.ISSUE_DATE <> Self.getDateMap(tempItem.DataPos, word(INC_NAPR_ISSUE_DATE))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_ISSUE_TIME in tempItem.PRecord.setProp) and (tempItem.PRecord.ISSUE_TIME <> Self.getTimeMap(tempItem.DataPos, word(INC_NAPR_ISSUE_TIME))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_NOMERBELEGKA in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERBELEGKA <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NOMERBELEGKA))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_NOMERKASHAPARAT in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERKASHAPARAT <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NOMERKASHAPARAT))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NRN))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_NUMBER))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_REASON in tempItem.PRecord.setProp) and (tempItem.PRecord.REASON <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_REASON))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Spec1Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec1Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec1Pos))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Spec2Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec2Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec2Pos))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Spec3Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec3Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec3Pos))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Spec4Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec4Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec4Pos))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Spec5Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec5Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec5Pos))) then
-begin
-inc(cnt);
-exit;
-end;
-    if (INC_NAPR_Logical in tempItem.PRecord.setProp) and (tempItem.PRecord.Logical <> TlogicalINC_NAPRSet(Self.getLogical24Map(tempItem.DataPos, word(INC_NAPR_Logical)))) then
-begin
-inc(cnt);
-exit;
-end;
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (INC_NAPR_AMB_LISTN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_LISTN <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_AMB_LISTN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_AMB_LIST_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_LIST_NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_AMB_LIST_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_ISSUE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.ISSUE_DATE <> Self.getDateMap(tempItem.DataPos, word(INC_NAPR_ISSUE_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_ISSUE_TIME in tempItem.PRecord.setProp) and (tempItem.PRecord.ISSUE_TIME <> Self.getDateMap(tempItem.DataPos, word(INC_NAPR_ISSUE_TIME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_NOMERBELEGKA in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERBELEGKA <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NOMERBELEGKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_NOMERKASHAPARAT in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERKASHAPARAT <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NOMERKASHAPARAT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_REASON in tempItem.PRecord.setProp) and (tempItem.PRecord.REASON <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_NAPR_REASON))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Spec1Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec1Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec1Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Spec2Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec2Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec2Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Spec3Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec3Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec3Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Spec4Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec4Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec4Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Spec5Pos in tempItem.PRecord.setProp) and (tempItem.PRecord.Spec5Pos <> Self.getIntMap(tempItem.DataPos, word(INC_NAPR_Spec5Pos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_NAPR_Logical in tempItem.PRecord.setProp) and (TLogicalData24(tempItem.PRecord.Logical) <> Self.getLogical24Map(tempItem.DataPos, word(INC_NAPR_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
     end;
   end;
 end;
@@ -594,11 +641,10 @@ begin
   ListForFinder := TList<TINC_NAPRItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := TINC_NAPRItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -637,6 +683,38 @@ begin
   end;
 end;
 
+function TINC_NAPRColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'NZIS_STATUS_None';
+    1: Result := 'NZIS_STATUS_Valid';
+    2: Result := 'NZIS_STATUS_NoValid';
+    3: Result := 'NZIS_STATUS_Sended';
+    4: Result := 'NZIS_STATUS_Err';
+    5: Result := 'NZIS_STATUS_Cancel';
+    6: Result := 'NZIS_STATUS_Edited';
+    7: Result := 'INC_MED_NAPR_Ostro';
+    8: Result := 'INC_MED_NAPR_Hron';
+    9: Result := 'INC_MED_NAPR_Izbor';
+    10: Result := 'INC_MED_NAPR_Disp';
+    11: Result := 'INC_MED_NAPR_Eksp';
+    12: Result := 'INC_MED_NAPR_Prof';
+    13: Result := 'INC_MED_NAPR_Iskane_Telk';
+    14: Result := 'INC_MED_NAPR_Choice_Mother';
+    15: Result := 'INC_MED_NAPR_Choice_Child';
+    16: Result := 'INC_MED_NAPR_PreChoice_Mother';
+    17: Result := 'INC_MED_NAPR_PreChoice_Child';
+    18: Result := 'INC_MED_NAPR_Podg_Telk';
+    19: Result := 'INC_MED_NAPR_Podg_LKK';
+    20: Result := 'category_R2';
+    21: Result := 'category_R3';
+    22: Result := 'category_R5';
+  else
+    Result := '???';
+  end;
+end;
+
+
 procedure TINC_NAPRColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
   FieldCollOptionNode, run: PVirtualNode;
@@ -673,6 +751,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -699,15 +783,22 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvINC_NAPRRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function TINC_NAPRColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -820,17 +911,17 @@ end;
 
 procedure TINC_NAPRColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: TINC_NAPRItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -839,7 +930,7 @@ begin
     Exit;
   end;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TINC_NAPRColl.GetCellFromRecord(propIndex: word; INC_NAPR: TINC_NAPRItem; var AValue: String);
@@ -925,6 +1016,16 @@ begin
   begin
     GetCellFromMap(ACol, ARow, INC_NAPR, AValue);
   end;
+end;
+
+function TINC_NAPRColl.GetCollType: TCollectionsType;
+begin
+  Result := ctINC_NAPR;
+end;
+
+function TINC_NAPRColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctINC_NAPRDel;
 end;
 
 procedure TINC_NAPRColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -1065,6 +1166,12 @@ begin
 
 end;
 
+function TINC_NAPRColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TINC_NAPRItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TINC_NAPRColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TINC_NAPRItem;
@@ -1090,13 +1197,10 @@ begin
   end;
 end;
 
-procedure TINC_NAPRColl.OnSetTextSearchDateEdt(date: TDate; field: Word;
-  Condition: TConditionSet);
-begin
-
-end;
-
+{=== TEXT SEARCH HANDLER ===}
 procedure TINC_NAPRColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
 begin
   if Text = '' then
   begin
@@ -1104,24 +1208,72 @@ begin
   end
   else
   begin
-    include(ListForFinder[0].PRecord.setProp, TINC_NAPRItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TINC_NAPRItem.TPropertyIndex(Field));
   end;
+
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-  if cotSens in Condition then
-  begin
-    //case TINC_NAPRItem.TPropertyIndex(Field) of
-    //  INC_NAPR_EGN: ListForFinder[0].PRecord.EGN  := Text;
-    //  
-    //end;
-  end
-  else
-  begin
-    //case TINC_NAPRItem.TPropertyIndex(Field) of
-    //  INC_NAPR_EGN: ListForFinder[0].PRecord.EGN  := AnsiUpperCase(Text);
-    //end;
+
+  case TINC_NAPRItem.TPropertyIndex(Field) of
+INC_NAPR_AMB_LIST_NRN: ListForFinder[0].PRecord.AMB_LIST_NRN := AText;
+    INC_NAPR_NOMERBELEGKA: ListForFinder[0].PRecord.NOMERBELEGKA := AText;
+    INC_NAPR_NOMERKASHAPARAT: ListForFinder[0].PRecord.NOMERKASHAPARAT := AText;
+    INC_NAPR_NRN: ListForFinder[0].PRecord.NRN := AText;
+    INC_NAPR_REASON: ListForFinder[0].PRecord.REASON := AText;
   end;
 end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TINC_NAPRColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TINC_NAPRItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TINC_NAPRItem.TPropertyIndex(Field) of
+INC_NAPR_ISSUE_DATE: ListForFinder[0].PRecord.ISSUE_DATE := Value;
+    INC_NAPR_ISSUE_TIME: ListForFinder[0].PRecord.ISSUE_TIME := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TINC_NAPRColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TINC_NAPRItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TINC_NAPRItem.TPropertyIndex(Field) of
+INC_NAPR_AMB_LISTN: ListForFinder[0].PRecord.AMB_LISTN := Value;
+    INC_NAPR_ID: ListForFinder[0].PRecord.ID := Value;
+    INC_NAPR_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+    INC_NAPR_Spec1Pos: ListForFinder[0].PRecord.Spec1Pos := Value;
+    INC_NAPR_Spec2Pos: ListForFinder[0].PRecord.Spec2Pos := Value;
+    INC_NAPR_Spec3Pos: ListForFinder[0].PRecord.Spec3Pos := Value;
+    INC_NAPR_Spec4Pos: ListForFinder[0].PRecord.Spec4Pos := Value;
+    INC_NAPR_Spec5Pos: ListForFinder[0].PRecord.Spec5Pos := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TINC_NAPRColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TINC_NAPRItem.TPropertyIndex(Field) of
+    INC_NAPR_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalINC_NAPR(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalINC_NAPR(logIndex))   
+    end;
+  end;
+end;
+
 
 procedure TINC_NAPRColl.OnSetTextSearchLog(Log: TlogicalINC_NAPRSet);
 begin
@@ -1139,18 +1291,19 @@ begin
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function TINC_NAPRColl.PropType(propIndex: Word): TAsectTypeKind;
+function TINC_NAPRColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TINC_NAPRItem.TPropertyIndex(propIndex) of
@@ -1519,8 +1672,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

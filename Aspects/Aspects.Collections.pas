@@ -1,16 +1,23 @@
-unit Aspects.Collections;
+п»їunit Aspects.Collections;
       //arrcond
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Dialogs, VirtualTrees, VirtualStringTreeAspect, Tee.Grid.Columns,
   System.Generics.Collections, Aspects.Types, VCLTee.Grid, Tee.Grid.Header, Tee.Renders ,
-  Tee.GridData.Strings, Vcl.StdCtrls, System.Win.ScktComp, Vcl.Controls, Vcl.Graphics;
+  Tee.GridData.Strings, Vcl.StdCtrls, System.Win.ScktComp, Vcl.Controls,
+  Vcl.Graphics, InterruptibleSort, System.StrUtils, System.Math, uKeyThrottle, uVSTSyncHelper,
+  Vcl.ExtCtrls, Vcl.Menus;
 type
 
   TParamProp = 0..255;
   TParamSetProp = set of TParamProp;
   PParamSetProp = ^TParamSetProp;
+
+  tPathIndex = record
+    path: UInt64;
+    v: PVirtualNode;
+  end;
 
 TNumerEdit = class(TEdit)
     procedure WMChar(var Message: TWMChar); message WM_CHAR;
@@ -85,12 +92,12 @@ TCollectionForSort = class(TPersistent)
   end;
 
   TMappedFile = class
-    // първите 4 байта са за началото на метаданните (обикновено 100) - 0
-    // вторите 4 байта са за дължината на метаданните -4
-    // 4 байта са началото на данните  -8
-    // 4 байта са за дължина на данните -12
-    // 16 байта за ГУИД -16
-    // 8 байта за дължината на командния файл - 32
+    // РїСЉСЂРІРёС‚Рµ 4 Р±Р°Р№С‚Р° СЃР° Р·Р° РЅР°С‡Р°Р»РѕС‚Рѕ РЅР° РјРµС‚Р°РґР°РЅРЅРёС‚Рµ (РѕР±РёРєРЅРѕРІРµРЅРѕ 100) - 0
+    // РІС‚РѕСЂРёС‚Рµ 4 Р±Р°Р№С‚Р° СЃР° Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° РјРµС‚Р°РґР°РЅРЅРёС‚Рµ -4
+    // 4 Р±Р°Р№С‚Р° СЃР° РЅР°С‡Р°Р»РѕС‚Рѕ РЅР° РґР°РЅРЅРёС‚Рµ  -8
+    // 4 Р±Р°Р№С‚Р° СЃР° Р·Р° РґСЉР»Р¶РёРЅР° РЅР° РґР°РЅРЅРёС‚Рµ -12
+    // 16 Р±Р°Р№С‚Р° Р·Р° Р“РЈРР” -16
+    // 8 Р±Р°Р№С‚Р° Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° РєРѕРјР°РЅРґРЅРёСЏ С„Р°Р№Р» - 32
   private
 
     FBuf: Pointer;
@@ -103,7 +110,7 @@ TCollectionForSort = class(TPersistent)
   public
     FPosMetaData, FLenMetaData, FPosData, FLenData, FFileSize: Cardinal;
     FMapping: THandle;
-    constructor Create(const AFileName: WideString; IsNew: Boolean; AGuid: TGUID);
+    constructor Create(const AFileName: WideString; IsNew: Boolean; AGuid: TGUID);virtual;
     destructor Destroy; override;
     function GetLenLinkData: cardinal;
     function GetLenMetaData: cardinal;
@@ -116,14 +123,61 @@ TCollectionForSort = class(TPersistent)
 
   end;
 
+   // Р•РґРёРЅ bucket в†’ РµРґРёРЅ PathSig в†’ СЃРїРёСЃСЉРє РѕС‚ СЂРµР°Р»РЅРё ADB РІСЉР·Р»Рё + РµРґРёРЅ FilterNode
+  TJoinBucket = record
+    Sig: UInt64;                  // РєР»СЋС‡СЉС‚ РїРѕ РїСЉС‚СЏ
+    AdbList: TList<PVirtualNode>; // РІСЃРёС‡РєРё ADB РІСЉР·Р»Рё СЃ С‚РѕР·Рё path
+    FilterNode: PVirtualNode;     // С‚РѕС‡РЅРѕ РµРґРёРЅ С„РёР»С‚СЉСЂРµРЅ РІСЉР·РµР» (РґРµС‚Рµ РЅР° ObjectGroup РёР»Рё Object)
+  end;
+
+
   TMappedLinkFile = class(TMappedFile)
+  private
+    FSearchPopupMenu: TPopupMenu;
+    FCurrentFilter: PVirtualNode;
+    procedure SetCurrentFilter(const Value: PVirtualNode);
+    procedure SetSearchPopupMenu(const Value: TPopupMenu);
   public
     FVTR: TVirtualStringTreeAspect;
     FStreamCmdFile: TFileStream;
+    // Р°РєРѕ С‚РѕРІР° Рµ РђР”Р‘-РґСЉСЂРІРѕ в†’ FFilterLink СЃРѕС‡Рё РєСЉРј С„РёР»С‚СЉСЂРЅРѕС‚Рѕ РґСЉСЂРІРѕ
+    FFilterLink: TMappedLinkFile;
+
+
+    // MAGIC / STRUCTURE INDEX
+    PathIndex: TDictionary<UInt64, TList<PVirtualNode>>;
+
+    // JOIN СЂРµР·СѓР»С‚Р°С‚ вЂ” СЃСЉР·РґР°РІР° СЃРµ СЃР°РјРѕ Р·Р° ADB С„Р°Р№Р»Р°
+    JoinResult: TList<TJoinBucket>;
+
+    constructor Create(const AFileName: WideString; IsNew: Boolean; AGuid: TGUID);override;
+    destructor Destroy; override;
+
+    // РџРѕСЃС‚СЂРѕСЏРІР°РЅРµ РЅР° СЃС‚СЂСѓРєС‚СѓСЂР° РёРЅРґРµРєСЃ
+    procedure BuildPathIndex;
+    procedure AddPathIndexNode(Node: PVirtualNode; Sig: UInt64);
+
+    // Р“РµРЅРµСЂРёСЂР°РЅРµ РЅР° РєР»СЋС‡ РѕС‚ РїСЉС‚СЏ
+    function ComputeNodePathSig(Node: PVirtualNode): UInt64;
+
+    // РЎРѕСЂС‚РёСЂР°РЅРµ РЅР° РєР»СЋС‡РѕРІРµС‚Рµ РїРѕ СЃС‚РѕР№РЅРѕСЃС‚ в†’ Р·Р° merge join
+    procedure SortPathIndexKeys(var Keys: TArray<UInt64>);
+
+    // РћСЃРЅРѕРІРµРЅ JOIN РјРµС‚РѕРґ (РјРЅРѕРіРѕ Р±СЉСЂР·)
+    procedure JoinWith(FilterFile: TMappedLinkFile);
+
+
+    // РґРѕР±Р°РІСЏРЅРµ/РїСЂРµРјР°С…РІР°РЅРµ РЅР° РІСЉР·Р»Рё
     procedure AddNewNode(const vv: TVtrVid; dataPos: Cardinal; TargetNode: PVirtualNode; Mode: TVTNodeAttachMode;
        var TreeLink: PVirtualNode; var linkPos: cardinal; dum: Byte = 0);
     procedure MarkDeletedNode(var TreeLink: PVirtualNode);
     procedure OpenLinkFile;
+    procedure PopulateSearchPopup(Menu: TPopupMenu);
+    procedure InternalMenuPopup(Sender: TObject);
+    procedure InternalMenuItemClick(Sender: TObject);
+
+    property SearchPopupMenu: TPopupMenu read FSearchPopupMenu write SetSearchPopupMenu;
+    property CurrentFilter: PVirtualNode read FCurrentFilter write SetCurrentFilter;
   end;
 
   TCommandStream = class(TMemoryStream)
@@ -191,7 +245,7 @@ TCollectionForSort = class(TPersistent)
     //function stream: TAspectStream; virtual;
     //function getInt(propIndex: word): integer;
     function getIntMap(buf: pointer; posData: cardinal; propIndex: word): integer;
-    procedure SetIntMap(buf: pointer; posData: cardinal; propIndex: word; Aint: integer);// специално за неща като ид-та
+    procedure SetIntMap(buf: pointer; posData: cardinal; propIndex: word; Aint: integer);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
     //function getPInt(propIndex: word): PInt;
     function getPIntMap(buf: pointer; posData: cardinal; propIndex: word): PInt;
     //procedure setInt(propIndex: word; intData: integer);
@@ -470,10 +524,14 @@ TCollectionForSort = class(TPersistent)
     FlastBottom: Integer;
     FfirstTop: Integer;
     FoffsetTop: Integer;
-    FSortAsc: Boolean;
+    //FSortAsc: Boolean;
     FColumnForSort: Integer;
     FOnSortCol: TNotifyEvent;
     FOnKeyUpGridSearch: TKeyEvent;
+    FVTR: TBaseVirtualTree;
+    ScrollTimer: TTimer;
+    FGrid: TTeeGrid;
+    ScrollDirection: Integer; // -1 = Up, +1 = Down
     procedure SetCntUpdates(const Value: Integer);
     procedure SetfirstTop(const Value: Integer);
     procedure SetlastBottom(const Value: Integer);
@@ -490,19 +548,26 @@ TCollectionForSort = class(TPersistent)
     StreamCommTemp: TCommandStream;
     cmdFile: TFileCMDStream;
     cmdFileTemp: TFileCMDStream;
-    ListDataPos: TList<Pvirtualnode>; // за търсене
+    ListDataPos: TList<Pvirtualnode>; // Р·Р° С‚СЉСЂСЃРµРЅРµ
     ListNodes: TList<PAspRec>;
 
     ListAnsi: TList<AnsiString>;
-
+    FSortFields: TSortFields;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
 
     constructor Create(ItemClass: TCollectionItemClass);virtual;
 
     destructor Destroy; override;
+
+    class function GetStaticCollType: TCollectionsType; virtual; abstract;
     procedure SortListDataPos;
     procedure SortListNodes;
+    function FindRootCollOptionNode(): PVirtualNode; virtual;
+    procedure UpdateOrderArrayFromTree(Root: PVirtualNode);
     function getAnsiStringMap(dataPos: cardinal; propIndex: word): AnsiString;
+    function getAnsiStringMap4(dataPos: cardinal; propIndex4: word): AnsiString;
+    function getPAnsiStringMap(dataPos: cardinal; propIndex: word; var len: word): PAnsiChar;
     function getAnsiStringMapOfset(Ofset: cardinal; propIndex: word): AnsiString;
     function getDateMap(dataPos: cardinal; propIndex: word): Tdate;
     function getTimeMap(dataPos: cardinal; propIndex: word): TTime;
@@ -512,31 +577,35 @@ TCollectionForSort = class(TPersistent)
     function getCardMap(dataPos: cardinal; propIndex: word): cardinal;
     function getDoubleMap(dataPos: cardinal; propIndex: word): Double;
     function getLogical40Map(dataPos: cardinal; propIndex: word): TLogicalData40;
+    function getLogical48Map(dataPos: cardinal; propIndex: word): TLogicalData48;
     function getLogical32Map(dataPos: cardinal; propIndex: word): TLogicalData32;
     function getLogical16Map(dataPos: cardinal; propIndex: word): TLogicalData16;
+    function getLogical08Map(dataPos: cardinal; propIndex: word): TLogicalData08;
     function getLogical24Map(dataPos: cardinal; propIndex: word): TLogicalData24;
 
-    procedure SetIntMap(dataPos: cardinal; propIndex: word; Aint: integer);// специално за неща като ид-та
-    procedure SetCardMap(dataPos: cardinal; propIndex: word; ACard: Cardinal);// специално за неща като ид-та
-    procedure SetAnsiStringMap(dataPos: cardinal; propIndex: word; AString: AnsiString);// специално за неща като НРН-та стрингове с определена дължина
-    procedure SetWordMap(dataPos: cardinal; propIndex: word; AWord: word);// специално за неща като ид-та
-    procedure SetLogical16Map(dataPos: cardinal; propIndex: word; ALog16: TLogicalData16);// специално за неща като ид-та
-    procedure SetDateMap(dataPos: cardinal; propIndex: word; ADate: TDate);// специално за неща като ид-та
-    procedure SetTimeMap(dataPos: cardinal; propIndex: word; ATime: TTime);// специално за неща като ид-та
+    procedure SetIntMap(dataPos: cardinal; propIndex: word; Aint: integer);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
+    procedure SetCardMap(dataPos: cardinal; propIndex: word; ACard: Cardinal);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
+    procedure SetAnsiStringMap(dataPos: cardinal; propIndex: word; AString: AnsiString);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РќР Рќ-С‚Р° СЃС‚СЂРёРЅРіРѕРІРµ СЃ РѕРїСЂРµРґРµР»РµРЅР° РґСЉР»Р¶РёРЅР°
+    procedure SetWordMap(dataPos: cardinal; propIndex: word; AWord: word);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
+    procedure SetLogical16Map(dataPos: cardinal; propIndex: word; ALog16: TLogicalData16);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
+    procedure SetDateMap(dataPos: cardinal; propIndex: word; ADate: TDate);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
+    procedure SetTimeMap(dataPos: cardinal; propIndex: word; ATime: TTime);// СЃРїРµС†РёР°Р»РЅРѕ Р·Р° РЅРµС‰Р° РєР°С‚Рѕ РёРґ-С‚Р°
 
 
     function FieldCount: Integer; virtual;
     function DisplayName(propIndex: Word): string; virtual;
     function RankSortOption(propIndex: Word): cardinal; virtual;
 
-    function PropType(propIndex: Word): TAsectTypeKind; virtual;
+    function PropType(propIndex: Word): TAspectTypeKind; virtual;
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
     procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);virtual;
-    function CollType: TCollectionsType; virtual;
+    function GetCollType: TCollectionsType; virtual;
+    function GetCollDelType: TCollectionsType; virtual;
+    procedure MarkDelete(FDataPos: cardinal);
     procedure SortListByDataPos(lst: TList<TBaseItem>);
     procedure ShowGrid(Grid: TTeeGrid);virtual;
     procedure IncCntInADB;
-    procedure ShowLinksGrid(Grid: TTeeGrid);virtual;
+    procedure ShowLinksGrid(AGrid: TTeeGrid);virtual;
     procedure OrderFieldsSearch(Grid: TTeeGrid);virtual;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);virtual;
     procedure ShowListNodesGrid (Grid: TTeeGrid);virtual;
@@ -550,9 +619,20 @@ TCollectionForSort = class(TPersistent)
     procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);virtual;
     procedure GrdSearhKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure GrdSearhKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
 
     procedure DoCollSort(senedr: TObject);
     procedure SortAnsiListPropIndexCollNew(propIndex: word; SortIsAsc: Boolean);
+    procedure SortAnsiPropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+    procedure SortIntegerPropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+    procedure SortDatePropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+
+    procedure SortMultiColumnsOptimized( FStop: Pboolean);
+    function IsCollVisible(PropIndex: Word): Boolean; virtual;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode); virtual;
+    procedure ScrollTimerTimer(sender: tobject);
+    function GetAllowedOperators(propIndex: Integer): TConditionTypeSet;
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -567,12 +647,16 @@ TCollectionForSort = class(TPersistent)
     property firstTop: Integer read FfirstTop write SetfirstTop;
     property lastBottom: Integer read FlastBottom write SetlastBottom;
     property offsetBottom: Integer read FoffsetBottom write SetoffsetBottom;
-    property SortAsc: Boolean read FSortAsc write FSortAsc;
+    //property SortAsc: Boolean read FSortAsc write FSortAsc;
     property ColumnForSort: Integer read FColumnForSort write FColumnForSort;
 
     property OnSortCol: TNotifyEvent read FOnSortCol write FOnSortCol;
     property OnKeyUpGridSearch: TKeyEvent read FOnKeyUpGridSearch write FOnKeyUpGridSearch;
+    property VTR: TBaseVirtualTree read FVTR write FVTR;
+    property Grid: TTeeGrid read FGrid write FGrid;
   end;
+
+  TBaseCollectionClass = class of TBaseCollection;
 
   //TRevisionItem = class(TBaseItem)
 //  public
@@ -587,7 +671,7 @@ TCollectionForSort = class(TPersistent)
 
 implementation
 uses
-  ansistrings;
+   System.AnsiStrings, uGridHelpers;
 
 procedure TBaseItem.AddForLaterSave(streamPos: Cardinal; obj: TObject; v: PVirtualNode);
 var
@@ -1655,21 +1739,21 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pBoolData := pointer(PByte(buf) + ADataPos + DatPos);
   pBoolData^  := BoolData;
-  //увеличавам dataPosition с 4 + 2 ; 2 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 2 ; 2 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6);
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(BoolData, 2);
 end;
@@ -1683,21 +1767,21 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pByteData := pointer(PByte(buf) + ADataPos + DatPos);
   pByteData^  := byteData;
-  //увеличавам dataPosition с 4 + 2 ; 2 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 2 ; 2 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6);
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(byteData, 2);
 end;
@@ -1711,21 +1795,21 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pDateData := pointer(PByte(buf) + ADataPos + DatPos);
   pDateData^  := DoubleData;
-  //увеличавам dataPosition с 4 + 8 ; 8 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 8 ; 8 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 12);
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(DoubleData, 8);
 end;
@@ -1737,11 +1821,11 @@ var
   pWordData: ^Word;
 begin
   pCardinalData := pointer(PByte(buf) + 8);
-  FPosData := pCardinalData^; // от къде започват данните
+  FPosData := pCardinalData^; // РѕС‚ РєСЉРґРµ Р·Р°РїРѕС‡РІР°С‚ РґР°РЅРЅРёС‚Рµ
   pCardinalData := pointer(PByte(buf));
-  FPosMetaData := pCardinalData^; // от къде започват мета-данните
+  FPosMetaData := pCardinalData^; // РѕС‚ РєСЉРґРµ Р·Р°РїРѕС‡РІР°С‚ РјРµС‚Р°-РґР°РЅРЅРёС‚Рµ
 
-  PropPosition := dataPosition - FPosData + 4; // тука ще върна адреса в мап-а
+  PropPosition := dataPosition - FPosData + 4; // С‚СѓРєР° С‰Рµ РІСЉСЂРЅР° Р°РґСЂРµСЃР° РІ РјР°Рї-Р°
   ADataPos := FDataPos + FPosData + 4;
 
 
@@ -1762,23 +1846,23 @@ begin
 
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + ADataPos + datPos);
   pCardinalData^  := intData;
-  //увеличавам dataPosition с 4 + 4 ; 4 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 4 ; 4 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 8);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(IntData, 4);
 end;
@@ -1943,28 +2027,28 @@ begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
   len :=  Length(strData) ;
-  //намирам адреса на който ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам дължината на стринга на адреса
+  //Р·Р°РїРёСЃРІР°Рј РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР° РЅР° Р°РґСЂРµСЃР°
   pWordData := pointer(PByte(buf) + ADataPos + DatPos);
   pWordData^  := Len;
 
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pStr := pointer(PByte(buf) + ADataPos + DatPos + 2);
   //pStr  := @strData;
   StrCopy(pStr, PChar(strData));
-  //увеличавам dataPosition със 2+ 4 + len*SizeOf(char) ; 2 за дължината на стринга; колкото толкова за стринга; и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃСЉСЃ 2+ 4 + len*SizeOf(char) ; 2 Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР°; РєРѕР»РєРѕС‚Рѕ С‚РѕР»РєРѕРІР° Р·Р° СЃС‚СЂРёРЅРіР°; Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6 + len*SizeOf(char));
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
-  pWordData := pointer(PByte(buf) + dataPosition); // записвам 00 за край
+  pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 00 Р·Р° РєСЂР°Р№
   pWordData^  := 0;
   Inc(dataPosition, 2);
 
@@ -1988,39 +2072,39 @@ begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
   len :=  Length(strData) ;
-  //намирам адреса на който ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
-  pCardinalData := pointer(PByte(buf) + metaPosition); // тука е адреса на старата сойност
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
+  pCardinalData := pointer(PByte(buf) + metaPosition); // С‚СѓРєР° Рµ Р°РґСЂРµСЃР° РЅР° СЃС‚Р°СЂР°С‚Р° СЃРѕР№РЅРѕСЃС‚
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalHistData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalHistData^  := (pCardinalData^); // при инсъртване понеже е първо e  нула
+  pCardinalHistData^  := (pCardinalData^); // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ e  РЅСѓР»Р°
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам дължината на стринга на адреса
+  //Р·Р°РїРёСЃРІР°Рј РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР° РЅР° Р°РґСЂРµСЃР°
   pWordData := pointer(PByte(buf) + ADataPos + DatPos);
   pWordData^  := Len;
 
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pStr := pointer(PByte(buf) + ADataPos + DatPos + 2);
   //pStr  := @strData;
   System.SysUtils.StrCopy(pStr, PAnsiChar(strData));
-  //увеличавам dataPosition със 2+ 4 + len*SizeOf(char) ; 2 за дължината на стринга; колкото толкова за стринга; и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃСЉСЃ 2+ 4 + len*SizeOf(char) ; 2 Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР°; РєРѕР»РєРѕС‚Рѕ С‚РѕР»РєРѕРІР° Р·Р° СЃС‚СЂРёРЅРіР°; Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6 + len*SizeOf(AnsiChar));
 
 
   if (dataPosition mod 2) = 0 then
   begin
-    pWordData := pointer(PByte(buf) + dataPosition); // записвам 00 за край
+    pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 00 Р·Р° РєСЂР°Р№
     pWordData^  := 0;
     Inc(dataPosition, 2);
   end
   else
   begin
-    pWordData := pointer(PByte(buf) + dataPosition); // записвам 0 за край
+    pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 0 Р·Р° РєСЂР°Р№
     pWordData^  := 0;
-    Inc(dataPosition, 1); //само единия байт, за да е четен адреса
+    Inc(dataPosition, 1); //СЃР°РјРѕ РµРґРёРЅРёСЏ Р±Р°Р№С‚, Р·Р° РґР° Рµ С‡РµС‚РµРЅ Р°РґСЂРµСЃР°
   end;
 
   streamComm := TBaseCollection(Collection).streamComm;
@@ -2040,23 +2124,23 @@ begin
 
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pWordData := pointer(PByte(buf) + ADataPos + datPos);
   pWordData^  := wordData;
-  //увеличавам dataPosition с 2 + 4 ; 2 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 2 + 4 ; 2 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(worddata, 2);
 end;
@@ -2323,39 +2407,39 @@ begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
   len :=  Length(ArrIntData) ;
-  //намирам адреса на който ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
-  pCardinalData := pointer(PByte(buf) + metaPosition); // тука е адреса на старата сойност
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
+  pCardinalData := pointer(PByte(buf) + metaPosition); // С‚СѓРєР° Рµ Р°РґСЂРµСЃР° РЅР° СЃС‚Р°СЂР°С‚Р° СЃРѕР№РЅРѕСЃС‚
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalHistData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalHistData^  := (pCardinalData^); // при инсъртване понеже е първо e  нула
+  pCardinalHistData^  := (pCardinalData^); // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ e  РЅСѓР»Р°
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам дължината на масива на адреса
+  //Р·Р°РїРёСЃРІР°Рј РґСЉР»Р¶РёРЅР°С‚Р° РЅР° РјР°СЃРёРІР° РЅР° Р°РґСЂРµСЃР°
   pWordData := pointer(PByte(buf) + ADataPos + DatPos);
   pWordData^  := Len;
 
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pArr := pointer(PByte(buf) + ADataPos + DatPos + 2);
   MoveMemory(pArr, @ArrIntData[0], len * 4);
   //System.SysUtils.arr(pArr, PAnsiChar(strData));
-  //увеличавам dataPosition със 2+ 4 + len*SizeOf(char) ; 2 за дължината на стринга; колкото толкова за стринга; и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃСЉСЃ 2+ 4 + len*SizeOf(char) ; 2 Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР°; РєРѕР»РєРѕС‚Рѕ С‚РѕР»РєРѕРІР° Р·Р° СЃС‚СЂРёРЅРіР°; Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6 + len*4);
 
 
   //if (dataPosition mod 2) = 0 then
 //  begin
-//    pWordData := pointer(PByte(buf) + dataPosition); // записвам 00 за край
+//    pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 00 Р·Р° РєСЂР°Р№
 //    pWordData^  := 0;
 //    Inc(dataPosition, 2);
 //  end
 //  else
 //  begin
-//    pWordData := pointer(PByte(buf) + dataPosition); // записвам 0 за край
+//    pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 0 Р·Р° РєСЂР°Р№
 //    pWordData^  := 0;
-//    Inc(dataPosition, 1); //само единия байт, за да е четен адреса
+//    Inc(dataPosition, 1); //СЃР°РјРѕ РµРґРёРЅРёСЏ Р±Р°Р№С‚, Р·Р° РґР° Рµ С‡РµС‚РµРЅ Р°РґСЂРµСЃР°
 //  end;
 
   streamComm := TBaseCollection(Collection).streamComm;
@@ -2374,23 +2458,23 @@ begin
 
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + ADataPos + datPos);
   pCardinalData^  := CardData;
-  //увеличавам dataPosition с 4 + 4 ; 4 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 4 ; 4 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 8);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
   TBaseCollection(Collection).streamComm.Write(CardData, 4);
 end;
@@ -2645,23 +2729,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical24Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical24Data^  := LogicalData;
-  //увеличавам dataPosition с 4 + 4 ; 4 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 4 ; 4 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 8);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 4);
 end;
 
@@ -2674,23 +2758,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical40Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical40Data^  := LogicalData;
-  //увеличавам dataPosition с 6 + 4 ; 6 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 6 + 4 ; 6 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 10);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 5);
 end;
 
@@ -2703,23 +2787,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical16Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical16Data^  := LogicalData;
-  //увеличавам dataPosition с 2 + 4 ; 2 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 2 + 4 ; 2 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 1);
 end;
 
@@ -2734,28 +2818,28 @@ begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
   len :=  stream.size ;
-  //намирам адреса на който ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚Рѕ С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - datPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам дължината на потока на адреса
+  //Р·Р°РїРёСЃРІР°Рј РґСЉР»Р¶РёРЅР°С‚Р° РЅР° РїРѕС‚РѕРєР° РЅР° Р°РґСЂРµСЃР°
   pWordData := pointer(PByte(buf) + ADataPos + DatPos);
   pWordData^  := Len;
 
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pStr := pointer(PByte(buf) + ADataPos + DatPos + 2);
   //pStr  := @strData;
   stream.WriteData(pStr, Len);
-  //увеличавам dataPosition със 2+ 4 + len*SizeOf(char) ; 2 за дължината на стринга; колкото толкова за стринга; и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃСЉСЃ 2+ 4 + len*SizeOf(char) ; 2 Р·Р° РґСЉР»Р¶РёРЅР°С‚Р° РЅР° СЃС‚СЂРёРЅРіР°; РєРѕР»РєРѕС‚Рѕ С‚РѕР»РєРѕРІР° Р·Р° СЃС‚СЂРёРЅРіР°; Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6 + len*SizeOf(AnsiChar));
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
 
-  pWordData := pointer(PByte(buf) + dataPosition); // записвам 00 за край
+  pWordData := pointer(PByte(buf) + dataPosition); // Р·Р°РїРёСЃРІР°Рј 00 Р·Р° РєСЂР°Р№
   pWordData^  := 0;
   Inc(dataPosition, 2);
 end;
@@ -2769,23 +2853,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical48Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical48Data^  := LogicalData;
-  //увеличавам dataPosition с 6 + 4 ; 6 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 6 + 4 ; 6 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 10);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 6);
 end;
 
@@ -2798,23 +2882,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical32Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical32Data^  := LogicalData;
-  //увеличавам dataPosition с 8 + 4 ; 8 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 8 + 4 ; 8 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 12);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 8);
 end;
 
@@ -2827,23 +2911,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical32Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical32Data^  := LogicalData;
-  //увеличавам dataPosition с 4 + 4 ; 4 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 4 + 4 ; 4 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 8);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 4);
 end;
 
@@ -2856,23 +2940,23 @@ var
 begin
   pCardinalData := pointer(PByte(buf) + 8);
   DatPos := pCardinalData^;
-  //намирам адреса на койтом ще бъдат поставени данните
+  //РЅР°РјРёСЂР°Рј Р°РґСЂРµСЃР° РЅР° РєРѕР№С‚РѕРј С‰Рµ Р±СЉРґР°С‚ РїРѕСЃС‚Р°РІРµРЅРё РґР°РЅРЅРёС‚Рµ
   ADataPos := dataPosition + 4 - DatPos;
-  //записвам в мета-та адреса
+  //Р·Р°РїРёСЃРІР°Рј РІ РјРµС‚Р°-С‚Р° Р°РґСЂРµСЃР°
   pCardinalData := pointer(PByte(buf) + metaPosition);
   pCardinalData^  := ADataPos;
-  //увеличавам metaPosition с 4
+  //СѓРІРµР»РёС‡Р°РІР°Рј metaPosition СЃ 4
   Inc(metaPosition, 4);
-  //записвам самата данна на адреса
+  //Р·Р°РїРёСЃРІР°Рј СЃР°РјР°С‚Р° РґР°РЅРЅР° РЅР° Р°РґСЂРµСЃР°
   pLogical16Data := pointer(PByte(buf) + ADataPos + datPos);
   pLogical16Data^  := LogicalData;
-  //увеличавам dataPosition с 2 + 4 ; 2 за самата данна и 4 байта за историята.
+  //СѓРІРµР»РёС‡Р°РІР°Рј dataPosition СЃ 2 + 4 ; 2 Р·Р° СЃР°РјР°С‚Р° РґР°РЅРЅР° Рё 4 Р±Р°Р№С‚Р° Р·Р° РёСЃС‚РѕСЂРёСЏС‚Р°.
   Inc(dataPosition, 6);
   pCardinalData := pointer(PByte(buf) + 12);
   pCardinalData^  := dataPosition;
-  //записвам историята
+  //Р·Р°РїРёСЃРІР°Рј РёСЃС‚РѕСЂРёСЏС‚Р°
   pCardinalData := pointer(PByte(buf) + ADataPos - 4 + DatPos);
-  pCardinalData^  := ADataPos - 4; // при инсъртване понеже е първо двата адреса съвпадат
+  pCardinalData^  := ADataPos - 4; // РїСЂРё РёРЅСЃСЉСЂС‚РІР°РЅРµ РїРѕРЅРµР¶Рµ Рµ РїСЉСЂРІРѕ РґРІР°С‚Р° Р°РґСЂРµСЃР° СЃСЉРІРїР°РґР°С‚
   TBaseCollection(Collection).streamComm.Write(LogicalData, 2);
 end;
 
@@ -2898,7 +2982,7 @@ begin
 //    stream.Position := stream.Position + 1;
 //    //stream.FFileStream.Position := stream.Position;
 //  end;
-//  stream.WriteBuffer(TreeLink^, 54); //записваме си го
+//  stream.WriteBuffer(TreeLink^, 54); //Р·Р°РїРёСЃРІР°РјРµ СЃРё РіРѕ
 //  //pTemp := pointer(PByte(ppp) + stream.Position - 60);
 //
 //  dataPosition := stream.Position;
@@ -2952,9 +3036,19 @@ end;
 
 { TBaseCollection }
 
-function TBaseCollection.CollType: TCollectionsType;
+procedure TBaseCollection.ApplyVisibilityFromTree(RootNode: PVirtualNode);
 begin
-  //Result := ctAspect;
+
+end;
+
+function TBaseCollection.GetCollDelType: TCollectionsType;
+begin
+  Result := ctAspectDel;
+end;
+
+function TBaseCollection.GetCollType: TCollectionsType;
+begin
+  Result := ctAspect;
 end;
 
 constructor TBaseCollection.Create(ItemClass: TCollectionItemClass);
@@ -2973,6 +3067,12 @@ begin
   FfirstTop := -1;
   FlastBottom := -1;
   FColumnForSort := -1;
+  FSortFields := TSortFields.Create;
+  ScrollTimer := TTimer.Create(nil);
+  ScrollTimer.Interval := 35;
+  ScrollTimer.OnTimer := ScrollTimerTimer;
+  ScrollTimer.Enabled := false;
+  ScrollDirection := 0;
 end;
 
 destructor TBaseCollection.destroy;
@@ -2981,8 +3081,12 @@ begin
   FreeAndNil(ListDataPos);
   FreeAndNil(ListNodes);
   FreeAndNil(ListAnsi);
+  FreeAndNil(FSortFields);
   streamComm.Free;
   StreamCommTemp.Free;
+  ScrollTimer.Enabled := False;
+  FreeAndNil(ScrollTimer);
+
   inherited;
 end;
 
@@ -3059,6 +3163,20 @@ begin
   end;
 end;
 
+function TBaseCollection.FindRootCollOptionNode: PVirtualNode;
+begin
+  Result := nil;
+end;
+
+function TBaseCollection.GetAllowedOperators(
+  propIndex: Integer): TConditionTypeSet;
+var
+  kind: TAspectTypeKind;
+begin
+  kind := self.PropType(propIndex);
+  Result := OperatorRules[kind];
+end;
+
 function TBaseCollection.getAnsiStringMap(dataPos: cardinal;
   propIndex: word): AnsiString;
 var
@@ -3068,6 +3186,27 @@ var
   ofset: Cardinal;
 begin
   p := pointer(PByte(buf) + (DataPos  + 4*propIndex));
+  if p^ = 0 then
+  begin
+    Result := '';
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  PLen := pointer(PByte(buf) + ofset);
+  pData := pointer(PByte(buf) + ofset + 2);
+  SetLength(Result, PLen^);
+  Result := PAnsiChar(pData);
+end;
+
+function TBaseCollection.getAnsiStringMap4(dataPos: cardinal;
+  propIndex4: word): AnsiString;
+var
+  P: ^Cardinal;
+  PLen: ^Word;
+  pData: PAnsiChar;
+  ofset: Cardinal;
+begin
+  p := pointer(PByte(buf) + (DataPos  + propIndex4));
   if p^ = 0 then
   begin
     Result := '';
@@ -3192,6 +3331,24 @@ begin
 end;
 
 
+function TBaseCollection.getLogical08Map(dataPos: cardinal;
+  propIndex: word): TLogicalData08;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData08;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
 function TBaseCollection.getLogical16Map(dataPos: cardinal;
   propIndex: word): TLogicalData16;
 var
@@ -3264,6 +3421,24 @@ begin
   Result := pData^;
 end;
 
+function TBaseCollection.getLogical48Map(dataPos: cardinal;
+  propIndex: word): TLogicalData48;
+var
+  P: ^Cardinal;
+  ofset: Cardinal;
+  pData: ^TLogicalData48;
+begin
+  p := pointer(PByte(buf) + dataPos + 4*propIndex);
+  if p^ = 0 then
+  begin
+    Result := [];
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  pData := pointer(PByte(buf) + ofset);
+  Result := pData^;
+end;
+
 function TBaseCollection.GetNodeFromID(linkBuf: pointer; vv: TVtrVid; propIndex: Word;
   id: integer): PVirtualNode;
 var
@@ -3320,6 +3495,26 @@ begin
   end;
 end;
 
+function TBaseCollection.getPAnsiStringMap(dataPos: cardinal;
+  propIndex: word; var len: word): PAnsiChar;
+var
+  P: ^Cardinal;
+  l: ^Word;
+  ofset: Cardinal;
+begin
+  len := 0;
+  p := pointer(PByte(buf) + (dataPos  + 4*propIndex));
+  if p^ = 0 then
+  begin
+    Result := nil;
+    Exit;
+  end;
+  ofset := p^ + PosData;
+  l := pointer(PByte(buf) + ofset);
+  len := l^;
+  Result := pointer(PByte(l)+ 2);
+end;
+
 function TBaseCollection.getTimeMap(dataPos: cardinal; propIndex: word): TTime;
 var
   P: ^Cardinal;
@@ -3355,12 +3550,120 @@ begin
 end;
 
 procedure TBaseCollection.grdSearchClickedHeader(Sender: TObject);
+var
+  APropIndex: Word; // С‚РѕРІР° Рµ РёРЅРґРµРєСЃР° РЅР° РєРѕР»РѕРЅРєР°С‚Р° РѕС‚ РєРѕР»РµРєС†РёСЏС‚Р°
+  sf: TSortField;
+  i: Integer;
+  Found: Boolean;
 begin
-  //ar
-  FColumnForSort := TColumn(sender).tag;
-  TColumn(sender).Header.Changed;
+  // РіСЂРёРґР° РЅРµ Р·РЅР°Рµ РЅР° РєРѕСЏ РєРѕР»РѕРЅРєР° РѕС‚ РЅР°С€Р°С‚Р° РєРѕР»РµРєС†РёСЏ Рµ РЅР°С‚РёСЃРЅР°С‚Р°. РќРµРіРѕРІР°С‚Р° РєРѕР»РѕРЅРєР° Рµ TColumn(Sender).
+  APropIndex := ArrayPropOrderSearchOptions[TColumn(Sender).Index];
+  Found := False;
+
+  // РџСЂРѕРІРµСЂРєР° РґР°Р»Рё Ctrl Рµ РЅР°С‚РёСЃРЅР°С‚
+  if GetKeyState(VK_CONTROL) < 0 then
+  begin
+    // РўСЉСЂСЃРёРј РґР°Р»Рё РєРѕР»РѕРЅР°С‚Р° РІРµС‡Рµ СѓС‡Р°СЃС‚РІР°
+    for i := 0 to FSortFields.Count - 1 do
+    begin
+      if FSortFields[i].PropIndex = APropIndex then
+      begin
+        // РЎРјСЏРЅР° РЅР° РїРѕСЃРѕРєР°С‚Р° РїСЂРё РїРѕРІС‚РѕСЂРµРЅ РєР»РёРє
+        sf := FSortFields[i];
+        sf.SortAsc := not sf.SortAsc;
+        FSortFields[i] := sf;
+        Found := True;
+        Break;
+      end;
+    end;
+
+    if not Found then
+    begin
+      sf.PropIndex := APropIndex;
+      sf.SortAsc := True;
+      FSortFields.Add(sf);
+    end;
+  end
+  else
+  begin
+    // Р‘РµР· Ctrl вЂ” Р·Р°РїРѕС‡РІР°РјРµ РЅРѕРІРѕ СЃРѕСЂС‚РёСЂР°РЅРµ СЃР°РјРѕ РїРѕ С‚Р°Р·Рё РєРѕР»РѕРЅР°
+    if (FSortFields.Count = 1) and (FSortFields[0].PropIndex = APropIndex) then
+    begin
+      // РЎРјСЏРЅР° РЅР° РїРѕСЃРѕРєР°С‚Р° РїСЂРё РїРѕРІС‚РѕСЂРµРЅ РєР»РёРє РЅР° РµРґРёРЅР°СЃС‚РІРµРЅР°С‚Р° РєРѕР»РѕРЅР°
+      sf := FSortFields[0];
+      sf.SortAsc := not  FSortFields[0].SortAsc;
+      FSortFields[0] := sf;
+    end
+    else
+    begin
+      FSortFields.Clear;
+      sf.PropIndex := APropIndex;
+      sf.SortAsc := True;
+      FSortFields.Add(sf);
+    end;
+  end;
+
+  // РћР±РЅРѕРІРё РІРёР·СѓР°Р»РЅРѕ СЃС‚СЂРµР»РєРёС‚Рµ РЅР° РєРѕР»РѕРЅРёС‚Рµ
+  TColumn(Sender).Header.Changed;
+
+  // РР·РІРёРєР°Р№ СЃРѕСЂС‚РёСЂР°РЅРµ
   if Assigned(FOnSortCol) then
     FOnSortCol(Self);
+end;
+
+
+//procedure TBaseCollection.grdSearchClickedHeader(Sender: TObject);
+//begin
+//  //ar
+//  FColumnForSort := TColumn(sender).tag;
+//  TColumn(sender).Header.Changed;
+//  if Assigned(FOnSortCol) then
+//    FOnSortCol(Self);
+//end;
+
+procedure TBaseCollection.GrdSearhKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+  nodeList: PVirtualNode;
+  SelRow: Integer;
+begin
+  if Key = VK_UP then
+  begin
+    ScrollDirection := -1;
+    ScrollTimer.Enabled := True;
+    Key := 0;
+  end
+  else
+  if Key = VK_DOWN then
+  begin
+    ScrollDirection := +1;
+    ScrollTimer.Enabled := True;
+    Key := 0;
+  end;
+  Exit;
+  if not TKeyThrottle.CanExecute then
+    Exit; // Р±Р»РѕРєРёСЂР° РїРѕРІС‚Р°СЂСЏС‰РёС‚Рµ KeyDown-Рё РїСЂРё Р·Р°РґСЉСЂР¶Р°РЅРµ
+
+  SelRow := TTeeGrid(Sender).Selected.Row;
+  if (self.ListDataPos.count - 1) < SelRow then
+    Exit;
+  if self.lastBottom = - 1 then
+  begin
+    nodeList := self.ListDataPos[SelRow];
+  end
+  else
+  begin
+    nodeList := self.ListDataPos[SelRow + self.offsetTop];
+  end;
+
+  case Key of
+    VK_UP, VK_DOWN:
+    begin
+      // РЅР°РјРµСЂРё СЃР»РµРґРІР°С‰РёСЏ/РїСЂРµРґРёС€РЅРёСЏ record
+      //nodeList := FindNodeForCurrentGridRow();
+      TVSTSyncHelper.SyncToNode(VTR, nodeList);
+    end;
+  end;
 end;
 
 procedure TBaseCollection.GrdSearhKeyUp(Sender: TObject; var Key: Word;
@@ -3369,6 +3672,9 @@ var
   WMKey: TWMKey;
 begin
   inherited;
+  ScrollDirection := 0;
+  ScrollTimer.Enabled := False;
+  Exit;
   if Assigned(FOnKeyUpGridSearch)  then
     FOnKeyUpGridSearch(Sender, Key, Shift);
 
@@ -3380,23 +3686,33 @@ end;
 procedure TBaseCollection.HeaderCanSortBy(const AColumn: TColumn;
   var CanSort: Boolean);
 begin
-  CanSort:=(AColumn<>nil) and (AColumn.tag = FColumnForSort);
+  CanSort:=(AColumn<>nil) and (FSortFields.Count > 0);
 end;
 
 procedure TBaseCollection.HeaderSortBy(Sender: TObject; const AColumn: TColumn);
 begin
-  SortAsc:=not SortAsc;
+  //SortAsc:=not SortAsc;
 end;
 
 procedure TBaseCollection.HeaderSortState(const AColumn: TColumn;
   var State: TSortState);
+var
+  i: Integer;
+  colInedx:Integer;
 begin
-  if (AColumn.tag <> FColumnForSort) then exit;
-
-  if SortAsc then
-     State := TSortState.Descending
-  else
-     State := TSortState.Ascending;
+  State := TSortState.None;
+  colInedx := ArrayPropOrderSearchOptions[AColumn.Index];
+  for i := 0 to FSortFields.Count - 1 do
+  begin
+    if FSortFields[i].PropIndex = colInedx then
+    begin
+      if not FSortFields[i].SortAsc then
+        State := TSortState.Ascending
+      else
+        State := TSortState.Descending;
+      Exit;
+    end;
+  end;
 end;
 
 procedure TBaseCollection.IncCntInADB;
@@ -3405,6 +3721,21 @@ begin
 end;
 
 
+
+function TBaseCollection.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result := True;
+end;
+
+procedure TBaseCollection.MarkDelete(FDataPos: cardinal);
+var
+  metaPosition: cardinal;
+  pWordData: ^Word;
+begin
+  metaPosition := FDataPos - 4;
+  pWordData := pointer(PByte(buf) + metaPosition);
+  pWordData^  := word(Self.GetCollDelType);
+end;
 
 procedure TBaseCollection.DoCollSort(senedr: TObject);
 var
@@ -3425,6 +3756,9 @@ procedure TBaseCollection.DoColMoved(const Acol: TColumn; const OldPos, NewPos: 
 begin
 
 end;
+
+
+
 
 procedure TBaseCollection.OpenAdbFull(var aspPos: Cardinal);
 var
@@ -3451,7 +3785,7 @@ begin
 
 end;
 
-function TBaseCollection.PropType(propIndex: Word): TAsectTypeKind;
+function TBaseCollection.PropType(propIndex: Word): TAspectTypeKind;
 begin
   Result := actNone;
 end;
@@ -3459,6 +3793,12 @@ end;
 function TBaseCollection.RankSortOption(propIndex: Word): cardinal;
 begin
 
+end;
+
+procedure TBaseCollection.ScrollTimerTimer(sender: tobject);
+begin
+  //if ScrollDirection = 0 then Exit;
+  grid.Selected.Row := grid.Selected.Row + ScrollDirection;
 end;
 
 procedure TBaseCollection.SetAnsiStringMap(dataPos: cardinal; propIndex: word;
@@ -3476,8 +3816,8 @@ begin
   end;
   ofset := p^ + PosData;
   //PLen := pointer(PByte(buf) + ofset);
- // PLen^ := Length(AString); // това трябва да го има и трябва да е точно толкова дълго, колкото е замислено за полето. Например 12 за НРН
-  pData := pointer(PByte(buf) + ofset + 2); //двойката е за дължината
+ // PLen^ := Length(AString); // С‚РѕРІР° С‚СЂСЏР±РІР° РґР° РіРѕ РёРјР° Рё С‚СЂСЏР±РІР° РґР° Рµ С‚РѕС‡РЅРѕ С‚РѕР»РєРѕРІР° РґСЉР»РіРѕ, РєРѕР»РєРѕС‚Рѕ Рµ Р·Р°РјРёСЃР»РµРЅРѕ Р·Р° РїРѕР»РµС‚Рѕ. РќР°РїСЂРёРјРµСЂ 12 Р·Р° РќР Рќ
+  pData := pointer(PByte(buf) + ofset + 2); //РґРІРѕР№РєР°С‚Р° Рµ Р·Р° РґСЉР»Р¶РёРЅР°С‚Р°
   //SetLength(Result, PLen^);
   System.SysUtils.StrCopy(pData, PAnsiChar(AString));
   //PAnsiChar(pData) := AString;
@@ -3616,51 +3956,68 @@ begin
 
 end;
 
-procedure TBaseCollection.ShowLinksGrid(Grid: TTeeGrid);//; ofsetTop, firstTop, lastBottom, offsetBottom: Integer);
+procedure TBaseCollection.ShowLinksGrid(AGrid: TTeeGrid);
 var
   i: word;
-  asss: Boolean;
+  hdr: TMultiSortableHeader;
+  propIndex: Word;
 begin
-  grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Hide;
+  if FGrid = nil then
+    FGrid := AGrid;
+  FGrid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Hide;
   if FlastBottom = - 1 then
   begin
-    Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListDataPos.Count - FoffsetTop - FoffsetBottom);
+    FGrid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListDataPos.Count - FoffsetTop - FoffsetBottom);
   end
   else
   begin
-    Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, FlastBottom);
+    FGrid.Data:=TVirtualModeData.Create(self.FieldCount + 1, FlastBottom);
   end;
-  Grid.OnClickedHeader := grdSearchClickedHeader;
-  Grid.Columns.OnMoved := DoColMoved;
-  TGridForSrarch(Grid).OnKeyUp := GrdSearhKeyUp;
-  Grid.Header.SortRender:= TSortableHeader.Create(Grid.Header.Changed);
-  Grid.Header.Sortable := True;
+  FGrid.OnClickedHeader := grdSearchClickedHeader;
+  FGrid.Columns.OnMoved := DoColMoved;
+  TGridForSrarch(FGrid).OnKeyUp := GrdSearhKeyUp;
+  TGridForSrarch(FGrid).OnKeyDown := GrdSearhKeyDown;
+
+  // РёР·РїРѕР»Р·РІР°РЅРµ РЅР° TMultiSortableHeader
+  hdr := TMultiSortableHeader.Create(FGrid.Header.Changed);
+  hdr.CollForSort := self;
+  hdr.Grid := FGrid;
+  FGrid.Header.SortRender := hdr;
+  FGrid.Header.Sortable := True;
   // Set custom events
-  TSortableHeader(Grid.Header.SortRender).OnCanSort:=HeaderCanSortBy;
-  TSortableHeader(Grid.Header.SortRender).OnSortBy:=HeaderSortBy;
-  TSortableHeader(Grid.Header.SortRender).OnSortState:=HeaderSortState;
+  TSortableHeader(FGrid.Header.SortRender).OnCanSort:=HeaderCanSortBy;
+  TSortableHeader(FGrid.Header.SortRender).OnSortBy:=HeaderSortBy;
+  TSortableHeader(FGrid.Header.SortRender).OnSortState:=HeaderSortState;
 
   for i := 0 to self.FieldCount - 1 do
   begin
-    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+    TVirtualModeData(FGrid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListDataPos.Count]);
+  TVirtualModeData(FGrid.Data).Headers[self.FieldCount] := Format('Р РµРґ/%d Р±СЂ.', [self.ListDataPos.Count]);
 
-  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellDataPos;
-  TVirtualModeData(Grid.Data).OnSetValue:=nil;
+  TVirtualModeData(FGrid.Data).OnGetValue:=self.GetCellDataPos;
+  TVirtualModeData(FGrid.Data).OnSetValue:=nil;
 
   for i := 0 to self.FieldCount - 1 do
   begin
-    Grid.Columns[i].Width.Value := 110;
-    Grid.Columns[i].Tag := i;
+    FGrid.Columns[i].Width.Value := 110;
+    FGrid.Columns[i].Tag := i;
   end;
 
-  Grid.Columns[self.FieldCount].Width.Value := 90;
-  Grid.Columns[self.FieldCount].Index := 0;
+  FGrid.Columns[self.FieldCount].Width.Value := 90;
+  FGrid.Columns[self.FieldCount].Index := 0;
 
-  OrderFieldsSearch1(Grid);
+  OrderFieldsSearch1(FGrid);
+  for i := 1 to FGrid.Columns.Count - 1 do
+  begin
+    propIndex := ArrayPropOrderSearchOptions[FGrid.Columns[i].Index];
+    FGrid.Columns[i].Visible := self.IsCollVisible(propIndex);
+  end;
+  FGrid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Automatic;
+  FGrid.Refresh;
+end;
 
-   //долното трябва да иде на опции
+ //РґРѕР»РЅРѕС‚Рѕ С‚СЂСЏР±РІР° РґР° РёРґРµ РЅР° РѕРїС†РёРё
  // Grid.Columns[9].Index:= 1;
 //  Grid.Columns[2].Visible:= False;
 //  Grid.Columns[6].Visible:= False;
@@ -3669,9 +4026,6 @@ begin
 //  Grid.Columns[2].Locked := TColumnLocked.Left;
 
   //Grid.Columns[9].ta
-  grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Automatic;
-  //grid.ScrollBars.Horizontal.Visible := Tee.Control.TScrollBarVisible.Show;
-end;
 
 procedure TBaseCollection.ShowListNodesGrid(Grid: TTeeGrid);
 var
@@ -3694,7 +4048,7 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListNodes.Count]);
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Р РµРґ/%d Р±СЂ.', [self.ListNodes.Count]);
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellListNodes;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -3784,6 +4138,182 @@ begin
   end;
 end;
 
+procedure TBaseCollection.SortMultiColumnsOptimized( FStop: Pboolean);
+type
+  TAnsiArr = TArray<AnsiString>;
+  TIntArr  = TArray<Integer>;
+  TFloatArr = TArray<Double>;
+  TBoolArr = TArray<Byte>;
+var
+  Sorter: TInterruptibleQuickSort<Integer>;
+  CompareFunc: TFunc<Integer, Integer, Integer>;
+  ListDataPos: TList<PVirtualNode>;
+
+  // РљРµС€ РїРѕ РєРѕР»РѕРЅР°
+  ArrAnsi: array of TAnsiArr;
+  ArrInt: array of TIntArr;
+  ArrFloat: array of TFloatArr;
+  ArrBool: array of TBoolArr;
+  ColType: array of TColumnType;
+
+  i, j, c: Integer;
+  IndexList: TList<Integer>;
+  NewOrder: TList<PVirtualNode>;
+  DataPos: Cardinal;
+  test: Double;
+begin
+  if FSortFields.Count = 0 then Exit;
+
+  ListDataPos := Self.ListDataPos;
+  if ListDataPos.Count <= 1 then Exit;
+
+  SetLength(ColType, FSortFields.Count);
+  SetLength(ArrAnsi, FSortFields.Count);
+  SetLength(ArrInt, FSortFields.Count);
+  SetLength(ArrFloat, FSortFields.Count);
+  SetLength(ArrBool, FSortFields.Count);
+
+  // --- РџСЂРµРґРІР°СЂРёС‚РµР»РЅРѕ РѕРїСЂРµРґРµР»СЏРјРµ С‚РёРїРѕРІРµС‚Рµ ---
+  for c := 0 to FSortFields.Count - 1 do
+  begin
+    case Self.PropType(FSortFields[c].PropIndex) of
+      actAnsiString: ColType[c] := ctAnsi;
+      actInteger:    ColType[c] := ctInt;
+      actTDate, actTime: ColType[c] := ctFloat;
+      actLogical:    ColType[c] := ctBool;
+    else
+      ColType[c] := ctAnsi; // РїРѕ РїРѕРґСЂР°Р·Р±РёСЂР°РЅРµ
+    end;
+  end;
+
+  // --- РљРµС€РёСЂР°РЅРµ ---
+  for c := 0 to FSortFields.Count - 1 do
+  begin
+    case ColType[c] of
+      ctAnsi:
+        begin
+          SetLength(ArrAnsi[c], ListDataPos.Count);
+          for i := 0 to ListDataPos.Count - 1 do
+          begin
+            DataPos := PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos;
+            ArrAnsi[c][i] := Self.getAnsiStringMap(DataPos, FSortFields[c].PropIndex);
+          end;
+        end;
+
+      ctInt:
+        begin
+          SetLength(ArrInt[c], ListDataPos.Count);
+          for i := 0 to ListDataPos.Count - 1 do
+          begin
+            DataPos := PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos;
+            ArrInt[c][i] := Self.getIntMap(DataPos, FSortFields[c].PropIndex);
+          end;
+        end;
+
+      ctFloat:
+        begin
+          SetLength(ArrFloat[c], ListDataPos.Count);
+          for i := 0 to ListDataPos.Count - 1 do
+          begin
+            DataPos := PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos;
+            ArrFloat[c][i] := Self.getDateMap(DataPos, FSortFields[c].PropIndex);
+          end;
+        end;
+
+      //ctBool:
+//        begin
+//          SetLength(ArrBool[c], ListDataPos.Count);
+//          for i := 0 to ListDataPos.Count - 1 do
+//          begin
+//            DataPos := PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos;
+//            ArrBool[c][i] := Ord(Self.getLogicalMap(DataPos, Columns[c].PropIndex));
+//          end;
+//        end;
+    end;
+  end;
+
+  // --- Р¤СѓРЅРєС†РёСЏ Р·Р° СЃСЂР°РІРЅРµРЅРёРµ ---
+  CompareFunc := TFunc<Integer, Integer, Integer>(
+    function(const A, B: Integer): Integer
+    var
+    col, cmp: Integer;
+  begin
+    Result := 0;
+    for col := 0 to (FSortFields.Count - 1) do
+    begin
+      case ColType[col] of
+        ctInt:
+          begin
+            if ArrInt[col][A] < ArrInt[col][B] then cmp := -1
+            else if ArrInt[col][A] > ArrInt[col][B] then cmp := 1
+            else cmp := 0;
+          end;
+        ctFloat:
+          begin
+            if Abs(ArrFloat[col][A] - ArrFloat[col][B]) < EPS then cmp := 0
+            else if ArrFloat[col][A] < ArrFloat[col][B] then cmp := -1
+            else cmp := 1;
+          end;
+        ctAnsi:
+          cmp := System.AnsiStrings.StrComp(PAnsiChar(ArrAnsi[col][A]), PAnsiChar(ArrAnsi[col][B]));
+      end;
+
+      if not FSortFields[col].SortAsc then
+        cmp := -cmp;
+
+      //пёЏРњРЅРѕРіРѕ РІР°Р¶РЅРѕ:
+      if cmp <> 0 then
+      begin
+        Result := cmp;
+        Exit;
+      end ;
+    end;
+  end);
+
+  // --- РРЅРґРµРєСЃРё ---
+  IndexList := TList<Integer>.Create;
+  try
+    IndexList.Capacity := ListDataPos.Count;
+    for i := 0 to ListDataPos.Count - 1 do
+      IndexList.Add(i);
+
+    Sorter := TInterruptibleQuickSort<Integer>.Create(FStop);
+    try
+      Sorter.Sort(IndexList, CompareFunc);
+    finally
+      Sorter.Free;
+    end;
+
+    // --- РџСЂРµРЅР°СЂРµР¶РґР°РЅРµ ---
+    NewOrder := TList<PVirtualNode>.Create;
+    try
+      NewOrder.Capacity := ListDataPos.Count;
+      for i := 0 to IndexList.Count - 1 do
+        NewOrder.Add(ListDataPos[IndexList[i]]);
+
+      ListDataPos.Clear;
+      ListDataPos.AddRange(NewOrder);
+    finally
+      NewOrder.Free;
+    end;
+  finally
+    IndexList.Free;
+  end;
+end;
+
+
+procedure TBaseCollection.UpdateOrderArrayFromTree(Root: PVirtualNode);
+var
+  run: PVirtualNode;
+begin
+  run := Root.FirstChild.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.Index + 1] := run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+end;
+
 procedure TBaseCollection.SortAnsiListPropIndexCollNew(propIndex: word;
   SortIsAsc: Boolean);
 var
@@ -3797,7 +4327,7 @@ var
     saveList: PVirtualNode;
   begin
     repeat
-     // Sleep(1);//  за тесттване на бавно сортиране
+     // Sleep(1);//  Р·Р° С‚РµСЃС‚С‚РІР°РЅРµ РЅР° Р±Р°РІРЅРѕ СЃРѕСЂС‚РёСЂР°РЅРµ
       //if FStop then
 //      begin
 //        ListAnsi.Clear;
@@ -3850,6 +4380,173 @@ begin
    // FStoped := True;
   end;
 end;
+
+procedure TBaseCollection.SortAnsiPropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+var
+  Sorter: TInterruptibleQuickSort<Integer>;
+  CompareFunc: TFunc<Integer, Integer, Integer>;
+  ArrAnsi: TArray<AnsiString>;
+  IndexList: TList<Integer>;
+  NewOrder: TList<PVirtualNode>;
+  i: Integer;
+begin
+  if (ListDataPos = nil) or (ListDataPos.Count <= 1) then Exit;
+
+  SetLength(ArrAnsi, ListDataPos.Count);
+  for i := 0 to High(ArrAnsi) do
+    ArrAnsi[i] := getAnsiStringMap(
+      PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos,
+      PropIndex
+    );
+
+  CompareFunc := TFunc<Integer, Integer, Integer>(
+    function(const A, B: Integer): Integer
+    begin
+      if (StopFlag <> nil) and StopFlag^ then
+        Exit(0);
+      Result := System.AnsiStrings.StrComp(PAnsiChar(ArrAnsi[A]), PAnsiChar(ArrAnsi[B]));
+      if not SortAsc then
+        Result := -Result;
+    end);
+
+  IndexList := TList<Integer>.Create;
+  try
+    for i := 0 to ListDataPos.Count - 1 do
+      IndexList.Add(i);
+
+    Sorter := TInterruptibleQuickSort<Integer>.Create(StopFlag);
+    try
+      Sorter.Sort(IndexList, CompareFunc);
+    finally
+      Sorter.Free;
+    end;
+
+    NewOrder := TList<PVirtualNode>.Create;
+    try
+      for i := 0 to IndexList.Count - 1 do
+        NewOrder.Add(ListDataPos[IndexList[i]]);
+      ListDataPos.Clear;
+      ListDataPos.AddRange(NewOrder);
+    finally
+      NewOrder.Free;
+    end;
+  finally
+    IndexList.Free;
+  end;
+end;
+
+
+procedure TBaseCollection.SortDatePropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+var
+  Sorter: TInterruptibleQuickSort<Integer>;
+  CompareFunc: TFunc<Integer, Integer, Integer>;
+  ArrDate: TArray<TDateTime>;
+  IndexList: TList<Integer>;
+  NewOrder: TList<PVirtualNode>;
+  i: Integer;
+begin
+  if (ListDataPos = nil) or (ListDataPos.Count <= 1) then Exit;
+
+  SetLength(ArrDate, ListDataPos.Count);
+  for i := 0 to High(ArrDate) do
+    ArrDate[i] := getDateMap(
+      PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos,
+      PropIndex
+    );
+
+  CompareFunc := TFunc<Integer, Integer, Integer>(
+    function(const A, B: Integer): Integer
+    begin
+      if (StopFlag <> nil) and StopFlag^ then
+        Exit(0);
+      if ArrDate[A] < ArrDate[B] then Result := -1
+      else if ArrDate[A] > ArrDate[B] then Result := 1
+      else Result := 0;
+      if not SortAsc then
+        Result := -Result;
+    end);
+
+  IndexList := TList<Integer>.Create;
+  try
+    for i := 0 to ListDataPos.Count - 1 do
+      IndexList.Add(i);
+
+    Sorter := TInterruptibleQuickSort<Integer>.Create(StopFlag);
+    try
+      Sorter.Sort(IndexList, CompareFunc);
+    finally
+      Sorter.Free;
+    end;
+
+    NewOrder := TList<PVirtualNode>.Create;
+    try
+      for i := 0 to IndexList.Count - 1 do
+        NewOrder.Add(ListDataPos[IndexList[i]]);
+      ListDataPos.Clear;
+      ListDataPos.AddRange(NewOrder);
+    finally
+      NewOrder.Free;
+    end;
+  finally
+    IndexList.Free;
+  end;
+end;
+
+
+procedure TBaseCollection.SortIntegerPropInterruptible(PropIndex: Word; SortAsc: Boolean; StopFlag: PBoolean);
+var
+  Sorter: TInterruptibleQuickSort<Integer>;
+  CompareFunc: TFunc<Integer, Integer, Integer>;
+  ArrInt: TArray<Integer>;
+  IndexList: TList<Integer>;
+  NewOrder: TList<PVirtualNode>;
+  i: Integer;
+begin
+  if (ListDataPos = nil) or (ListDataPos.Count <= 1) then Exit;
+
+  SetLength(ArrInt, ListDataPos.Count);
+  for i := 0 to High(ArrInt) do
+    ArrInt[i] := getIntMap(
+      PAspRec(Pointer(PByte(ListDataPos[i]) + lenNode)).DataPos,
+      PropIndex
+    );
+
+  CompareFunc := TFunc<Integer, Integer, Integer>(
+    function(const A, B: Integer): Integer
+    begin
+      if (StopFlag <> nil) and StopFlag^ then
+        Exit(0);
+      Result := ArrInt[A] - ArrInt[B];
+      if not SortAsc then
+        Result := -Result;
+    end);
+
+  IndexList := TList<Integer>.Create;
+  try
+    for i := 0 to ListDataPos.Count - 1 do
+      IndexList.Add(i);
+
+    Sorter := TInterruptibleQuickSort<Integer>.Create(StopFlag);
+    try
+      Sorter.Sort(IndexList, CompareFunc);
+    finally
+      Sorter.Free;
+    end;
+
+    NewOrder := TList<PVirtualNode>.Create;
+    try
+      for i := 0 to IndexList.Count - 1 do
+        NewOrder.Add(ListDataPos[IndexList[i]]);
+      ListDataPos.Clear;
+      ListDataPos.AddRange(NewOrder);
+    finally
+      NewOrder.Free;
+    end;
+  finally
+    IndexList.Free;
+  end;
+end;
+
 
 procedure TBaseCollection.SortListByDataPos(lst: TList<TBaseItem>);
 
@@ -3944,7 +4641,7 @@ begin
     FFileName  := AFileName;
   end
   else
-    raise Exception.Create('Файлът "' + AFileName + '" не може да бъде намерен.');
+    raise Exception.Create('Р¤Р°Р№Р»СЉС‚ "' + AFileName + '" РЅРµ РјРѕР¶Рµ РґР° Р±СЉРґРµ РЅР°РјРµСЂРµРЅ.');
 end;
 
 destructor TMappedFile.Destroy;
@@ -4044,7 +4741,7 @@ begin
     end
     else
     begin
-      // трябва да са въведени преди това
+      // С‚СЂСЏР±РІР° РґР° СЃР° РІСЉРІРµРґРµРЅРё РїСЂРµРґРё С‚РѕРІР°
     end;
 
     if IsNew then
@@ -4111,7 +4808,7 @@ begin
   begin
     FVid := Value;
   end;
-  //if not(FVid in [ctDoctor, ctMkb]) then  // за тестове е
+  //if not(FVid in [ctDoctor, ctMkb]) then  // Р·Р° С‚РµСЃС‚РѕРІРµ Рµ
 //  begin
 //    FVid := Value;
 //  end;
@@ -4124,8 +4821,8 @@ var
   PLog32Buf: TLogicalData32;
 begin
   PLog32Buf := getLogical32Map(Buf, FPosDataADB, FieldForFind);
-  //Result := (PLog32Find * PLog32Buf) = PLog32Find; // лявото и  дясното имат сечение, което е точно лявото
-  Result := not(PLog32Find <= PLog32Buf) // лявото е(не е) подмножество на дясното
+  //Result := (PLog32Find * PLog32Buf) = PLog32Find; // Р»СЏРІРѕС‚Рѕ Рё  РґСЏСЃРЅРѕС‚Рѕ РёРјР°С‚ СЃРµС‡РµРЅРёРµ, РєРѕРµС‚Рѕ Рµ С‚РѕС‡РЅРѕ Р»СЏРІРѕС‚Рѕ
+  Result := not(PLog32Find <= PLog32Buf) // Р»СЏРІРѕС‚Рѕ Рµ(РЅРµ Рµ) РїРѕРґРјРЅРѕР¶РµСЃС‚РІРѕ РЅР° РґСЏСЃРЅРѕС‚Рѕ
 end;
 
 function TBaseItem.IsFinded(PBoolFind: Boolean; buf: Pointer; FPosDataADB: Cardinal; FieldForFind: word; cot: TConditionSet): Boolean;
@@ -4307,6 +5004,147 @@ end;
 
 { TMappedLinkFile }
 
+procedure TMappedLinkFile.SetCurrentFilter(const Value: PVirtualNode);
+begin
+  FCurrentFilter := Value;
+
+  if FCurrentFilter = nil then Exit;
+
+  // С„РёР»С‚СЉСЂРЅРѕС‚Рѕ РґСЉСЂРІРѕ Рµ С‚РѕРІР°:
+  //   Self = AspectsFilterLinkFile  (РєРѕРµС‚Рѕ СЃСЉРґСЉСЂР¶Р° FVTR)
+
+  // 1) РїРѕСЃС‚СЂРѕСЏРІР°РјРµ РёРЅРґРµРєСЃР° СЃР°РјРѕ Р·Р° С„РёР»С‚СЉСЂРЅРѕС‚Рѕ РґСЉСЂРІРѕ
+  Self.BuildPathIndex;
+
+  // 2) РїСЂР°РІРёРј join СЃРїСЂСЏРјРѕ ADB РёРЅРґРµРєСЃР°
+  //if Assigned(FFilterLink) then
+//    Self.BuildJoinTable(FFilterLink); // РёР»Рё JoinWith(вЂ¦)
+end;
+
+procedure TMappedLinkFile.SetSearchPopupMenu(const Value: TPopupMenu);
+begin
+  FSearchPopupMenu := Value;
+
+  if FSearchPopupMenu <> nil then
+  begin
+    FSearchPopupMenu.OnPopup := InternalMenuPopup;
+  end;
+end;
+
+procedure TMappedLinkFile.SortPathIndexKeys(var Keys: TArray<UInt64>);
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J: Integer;
+    P, T: UInt64;
+  begin
+    I := L;
+    J := R;
+    P := Keys[(L + R) shr 1];
+    repeat
+      while Keys[I] < P do Inc(I);
+      while Keys[J] > P do Dec(J);
+      if I <= J then
+      begin
+        T := Keys[I];
+        Keys[I] := Keys[J];
+        Keys[J] := T;
+        Inc(I);
+        Dec(J);
+      end;
+    until I > J;
+    if L < J then QuickSort(L, J);
+    if I < R then QuickSort(I, R);
+  end;
+begin
+  if Length(Keys) > 1 then
+    QuickSort(0, High(Keys));
+end;
+
+procedure TMappedLinkFile.JoinWith(FilterFile: TMappedLinkFile);
+var
+  AdbKeys, FilterKeys: TArray<UInt64>;
+
+  i, j: Integer;
+  adbSig, filterSig: UInt64;
+
+  AList, FList: TList<PVirtualNode>;
+
+  bucket: TJoinBucket;
+  data: PAspRecFilter;
+begin
+  if FilterFile = nil then
+    Exit;
+
+  // РёР·С‡РёСЃС‚РІР°РјРµ СЃС‚Р°СЂРёС‚Рµ СЂРµР·СѓР»С‚Р°С‚Рё
+  if JoinResult = nil then
+    JoinResult := TList<TJoinBucket>.Create
+  else
+    JoinResult.Clear;
+
+  // РІР·РёРјР°РјРµ РєР»СЋС‡РѕРІРµС‚Рµ
+  AdbKeys := PathIndex.Keys.ToArray;
+  FilterKeys := FilterFile.PathIndex.Keys.ToArray;
+
+  // СЃРѕСЂС‚РёСЂР°РЅРµ Р·Р° merge-join
+  SortPathIndexKeys(AdbKeys);
+  SortPathIndexKeys(FilterKeys);
+
+  i := 0;
+  j := 0;
+
+  // MERGE JOIN
+  while (i < Length(AdbKeys)) and (j < Length(FilterKeys)) do
+  begin
+    adbSig := AdbKeys[i];
+    filterSig := FilterKeys[j];
+
+    if adbSig = filterSig then
+    begin
+      // РІР·РёРјР°РјРµ СЃРїРёСЃСЉРєР° СЃ ADB РІСЉР·Р»РёС‚Рµ
+      if not PathIndex.TryGetValue(adbSig, AList) then
+      begin
+        Inc(i); Inc(j);
+        Continue;
+      end;
+
+      // РІР·РёРјР°РјРµ СЃРїРёСЃСЉРєР° СЃ FILTER РІСЉР·Р»РёС‚Рµ (С‚СЂСЏР±РІР° РґР° Рµ С‚РѕС‡РЅРѕ 1)
+      if not FilterFile.PathIndex.TryGetValue(filterSig, FList) then
+      begin
+        Inc(i); Inc(j);
+        Continue;
+      end;
+
+      if FList.Count <> 1 then
+      begin
+        OutputDebugString(PChar(Format(
+          'WARNING: Filter bucket with SIG=%d has %d nodes! Expected 1.',
+          [filterSig, FList.Count])));
+      end;
+
+      FillChar(bucket, SizeOf(bucket), 0);
+
+      bucket.Sig := adbSig;
+      bucket.AdbList := AList;              // РІСЃРёС‡РєРё СЂРµР°Р»РЅРё РІСЉР·Р»Рё
+      bucket.FilterNode := FList[0];        // С‚РѕС‡РЅРѕ РµРґРёРЅ С„РёР»С‚СЉСЂРµРЅ РІСЉР·РµР»
+
+      JoinResult.Add(bucket);
+
+      // СЃР»РѕР¶Рё bucket index РІ С„РёР»С‚СЉСЂРЅРёСЏ РІСЉР·РµР»
+      data := PAspRecFilter(PByte(bucket.FilterNode) + lenNode);
+      data.index := JoinResult.Count - 1;
+
+      Inc(i);
+      //Inc(j);
+    end
+    else if adbSig < filterSig then
+      Inc(i)
+    else
+      Inc(j);
+  end;
+end;
+
+
+
 procedure TMappedLinkFile.AddNewNode(const vv: TVtrVid; dataPos: Cardinal; TargetNode: PVirtualNode; Mode: TVTNodeAttachMode;
    var TreeLink: PVirtualNode; var linkPos: cardinal; dum: Byte);
 var
@@ -4341,6 +5179,133 @@ begin
   FVTR.InternalConnectNode_cmd(TreeLink, TargetNode, FVTR, mode, FStreamCmdFile);
   pCardinalData^ := linkpos;
 end;
+
+
+
+procedure TMappedLinkFile.AddPathIndexNode(Node: PVirtualNode; Sig: UInt64);
+var
+  lst: TList<PVirtualNode>;
+begin
+  if not PathIndex.TryGetValue(Sig, lst) then
+  begin
+    lst := TList<PVirtualNode>.Create;
+    PathIndex.Add(Sig, lst);
+  end;
+
+  lst.Add(Node);
+end;
+
+procedure TMappedLinkFile.BuildPathIndex;
+var
+  linkPos: Cardinal;
+  node: PVirtualNode;
+  sig: UInt64;
+  lst: TList<PVirtualNode>;
+  pCardinalData: ^Cardinal;
+  FPosLinkData: Cardinal;
+  testData: PAspRec;
+begin
+  // РёР·С‡РёСЃС‚РІР°РјРµ РїСЂРµРґРёС€РЅРёС‚Рµ СЃРїРёСЃСЉС†Рё
+  for lst in PathIndex.Values do
+    lst.Free;
+  PathIndex.Clear;
+
+  linkPos := 100;
+
+  pCardinalData := pointer(PByte(self.buf));
+  FPosLinkData := pCardinalData^;
+  while linkpos < FPosLinkData do
+  begin
+    node := pointer(PByte(self.buf) + linkpos);
+    Inc(linkPos, LenData);
+    testData := pointer(PByte(node) + lenNode);
+    if testData.vid = vvHosp then
+    begin
+      testData.vid := vvHosp;
+    end;
+
+    if node = nil then Continue;
+
+    sig := ComputeNodePathSig(node);
+    AddPathIndexNode(node, sig);
+  end;
+end;
+
+function TMappedLinkFile.ComputeNodePathSig(Node: PVirtualNode): UInt64;
+var
+  cur: PVirtualNode;
+  asp: PAspRec;
+  h: UInt64;
+  vid: TVtrVid;
+begin
+  h := FNV_OFFSET;
+
+  cur := Node;
+
+  // РІСЉСЂРІРёРј РЅР°РіРѕСЂРµ, РґРѕ РєРѕСЂРµРЅР° РЅР° Р°СЃРїРµРєС‚СЃРєРѕС‚Рѕ РґСЉСЂРІРѕ
+  while (cur <> nil) and (cur <> FVTR.RootNode.FirstChild) do
+  begin
+    asp := PAspRec(PByte(cur) + lenNode);
+    vid := asp.vid;
+
+    // РІРєР»СЋС‡РІР°РјРµ СЃР°РјРѕ Р°РєРѕ РІРёРґР° РіРѕ РїРѕР·РІРѕР»Рё
+    if not(vid in IsFilterNode) then
+      h := (h xor UInt64(Ord(vid))) * FNV_PRIME;
+
+    cur := cur.Parent;
+  end;
+
+  Result := h;
+end;
+
+
+constructor TMappedLinkFile.Create(const AFileName: WideString; IsNew: Boolean;
+  AGuid: TGUID);
+var
+  data: PAspRecFilter;
+begin
+  inherited Create(AFileName, IsNew,  AGuid);
+  PathIndex := TDictionary<UInt64, TList<PVirtualNode>>.Create;
+  //PathIndex1 := TList<tPathIndex>.create;
+
+end;
+
+destructor TMappedLinkFile.Destroy;
+var
+  list: TList<PVirtualNode>;
+begin
+  for list in PathIndex.Values do
+    list.Free;
+  PathIndex.Free;
+  //PathIndex1.Free;
+  inherited;
+end;
+
+procedure TMappedLinkFile.InternalMenuItemClick(Sender: TObject);
+var
+  item: TMenuItem;
+  coll: TBaseCollection;
+begin
+  item := Sender as TMenuItem;
+  coll := TBaseCollection(item.Tag);
+
+  //Self.SelectedCollection := coll;
+//
+//  StartMagicSearch;
+//
+//  if Assigned(OnCollectionSelected) then
+//    OnCollectionSelected(coll);
+end;
+
+
+procedure TMappedLinkFile.InternalMenuPopup(Sender: TObject);
+begin
+  if FSearchPopupMenu = nil then Exit;
+  if FCurrentFilter = nil then Exit;
+
+  PopulateSearchPopup(FSearchPopupMenu);
+end;
+
 
 procedure TMappedLinkFile.MarkDeletedNode(var TreeLink: PVirtualNode);
 begin
@@ -4424,7 +5389,7 @@ begin
 
       node := pointer(PByte(self.Buf) + linkpos);
       Exclude(node.States, vsSelected);
-      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -4461,7 +5426,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(self.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -4481,7 +5446,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(self.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         //Exclude(node.States, vsInitialized);
         data := pointer(PByte(node) + lenNode);
         //if data.vid <> vvPatient then
@@ -4510,8 +5475,48 @@ begin
   //AspectsLinkPatPregFile.FStreamCmdFile := streamCmdFile;
 //  FDBHelper.AdbLink := AspectsLinkPatPregFile;
 //  FmxProfForm.AspLink := AspectsLinkPatPregFile;
-  //mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  //mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLink %d Р·Р° %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 end;
+
+
+
+procedure TMappedLinkFile.PopulateSearchPopup(Menu: TPopupMenu);
+var
+  key: UInt64;
+  bucket: TList<PVirtualNode>;
+  node: PVirtualNode;
+  asp: PAspRecFilter;
+  coll: TBaseCollection;
+  item: TMenuItem;
+begin
+  Menu.Items.Clear;
+
+  for key in PathIndex.Keys do
+  begin
+    bucket := PathIndex[key];
+    if (bucket = nil) or (bucket.Count = 0) then
+      Continue;
+
+    node := bucket[0];
+    if not(vsVisible in node.States) then
+      Continue;
+
+    asp := PAspRecFilter(PByte(node) + lenNode);
+    if asp.CollType = ctAspect then
+      Continue;
+
+    //coll := GetCollectionByType(asp.CollType); //zzzzzzzzzzzzzzzzzzzzzzzzzzz
+    if coll = nil then
+      Continue;
+
+    item := TMenuItem.Create(Menu);
+    //item.Caption := coll.NameForUI;  //zzzzzzzzzzzzzzzzzzzzzzzzzz
+    item.Tag := NativeInt(coll);
+    item.OnClick := InternalMenuItemClick; // РІСЉС‚СЂРµС€РµРЅ РјРµС‚РѕРґ
+    Menu.Items.Add(item);
+  end;
+end;
+
 
 { TFileCMDStream }
 
@@ -4613,7 +5618,7 @@ const
   MaxChunkSize: Longint = 8192;
 begin
   if (Socket.ReceiveLength = 2) and (ClientServerStream.Size = 0) then
-  begin  // това са някакви въпроси от сървъра. Да не е луд да праща малко иначе. Може да са 2 за завършване на ... затова има проверка на стрийма
+  begin  // С‚РѕРІР° СЃР° РЅСЏРєР°РєРІРё РІСЉРїСЂРѕСЃРё РѕС‚ СЃСЉСЂРІСЉСЂР°. Р”Р° РЅРµ Рµ Р»СѓРґ РґР° РїСЂР°С‰Р° РјР°Р»РєРѕ РёРЅР°С‡Рµ. РњРѕР¶Рµ РґР° СЃР° 2 Р·Р° Р·Р°РІСЉСЂС€РІР°РЅРµ РЅР° ... Р·Р°С‚РѕРІР° РёРјР° РїСЂРѕРІРµСЂРєР° РЅР° СЃС‚СЂРёР№РјР°
     Socket.ReceiveBuf(ServerResp, 2);
     case ServerResp of
       srWhoAreYou:

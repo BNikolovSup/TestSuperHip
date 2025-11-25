@@ -90,7 +90,7 @@ Certificates_CERT_ID
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; Certificates: TCertificatesItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; Certificates: TCertificatesItem; var AValue:String);
@@ -588,7 +588,7 @@ end;
 
 
 
-function TCertificatesColl.PropType(propIndex: Word): TAsectTypeKind;
+function TCertificatesColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TCertificatesItem.TPropertyIndex(propIndex) of

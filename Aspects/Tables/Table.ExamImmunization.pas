@@ -2,10 +2,10 @@ unit Table.ExamImmunization;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -21,60 +21,66 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
+TLogicalExamImmunization = (
+    Is_);
+TlogicalExamImmunizationSet = set of TLogicalExamImmunization;
+
 
 TExamImmunizationItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-ExamImmunization_BASE_ON
-, ExamImmunization_BOOSTER
-, ExamImmunization_CERTIFICATE_NAME
-, ExamImmunization_DATA
-, ExamImmunization_DOCTOR_NAME
-, ExamImmunization_DOCTOR_UIN
-, ExamImmunization_DOSE
-, ExamImmunization_DOSE_NUMBER
-, ExamImmunization_DOSE_QUANTITY
-, ExamImmunization_EXPIRATION_DATE
-, ExamImmunization_EXT_AUTHORITY
-, ExamImmunization_EXT_COUNTRY
-, ExamImmunization_EXT_LOT_NUMBER
-, ExamImmunization_EXT_OCCURRENCE
-, ExamImmunization_EXT_PREV_IMMUNIZATION
-, ExamImmunization_EXT_SERIAL_NUMBER
-, ExamImmunization_EXT_VACCINE_ATC
-, ExamImmunization_EXT_VACCINE_INN
-, ExamImmunization_EXT_VACCINE_NAME
-, ExamImmunization_ID
-, ExamImmunization_IMMUNIZATION_ID
-, ExamImmunization_IMMUNIZATION_STATUS
-, ExamImmunization_IS_SPECIAL_CASE
-, ExamImmunization_LOT_NUMBER
-, ExamImmunization_LRN
-, ExamImmunization_NEXT_DOSE_DATE
-, ExamImmunization_NOTE
-, ExamImmunization_NRN_IMMUNIZATION
-, ExamImmunization_NRN_PREV_IMMUNIZATION
-, ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE
-, ExamImmunization_PERSON_STATUS_CHANGE_REASON
-, ExamImmunization_PREGLED_ID
-, ExamImmunization_PRIMARY_SOURCE
-, ExamImmunization_QUALIFICATION
-, ExamImmunization_REASON_TO_CANCEL_IMMUNIZATION
-, ExamImmunization_RESULT
-, ExamImmunization_ROUTE
-, ExamImmunization_SERIAL_NUMBER
-, ExamImmunization_SERIES
-, ExamImmunization_SERIES_DOSES
-, ExamImmunization_SITE
-, ExamImmunization_SOCIAL_GROUP
-, ExamImmunization_SUBJECT_STATUS
-, ExamImmunization_UPDATED
-, ExamImmunization_UVCI
-, ExamImmunization_VACCINE_ID
-);
+       ExamImmunization_BASE_ON
+       , ExamImmunization_BOOSTER
+       , ExamImmunization_CERTIFICATE_NAME
+       , ExamImmunization_DATA
+       , ExamImmunization_DOCTOR_NAME
+       , ExamImmunization_DOCTOR_UIN
+       , ExamImmunization_DOSE
+       , ExamImmunization_DOSE_NUMBER
+       , ExamImmunization_DOSE_QUANTITY
+       , ExamImmunization_EXPIRATION_DATE
+       , ExamImmunization_EXT_AUTHORITY
+       , ExamImmunization_EXT_COUNTRY
+       , ExamImmunization_EXT_LOT_NUMBER
+       , ExamImmunization_EXT_OCCURRENCE
+       , ExamImmunization_EXT_PREV_IMMUNIZATION
+       , ExamImmunization_EXT_SERIAL_NUMBER
+       , ExamImmunization_EXT_VACCINE_ATC
+       , ExamImmunization_EXT_VACCINE_INN
+       , ExamImmunization_EXT_VACCINE_NAME
+       , ExamImmunization_ID
+       , ExamImmunization_IMMUNIZATION_ID
+       , ExamImmunization_IMMUNIZATION_STATUS
+       , ExamImmunization_IS_SPECIAL_CASE
+       , ExamImmunization_LOT_NUMBER
+       , ExamImmunization_LRN
+       , ExamImmunization_NEXT_DOSE_DATE
+       , ExamImmunization_NOTE
+       , ExamImmunization_NRN_IMMUNIZATION
+       , ExamImmunization_NRN_PREV_IMMUNIZATION
+       , ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE
+       , ExamImmunization_PERSON_STATUS_CHANGE_REASON
+       , ExamImmunization_PREGLED_ID
+       , ExamImmunization_PRIMARY_SOURCE
+       , ExamImmunization_QUALIFICATION
+       , ExamImmunization_REASON_TO_CANCEL_IMMUNIZATION
+       , ExamImmunization_RESULT
+       , ExamImmunization_ROUTE
+       , ExamImmunization_SERIAL_NUMBER
+       , ExamImmunization_SERIES
+       , ExamImmunization_SERIES_DOSES
+       , ExamImmunization_SITE
+       , ExamImmunization_SOCIAL_GROUP
+       , ExamImmunization_SUBJECT_STATUS
+       , ExamImmunization_UPDATED
+       , ExamImmunization_UVCI
+       , ExamImmunization_VACCINE_ID
+       , ExamImmunization_Logical
+       );
 	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecExamImmunization = ^TRecExamImmunization;
       TRecExamImmunization = record
         BASE_ON: AnsiString;
@@ -123,6 +129,7 @@ ExamImmunization_BASE_ON
         UPDATED: integer;
         UVCI: AnsiString;
         VACCINE_ID: integer;
+        Logical: TlogicalExamImmunizationSet;
         setProp: TSetProp;
       end;
 
@@ -138,8 +145,12 @@ ExamImmunization_BASE_ON
     destructor Destroy; override;
     procedure InsertExamImmunization;
     procedure UpdateExamImmunization;
-    procedure SaveExamImmunization(var dataPosition: Cardinal);
+    procedure SaveExamImmunization(var dataPosition: Cardinal)overload;
+	procedure SaveExamImmunization(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -147,17 +158,21 @@ ExamImmunization_BASE_ON
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TExamImmunizationItem;
     function GetItem(Index: Integer): TExamImmunizationItem;
     procedure SetItem(Index: Integer; const Value: TExamImmunizationItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	tempItem: TExamImmunizationItem;
-	ListForFDB: TList<TExamImmunizationItem>;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TExamImmunizationItem>;
     ListExamImmunizationSearch: TList<TExamImmunizationItem>;
 	PRecordSearch: ^TExamImmunizationItem.TRecExamImmunization;
     ArrPropSearch: TArray<TExamImmunizationItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TExamImmunizationItem.TPropertyIndex>;
+	VisibleColl: TExamImmunizationItem.TSetProp;
+	ArrayPropOrder: TArray<TExamImmunizationItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -167,7 +182,7 @@ ExamImmunization_BASE_ON
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; ExamImmunization: TExamImmunizationItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; ExamImmunization: TExamImmunizationItem; var AValue:String);
@@ -175,13 +190,21 @@ ExamImmunization_BASE_ON
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-	procedure DynControlEnter(Sender: TObject);
     procedure SortByIndexValue(propIndex: TExamImmunizationItem.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TExamImmunizationItem>);
@@ -190,11 +213,18 @@ ExamImmunization_BASE_ON
     procedure IndexValue(propIndex: TExamImmunizationItem.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TExamImmunizationItem.TPropertyIndex);
     property Items[Index: Integer]: TExamImmunizationItem read GetItem write SetItem;
-    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
-    //procedure OnSetTextSearchEDT(edt: fmx.EditDyn.TEditDyn);
-//    procedure OnSetTextSearchDTEDT(DtEdt: TDateEditDyn);
-
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+    procedure OnSetTextSearchLog(Log: TlogicalExamImmunizationSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -211,6 +241,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TExamImmunizationItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TExamImmunizationItem.GetCollType: TCollectionsType;
+begin
+  Result := ctExamImmunization;
+end;
+
+function TExamImmunizationItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TExamImmunizationItem.InsertExamImmunization;
@@ -296,6 +355,7 @@ begin
             ExamImmunization_UPDATED: SaveData(PRecord.UPDATED, PropPosition, metaPosition, dataPosition);
             ExamImmunization_UVCI: SaveData(PRecord.UVCI, PropPosition, metaPosition, dataPosition);
             ExamImmunization_VACCINE_ID: SaveData(PRecord.VACCINE_ID, PropPosition, metaPosition, dataPosition);
+            ExamImmunization_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -324,7 +384,7 @@ begin
     if Result = false then
       Exit;
     pidx := TExamImmunizationColl(coll).ArrPropSearchClc[i];
-	  ATempItem := TExamImmunizationColl(coll).ListForFDB.Items[0];
+	ATempItem := TExamImmunizationColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
@@ -374,9 +434,23 @@ begin
             ExamImmunization_UPDATED: Result := IsFinded(ATempItem.PRecord.UPDATED, buf, FPosDataADB, word(ExamImmunization_UPDATED), cot);
             ExamImmunization_UVCI: Result := IsFinded(ATempItem.PRecord.UVCI, buf, FPosDataADB, word(ExamImmunization_UVCI), cot);
             ExamImmunization_VACCINE_ID: Result := IsFinded(ATempItem.PRecord.VACCINE_ID, buf, FPosDataADB, word(ExamImmunization_VACCINE_ID), cot);
+            ExamImmunization_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(ExamImmunization_Logical), cot);
       end;
     end;
   end;
+end;
+
+procedure TExamImmunizationItem.SaveExamImmunization(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveExamImmunization(dataPosition);
 end;
 
 procedure TExamImmunizationItem.SaveExamImmunization(var dataPosition: Cardinal);
@@ -443,6 +517,7 @@ begin
             ExamImmunization_UPDATED: SaveData(PRecord.UPDATED, PropPosition, metaPosition, dataPosition);
             ExamImmunization_UVCI: SaveData(PRecord.UVCI, PropPosition, metaPosition, dataPosition);
             ExamImmunization_VACCINE_ID: SaveData(PRecord.VACCINE_ID, PropPosition, metaPosition, dataPosition);
+            ExamImmunization_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -554,26 +629,381 @@ begin
 
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
-  //ItemForSearch.PRecord.Logical := [];
-  Result := ListForFDB.Add(ItemForSearch);
+  ItemForSearch.PRecord.Logical := [];
+  Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TExamImmunizationColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TExamImmunizationItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TExamImmunizationColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvExamImmunizationRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TExamImmunizationColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TExamImmunizationItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (ExamImmunization_BASE_ON in tempItem.PRecord.setProp) and (tempItem.PRecord.BASE_ON <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_BASE_ON))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_BOOSTER in tempItem.PRecord.setProp) and (tempItem.PRecord.BOOSTER <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_BOOSTER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_CERTIFICATE_NAME in tempItem.PRecord.setProp) and (tempItem.PRecord.CERTIFICATE_NAME <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_CERTIFICATE_NAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(ExamImmunization_DATA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DOCTOR_NAME in tempItem.PRecord.setProp) and (tempItem.PRecord.DOCTOR_NAME <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_DOCTOR_NAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DOCTOR_UIN in tempItem.PRecord.setProp) and (tempItem.PRecord.DOCTOR_UIN <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_DOCTOR_UIN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DOSE in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSE <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_DOSE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DOSE_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSE_NUMBER <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_DOSE_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_DOSE_QUANTITY in tempItem.PRecord.setProp) and (tempItem.PRecord.DOSE_QUANTITY <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_DOSE_QUANTITY))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXPIRATION_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.EXPIRATION_DATE <> Self.getDateMap(tempItem.DataPos, word(ExamImmunization_EXPIRATION_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_AUTHORITY in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_AUTHORITY <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_AUTHORITY))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_COUNTRY in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_COUNTRY <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_COUNTRY))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_LOT_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_LOT_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_LOT_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_OCCURRENCE in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_OCCURRENCE <> Self.getDateMap(tempItem.DataPos, word(ExamImmunization_EXT_OCCURRENCE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_PREV_IMMUNIZATION in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_PREV_IMMUNIZATION <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_EXT_PREV_IMMUNIZATION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_SERIAL_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_SERIAL_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_SERIAL_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_VACCINE_ATC in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_VACCINE_ATC <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_VACCINE_ATC))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_VACCINE_INN in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_VACCINE_INN <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_VACCINE_INN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_EXT_VACCINE_NAME in tempItem.PRecord.setProp) and (tempItem.PRecord.EXT_VACCINE_NAME <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_EXT_VACCINE_NAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_IMMUNIZATION_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.IMMUNIZATION_ID <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_IMMUNIZATION_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_IMMUNIZATION_STATUS in tempItem.PRecord.setProp) and (tempItem.PRecord.IMMUNIZATION_STATUS <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_IMMUNIZATION_STATUS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_IS_SPECIAL_CASE in tempItem.PRecord.setProp) and (tempItem.PRecord.IS_SPECIAL_CASE <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_IS_SPECIAL_CASE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_LOT_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.LOT_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_LOT_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_LRN in tempItem.PRecord.setProp) and (tempItem.PRecord.LRN <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_LRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_NEXT_DOSE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.NEXT_DOSE_DATE <> Self.getDateMap(tempItem.DataPos, word(ExamImmunization_NEXT_DOSE_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_NOTE in tempItem.PRecord.setProp) and (tempItem.PRecord.NOTE <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_NOTE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_NRN_IMMUNIZATION in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN_IMMUNIZATION <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_NRN_IMMUNIZATION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_NRN_PREV_IMMUNIZATION in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN_PREV_IMMUNIZATION <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_NRN_PREV_IMMUNIZATION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.PERSON_STATUS_CHANGE_ON_DATE <> Self.getDateMap(tempItem.DataPos, word(ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_PERSON_STATUS_CHANGE_REASON in tempItem.PRecord.setProp) and (tempItem.PRecord.PERSON_STATUS_CHANGE_REASON <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_PERSON_STATUS_CHANGE_REASON))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_PREGLED_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.PREGLED_ID <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_PREGLED_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_PRIMARY_SOURCE in tempItem.PRecord.setProp) and (tempItem.PRecord.PRIMARY_SOURCE <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_PRIMARY_SOURCE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_QUALIFICATION in tempItem.PRecord.setProp) and (tempItem.PRecord.QUALIFICATION <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_QUALIFICATION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_REASON_TO_CANCEL_IMMUNIZATION in tempItem.PRecord.setProp) and (tempItem.PRecord.REASON_TO_CANCEL_IMMUNIZATION <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_REASON_TO_CANCEL_IMMUNIZATION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_RESULT in tempItem.PRecord.setProp) and (tempItem.PRecord.RESULT <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_RESULT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_ROUTE in tempItem.PRecord.setProp) and (tempItem.PRecord.ROUTE <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_ROUTE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SERIAL_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.SERIAL_NUMBER <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_SERIAL_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SERIES in tempItem.PRecord.setProp) and (tempItem.PRecord.SERIES <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_SERIES))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SERIES_DOSES in tempItem.PRecord.setProp) and (tempItem.PRecord.SERIES_DOSES <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_SERIES_DOSES))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SITE in tempItem.PRecord.setProp) and (tempItem.PRecord.SITE <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_SITE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SOCIAL_GROUP in tempItem.PRecord.setProp) and (tempItem.PRecord.SOCIAL_GROUP <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_SOCIAL_GROUP))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_SUBJECT_STATUS in tempItem.PRecord.setProp) and (tempItem.PRecord.SUBJECT_STATUS <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_SUBJECT_STATUS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_UPDATED in tempItem.PRecord.setProp) and (tempItem.PRecord.UPDATED <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_UPDATED))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_UVCI in tempItem.PRecord.setProp) and (tempItem.PRecord.UVCI <> Self.getAnsiStringMap(tempItem.DataPos, word(ExamImmunization_UVCI))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_VACCINE_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.VACCINE_ID <> Self.getIntMap(tempItem.DataPos, word(ExamImmunization_VACCINE_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (ExamImmunization_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(ExamImmunization_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
+
 constructor TExamImmunizationColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
   tempItem := TExamImmunizationItem.Create(nil);
   ListExamImmunizationSearch := TList<TExamImmunizationItem>.Create;
-  ListForFDB := TList<TExamImmunizationItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TExamImmunizationItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TExamImmunizationColl.destroy;
 begin
   FreeAndNil(ListExamImmunizationSearch);
-  FreeAndNil(ListForFDB);
+  FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -630,20 +1060,191 @@ begin
     ExamImmunization_UPDATED: Result := 'UPDATED';
     ExamImmunization_UVCI: Result := 'UVCI';
     ExamImmunization_VACCINE_ID: Result := 'VACCINE_ID';
+    ExamImmunization_Logical: Result := 'Logical';
   end;
 end;
 
-procedure TExamImmunizationColl.DynControlEnter(Sender: TObject);
+function TExamImmunizationColl.DisplayLogicalName(flagIndex: Integer): string;
 begin
-  self.FindedRes.DataPos := 0;
-  //self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
-  self.IndexValue(TExamImmunizationItem.TPropertyIndex(self.FindedRes.PropIndex));
+  case flagIndex of
+0: Result := 'Is_';
+  else
+    Result := '???';
+  end;
 end;
+
+
+procedure TExamImmunizationColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
+begin
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
+
 
 function TExamImmunizationColl.FieldCount: Integer; 
 begin
   inherited;
-  Result := 46;
+  Result := 47;
+end;
+
+function TExamImmunizationColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvExamImmunizationRoot then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TExamImmunizationColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TExamImmunizationColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TExamImmunizationColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TExamImmunizationColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -669,16 +1270,26 @@ end;
 
 procedure TExamImmunizationColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol: Integer;
+  RowSelect: Integer;
   prop: TExamImmunizationItem.TPropertyIndex;
 begin
   inherited;
-  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if (ListDataPos.count - 1) < ARow then exit;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
 
-  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
-  prop := TExamImmunizationItem.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, ARow, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TExamImmunizationColl.GetCellFromRecord(propIndex: word; ExamImmunization: TExamImmunizationItem; var AValue: String);
@@ -689,17 +1300,17 @@ begin
     ExamImmunization_BASE_ON: str := (ExamImmunization.PRecord.BASE_ON);
     ExamImmunization_BOOSTER: str := inttostr(ExamImmunization.PRecord.BOOSTER);
     ExamImmunization_CERTIFICATE_NAME: str := (ExamImmunization.PRecord.CERTIFICATE_NAME);
-    ExamImmunization_DATA: str := DateToStr(ExamImmunization.PRecord.DATA);
+    ExamImmunization_DATA: str := AspDateToStr(ExamImmunization.PRecord.DATA);
     ExamImmunization_DOCTOR_NAME: str := (ExamImmunization.PRecord.DOCTOR_NAME);
     ExamImmunization_DOCTOR_UIN: str := (ExamImmunization.PRecord.DOCTOR_UIN);
     ExamImmunization_DOSE: str := (ExamImmunization.PRecord.DOSE);
     ExamImmunization_DOSE_NUMBER: str := inttostr(ExamImmunization.PRecord.DOSE_NUMBER);
     ExamImmunization_DOSE_QUANTITY: str := inttostr(ExamImmunization.PRecord.DOSE_QUANTITY);
-    ExamImmunization_EXPIRATION_DATE: str := DateToStr(ExamImmunization.PRecord.EXPIRATION_DATE);
+    ExamImmunization_EXPIRATION_DATE: str := AspDateToStr(ExamImmunization.PRecord.EXPIRATION_DATE);
     ExamImmunization_EXT_AUTHORITY: str := (ExamImmunization.PRecord.EXT_AUTHORITY);
     ExamImmunization_EXT_COUNTRY: str := (ExamImmunization.PRecord.EXT_COUNTRY);
     ExamImmunization_EXT_LOT_NUMBER: str := (ExamImmunization.PRecord.EXT_LOT_NUMBER);
-    ExamImmunization_EXT_OCCURRENCE: str := DateToStr(ExamImmunization.PRecord.EXT_OCCURRENCE);
+    ExamImmunization_EXT_OCCURRENCE: str := AspDateToStr(ExamImmunization.PRecord.EXT_OCCURRENCE);
     ExamImmunization_EXT_PREV_IMMUNIZATION: str := inttostr(ExamImmunization.PRecord.EXT_PREV_IMMUNIZATION);
     ExamImmunization_EXT_SERIAL_NUMBER: str := (ExamImmunization.PRecord.EXT_SERIAL_NUMBER);
     ExamImmunization_EXT_VACCINE_ATC: str := (ExamImmunization.PRecord.EXT_VACCINE_ATC);
@@ -711,11 +1322,11 @@ begin
     ExamImmunization_IS_SPECIAL_CASE: str := inttostr(ExamImmunization.PRecord.IS_SPECIAL_CASE);
     ExamImmunization_LOT_NUMBER: str := (ExamImmunization.PRecord.LOT_NUMBER);
     ExamImmunization_LRN: str := (ExamImmunization.PRecord.LRN);
-    ExamImmunization_NEXT_DOSE_DATE: str := DateToStr(ExamImmunization.PRecord.NEXT_DOSE_DATE);
+    ExamImmunization_NEXT_DOSE_DATE: str := AspDateToStr(ExamImmunization.PRecord.NEXT_DOSE_DATE);
     ExamImmunization_NOTE: str := (ExamImmunization.PRecord.NOTE);
     ExamImmunization_NRN_IMMUNIZATION: str := (ExamImmunization.PRecord.NRN_IMMUNIZATION);
     ExamImmunization_NRN_PREV_IMMUNIZATION: str := (ExamImmunization.PRecord.NRN_PREV_IMMUNIZATION);
-    ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE: str := DateToStr(ExamImmunization.PRecord.PERSON_STATUS_CHANGE_ON_DATE);
+    ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE: str := AspDateToStr(ExamImmunization.PRecord.PERSON_STATUS_CHANGE_ON_DATE);
     ExamImmunization_PERSON_STATUS_CHANGE_REASON: str := (ExamImmunization.PRecord.PERSON_STATUS_CHANGE_REASON);
     ExamImmunization_PREGLED_ID: str := inttostr(ExamImmunization.PRecord.PREGLED_ID);
     ExamImmunization_PRIMARY_SOURCE: str := inttostr(ExamImmunization.PRecord.PRIMARY_SOURCE);
@@ -732,6 +1343,7 @@ begin
     ExamImmunization_UPDATED: str := inttostr(ExamImmunization.PRecord.UPDATED);
     ExamImmunization_UVCI: str := (ExamImmunization.PRecord.UVCI);
     ExamImmunization_VACCINE_ID: str := inttostr(ExamImmunization.PRecord.VACCINE_ID);
+    ExamImmunization_Logical: str := ExamImmunization.Logical08ToStr(TLogicalData08(ExamImmunization.PRecord.Logical));
   else
     begin
       str := '';
@@ -747,9 +1359,9 @@ var
   prop: TExamImmunizationItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFDB.Count = 0 then Exit;
+  if ListForFinder.Count = 0 then Exit;
 
-  AtempItem := ListForFDB[ARow];
+  AtempItem := ListForFinder[ARow];
   prop := TExamImmunizationItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -796,6 +1408,16 @@ begin
   end;
 end;
 
+function TExamImmunizationColl.GetCollType: TCollectionsType;
+begin
+  Result := ctExamImmunization;
+end;
+
+function TExamImmunizationColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctExamImmunizationDel;
+end;
+
 procedure TExamImmunizationColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   ExamImmunization: TExamImmunizationItem;
@@ -830,17 +1452,17 @@ begin
     ExamImmunization_BASE_ON: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_BOOSTER: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_CERTIFICATE_NAME: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    ExamImmunization_DATA: str :=  DateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_DATA: str :=  AspDateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_DOCTOR_NAME: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_DOCTOR_UIN: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_DOSE: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_DOSE_NUMBER: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_DOSE_QUANTITY: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
-    ExamImmunization_EXPIRATION_DATE: str :=  DateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_EXPIRATION_DATE: str :=  AspDateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_EXT_AUTHORITY: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_EXT_COUNTRY: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_EXT_LOT_NUMBER: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    ExamImmunization_EXT_OCCURRENCE: str :=  DateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_EXT_OCCURRENCE: str :=  AspDateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_EXT_PREV_IMMUNIZATION: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_EXT_SERIAL_NUMBER: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_EXT_VACCINE_ATC: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -852,11 +1474,11 @@ begin
     ExamImmunization_IS_SPECIAL_CASE: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_LOT_NUMBER: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_LRN: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    ExamImmunization_NEXT_DOSE_DATE: str :=  DateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_NEXT_DOSE_DATE: str :=  AspDateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_NOTE: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_NRN_IMMUNIZATION: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_NRN_PREV_IMMUNIZATION: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE: str :=  DateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE: str :=  AspDateToStr(ExamImmunization.getDateMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_PERSON_STATUS_CHANGE_REASON: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_PREGLED_ID: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_PRIMARY_SOURCE: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
@@ -873,6 +1495,7 @@ begin
     ExamImmunization_UPDATED: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
     ExamImmunization_UVCI: str :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     ExamImmunization_VACCINE_ID: str :=  inttostr(ExamImmunization.getIntMap(Self.Buf, Self.posData, propIndex));
+    ExamImmunization_Logical: str :=  ExamImmunization.Logical08ToStr(ExamImmunization.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -1181,6 +1804,12 @@ begin
 
 end;
 
+function TExamImmunizationColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TExamImmunizationItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TExamImmunizationColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TExamImmunizationItem;
@@ -1206,61 +1835,144 @@ begin
   end;
 end;
 
+{=== TEXT SEARCH HANDLER ===}
+procedure TExamImmunizationColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TExamImmunizationItem.TPropertyIndex(Field) of
+ExamImmunization_BASE_ON: ListForFinder[0].PRecord.BASE_ON := AText;
+    ExamImmunization_CERTIFICATE_NAME: ListForFinder[0].PRecord.CERTIFICATE_NAME := AText;
+    ExamImmunization_DOCTOR_NAME: ListForFinder[0].PRecord.DOCTOR_NAME := AText;
+    ExamImmunization_DOCTOR_UIN: ListForFinder[0].PRecord.DOCTOR_UIN := AText;
+    ExamImmunization_DOSE: ListForFinder[0].PRecord.DOSE := AText;
+    ExamImmunization_EXT_AUTHORITY: ListForFinder[0].PRecord.EXT_AUTHORITY := AText;
+    ExamImmunization_EXT_COUNTRY: ListForFinder[0].PRecord.EXT_COUNTRY := AText;
+    ExamImmunization_EXT_LOT_NUMBER: ListForFinder[0].PRecord.EXT_LOT_NUMBER := AText;
+    ExamImmunization_EXT_SERIAL_NUMBER: ListForFinder[0].PRecord.EXT_SERIAL_NUMBER := AText;
+    ExamImmunization_EXT_VACCINE_ATC: ListForFinder[0].PRecord.EXT_VACCINE_ATC := AText;
+    ExamImmunization_EXT_VACCINE_INN: ListForFinder[0].PRecord.EXT_VACCINE_INN := AText;
+    ExamImmunization_EXT_VACCINE_NAME: ListForFinder[0].PRecord.EXT_VACCINE_NAME := AText;
+    ExamImmunization_LOT_NUMBER: ListForFinder[0].PRecord.LOT_NUMBER := AText;
+    ExamImmunization_LRN: ListForFinder[0].PRecord.LRN := AText;
+    ExamImmunization_NOTE: ListForFinder[0].PRecord.NOTE := AText;
+    ExamImmunization_NRN_IMMUNIZATION: ListForFinder[0].PRecord.NRN_IMMUNIZATION := AText;
+    ExamImmunization_NRN_PREV_IMMUNIZATION: ListForFinder[0].PRecord.NRN_PREV_IMMUNIZATION := AText;
+    ExamImmunization_PERSON_STATUS_CHANGE_REASON: ListForFinder[0].PRecord.PERSON_STATUS_CHANGE_REASON := AText;
+    ExamImmunization_QUALIFICATION: ListForFinder[0].PRecord.QUALIFICATION := AText;
+    ExamImmunization_REASON_TO_CANCEL_IMMUNIZATION: ListForFinder[0].PRecord.REASON_TO_CANCEL_IMMUNIZATION := AText;
+    ExamImmunization_RESULT: ListForFinder[0].PRecord.RESULT := AText;
+    ExamImmunization_ROUTE: ListForFinder[0].PRecord.ROUTE := AText;
+    ExamImmunization_SERIAL_NUMBER: ListForFinder[0].PRecord.SERIAL_NUMBER := AText;
+    ExamImmunization_SERIES: ListForFinder[0].PRecord.SERIES := AText;
+    ExamImmunization_SITE: ListForFinder[0].PRecord.SITE := AText;
+    ExamImmunization_UVCI: ListForFinder[0].PRecord.UVCI := AText;
+  end;
+end;
 
 
-//procedure TExamImmunizationColl.OnSetTextSearchDTEDT(DtEdt: TDateEditDyn);
-//begin
-//  if dtEdt.Date = 0 then
-//  begin
-//    Exclude(ListForFDB[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(dtEdt.Field));
-//  end
-//  else
-//  begin
-//    include(ListForFDB[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(dtEdt.Field));
-//  end;
-//  Self.PRecordSearch.setProp := ListForFDB[0].PRecord.setProp;
-//  case TExamImmunizationItem.TPropertyIndex(dtEdt.Field) of
-//    //ExamImmunization_BIRTH_DATE: ListForFDB[0].PRecord.BIRTH_DATE  := dtEdt.Date;
-//  end;
-//end;
-//
-//procedure TExamImmunizationColl.OnSetTextSearchEDT(edt: fmx.EditDyn.TEditDyn);
-//begin
-//  if edt.Text = '' then
-//  begin
-//    Exclude(ListForFDB[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(edt.Field));
-//  end
-//  else
-//  begin
-//    include(ListForFDB[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(edt.Field));
-//    //ListForFDB[0].ArrCondition[edt.Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
-//  end;
-//  Self.PRecordSearch.setProp := ListForFDB[0].PRecord.setProp;
-//  if cotSens in edt.Condition then
-//  begin
-//    case TExamImmunizationItem.TPropertyIndex(edt.Field) of
-//      ExamImmunization_EGN: ListForFDB[0].PRecord.EGN  := edt.Text;
-//      ExamImmunization_FNAME: ListForFDB[0].PRecord.FNAME  := edt.Text;
-//      ExamImmunization_SNAME: ListForFDB[0].PRecord.SNAME  := edt.Text;
-//      ExamImmunization_ID: ListForFDB[0].PRecord.ID  := StrToInt(edt.Text);
-//      //ExamImmunization_BIRTH_DATE: ListForFDB[0].PRecord.BIRTH_DATE  := StrToInt(edt.Text);
-//    end;
-//  end
-//  else
-//  begin
-//    case TExamImmunizationItem.TPropertyIndex(edt.Field) of
-//      ExamImmunization_EGN: ListForFDB[0].PRecord.EGN  := AnsiUpperCase(edt.Text);
-//      ExamImmunization_FNAME: ListForFDB[0].PRecord.FNAME  := AnsiUpperCase(edt.Text);
-//      ExamImmunization_SNAME: ListForFDB[0].PRecord.SNAME  := AnsiUpperCase(edt.Text);
-//      ExamImmunization_ID: ListForFDB[0].PRecord.ID  := StrToInt(edt.Text);
-//      //ExamImmunization_BIRTH_DATE: ListForFDB[0].PRecord.BIRTH_DATE  := StrToInt(edt.Text);
-//    end;
-//  end;
-//end;
+{=== DATE SEARCH HANDLER ===}
+procedure TExamImmunizationColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TExamImmunizationItem.TPropertyIndex(Field) of
+ExamImmunization_DATA: ListForFinder[0].PRecord.DATA := Value;
+    ExamImmunization_EXPIRATION_DATE: ListForFinder[0].PRecord.EXPIRATION_DATE := Value;
+    ExamImmunization_EXT_OCCURRENCE: ListForFinder[0].PRecord.EXT_OCCURRENCE := Value;
+    ExamImmunization_NEXT_DOSE_DATE: ListForFinder[0].PRecord.NEXT_DOSE_DATE := Value;
+    ExamImmunization_PERSON_STATUS_CHANGE_ON_DATE: ListForFinder[0].PRecord.PERSON_STATUS_CHANGE_ON_DATE := Value;
+  end;
+end;
 
 
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TExamImmunizationColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TExamImmunizationItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-function TExamImmunizationColl.PropType(propIndex: Word): TAsectTypeKind;
+  case TExamImmunizationItem.TPropertyIndex(Field) of
+ExamImmunization_BOOSTER: ListForFinder[0].PRecord.BOOSTER := Value;
+    ExamImmunization_DOSE_NUMBER: ListForFinder[0].PRecord.DOSE_NUMBER := Value;
+    ExamImmunization_DOSE_QUANTITY: ListForFinder[0].PRecord.DOSE_QUANTITY := Value;
+    ExamImmunization_EXT_PREV_IMMUNIZATION: ListForFinder[0].PRecord.EXT_PREV_IMMUNIZATION := Value;
+    ExamImmunization_ID: ListForFinder[0].PRecord.ID := Value;
+    ExamImmunization_IMMUNIZATION_ID: ListForFinder[0].PRecord.IMMUNIZATION_ID := Value;
+    ExamImmunization_IMMUNIZATION_STATUS: ListForFinder[0].PRecord.IMMUNIZATION_STATUS := Value;
+    ExamImmunization_IS_SPECIAL_CASE: ListForFinder[0].PRecord.IS_SPECIAL_CASE := Value;
+    ExamImmunization_PREGLED_ID: ListForFinder[0].PRecord.PREGLED_ID := Value;
+    ExamImmunization_PRIMARY_SOURCE: ListForFinder[0].PRecord.PRIMARY_SOURCE := Value;
+    ExamImmunization_SERIES_DOSES: ListForFinder[0].PRecord.SERIES_DOSES := Value;
+    ExamImmunization_SOCIAL_GROUP: ListForFinder[0].PRecord.SOCIAL_GROUP := Value;
+    ExamImmunization_SUBJECT_STATUS: ListForFinder[0].PRecord.SUBJECT_STATUS := Value;
+    ExamImmunization_UPDATED: ListForFinder[0].PRecord.UPDATED := Value;
+    ExamImmunization_VACCINE_ID: ListForFinder[0].PRecord.VACCINE_ID := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TExamImmunizationColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TExamImmunizationItem.TPropertyIndex(Field) of
+    ExamImmunization_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalExamImmunization(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalExamImmunization(logIndex))   
+    end;
+  end;
+end;
+
+
+procedure TExamImmunizationColl.OnSetTextSearchLog(Log: TlogicalExamImmunizationSet);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
+end;
+
+procedure TExamImmunizationColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
+
+function TExamImmunizationColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TExamImmunizationItem.TPropertyIndex(propIndex) of
@@ -1310,9 +2022,15 @@ begin
     ExamImmunization_UPDATED: Result := actinteger;
     ExamImmunization_UVCI: Result := actAnsiString;
     ExamImmunization_VACCINE_ID: Result := actinteger;
+    ExamImmunization_Logical: Result := actLogical;
   else
     Result := actNone;
   end
+end;
+
+function TExamImmunizationColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure TExamImmunizationColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1323,7 +2041,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   ExamImmunization := Items[ARow];
   if not Assigned(ExamImmunization.PRecord) then
   begin
@@ -1333,7 +2051,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TExamImmunizationItem.TPropertyIndex(ACol) of
       ExamImmunization_BASE_ON: isOld :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     ExamImmunization_BOOSTER: isOld :=  ExamImmunization.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
@@ -1442,6 +2159,7 @@ begin
     ExamImmunization_UPDATED: ExamImmunization.PRecord.UPDATED := StrToInt(AValue);
     ExamImmunization_UVCI: ExamImmunization.PRecord.UVCI := AValue;
     ExamImmunization_VACCINE_ID: ExamImmunization.PRecord.VACCINE_ID := StrToInt(AValue);
+    ExamImmunization_Logical: ExamImmunization.PRecord.Logical := tlogicalExamImmunizationSet(ExamImmunization.StrToLogical08(AValue));
   end;
 end;
 
@@ -1451,7 +2169,7 @@ var
   ExamImmunization: TExamImmunizationItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   ExamImmunization := Items[ARow];
   if not Assigned(ExamImmunization.PRecord) then
   begin
@@ -1461,7 +2179,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TExamImmunizationItem.TPropertyIndex(ACol) of
       ExamImmunization_BASE_ON: isOld :=  ExamImmunization.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     ExamImmunization_BOOSTER: isOld :=  ExamImmunization.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
@@ -1570,6 +2287,7 @@ begin
     ExamImmunization_UPDATED: ExamImmunization.PRecord.UPDATED := StrToInt(AFieldText);
     ExamImmunization_UVCI: ExamImmunization.PRecord.UVCI := AFieldText;
     ExamImmunization_VACCINE_ID: ExamImmunization.PRecord.VACCINE_ID := StrToInt(AFieldText);
+    ExamImmunization_Logical: ExamImmunization.PRecord.Logical := tlogicalExamImmunizationSet(ExamImmunization.StrToLogical08(AFieldText));
   end;
 end;
 
@@ -1910,7 +2628,7 @@ var
   i: word;
 
 begin
-  ListForFDB := LST;
+  ListForFinder := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -1974,8 +2692,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

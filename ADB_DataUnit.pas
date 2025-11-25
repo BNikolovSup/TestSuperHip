@@ -11,10 +11,10 @@ uses
   Table.NZIS_QUESTIONNAIRE_ANSWER, Table.NZIS_ANSWER_VALUE, Table.CL139,
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
   Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto, Table.BLANKA_MED_NAPR,
-  Table.INC_NAPR,
+  Table.INC_NAPR,Table.NzisToken, Table.CL050, Table.NomenNzis, Table.NzisReqResp,
   ProfGraph, RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
-  , SBxCertificateStorage;
+  , SBxCertificateStorage, Nzis.Nomen.baseCL000, DM;
 
   type
 
@@ -29,6 +29,17 @@ uses
 
 
   TListNodes = TList<PVirtualNode>;
+
+  TNomenNzisRec = class
+  public
+    Cl000Coll: TCL000EntryCollection;
+    xmlStream: TMemoryStream;
+    AspColl: TBaseCollection;
+    nomenNzis: TNomenNzisItem;
+    constructor Create;
+    destructor Destroy;  override;
+  end;
+
   TAnsws = class
     AnswNode: PVirtualNode;
     answValues: TListNodes;
@@ -111,6 +122,17 @@ uses
   TADBDataModule = class(TObject)
   private
     FPatEgn: string;
+    FAdbMain: TMappedFile;
+    FAdbNomenNzis: TMappedFile;
+    FAdbNomenNZOK: TMappedFile;
+    FAdbNomenHip: TMappedFile;
+    FAdbMainLink: TMappedLinkFile;
+    FOnClearColl: TNotifyEvent;
+    FFDM: TDUNzis;
+    procedure SetAdbMain(const Value: TMappedFile);
+    procedure SetAdbNomenHip(const Value: TMappedFile);
+    procedure SetAdbNomenNzis(const Value: TMappedFile);
+    procedure SetAdbNomenNZOK(const Value: TMappedFile);
     //FPatNodes: TPatNodes;
   protected
     Stopwatch: TStopwatch;
@@ -123,45 +145,90 @@ uses
     procedure FillXmlStreamDiag(XmlStream: TXmlStream; PregNodes: TPregledNodes);
     procedure FillXmlStreamMedicalHistory(XmlStream: TXmlStream; PregNodes: TPregledNodes);
     procedure FillXmlStreamObjectiveCondition(XmlStream: TXmlStream; PregNodes: TPregledNodes; logPat: TlogicalPatientNewSet);
+    procedure InitColl;
+    procedure ReInitColl;
+    procedure FreeColl;
+    procedure ClearColl;
+
+  public
+
+
+
+
+    CollPregled: TRealPregledNewColl;
+    CollPractica: TPracticaColl;
+    CollDoctor: TRealDoctorColl;
+    CollUnfav: TRealUnfavColl;
+    CollPatient: TRealPatientNewColl;
+    CollPatPis: TRealPatientNZOKColl;
+    CollDiag: TRealDiagnosisColl;
+    CollMDN: TRealMDNColl;
+    CollEbl: TRealExam_boln_listColl;
+    CollExamAnal: TRealExamAnalysisColl;
+    CollExamImun: TRealExamImmunizationColl;
+    CollProceduresPreg: TRealProceduresColl;
+    CollCardProf: TRealKARTA_PROFILAKTIKA2017Coll;
+    CollMedNapr: TRealBLANKA_MED_NAPRColl;
+    CollMedNapr3A: TRealBLANKA_MED_NAPR_3AColl;
+    CollMedNaprHosp: TRealHOSPITALIZATIONColl;
+    CollMedNaprLkk: TRealEXAM_LKKColl;
+    CollIncMdn: TRealINC_MDNColl;
+    CollIncMN: TRealINC_NAPRColl;
+    CollOtherDoctor: TRealOtherDoctorColl;
+    CollNZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEColl;
+    CollNZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEColl;
+    CollNZIS_QUESTIONNAIRE_ANSWER: TRealNZIS_QUESTIONNAIRE_ANSWERColl;
+    CollNZIS_ANSWER_VALUE: TRealNZIS_ANSWER_VALUEColl;
+    CollNZIS_DIAGNOSTIC_REPORT: TRealNZIS_DIAGNOSTIC_REPORTColl;
+    CollNzis_RESULT_DIAGNOSTIC_REPORT: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
+    CollNzisToken: TNzisTokenColl;
+    CollCertificates: TCertificatesColl;
+    CollMkb: TRealMkbColl;
+    CollAnalsNew: TAnalsNewColl;
+
+    CL006Coll: TRealCL006Coll;
+    CL022Coll: TRealCL022Coll;
+    CL024Coll: TRealCL024Coll;
+    CL037Coll: TRealCL037Coll;
+    CL038Coll: TRealCL038Coll;
+    CL050Coll: TCL050Coll;
+    CL088Coll: TRealCL088Coll;
+    CL132Coll: TRealCL132Coll;
+    CL134Coll: TRealCL134Coll;
+    CL139Coll: TRealCL139Coll;
+    CL142Coll: TRealCL142Coll;
+    CL144Coll: TRealCl144Coll;
+    PR001Coll: TRealPR001Coll;
+    NomenNzisColl: TNomenNzisColl;
+    ProceduresNomenColl: TRealProceduresColl;
+
+    AmsgColl: TNzisReqRespColl;
+    ACollPatGR: TRealPatientNewColl;
+    AcollpatFromDoctor: TRealPatientNewColl;
+    ACollPatFDB: TRealPatientNewColl;
+    ACollNovozapisani: TRealPatientNewColl;
+
+
+
+    lstPatGraph: TList<TRealPatientNewItem>;
+    ListPregledForFDB: TList<TPregledNewItem>;
+    ListDoctorForFDB: TList<TDoctorItem>;
+    ListPregledLinkForInsert: TList<PVirtualNode>;
+    CollPregledVtor: TList<TRealPregledNewItem>;
+    CollPregledPrim: TList<TRealPregledNewItem>;
+    LstPatForExportDB: TList<TRealPatientNewItem>;
+    LstPregForExportDB: TList<TRealPregledNewItem>;
+    ListPatientForFDB: TList<TPatientNewItem>;
+    ListNomenNzisNames: TList<TNomenNzisRec>;
 
 
 
 
   public
     listLog: TStringList;
-    CollPrac: TPracticaColl;
-    CollPatient: TRealPatientNewColl;
-    CollAddres: TRealAddresColl;
-    CollDoc: TRealDoctorColl;
-    CollCert: TCertificatesColl;
-    CollPregled: TRealPregledNewColl;
-    CollMDN: TRealMDNColl;
-    CollMedNapr: TRealBLANKA_MED_NAPRColl;
-    CollMedNaprHosp: TRealHOSPITALIZATIONColl;
-    CollMedNaprLkk: TRealEXAM_LKKColl;
-    CollExamAnal: TRealExamAnalysisColl;
-    CollExamImun: TRealExamImmunizationColl;
-    CollEbl: TRealExam_boln_listColl;
-    CollDiag: TRealDiagnosisColl;
-    CollMkb: TMkbColl;
-    CollAnalsNew: TAnalsNewColl;
-    CollIncMN: TRealINC_NAPRColl;
-    CollOtherDoctor: TRealOtherDoctorColl;
+    lstColl: TList<TBaseCollection>;
 
-    CollNZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEColl;
-    CollNZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEColl;
-    CollNZIS_QUESTIONNAIRE_ANSWER: TRealNZIS_QUESTIONNAIRE_ANSWERColl;
-    CollNZIS_ANSWER_VALUEColl: TRealNZIS_ANSWER_VALUEColl;
-
-    collNZIS_DIAGNOSTIC_REPORT:  TRealNZIS_DIAGNOSTIC_REPORTColl;
-    collNZIS_RESULT_DIAGNOSTIC_REPORT:  TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
-
-    CollCL022: TRealCL022Coll;
-    collCl139: TRealCL139Coll;
-    collCl132: TRealCL132Coll;
-    collCl144: TRealCL144Coll;
-
-    AdbHip: TMappedFile;
+    //AdbMain: TMappedFile;
     AdbLink: TMappedLinkFile;
     NasMesto: TRealNasMestoAspects;
     cmdFile: TFileStream;
@@ -202,15 +269,29 @@ uses
     procedure FormatingXML(ls: TStringList);overload;
     procedure InitPerformer(XmlStream: TXmlStream; PregNodes: TPregledNodes; var performer: TRealDoctorItem);
 
-    property patEgn: string read FPatEgn;
-    //property PatNodes: TPatNodes read FPatNodes;
+    procedure OpenDB(FFDbName: string);
+    procedure initDB(FFDbName: string);
+    procedure FindADB(AGUID: TList<TGUID>);
 
+    property patEgn: string read FPatEgn;
+    property AdbMain: TMappedFile read FAdbMain write SetAdbMain; // адб на главните колекции
+    property AdbNomenNzis: TMappedFile read FAdbNomenNzis write SetAdbNomenNzis;// нзис-ка номенклатура
+    property AdbNomenHip: TMappedFile read FAdbNomenHip write SetAdbNomenHip; // Наша номенклатура
+    property AdbNomenNZOK: TMappedFile read FAdbNomenNZOK write SetAdbNomenNZOK; // НЗОК номенклатура
+
+    property AdbMainLink: TMappedLinkFile read FAdbMainLink write FAdbMainLink;
+    property FDM: TDUNzis read FFDM write FFDM;
+
+    property OnClearColl: TNotifyEvent read FOnClearColl write FOnClearColl;
 
 
   end;
 
 
 implementation
+
+uses
+  system.IOUtils;
 
 function LibraryPath: String;
 var  lpBuffer:   Array [0..MAX_PATH] of wideChar;
@@ -597,9 +678,13 @@ begin
   //FPatNodes.evnts := TList<PVirtualNode>.Create;
 //  FPatNodes.ExamAnals := TList<PVirtualNode>.Create;
   //XMLStream := TXmlStream.Create('', TEncoding.UTF8);
+
+  lstColl := TList<TBaseCollection>.Create;
   LstNodeSended := TList<TNodesSendedToNzis>.Create;
   listLog := TStringList.Create;
   ListPrimDocuments := TList<TBaseCollection>.create;
+
+  InitColl;
 end;
 
 destructor TADBDataModule.Destroy;
@@ -608,6 +693,7 @@ begin
   FreeAndNil(LstNodeSended);
   FreeAndNil(listLog);
   FreeAndNil(ListPrimDocuments);
+  FreeColl;
   inherited;
 end;
 
@@ -724,8 +810,8 @@ var
   NodeSended: TNodesSendedToNzis;
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   pregNode := ImmunNode.Parent;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
@@ -830,7 +916,7 @@ begin
 //  else
     AddTagToStream(XmlStream, 'nhis:role', Format('value="%d"',[1]), false);
 //  FillXmlStreamLKK;
-  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPrac.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
+  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPractica.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
 
   AddTagToStream(XmlStream, '/nhis:performer', '');
 
@@ -861,8 +947,8 @@ var
   NzisPidType: TNZISidentifierType;
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   dataPat := pointer(PByte(PatNode) + lenNode);
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
@@ -923,8 +1009,8 @@ var
 
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   PregNodes := GetPregNodes(PregNode);// обикаля дървото
   patNodes := GetPatNodes(pregnodes.patNode);
 
@@ -1038,11 +1124,11 @@ begin
         begin
           valNode := answ.answValues[k];
           dataAnswVal := pointer(PByte(valNode) + lenNode);
-          Cl028Code := CollNZIS_ANSWER_VALUEColl.getWordMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_CL028));
+          Cl028Code := CollNZIS_ANSWER_VALUE.getWordMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_CL028));
           case Cl028Code of
             1:
             begin
-              valueQuant := Double.ToString(CollNZIS_ANSWER_VALUEColl.getDoubleMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
+              valueQuant := Double.ToString(CollNZIS_ANSWER_VALUE.getDoubleMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
               //AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
               if answ.AnswNode.Dummy in[1, 2, 3]  then
               begin
@@ -1057,10 +1143,10 @@ begin
             end;
             2:
             begin
-              valNomen := CollNZIS_ANSWER_VALUEColl.getAnsiStringMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
-              NomenPos139 := CollNZIS_ANSWER_VALUEColl.getCardMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-              cl138Code := collCl139.getAnsiStringMap(NomenPos139, word(CL139_cl138));
-              cl139Key := collCl139.getAnsiStringMap(NomenPos139, word(CL139_Key));
+              valNomen := CollNZIS_ANSWER_VALUE.getAnsiStringMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
+              NomenPos139 := CollNZIS_ANSWER_VALUE.getCardMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+              cl138Code := CL139Coll.getAnsiStringMap(NomenPos139, word(CL139_cl138));
+              cl139Key := CL139Coll.getAnsiStringMap(NomenPos139, word(CL139_Key));
               if answ.AnswNode.Dummy in[1, 2, 3]  then
               begin
                 AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.Dummy]), False, answ.AnswNode);
@@ -1078,7 +1164,7 @@ begin
             end;
             3:
             begin
-              valueStr := CollNZIS_ANSWER_VALUEColl.getAnsiStringMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
+              valueStr := CollNZIS_ANSWER_VALUE.getAnsiStringMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
               if answ.AnswNode.Dummy in [1, 2, 3]then
               begin
                 AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.Dummy]), False, answ.AnswNode);
@@ -1092,7 +1178,7 @@ begin
             end;
             4:
             begin
-              valDate := CollNZIS_ANSWER_VALUEColl.getDateMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
+              valDate := CollNZIS_ANSWER_VALUE.getDateMap(dataAnswVal.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
               valueDate := FormatDateTime('YYYY-MM-DD', valDate);
               //AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[answ.AnswNode.parent.Dummy]), False, answ.AnswNode);
               if answ.AnswNode.Dummy in[1, 2, 3]  then
@@ -1172,10 +1258,10 @@ begin
         AddTagToStream(XmlStream, 'nhis:result', '');
         dataResDiagRep := pointer(PByte(resDiagRepNode) + lenNode);
         NomenPos144 := collNZIS_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-        category012 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_cl012));
+        category012 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_cl012));
         //resDiagRep139 :=  collNZIS_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE));
-        resDiagRep144 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_Key));
-        valueUnit := collCl144.getAnsiStringMap(NomenPos144, word(CL144_units));
+        resDiagRep144 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_Key));
+        valueUnit := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_units));
         AddTagToStream(XmlStream, 'nhis:code',  Format('value="%s"',[resDiagRep144]));
         Cl028Code := collNZIS_RESULT_DIAGNOSTIC_REPORT.getWordMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE));
         AddTagToStream(XmlStream, 'nhis:valueScale',  Format('value="%d"',[Cl028Code]));
@@ -1189,7 +1275,7 @@ begin
           2:
           begin
             resDiagRep139 :=  collNZIS_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataResVal.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
-            resDiagRep144 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_cl138));
+            resDiagRep144 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_cl138));
             AddTagToStream(XmlStream, 'nhis:valueNomenclature',  Format('value="%s"',[resDiagRep144]));
             AddTagToStream(XmlStream, 'nhis:valueCode',  Format('value="%s"',[resDiagRep139]));
           end;
@@ -1207,9 +1293,9 @@ begin
         AddTagToStream(XmlStream, 'nhis:result', '');
         dataResDiagRep := pointer(PByte(resDiagRepNode) + lenNode);
         NomenPos144 := collNZIS_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-        category012 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_cl012));
-        resDiagRep144 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_Key));
-        valueUnit := collCl144.getAnsiStringMap(NomenPos144, word(CL144_units));
+        category012 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_cl012));
+        resDiagRep144 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_Key));
+        valueUnit := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_units));
         AddTagToStream(XmlStream, 'nhis:code',  Format('value="%s"',[resDiagRep144]));
         Cl028Code := collNZIS_RESULT_DIAGNOSTIC_REPORT.getWordMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE));
         AddTagToStream(XmlStream, 'nhis:valueScale',  Format('value="%d"',[Cl028Code]));
@@ -1223,7 +1309,7 @@ begin
           2:
           begin
             resDiagRep139 :=  collNZIS_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
-            resDiagRep144 := collCl144.getAnsiStringMap(NomenPos144, word(CL144_cl138));
+            resDiagRep144 := CL144Coll.getAnsiStringMap(NomenPos144, word(CL144_cl138));
             AddTagToStream(XmlStream, 'nhis:valueNomenclature',  Format('value="%s"',[resDiagRep144]));
             AddTagToStream(XmlStream, 'nhis:valueCode',  Format('value="%s"',[resDiagRep139]));
           end;
@@ -1300,8 +1386,8 @@ var
   pin: string;
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
@@ -1397,7 +1483,7 @@ begin
 //  else
     AddTagToStream(XmlStream, 'nhis:role', Format('value="%d"',[1]), false);
 //  FillXmlStreamLKK;
-  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPrac.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
+  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPractica.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
 
   AddTagToStream(XmlStream, '/nhis:performer', '');
 
@@ -1475,8 +1561,8 @@ var
 begin
   XmlStream.Clear;
   XmlStream.CurrentLine := 2; // първите два реда са от създаването
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
@@ -1584,8 +1670,8 @@ var
   NodeSended: TNodesSendedToNzis;
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
@@ -1675,8 +1761,8 @@ var
   logPat: TlogicalPatientNewSet;
 begin
   XmlStream.Clear;
-  buf := AdbHip.Buf;
-  posData := AdbHip.FPosData;
+  buf := AdbMain.Buf;
+  posData := AdbMain.FPosData;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
@@ -1796,7 +1882,7 @@ begin
 //  else
     AddTagToStream(XmlStream, 'nhis:role', Format('value="%d"',[1]), false);
 //  FillXmlStreamLKK;
-  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPrac.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
+  AddTagToStream(XmlStream, 'nhis:practiceNumber', Format('value="%s"',[CollPractica.Items[0].getAnsiStringMap(buf, posData, word(Practica_NOMER_LZ))]), false);
 
   AddTagToStream(XmlStream, '/nhis:performer', '');
 
@@ -1810,6 +1896,68 @@ begin
 //  IndexInListSended := LstNodeSended.Add(NodeSended);
 
 
+end;
+
+procedure TADBDataModule.FindADB(AGUID: TList<TGUID>);
+var
+  S: string;
+
+  i, j: Integer;
+  collType: TCollectionsType;
+  aspVersion: Word;
+  b: Byte;
+  pByteData: ^Byte;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  pg: PGUID;
+
+  AInt64: Int64;
+  dirAdb: string;
+  str1, str2: string;
+begin
+  if ParamStr(2) <> '' then
+    dirAdb := ParamStr(2)
+  else
+    dirAdb := '.\';
+  for S in TDirectory.GetFiles(dirAdb, '*.adb', TSearchOption.soAllDirectories) do
+  begin
+    Stopwatch := TStopwatch.StartNew;
+    AdbMain := TMappedFile.Create(S, false, TGUID.Empty);
+    Elapsed := Stopwatch.Elapsed;
+   // mmotest.Lines.Add( S + ' Martin ' + FloatToStr(Elapsed.TotalMilliseconds));
+    if AdbMain.Buf <> nil then
+    begin
+      pCardinalData := pointer(PByte(AdbMain.Buf));
+      FPosMetaData := pCardinalData^;
+      pCardinalData := pointer(PByte(AdbMain.Buf) + 4);
+      FLenMetaData := pCardinalData^;
+      pCardinalData := pointer(PByte(AdbMain.Buf) + 8);
+      FPosData := pCardinalData^;
+      pCardinalData := pointer(PByte(AdbMain.Buf) + 12);
+      FLenData := pCardinalData^;
+      Pg := pointer(PByte(AdbMain.Buf) + 16 );
+      for j := 0 to AGUID.Count - 1 do
+      begin
+        str1 := AGUID[j].ToString;
+        str2 := pg^.ToString;
+        if AGUID[j] <> TGUID.Empty then
+        begin
+          if AGUID[j] = pg^ then
+          begin
+
+            //Panel1.Caption := 'dd';
+            Exit;
+          end;
+        end;
+      end;
+
+      aspPos := FPosMetaData;
+      AdbMain.Free;
+      AdbMain := nil;  //zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    end;
+  end;
 end;
 
 procedure TADBDataModule.FormatingXML(stream: TStream);
@@ -1879,9 +2027,9 @@ begin
         Result.docNode := run;
         if data.Index < 0 then // не съм го търсил досега в колекцията
         begin
-          for i := 0 to CollDoc.Count - 1 do
+          for i := 0 to CollDoctor.Count - 1 do
           begin
-            doc := CollDoc.Items[i];
+            doc := CollDoctor.Items[i];
             if doc.DataPos = data.DataPos then
             begin
               data.index := i;
@@ -1955,9 +2103,9 @@ begin
         Result.deputNode := run.FirstChild;
         if data.Index < 0 then // не съм го търсил досега в колекцията
         begin
-          for i := 0 to CollDoc.Count - 1 do
+          for i := 0 to CollDoctor.Count - 1 do
           begin
-            doc := CollDoc.Items[i];
+            doc := CollDoctor.Items[i];
             if doc.DataPos = data.DataPos then
             begin
               data.index := i;
@@ -2051,9 +2199,9 @@ begin
         Result.docNode := run;
         if data.Index < 0 then // не съм го търсил досега в колекцията
         begin
-          for i := 0 to CollDoc.Count - 1 do
+          for i := 0 to CollDoctor.Count - 1 do
           begin
-            doc := CollDoc.Items[i];
+            doc := CollDoctor.Items[i];
             if doc.DataPos = data.DataPos then
             begin
               data.index := i;
@@ -2192,7 +2340,6 @@ begin
 end;
 
 
-
 procedure TADBDataModule.InitPerformer(XmlStream: TXmlStream; PregNodes: TPregledNodes; var performer: TRealDoctorItem);
 var
   dataPerf: PAspRec;
@@ -2208,7 +2355,7 @@ begin
   begin
     dataPerf := pointer(PByte(PregNodes.docNode) + lenNode);
   end;
-  performer := CollDoc.FindDoctorFromDataPos(dataPerf.DataPos);
+  performer := CollDoctor.FindDoctorFromDataPos(dataPerf.DataPos);
   if true then
   begin
     if performer.SlotTokenSerial = '' then
@@ -2223,11 +2370,11 @@ begin
         performer.CertStorage := TsbxCertificateStorage.Create(nil);
         performer.CertStorage.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
         slotNom := performer.SlotNom;
-        for i := 0 to CollCert.Count - 1 do
+        for i := 0 to CollCertificates.Count - 1 do
         begin
-          if Trim(CollCert.getAnsiStringMap(CollCert.Items[i].DataPos, Word(Certificates_SLOT_ID))) = performer.SlotTokenSerial then
+          if Trim(CollCertificates.getAnsiStringMap(CollCertificates.Items[i].DataPos, Word(Certificates_SLOT_ID))) = performer.SlotTokenSerial then
           begin
-            pin := Trim(CollCert.getAnsiStringMap(CollCert.Items[i].DataPos, Word(Certificates_Pin)));
+            pin := Trim(CollCertificates.getAnsiStringMap(CollCertificates.Items[i].DataPos, Word(Certificates_Pin)));
             performer.CertStorage.Open (Format('pkcs11://user:%s@/C:\Windows\System32\eTPKCS11.dll?slot=%d&readonly=0', [pin, slotNom]));
             Break;
           end;
@@ -2240,6 +2387,36 @@ begin
   begin
     XmlStream.performer := performer;
   end;
+end;
+
+procedure TADBDataModule.OpenDB(FFDbName: string);
+var
+  nodeLink: PVirtualNode;
+begin
+  if Assigned(AdbMain) then
+    begin
+      UnmapViewOfFile(AdbMain.Buf);
+    end;
+    if FAdbMainLink <> nil then
+    begin
+      FAdbMainLink.FVTR.BeginUpdate;
+      nodeLink := pointer(PByte(FAdbMainLink.Buf) + 100);
+      FAdbMainLink.FVTR.InternalDisconnectNode(nodeLink, false);
+      UnmapViewOfFile(FAdbMainLink.Buf);
+      FreeAndNil(FAdbMainLink);
+      FAdbMainLink.FVTR.Selected[FAdbMainLink.FVTR.GetFirstSelected()] := False;
+      FAdbMainLink.FVTR.CanClear := True;
+      FAdbMainLink.FVTR.AddChild(nil, nil);
+
+      FAdbMainLink.FVTR.CanClear := false;
+      FAdbMainLink.FVTR.Repaint;
+      FAdbMainLink.FVTR.endUpdate;
+    end;
+
+    ClearColl;
+    if Assigned(FOnClearColl) then
+      FOnClearColl(self);
+    initDB(FFDbName);
 end;
 
 procedure TADBDataModule.ReadXmlL010(streamL010: TStream; ls: TStrings);
@@ -2477,6 +2654,397 @@ begin
     Exit;
   end;
 end;
+
+{ Lifecycle methods for collections in TADBDataModule }
+
+procedure TADBDataModule.InitColl;
+begin
+  // Create list container
+  if lstColl = nil then
+    lstColl := TList<TBaseCollection>.Create
+  else
+    lstColl.Clear;
+  lstColl.Count := Ord(High(TCollectionsType)) + 1;
+
+  // Create all collections (instances) — do NOT assign Buf/posData here
+  CollPregled := TRealPregledNewColl.Create(TRealPregledNewItem);
+  lstColl[Ord(CollPregled.GetCollType)] := CollPregled;
+
+  CollPractica := TPracticaColl.Create(TPracticaItem);
+  lstColl[Ord(CollPractica.GetCollType)] := CollPractica;
+
+  CollDoctor := TRealDoctorColl.Create(TRealDoctorItem);
+  lstColl[Ord(CollDoctor.GetCollType)] := CollDoctor;
+
+  CollOtherDoctor := TRealOtherDoctorColl.Create(TRealOtherDoctorItem);
+  lstColl[Ord(CollOtherDoctor.GetCollType)] := CollOtherDoctor;
+
+  CollUnfav := TRealUnfavColl.Create(TRealUnfavItem);
+  lstColl[Ord(CollUnfav.GetCollType)] := CollUnfav;
+
+  CollPatient := TRealPatientNewColl.Create(TRealPatientNewItem);
+  lstColl[Ord(CollPatient.GetCollType)] := CollPatient;
+
+  CollPatPis := TRealPatientNZOKColl.Create(TRealPatientNZOKItem);
+  lstColl[Ord(CollPatPis.GetCollType)] := CollPatPis;
+
+  CollDiag := TRealDiagnosisColl.Create(TRealDiagnosisItem);
+  lstColl[Ord(CollDiag.GetCollType)] := CollDiag;
+
+  CollMDN := TRealMDNColl.Create(TRealMDNItem);
+  lstColl[Ord(CollMDN.GetCollType)] := CollMDN;
+
+  CollEbl := TRealExam_boln_listColl.Create(TRealExam_boln_listItem);
+  lstColl[Ord(CollEbl.GetCollType)] := CollEbl;
+
+  CollExamAnal := TRealExamAnalysisColl.Create(TRealExamAnalysisItem);
+  lstColl[Ord(CollExamAnal.GetCollType)] := CollExamAnal;
+
+  CollExamImun := TRealExamImmunizationColl.Create(TRealExamImmunizationItem);
+  lstColl[Ord(CollExamImun.GetCollType)] := CollExamImun;
+
+  CollProceduresPreg := TRealProceduresColl.Create(TRealProceduresItem);
+  lstColl[Ord(CollProceduresPreg.GetCollType)] := CollProceduresPreg;
+
+  CollCardProf := TRealKARTA_PROFILAKTIKA2017Coll.Create(TRealKARTA_PROFILAKTIKA2017Item);
+  lstColl[Ord(CollCardProf.GetCollType)] := CollCardProf;
+
+  CollMedNapr := TRealBLANKA_MED_NAPRColl.Create(TRealBLANKA_MED_NAPRItem);
+  lstColl[Ord(CollMedNapr.GetCollType)] := CollMedNapr;
+
+  CollMedNapr3A := TRealBLANKA_MED_NAPR_3AColl.Create(TRealBLANKA_MED_NAPR_3AItem);
+  lstColl[Ord(CollMedNapr3A.GetCollType)] := CollMedNapr3A;
+
+  CollMedNaprHosp := TRealHOSPITALIZATIONColl.Create(TRealHOSPITALIZATIONItem);
+  lstColl[Ord(CollMedNaprHosp.GetCollType)] := CollMedNaprHosp;
+
+  CollMedNaprLkk := TRealEXAM_LKKColl.Create(TRealEXAM_LKKItem);
+  lstColl[Ord(CollMedNaprLkk.GetCollType)] := CollMedNaprLkk;
+
+  CollIncMdn := TRealINC_MDNColl.Create(TRealINC_MDNItem);
+  lstColl[Ord(CollIncMdn.GetCollType)] := CollIncMdn;
+
+  CollIncMN := TRealINC_NAPRColl.Create(TRealINC_NAPRItem);
+  lstColl[Ord(CollIncMN.GetCollType)] := CollIncMN;
+
+  CollMkb := TRealMkbColl.Create(TRealMkbItem);
+  lstColl[Ord(CollMkb.GetCollType)] := CollMkb;
+
+
+  CollNZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEColl.Create(TRealNZIS_PLANNED_TYPEItem);
+  //lstColl[Ord(CollNZIS_PLANNED_TYPE.GetCollType)] := CollNZIS_PLANNED_TYPE;
+
+  CollNZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEColl.Create(TRealNZIS_QUESTIONNAIRE_RESPONSEItem);
+  //lstColl[Ord(CollNZIS_QUESTIONNAIRE_RESPONSE.GetCollType)] := CollNZIS_QUESTIONNAIRE_RESPONSE;
+
+  CollNZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERColl.Create(TRealNZIS_QUESTIONNAIRE_ANSWERItem);
+  //lstColl[Ord(CollNZIS_QUESTIONNAIRE_ANSWER.GetCollType)] := CollNZIS_QUESTIONNAIRE_ANSWER;
+
+  CollNZIS_ANSWER_VALUE := TRealNZIS_ANSWER_VALUEColl.Create(TRealNZIS_ANSWER_VALUEItem);
+  //lstColl[Ord(CollNZIS_ANSWER_VALUE.GetCollType)] := CollNZIS_ANSWER_VALUE;
+
+  CollNZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_DIAGNOSTIC_REPORTItem);
+  //lstColl.Add(CollNZIS_DIAGNOSTIC_REPORT);
+
+  CollNzis_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem);
+  //lstColl.Add(CollNzis_RESULT_DIAGNOSTIC_REPORT);
+
+  CollNzisToken := TNzisTokenColl.Create(TNzisTokenItem);
+  //lstColl.Add(CollNzisToken);
+
+  CollCertificates := TCertificatesColl.Create(TCertificatesItem);
+  //lstColl.Add(CollCertificates);
+
+
+
+  CollAnalsNew := TAnalsNewColl.Create(TAnalsNewItem);
+  //lstColl.Add(CollAnalsNew);
+
+  CL006Coll := TRealCL006Coll.Create(TRealCl006Item);
+  CL022Coll := TRealCL022Coll.Create(TRealCl022Item);
+  CL024Coll := TRealCL024Coll.Create(TRealCl024Item);
+  CL037Coll := TRealCL037Coll.Create(TRealCl037Item);
+  CL038Coll := TRealCL038Coll.Create(TRealCl038Item);
+  CL050Coll := TCL050Coll.Create(TCl050Item);
+  CL088Coll := TRealCL088Coll.Create(TRealCl088Item);
+  CL132Coll := TRealCL132Coll.Create(TRealCl132Item);
+  CL134Coll := TRealCL134Coll.Create(TRealCl134Item);
+  CL139Coll := TRealCL139Coll.Create(TRealCl139Item);
+  CL142Coll := TRealCL142Coll.Create(TRealCl142Item);
+  lstColl[Ord(CL142Coll.GetCollType)] := CL142Coll;
+  CL144Coll := TRealCl144Coll.Create(TRealCl144Item);
+  PR001Coll := TRealPR001Coll.Create(TRealPR001Item);
+  NomenNzisColl := TNomenNzisColl.Create(TNomenNzisItem);
+  ProceduresNomenColl:= TRealProceduresColl.Create(TRealCl006Item);
+
+  // ... добави тук другите колекции, ако имаш още полета в DM ...
+
+
+
+
+
+  // Ensure internal lists are initialized inside each collection (if needed)
+  // e.g. CollX.ListDataPos := TList<PVirtualNode>.Create; etc. (normally constructor does that)
+  lstPatGraph := TList<TRealPatientNewItem>.create;
+  ListPregledForFDB := TList<TPregledNewItem>.create;
+  ListDoctorForFDB := TList<TDoctorItem>.create;
+  ListPregledLinkForInsert := TList<PVirtualNode>.create;
+  CollPregledVtor := TList<TRealPregledNewItem>.create;
+  CollPregledPrim := TList<TRealPregledNewItem>.create;
+  LstPatForExportDB := TList<TRealPatientNewItem>.create;
+  LstPregForExportDB := TList<TRealPregledNewItem>.create;
+  ListPatientForFDB := TList<TPatientNewItem>.create;
+  ListNomenNzisNames := TList<TNomenNzisRec>.create;
+end;
+
+procedure TADBDataModule.initDB(FFDbName: string);
+begin
+  Stopwatch := TStopwatch.StartNew;
+  //mmoTest.Lines.BeginUpdate;
+  if FFDM = nil then
+  begin
+    FFDM := TDUNzis.Create(nil);
+  end;
+  //mmoTest.Lines.Add('FDbName =' + FDbName);
+  if FFDbName = '' then
+    exit;
+  FFDM.InitDb(FFDbName);
+  if (FFDM.FGuidDB.Count > 0) then
+  begin
+    FindADB(FFDM.FGuidDB);
+  end;
+  Elapsed := Stopwatch.Elapsed;
+  //mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
+  if AdbMain = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
+  begin
+    //mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
+    //RolPnlDoktorOPL.Enabled := False;
+    //RolPnlDoktorOPL.Repaint;
+  end
+  else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
+  begin
+    //mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
+    //if AspectsNomFile = nil then
+//      OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
+    //OpenADB(Adb_DM.AdbMain);
+//    OpenCmd(Adb_DM.AdbMain);
+//    FindLNK(Adb_DM.AdbMain.GUID);
+//    if AspectsLinkPatPregFile <> nil then
+//      OpenLinkPatPreg(AspectsLinkPatPregFile);
+//    StartHistoryThread(FDbName);
+//    StartCertThread;
+//    if chkAspectDistr.Checked then
+//    begin
+//      StartAspectPerformerThread;
+//    end;
+
+  end;
+  //mmoTest.Lines.EndUpdate;
+end;
+
+procedure TADBDataModule.ReInitColl;
+var
+  coll: TBaseCollection;
+begin
+  // Rebind buffers and posData according to which ADB file holds the collection.
+  // Adapt mapping if you move collections between ADBs.
+  for coll in lstColl do
+  begin
+    if coll = nil then Continue;
+
+    case coll.GetCollType of
+      // these are stored in AdbMain:
+      // (list the collection types that live in AdbMain)
+      ctPregledNew, ctPractica, ctDoctor, ctUnfav, ctPatientNew,
+      ctPatientNZOK, ctDiagnosis, ctMDN, ctExam_boln_list,
+      ctExamAnalysis, ctExamImmunization, ctProcedures,
+      ctKARTA_PROFILAKTIKA2017, ctBLANKA_MED_NAPR, ctBLANKA_MED_NAPR_3A,
+      ctHOSPITALIZATION, ctEXAM_LKK, ctINC_MDN, ctINC_NAPR,
+      ctNZIS_PLANNED_TYPE, ctNZIS_QUESTIONNAIRE_RESPONSE,
+      ctNZIS_QUESTIONNAIRE_ANSWER, ctNZIS_ANSWER_VALUE,
+      ctNZIS_DIAGNOSTIC_REPORT, ctNZIS_RESULT_DIAGNOSTIC_REPORT,
+      ctNzisToken, ctCertificates, ctMkb, ctAnalsNew:
+      begin
+        if Assigned(AdbMain) then
+        begin
+          coll.Buf := AdbMain.Buf;
+          coll.posData := AdbMain.FPosData;
+        end
+        else
+        begin
+          coll.Buf := nil;
+          coll.posData := 0;
+        end;
+      end;
+
+      // collections that live in AdbNomenNzis (example list)
+      // replace with real ct values for NZIS nomenclature collections
+      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038,
+      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139,
+      ctCL142, ctCL144, ctPR001, ctNomenNzis:
+      begin
+        if Assigned(AdbNomenNzis) then
+        begin
+          coll.Buf := AdbNomenNzis.Buf;
+          coll.posData := AdbNomenNzis.FPosData;
+        end
+        else
+        begin
+          coll.Buf := nil;
+          coll.posData := 0;
+        end;
+      end;
+
+      // (If you have other ADB containers, add more case branches:)
+      // e.g. AdbNomenHip, AdbNomenNZOK ...
+    else
+      begin
+        // Default: no ADB assigned
+        coll.Buf := nil;
+        coll.posData := 0;
+      end;
+    end;
+  end;
+end;
+
+procedure TADBDataModule.ClearColl;
+var
+  coll: TBaseCollection;
+begin
+  // Stop any background processing first (search threads etc.) before calling ClearColl
+  // ThreadSafe: ensure threads are paused/stopped elsewhere.
+
+  for coll in lstColl do
+  begin
+    if not Assigned(coll) then Continue;
+
+    // wipe runtime contents (important)
+    try
+      coll.Clear; // remove in-memory items/records
+    except
+      // ignore individual failures during clear to avoid partial state
+    end;
+
+    // clear auxiliary lists if exist
+    if Assigned(coll.ListDataPos) then coll.ListDataPos.Clear;
+    if Assigned(coll.ListNodes) then coll.ListNodes.Clear;
+    //if Assigned(coll.ListForFinder) then coll.ListForFinder.Clear;
+
+    // reset binding to ADB
+    coll.Buf := nil;
+    coll.posData := 0;
+  end;
+  lstPatGraph.Clear;
+end;
+
+procedure TADBDataModule.FreeColl;
+var
+  i: Integer;
+  nomen: TNomenNzisRec;
+begin
+  // Free each collection instance
+  if lstColl <> nil then
+  begin
+    for i := lstColl.Count - 1 downto 0 do
+    begin
+      //if Assigned(lstColl[i]) then
+        //FreeAndNil(lstColl[i]);
+    end;
+    lstColl.Clear;
+    FreeAndNil(lstColl);
+  end;
+
+
+  CollPregled := nil;
+  CollPractica := nil;
+  CollDoctor := nil;
+  CollOtherDoctor := nil;
+  CollUnfav := nil;
+  CollPatient := nil;
+  CollPatPis := nil;
+  CollDiag := nil;
+  CollMDN := nil;
+  CollEbl := nil;
+  CollExamAnal := nil;
+  CollExamImun := nil;
+  CollProceduresPreg := nil;
+  CollCardProf := nil;
+  CollMedNapr := nil;
+  CollMedNapr3A := nil;
+  CollMedNaprHosp := nil;
+  CollMedNaprLkk := nil;
+  CollIncMdn := nil;
+  CollIncMN := nil;
+  CollNZIS_PLANNED_TYPE := nil;
+  CollNZIS_QUESTIONNAIRE_RESPONSE := nil;
+  CollNZIS_QUESTIONNAIRE_ANSWER := nil;
+  CollNZIS_ANSWER_VALUE := nil;
+  CollNZIS_DIAGNOSTIC_REPORT := nil;
+  CollNzis_RESULT_DIAGNOSTIC_REPORT := nil;
+  CollNzisToken := nil;
+  CollCertificates := nil;
+  CollMkb := nil;
+  CollAnalsNew := nil;
+
+  FreeandNil(CL006Coll);
+  FreeandNil(CL022Coll);
+  FreeandNil(CL024Coll);
+  FreeandNil(CL037Coll);
+  FreeandNil(CL038Coll);
+  FreeandNil(CL050Coll);
+  FreeandNil(CL088Coll);
+  FreeandNil(CL132Coll);
+  FreeandNil(CL134Coll);
+  FreeandNil(CL139Coll);
+  FreeandNil(CL142Coll);
+  FreeandNil(CL144Coll);
+  FreeandNil(PR001Coll);
+
+  FreeAndNil(lstPatGraph);
+  FreeAndNil(ListPregledForFDB);
+  FreeAndNil(ListDoctorForFDB);
+  FreeAndNil(ListPregledLinkForInsert);
+  FreeAndNil(CollPregledVtor);
+  FreeAndNil(CollPregledPrim);
+  FreeAndNil(LstPatForExportDB);
+  FreeAndNil(LstPregForExportDB);
+  FreeAndNil(ListPatientForFDB);
+  for i := 0 to ListNomenNzisNames.Count - 1 do
+  begin
+    nomen := ListNomenNzisNames[i];
+    FreeAndNil(nomen);
+  end;
+  FreeAndNil(ListNomenNzisNames);
+end;
+
+procedure TADBDataModule.SetAdbMain(const Value: TMappedFile);
+begin
+  // setter for AdbMain property: store value and re-bind buffers
+  FAdbMain := Value;
+  ReInitColl;
+  // Optionally: if ADB is loaded, build indexes
+  //if Assigned(FAdbMain) and (FAdbMain is TMappedLinkFile) then
+//    TMappedLinkFile(FAdbMain).BuildPathIndex;
+end;
+
+procedure TADBDataModule.SetAdbNomenHip(const Value: TMappedFile);
+begin
+  FAdbNomenHip := Value;
+end;
+
+procedure TADBDataModule.SetAdbNomenNzis(const Value: TMappedFile);
+begin
+  FAdbNomenNzis := Value;
+  ReInitColl;
+end;
+
+procedure TADBDataModule.SetAdbNomenNZOK(const Value: TMappedFile);
+begin
+  FAdbNomenNZOK := Value;
+end;
+
+
+
 
 { TPregledNodes }
 
@@ -2820,6 +3388,22 @@ end;
 function TNodesSendedToNzis.SetNode(linkPos: cardinal): PVirtualNode;
 begin
   Result := pointer(PByte(AdbLink.Buf) + linkPos);
+end;
+
+{ TNomenNzisRec }
+
+constructor TNomenNzisRec.Create;
+begin
+  inherited Create;
+  Cl000Coll := TCL000EntryCollection.Create(nil);
+  xmlStream := TMemoryStream.Create;
+end;
+
+destructor TNomenNzisRec.Destroy;
+begin
+  FreeAndNil(Cl000Coll);
+  FreeAndNil(xmlStream);
+  inherited;
 end;
 
 end.

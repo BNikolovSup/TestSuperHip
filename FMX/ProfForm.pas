@@ -1,5 +1,5 @@
 unit ProfForm;
-//tpatnodes
+//answerval
 
 interface
 uses
@@ -926,8 +926,6 @@ type
     FCl132Coll: TCL132Coll;
     FIsVtrPregled: Boolean;
     FAspLink: TMappedLinkFile;
-    FAnswValuesColl: TRealNZIS_ANSWER_VALUEColl;
-    FResDiagRepColl: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
     ListVacantPregIndex: TList<Integer>;
     FIssetings: Boolean;
     FCl144Coll: TCL144Coll;
@@ -1073,26 +1071,15 @@ type
   property VtrPregLink: TVirtualStringTreeAspect read FVtrPregLink write FVtrPregLink;
   property Adb_dm: TADBDataModule read FAdb_dm write SetAdb_dm;
   property profGR: TProfGraph read FprofGR write FprofGR;
-  property CL006Coll: TRealCL006Coll read FCL006Coll write FCL006Coll;
-  property Cl132Coll: TCL132Coll read FCl132Coll write FCl132Coll;
-  property Cl139Coll: TRealCL139Coll read FCl139Coll write FCl139Coll;
-  property Cl134Coll: TCL134Coll read FCl134Coll write FCl134Coll;
-  property Cl142Coll: TCL142Coll read FCl142Coll write FCl142Coll;
-  property Cl144Coll: TCL144Coll read FCl144Coll write FCl144Coll;
-  property Cl088Coll: TCL088Coll read FCl088Coll write FCl088Coll;
-  property Pr001Coll: TPR001Coll read FPr001Coll write FPr001Coll;
-  property PatientColl: TRealPatientNewColl read FPatientColl write SetPatientColl;
-  property DoctorColl: TRealDoctorColl read FDoctorColl write FDoctorColl;
-  property PregledColl: TRealPregledNewColl read FPregledColl write SetPregledColl;
-  property MdnColl: TRealMDNColl read FMdnColl write FMdnColl;
-  property ExamAnalColl: TRealExamAnalysisColl read FExamAnalColl write FExamAnalColl;
-  property AnswValuesColl: TRealNZIS_ANSWER_VALUEColl read FAnswValuesColl write FAnswValuesColl;
-  property ResDiagRepColl: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl read FResDiagRepColl write FResDiagRepColl;
-  property PlanedTypeColl: TRealNZIS_PLANNED_TYPEColl read FPlanedTypeColl write FPlanedTypeColl;
-  property DiagColl: TRealDiagnosisColl read FDiagColl write FDiagColl;
-  property MKBColl: TMkbColl read FMkbColl write FMkbColl;
-  property IncNaprColl: TRealINC_NAPRColl read FIncNaprColl write FIncNaprColl;
-  property CollOtherDoctor: TRealOtherDoctorColl read FCollOtherDoctor write FCollOtherDoctor;
+  //property CL006Coll: TRealCL006Coll read FCL006Coll write FCL006Coll;
+//  property Cl132Coll: TCL132Coll read FCl132Coll write FCl132Coll;
+//  property Cl139Coll: TRealCL139Coll read FCl139Coll write FCl139Coll;
+//  property Cl134Coll: TCL134Coll read FCl134Coll write FCl134Coll;
+//  property Cl142Coll: TCL142Coll read FCl142Coll write FCl142Coll;
+//  property Cl144Coll: TCL144Coll read FCl144Coll write FCl144Coll;
+//  property Cl088Coll: TCL088Coll read FCl088Coll write FCl088Coll;
+//  property Pr001Coll: TPR001Coll read FPr001Coll write FPr001Coll;
+
   property NasMesto: TRealNasMestoAspects read FNasMesto write FNasMesto;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;
   property MaxRightLytHeight: Single read FMaxRightLytHeight write FMaxRightLytHeight;
@@ -1136,6 +1123,7 @@ type
   HANDGRAB: TCursor = 6;
 
 //var
+  //PatientColl
   //frmProfFormFMX: TfrmProfFormFMX;
 
 implementation
@@ -1305,9 +1293,9 @@ begin
       case dataRunNode.vid of
         vvNZIS_ANSWER_VALUE:
         begin
-          nomenPos := AnswValuesColl.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
-                 CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+          nomenPos := Adb_DM.CollNZIS_ANSWER_VALUE.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+          TempComboLabel.txt.Text := Adb_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
+                 Adb_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
           TempComboLYT.Margins.Left := 25;
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right - 25;
           TempComboLabel.rctSourceAnsw.Visible := True;
@@ -1315,9 +1303,9 @@ begin
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
-          nomenPos := ResDiagRepColl.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
-                 CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
+          nomenPos := Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+          TempComboLabel.txt.Text := Adb_DM.CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
+                 Adb_DM.CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right;
           TempComboLYT.Margins.Left := 5;
           TempComboLabel.rctSourceAnsw.Visible := false;
@@ -1383,18 +1371,18 @@ begin
       case dataRunNode.vid of
         vvNZIS_ANSWER_VALUE:
         begin
-          nomenPos := AnswValuesColl.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
-          TempComboLabel.txt.Text := CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
-                 CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
+          nomenPos := Adb_DM.CollNZIS_ANSWER_VALUE.getCardMap(dataRunNode.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+          TempComboLabel.txt.Text := Adb_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Key)) + '|' +
+                 Adb_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right - 25;
           TempComboLYT.Margins.Left := 25;
           MarkSourceAnsw(TempComboLabel.SourceAnsw, TempComboLabel.rctSourceAnsw);
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT, vvNZIS_DIAGNOSTIC_REPORT:
         begin
-          nomenPos := ResDiagRepColl.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
-          TempComboLabel.txt.Text := CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
-                 CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
+          nomenPos := Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataRunNode.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+          TempComboLabel.txt.Text := Adb_DM.CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Key)) + '|' +
+                 Adb_DM.CL144Coll.getAnsiStringMap(nomenPos, word(CL144_Description));
           TempComboLYT.Width := flwlyt.Width - flwlyt.Padding.Left - flwlyt.Padding.Right;
           TempComboLYT.Margins.Left := 5;
         end;
@@ -1800,7 +1788,7 @@ procedure TfrmProfFormFMX.AddDiagInPregled(mkb: string);
 var
   diag: TRealDiagnosisItem;
 begin
-  diag := TRealDiagnosisItem(DiagColl.Add);
+  diag := TRealDiagnosisItem(Adb_DM.CollDiag.Add);
   diag.MainMkb := mkb;
   diag.Rank := FPregled.FDiagnosis.Add(diag);
 
@@ -1872,7 +1860,7 @@ begin
     case dataResDiagRep.vid of
       vvNZIS_RESULT_DIAGNOSTIC_REPORT:
       begin
-        NomenPos144 := ResDiagRepColl.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+        NomenPos144 := Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
         TempEditLabel.textUnit.Text := FCl144Coll.getAnsiStringMap(NomenPos144, word(CL144_units));
         TempEditLYT.Margins.Left := 5;
         TempEditLYT.Width := ExpndrLayout.Width  - ExpndrLayout.Padding.Left - ExpndrLayout.Padding.Right ;
@@ -1915,7 +1903,7 @@ begin
     case dataResDiagRep.vid of
       vvNZIS_RESULT_DIAGNOSTIC_REPORT:
       begin
-        NomenPos144 := ResDiagRepColl.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+        NomenPos144 := Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getCardMap(dataResDiagRep.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
         TempEditLabel.textUnit.Text := FCl144Coll.getAnsiStringMap(NomenPos144, word(CL144_units));
         TempEditLYT.Margins.Left := 5;
         TempEditLYT.Width := ExpndrLayout.Width  - ExpndrLayout.Padding.Left - ExpndrLayout.Padding.Right ;
@@ -2183,7 +2171,7 @@ begin
       Break;
     end;
   end;
-  capt := capt + '   ' + PlanedTypeColl.getAnsiStringMap(data.DataPos, word(PR001_CL132));
+  capt := capt + '   ' + Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(PR001_CL132));
   if (LstMemosLYT.Count - 1) < idxListMemosLyt then
   begin
     TempMemoLYT := TLayout(frmFmxControls.lytMemo.Clone(self));
@@ -2301,21 +2289,21 @@ begin
 
   TempPlanedRect.Visible := True;
   TempPlanedTypeLabel.PostDataLink := PosDataPlan;
-  startDate := DateToStr(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_StartDate)));
-  endDate := DateToStr(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate)));
-  Delta := Floor(PlanedTypeColl.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate))) - Floor(UserDate);
+  startDate := DateToStr(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_StartDate)));
+  endDate := DateToStr(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate)));
+  Delta := Floor(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate))) - Floor(UserDate);
   //12.12.2012 - 12.12.2025  (Остават 23 дни до края на плана)
 
-  TempPlanedTypeLabel.txtKey.Text := PlanedTypeColl.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
-  TempPlanedTypeLabel.txtCapt.Text := Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Description));
-  repNumber := PlanedTypeColl.getIntMap(PosDataPlan, word(NZIS_PLANNED_TYPE_NumberRep));
+  TempPlanedTypeLabel.txtKey.Text := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
+  TempPlanedTypeLabel.txtCapt.Text := Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Description));
+  repNumber := Adb_DM.CollNZIS_PLANNED_TYPE.getIntMap(PosDataPlan, word(NZIS_PLANNED_TYPE_NumberRep));
   if repNumber > -1 then
   begin
-    for i := 0 to Pr001Coll.Count - 1 do
+    for i := 0 to Adb_DM.Pr001Coll.Count - 1 do
     begin
-      if Pr001Coll.getAnsiStringMap(Pr001Coll.Items[i].DataPos, word(PR001_CL132)) = Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) then
+      if Adb_DM.Pr001Coll.getAnsiStringMap(Adb_DM.Pr001Coll.Items[i].DataPos, word(PR001_CL132)) = Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) then
       begin
-        arrStr := string(Pr001Coll.getAnsiStringMap(Pr001Coll.Items[i].DataPos, word(PR001_Activity_ID))).Split([';']);
+        arrStr := string(Adb_DM.Pr001Coll.getAnsiStringMap(Adb_DM.Pr001Coll.Items[i].DataPos, word(PR001_Activity_ID))).Split([';']);
         repNumber := Min(repNumber, Length(arrStr) - 1);
         TempPlanedTypeLabel.txtCapt.Text := TempPlanedTypeLabel.txtCapt.Text + ' (' + arrStr[repNumber] + ')';
         Break;
@@ -2345,15 +2333,15 @@ begin
       TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минал е %d ден от края на плана)',[startDate, endDate, -delta]);
     end;
   end;
-  case Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_CL136_Mapping))[1] of
+  case Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_CL136_Mapping))[1] of
     '1':
     begin//'|' + cl132Key + '|'
-      if NzisPregNotPreg.Contains('|' + Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) + '|') then
+      if NzisPregNotPreg.Contains('|' + Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) + '|') then
       begin
         TempPlanedTypeLabel.btnIcon.Fill.Assign(brshNotPregled.Brush);
       end
       else
-      if NzisConsult.Contains('|' + Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) + '|') then
+      if NzisConsult.Contains('|' + Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) + '|') then
       begin
         TempPlanedTypeLabel.btnIcon.Fill.Assign(brshKonsult.Brush);
       end
@@ -2540,9 +2528,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 := Adb_DM.Cl139Coll.Items[i];
         if not TRectangle(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138))+ '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2555,9 +2543,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 := Adb_DM.Cl139Coll.Items[i];
         if not TRectangle(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) + '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2571,9 +2559,9 @@ begin
       cl138Index := Trim(Copy(TRectangle(Sender).TagString,1, 2));
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 := Adb_DM.Cl139Coll.Items[i];
         if cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) <> cl138Index then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2638,21 +2626,21 @@ begin
   dataPatient := Pointer(PByte(patNodes.patNode) + lenNode);
   dataPreg := Pointer(PByte(FPregled.FNode) + lenNode);
 
-  pPreg := pointer(PByte(PatientColl.buf) + (dataPreg.DataPos  + 4*word(PregledNew_ID)));
-  ofsetPreg := pPreg^ + PatientColl.posData;
+  pPreg := pointer(PByte(Adb_DM.CollPatient.buf) + (dataPreg.DataPos  + 4*word(PregledNew_ID)));
+  ofsetPreg := pPreg^ + Adb_DM.CollPatient.posData;
 
   listHist := TList<Cardinal>.Create;
-  p := pointer(PByte(PatientColl.buf) + (dataPatient.DataPos  + 4*word(PatientNew_SNAME)));
-  ofset := p^ + PatientColl.posData;
-  PHist := pointer(PByte(PatientColl.buf) + ofset - 4);
+  p := pointer(PByte(Adb_DM.CollPatient.buf) + (dataPatient.DataPos  + 4*word(PatientNew_SNAME)));
+  ofset := p^ + Adb_DM.CollPatient.posData;
+  PHist := pointer(PByte(Adb_DM.CollPatient.buf) + ofset - 4);
   while PHist^ <> 0 do
   begin
-    ofset := Phist^ + PatientColl.posData;
+    ofset := Phist^ + Adb_DM.CollPatient.posData;
     begin
-      patName := PatientColl.getAnsiStringMapOfset(ofset, word(PatientNew_SNAME));
+      patName := Adb_DM.CollPatient.getAnsiStringMapOfset(ofset, word(PatientNew_SNAME));
       listHist.Add(ofset)
     end;
-    PHist := pointer(PByte(PatientColl.buf) + ofset - 4); // история на средно име
+    PHist := pointer(PByte(Adb_DM.CollPatient.buf) + ofset - 4); // история на средно име
   end;
   listHist.Free;
   revs.Free;
@@ -2739,9 +2727,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if not TComboBox(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138))+ '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2754,9 +2742,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if not TComboBox(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) + '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2770,9 +2758,9 @@ begin
       cl138Index := Trim(Copy(TComboBox(Sender).TagString,1, 2));
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) <> cl138Index then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2979,9 +2967,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if not TComboBox(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138))+ '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -2994,9 +2982,9 @@ begin
     begin
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if not TComboBox(Sender).TagString.StartsWith(cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) + '|') then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -3010,9 +2998,9 @@ begin
       cl138Index := Trim(Copy(TComboBox(Sender).TagString,1, 2));
       idxListItemLst := 0;
 
-      for i := 0 to Cl139Coll.Count - 1 do
+      for i := 0 to  Adb_DM.Cl139Coll.Count - 1 do
       begin
-        cl139 := Cl139Coll.Items[i];
+        cl139 :=  Adb_DM.Cl139Coll.Items[i];
         if cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_cl138)) <> cl138Index then
           Continue;
         str := cl139.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL139_Key)) + '|' +
@@ -3478,7 +3466,7 @@ begin
     if TempBtnMulti = TempComboLabel.MultiBtns[i] then
     begin
       TempBtnMulti.Parent := nil;
-      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text, AnswValuesColl);
+      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
       FAspLink.MarkDeletedNode(nodeValue);// махам го от дървото
       TempComboLabel.MultiBtns.Delete(i);
       Break;
@@ -3517,7 +3505,7 @@ begin
     if TempBtnMulti = TempComboLabel.MultiBtns[i] then
     begin
       TempBtnMulti.Parent := nil;
-      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text, AnswValuesColl);
+      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
       FAspLink.MarkDeletedNode(nodeValue);// махам го от дървото
       TempComboLabel.MultiBtns.Delete(i);
       Break;
@@ -3545,7 +3533,7 @@ begin
     if TempBtnMulti = TempComboLabel.MultiBtns[i] then
     begin
       TempBtnMulti.Parent := nil;
-      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text, AnswValuesColl);
+      nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
       FAspLink.MarkDeletedNode(nodeValue);// махам го от дървото
       TempComboLabel.MultiBtns.Delete(i);
       Break;
@@ -3738,8 +3726,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
 
             New(AnswValue.PRecord);
             case answTemp.cl028 of
@@ -3763,11 +3751,11 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempDateEditLabel.node, amAddChildLast, TempDateEditLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempDateEditLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index :=  Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
           end;
           //vvNZIS_RESULT_DIAGNOSTIC_REPORT:
 //          begin
-//            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+//            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
 //            ResDiagRep.DataPos := Data.DataPos;
 //            cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
 //            cl144Temp.DataPos := cl144Pos;
@@ -3794,7 +3782,7 @@ begin
 //            end;
 //            FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempDateEditLabel.node, amAddChildLast, TempDateEditLabel.nodeValue, linkpos);
 //            dataResDiagRep := Pointer(PByte(TempDateEditLabel.node.FirstChild) + lenNode);
-//            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+//            dataResDiagRep.index := FAdb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
 //          end;
         end;
       end
@@ -3807,7 +3795,7 @@ begin
             dataAnswVal := Pointer(PByte(TempDateEditLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue :=  Adb_DM.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -3834,10 +3822,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index :=  Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 4:
@@ -3971,8 +3959,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case answTemp.cl028 of
               4: //конкретна дата
@@ -3995,7 +3983,7 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempDateEditLabel.node, amAddChildLast, TempDateEditLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempDateEditLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index :=  Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
           end;
         end;
       end
@@ -4008,7 +3996,7 @@ begin
             dataAnswVal := Pointer(PByte(TempDateEditLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue :=  Adb_DM.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -4035,10 +4023,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index := Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 4:
@@ -4117,8 +4105,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempDateEditLabel.canValidate := False;
             TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
@@ -4130,7 +4118,7 @@ begin
               4:
               begin
                 TempDateEditLabel.canValidate := False;
-                TempDateEdit.Date :=FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_DATE;
+                TempDateEdit.Date :=Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_DATE;
                 TempDateEditLabel.canValidate := True;
               end;
             end;
@@ -4165,8 +4153,8 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempDateEditLabel.canValidate := False;
             TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
@@ -4178,7 +4166,7 @@ begin
               4:
               begin
                 TempDateEditLabel.canValidate := False;
-                TempDateEdit.date := FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_DATE_TIME;
+                TempDateEdit.date := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_DATE_TIME;
                 TempDateEditLabel.canValidate := True;
               end;
             end;
@@ -4244,8 +4232,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempDateEditLabel.canValidate := False;
             TempDateEditLabel.DatEdt.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
@@ -4257,7 +4245,7 @@ begin
               4:
               begin
                 TempDateEditLabel.canValidate := False;
-                TempDateEditLabel.DatEdt.Date :=FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_DATE;
+                TempDateEditLabel.DatEdt.Date :=Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_DATE;
                 TempDateEditLabel.canValidate := True;
               end;
             end;
@@ -4292,8 +4280,8 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempDateEditLabel.canValidate := False;
             TempDateEditLabel.DatEdt.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));
@@ -4305,7 +4293,7 @@ begin
               4:
               begin
                 TempDateEditLabel.canValidate := False;
-                TempDateEditLabel.DatEdt.date := FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_DATE_TIME;
+                TempDateEditLabel.DatEdt.date := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_DATE_TIME;
                 TempDateEditLabel.canValidate := True;
               end;
             end;
@@ -4357,8 +4345,8 @@ begin
   ambStartDateTime := StrToDateTime(dtdt.Text);
   ambStartDate := Floor(ambStartDateTime);
   ambStartTime := ambStartDateTime - ambStartDate;
-  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
-  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_TIME), ambStartTime);
+  Adb_DM.CollPregled.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
+  Adb_DM.CollPregled.SetDateMap(FPregled.DataPos, word(PregledNew_START_TIME), ambStartTime);
 end;
 
 procedure TfrmProfFormFMX.dtdtStartDateClosePicker(Sender: TObject);
@@ -4377,7 +4365,7 @@ begin
   fs.ShortTimeFormat := 'hh:mm';
   ambStartDateTime := StrToDateTime(dtdt.Text);
   ambStartDate := Floor(ambStartDateTime);
-  PregledColl.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
+  Adb_DM.CollPregled.SetDateMap(FPregled.DataPos, word(PregledNew_START_DATE), ambStartDate);
 end;
 
 procedure TfrmProfFormFMX.dtdtStartDatePainting(Sender: TObject;
@@ -4407,7 +4395,7 @@ begin
 
   edt := TEdit(sender);
   dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
-  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NOMER_LZ));
+  edt.Text := Adb_DM.CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NOMER_LZ));
 end;
 
 procedure TfrmProfFormFMX.Edit12Painting(Sender: TObject; Canvas: TCanvas;
@@ -4420,7 +4408,7 @@ begin
 
   edt := TEdit(sender);
   dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
-  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_UIN));
+  edt.Text := Adb_DM.CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_UIN));
 end;
 
 procedure TfrmProfFormFMX.Edit13Painting(Sender: TObject; Canvas: TCanvas;
@@ -4433,7 +4421,7 @@ begin
 
   edt := TEdit(sender);
   dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
-  edt.Text := CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NZOK_NOMER));
+  edt.Text := Adb_DM.CollOtherDoctor.getAnsiStringMap(dataRequester.DataPos, Word(OtherDoctor_NZOK_NOMER));
 end;
 
 procedure TfrmProfFormFMX.Edit14Painting(Sender: TObject; Canvas: TCanvas;
@@ -4446,7 +4434,7 @@ begin
 
   edt := TEdit(sender);
   dataRequester := Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
-  edt.Text := IntToStr(CollOtherDoctor.getIntMap(dataRequester.DataPos, Word(OtherDoctor_SPECIALITY)));
+  edt.Text := IntToStr(Adb_DM.CollOtherDoctor.getIntMap(dataRequester.DataPos, Word(OtherDoctor_SPECIALITY)));
 end;
 
 procedure TfrmProfFormFMX.edtNrnInkNaprPainting(Sender: TObject; Canvas: TCanvas;
@@ -4459,7 +4447,7 @@ begin
 
   edt := TEdit(sender);
   dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-  edt.Text := IncNaprColl.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_NRN));
+  edt.Text := Adb_DM.CollIncMN.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_NRN));
 end;
 
 procedure TfrmProfFormFMX.edt1Popup(Sender: TObject);
@@ -4477,7 +4465,7 @@ begin
 
   edt := TEdit(sender);
   dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-  edt.Text := IncNaprColl.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_AMB_LIST_NRN));
+  edt.Text := Adb_DM.CollIncMN.getAnsiStringMap(dataInkNapr.DataPos, Word(INC_NAPR_AMB_LIST_NRN));
 end;
 
 procedure TfrmProfFormFMX.edtAmbListPainting(Sender: TObject; Canvas: TCanvas;
@@ -4490,11 +4478,11 @@ var
   //THipPregledStatus = (hpsNone, hpsValid, hpsNoValid, hpsStartOpen, hpsErr, hpsOpen, hpsClosed, hpsCancel);
 begin
   edt := TEdit(sender);
-  ambNom := PregledColl.getIntMap(FPregled.DataPos, Word(PregledNew_AMB_LISTN));
+  ambNom := Adb_DM.CollPregled.getIntMap(FPregled.DataPos, Word(PregledNew_AMB_LISTN));
   ambNRN := Copy(FPregled.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, Word(PregledNew_NRN_LRN)), 1, 12);
   if (ambNRN.StartsWith('_')) or (ambNRN.StartsWith(' ')) then
     ambNRN := '                                   ';
-  nzisStatus := PregledColl.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
+  nzisStatus := Adb_DM.CollPregled.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
   animNrnStatus.Tag:= nzisStatus;
   case nzisStatus of
     3:
@@ -4801,8 +4789,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempEditLabel.canValidate := False;
             tedit(sender).Text := Double.ToString(answValTemp.getDoubleMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
@@ -4814,7 +4802,7 @@ begin
               1:
               begin
                 TempEditLabel.canValidate := False;
-                tedit(sender).Text := Double.ToString(FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_QUANTITY);
+                tedit(sender).Text := Double.ToString(Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_QUANTITY);
                 TempEditLabel.canValidate := True;
               end;
             end;
@@ -4845,8 +4833,8 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempEditLabel.canValidate := False;
             tedit(sender).Text := Double.ToString(DIAGNOSTIC_REPTemp.getDoubleMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
@@ -4858,7 +4846,7 @@ begin
               1:
               begin
                 TempEditLabel.canValidate := False;
-                tedit(sender).Text := Double.ToString(FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_QUANTITY);
+                tedit(sender).Text := Double.ToString(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_QUANTITY);
                 TempEditLabel.canValidate := True;
               end;
             end;
@@ -4918,8 +4906,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempEditLabel.canValidate := False;
             tedit(sender).Text := Double.ToString(answValTemp.getDoubleMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
@@ -4931,7 +4919,7 @@ begin
               1:
               begin
                 TempEditLabel.canValidate := False;
-                tedit(sender).Text := Double.ToString(FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_QUANTITY);
+                tedit(sender).Text := Double.ToString(Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_QUANTITY);
                 TempEditLabel.canValidate := True;
               end;
             end;
@@ -4962,20 +4950,20 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempEditLabel.canValidate := False;
-            tedit(sender).Text := Double.ToString(FResDiagRepColl.getDoubleMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
+            tedit(sender).Text := Double.ToString(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getDoubleMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
             TempEditLabel.canValidate := True;
           end
           else
           begin
-            case FResDiagRepColl.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
+            case Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
               1:
               begin
                 TempEditLabel.canValidate := False;
-                tedit(sender).Text := Double.ToString(FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_QUANTITY);
+                tedit(sender).Text := Double.ToString(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_QUANTITY);
                 TempEditLabel.canValidate := True;
               end;
             end;
@@ -5071,8 +5059,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case answTemp.cl028 of
               1: //Количествено представяне
@@ -5095,11 +5083,11 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempEditLabel.node, amAddChildLast, TempEditLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index := Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
           end;
           vvNZIS_RESULT_DIAGNOSTIC_REPORT:
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             ResDiagRep.DataPos := Data.DataPos;
             cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
             cl144Temp.DataPos := cl144Pos;
@@ -5126,7 +5114,7 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempEditLabel.node, amAddChildLast, TempEditLabel.nodeValue, linkpos);
             dataResDiagRep := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
-            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+            dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
           end;
         end;
       end
@@ -5139,7 +5127,7 @@ begin
             dataAnswVal := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue := Adb_DM.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -5166,10 +5154,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index := Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 1:
@@ -5189,7 +5177,7 @@ begin
             dataResDiagRep := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
             if dataResDiagRep.index >= 0 then
             begin
-              ResDiagRep := FResDiagRepColl.Items[dataResDiagRep.index];
+              ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
               if ResDiagRep.PRecord <> nil then
               begin
                 case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -5216,9 +5204,9 @@ begin
             end
             else
             begin
-              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
               ResDiagRep.DataPos := dataResDiagRep.DataPos;
-              dataResDiagRep.index := FResDiagRepColl.Count - 1;
+              dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
               New(ResDiagRep.PRecord);
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
                 1:
@@ -5303,8 +5291,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case answTemp.cl028 of
               1: //Количествено представяне
@@ -5327,11 +5315,11 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempEditLabel.node, amAddChildLast, TempEditLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index := Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
           end;
           vvNZIS_RESULT_DIAGNOSTIC_REPORT:
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             ResDiagRep.DataPos := Data.DataPos;
             cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
             cl144Temp.DataPos := cl144Pos;
@@ -5358,7 +5346,7 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempEditLabel.node, amAddChildLast, TempEditLabel.nodeValue, linkpos);
             dataResDiagRep := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
-            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+            dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
           end;
         end;
       end
@@ -5371,7 +5359,7 @@ begin
             dataAnswVal := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue := Adb_DM.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -5398,10 +5386,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index := Adb_DM.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 1:
@@ -5421,7 +5409,7 @@ begin
             dataResDiagRep := Pointer(PByte(TempEditLabel.node.FirstChild) + lenNode);
             if dataResDiagRep.index >= 0 then
             begin
-              ResDiagRep := FResDiagRepColl.Items[dataResDiagRep.index];
+              ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
               if ResDiagRep.PRecord <> nil then
               begin
                 case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -5448,9 +5436,9 @@ begin
             end
             else
             begin
-              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
               ResDiagRep.DataPos := dataResDiagRep.DataPos;
-              dataResDiagRep.index := FResDiagRepColl.Count - 1;
+              dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
               New(ResDiagRep.PRecord);
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
                 1:
@@ -5489,7 +5477,7 @@ begin
 
   edt := TEdit(sender);
   dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-  edt.Text := FormatDateTime('DD.MM.YYYY г.', IncNaprColl.getDateMap(dataInkNapr.DataPos, Word(INC_NAPR_ISSUE_DATE)));
+  edt.Text := FormatDateTime('DD.MM.YYYY г.', Adb_DM.CollIncMN.getDateMap(dataInkNapr.DataPos, Word(INC_NAPR_ISSUE_DATE)));
 end;
 
 procedure TfrmProfFormFMX.edtDateRawPainting(Sender: TObject; Canvas: TCanvas;
@@ -5566,9 +5554,9 @@ var
   dataDoctor: PAspRec;
 begin
   dataDoctor := Pointer(PByte(pregNodes.perfNode) + lenNode);
-  edtDoctorName.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_FNAME)) +  ' ' +
-                     DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_SNAME)) +  ' ' +
-                     DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_LNAME));
+  edtDoctorName.Text := Adb_DM.CollDoctor.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_FNAME)) +  ' ' +
+                     Adb_DM.CollDoctor.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_SNAME)) +  ' ' +
+                     Adb_DM.CollDoctor.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_LNAME));
   //if patNodes.docNode <> nil then
 //  begin
 //    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
@@ -5589,7 +5577,7 @@ var
 begin
 
   dataDoctor := Pointer(PByte(pregNodes.perfNode) + lenNode);
-  edtDoctorUin.Text := DoctorColl.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_UIN));
+  edtDoctorUin.Text := Adb_DM.CollDoctor.getAnsiStringMap(dataDoctor.DataPos, word(Doctor_UIN));
   //if patNodes.docNode <> nil then
 //  begin
 //    dataDoctor := Pointer(PByte(patNodes.docNode) + lenNode);
@@ -5610,7 +5598,7 @@ begin
   dataPatient := Pointer(PByte(patNodes.patNode) + lenNode);
   dataPreg := Pointer(PByte(FPregled.FNode) + lenNode);
 
-  edtEGN.Text := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_EGN));
+  edtEGN.Text := Adb_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_EGN));
 end;
 
 procedure TfrmProfFormFMX.edtEGNValidating(Sender: TObject; var Text: string);
@@ -5625,16 +5613,16 @@ var
 begin
   if not edtEGN.IsFocused then Exit;
   dataPatient := Pointer(PByte(patNodes.patNode) + lenNode);
-  patEgn := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_EGN));
+  patEgn := Adb_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_EGN));
 
-  patIndex := PatientColl.FindItemFromDataPos(dataPatient.DataPos);
+  patIndex := Adb_DM.CollPatient.FindItemFromDataPos(dataPatient.DataPos);
   if patIndex >= 0 then  // има го в колекцията
   begin
-    pat := PatientColl.Items[patIndex];
+    pat := Adb_DM.CollPatient.Items[patIndex];
   end
   else
   begin
-    pat := TRealPatientNewItem(PatientColl.Add);// добавям го в колекцията
+    pat := TRealPatientNewItem(Adb_DM.CollPatient.Add);// добавям го в колекцията
     pat.DataPos := dataPatient.DataPos;
   end;
 
@@ -5800,7 +5788,7 @@ begin
 
   if  (Assigned(TempDiagLabel.diag)) and (TempDiagLabel.diag.DataPos > 0) then
   begin
-    DiagColl.SetAnsiStringMap(TempDiagLabel.diag.DataPos, word(Diagnosis_code_CL011), Text);
+    Adb_DM.CollDiag.SetAnsiStringMap(TempDiagLabel.diag.DataPos, word(Diagnosis_code_CL011), Text);
     TempDiagLabel.SelectMain.Fill.Color := $FFFBD3C6;
     //TempDiagLabel.edtMain.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_code_CL011));
 //    TempDiagLabel.edtAdd.Text := TempDiagLabel.diag.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_additionalCode_CL011));
@@ -5858,7 +5846,7 @@ begin
     begin
       New(mdn.PRecord);
       mdn.PRecord.setProp := [];
-      mdn.Collection := MdnColl;
+      mdn.Collection := Adb_DM.CollMDN;
     end;
     Include(mdn.PRecord.setProp, TMDNItem.TPropertyIndex.MDN_NRN);
     mdn.PRecord.NRN := edtNrnMdn.Text;
@@ -5943,32 +5931,32 @@ begin
   if edtPatName.IsFocused then Exit;
   dataPatient := Pointer(PByte(patNodes.patNode) + lenNode);
   dataPreg := Pointer(PByte(FPregled.FNode) + lenNode);
-  patIndex := PatientColl.FindItemFromDataPos(dataPatient.DataPos);
+  patIndex := FPatientColl.FindItemFromDataPos(dataPatient.DataPos);
 
 
   if patIndex >= 0 then  // има го в колекцията
   begin
-    pat := PatientColl.Items[patIndex];
+    pat := ADB_DM.CollPatient.Items[patIndex];
     if (pat.PRecord <> nil) and (PatientNew_FNAME in pat.PRecord.setProp) then
       patNameF := pat.PRecord.FNAME
     else
-      patNameF := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
+      patNameF := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
 
     if (pat.PRecord <> nil) and (PatientNew_SNAME in pat.PRecord.setProp) then
       patNameS := pat.PRecord.SNAME
     else
-      patNameS := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
+      patNameS := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
 
     if (pat.PRecord <> nil) and (PatientNew_LNAME in pat.PRecord.setProp) then
       patNameL := pat.PRecord.LNAME
     else
-      patNameL := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
+      patNameL := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
   end
   else
   begin
-    patNameF := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
-    patNameS := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
-    patNameL := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
+    patNameF := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
+    patNameS := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
+    patNameL := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
   end;
   edtPatName.Text := patNameF +  ' ' + patNameS + ' ' + patNameL;
 end;
@@ -6021,18 +6009,18 @@ begin
 
 
   dataPatient := Pointer(PByte(patNodes.patNode) + lenNode);
-  patNameF := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
-  patNameS := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
-  patNameL := PatientColl.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
+  patNameF := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_FNAME));
+  patNameS := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_SNAME));
+  patNameL := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
 
-  patIndex := PatientColl.FindItemFromDataPos(dataPatient.DataPos);
+  patIndex := ADB_DM.CollPatient.FindItemFromDataPos(dataPatient.DataPos);
   if patIndex >= 0 then  // има го в колекцията
   begin
-    pat := PatientColl.Items[patIndex];
+    pat := ADB_DM.CollPatient.Items[patIndex];
   end
   else
   begin
-    pat := TRealPatientNewItem(PatientColl.Add);// добавям го в колекцията
+    pat := TRealPatientNewItem(ADB_DM.CollPatient.Add);// добавям го в колекцията
     pat.DataPos := dataPatient.DataPos;
   end;
 
@@ -6501,9 +6489,9 @@ begin
 //        TempMnsLabel.LstMkbs[i].edtMkbAdd.OnExit := edtMN1Exit;
     end;
     posSpec := mn.getCardMap(FAspAdbBuf, FAspAdbPosData, word(BLANKA_MED_NAPR_SpecDataPos));
-    spec := CL006Coll.getAnsiStringMap(posSpec, word(CL006_Key));
+    spec := Adb_dm.CL006Coll.getAnsiStringMap(posSpec, word(CL006_Key));
     TempMnsLabel.edtSpec.Text := spec;
-    TempMnsLabel.edtSpecName.Text := CL006Coll.getAnsiStringMap(posSpec, word(CL006_nhif_name));;
+    TempMnsLabel.edtSpecName.Text := Adb_dm.CL006Coll.getAnsiStringMap(posSpec, word(CL006_nhif_name));;
     if mn.FDiagnosis2.Count > 0 then
     begin
       for i := 0 to mn.FDiagnosis2.Count - 1 do
@@ -6666,7 +6654,7 @@ begin
     dataRunPr001 :=pointer(PByte(RunNodePR001) + lenNode);
 
     if (RunNodeCL132.ChildCount > 1) or
-         ((RunNodePR001<> nil) and (ResDiagRepColl.getAnsiStringMap(dataRunPr001.DataPos, Word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE)) ='65-226-09'))then
+         ((RunNodePR001<> nil) and (Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataRunPr001.DataPos, Word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE)) ='65-226-09'))then
     begin
       //RunNodePR001 := RunNodeCL132.FirstChild;
       //dataRunPr001 :=pointer(PByte(RunNodePR001) + lenNode);
@@ -6834,7 +6822,7 @@ begin
                   captMemo :=  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
                                cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
                                cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Description));
-                  if Cl144Coll.getAnsiStringMap(cl144Temp.DataPos, word(CL144_cl028)) <> '2' then
+                  if Adb_dm.Cl144Coll.getAnsiStringMap(cl144Temp.DataPos, word(CL144_cl028)) <> '2' then
                   begin
                     AddMemoSup(tempFLYT, pr001, idxListMemoLyt, RunNodePR001, captMemo);
                     inc(idxListMemoLyt);
@@ -7014,7 +7002,7 @@ begin
   end;
 
   dataPreg := pointer(PByte(nodePreg) + lenNode);
-  logPreg := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, word(PregledNew_Logical)));
+  logPreg := TlogicalPregledNewSet(Adb_dm.CollPregled.getLogical40Map(dataPreg.DataPos, word(PregledNew_Logical)));
   if IS_PRIMARY in logPreg then
   begin
     Caption := 'ddd';
@@ -7039,11 +7027,11 @@ begin
         end;
         plan := TRealNZIS_PLANNED_TYPEItem.Create(nil);
         plan.DataPos := dataCL132.DataPos;
-        plan.EndDate := PlanedTypeColl.getDateMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_EndDate));
-        plan.StartDate := PlanedTypeColl.getDateMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_StartDate));
-        plan.CL132Pos := PlanedTypeColl.getCardMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        plan.CL132Key := PlanedTypeColl.getAnsiStringMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_KEY));
-        plan.Cl136 := StrToInt(Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_CL136_Mapping)));
+        plan.EndDate := Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_EndDate));
+        plan.StartDate := Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_StartDate));
+        plan.CL132Pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_DataPos));
+        plan.CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_KEY));
+        plan.Cl136 := StrToInt(Adb_dm.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_CL136_Mapping)));
         plan.Node := RunPlanedType;
         ListPlaneds.Add(plan);
       end;
@@ -7055,11 +7043,11 @@ begin
   // после да се намери главния план-преглед, в който ще се вмъкват евентуално другите неща
   //
 
-  PlanedTypeColl.SortListByEndDate_posData_cl136(ListPlaneds);
-  PrevPregPos := patNodes.GetPrevProfPregled(UserDate, PregledColl, FPregled); // намира последния проф преглед
+  Adb_dm.CollNZIS_PLANNED_TYPE.SortListByEndDate_posData_cl136(ListPlaneds);
+  PrevPregPos := patNodes.GetPrevProfPregled(UserDate, Adb_dm.CollPregled, FPregled); // намира последния проф преглед
   if PrevPregPos > 0 then //има
   begin
-    PrevPregDate := PregledColl.getDateMap(PrevPregPos, word(PregledNew_START_DATE)); // и датата му
+    PrevPregDate := Adb_dm.CollPregled.getDateMap(PrevPregPos, word(PregledNew_START_DATE)); // и датата му
   end
   else // няма
   begin
@@ -7104,7 +7092,7 @@ begin
         if AMainProf = nil then
         begin
           strNode := plan.CL132Key;
-          strNode :=  strNode + '  ' + Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
+          strNode :=  strNode + '  ' + ADB_DM.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
           xpdrVisitFor.Text := strNode;
           AMainProf := plan;
         end
@@ -7118,7 +7106,7 @@ begin
         if AMainProf = nil then
         begin
           strNode := plan.CL132Key;
-          strNode :=  strNode + '  ' + Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
+          strNode :=  strNode + '  ' + ADB_DM.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
           xpdrVisitFor.Text := strNode;
           AMainProf := plan;
         end
@@ -7133,7 +7121,7 @@ begin
       if AMainProf = nil then
       begin
         strNode := plan.CL132Key;
-        strNode :=  strNode + '  ' + Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
+        strNode :=  strNode + '  ' + ADB_DM.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_Description));
         xpdrVisitFor.Text := strNode;
         AMainProf := plan;
       end
@@ -7152,7 +7140,7 @@ begin
       case ListPlaneds[i].Cl136 of
         1:
         begin
-          if NzisConsult.Contains('|' + PlanedTypeColl.getAnsiStringMap(ListPlaneds[i].DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) + '|') then
+          if NzisConsult.Contains('|' + ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(ListPlaneds[i].DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) + '|') then
           begin // направление за консултация
 
           end;
@@ -7163,7 +7151,7 @@ begin
         end;
         3: //  трябва да се направи имунизация
         begin
-          //PlanedTypeColl.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
+          //ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
           //ListPlaneds[i].
         end;
       end;
@@ -7862,7 +7850,7 @@ end;
 //          answTemp.DataPos := Data.DataPos;
 //          cl134Temp.DataPos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
 //          answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-//          AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
+//          AnswValue := TRealNZIS_ANSWER_VALUEItem(FAdb_dm.CollNZIS_ANSWER_VALUE.Add);
 //          Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
 //          New(AnswValue.PRecord);
 //          case answTemp.cl028 of
@@ -8219,8 +8207,8 @@ begin
           answTemp.DataPos := Data.DataPos;
           cl134Temp.DataPos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
           answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-          AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-          Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+          AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+          Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
           New(AnswValue.PRecord);
           case answTemp.cl028 of
             2: //номенклатура
@@ -8229,7 +8217,7 @@ begin
               AnswValue.PRecord.ID := 0;
               AnswValue.PRecord.QUESTIONNAIRE_ANSWER_ID := 0;
               AnswValue.PRecord.CL028 := 2;
-              AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
+              AnswValue.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
 
               AnswValue.PRecord.setProp :=
               [NZIS_ANSWER_VALUE_ANSWER_CODE
@@ -8245,12 +8233,12 @@ begin
           end;
           FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempComboLabel.node, amAddChildLast, TempComboLabel.nodeValue, linkpos);
           dataAnswVal := Pointer(PByte(TempComboLabel.node.FirstChild) + lenNode);
-          dataAnswVal.index := AnswValuesColl.Count - 1;
+          dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
           MarkSourceAnsw(TempComboLabel.SourceAnsw, TempComboLabel.rctSourceAnsw);
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
-          ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+          ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
           ResDiagRep.DataPos := Data.DataPos;
           cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
           cl144Temp.DataPos := cl144Pos;
@@ -8263,7 +8251,7 @@ begin
               ResDiagRep.PRecord.ID := 0;
               ResDiagRep.PRecord.DIAGNOSTIC_REPORT_ID := 0;
               ResDiagRep.PRecord.CL028_VALUE_SCALE := 2;
-              ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
+              ResDiagRep.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
 
               ResDiagRep.PRecord.setProp :=
               [NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE
@@ -8279,7 +8267,7 @@ begin
           end;
           FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempComboLabel.node, amAddChildLast, TempComboLabel.nodeValue, linkpos);
           dataResDiagRep := Pointer(PByte(TempComboLabel.node.FirstChild) + lenNode);
-          dataResDiagRep.index := FResDiagRepColl.Count - 1;
+          dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
         end;
       end;
     end
@@ -8292,7 +8280,7 @@ begin
           dataAnswVal := Pointer(PByte(TempComboLabel.node.FirstChild) + lenNode);
           if dataAnswVal.index >= 0 then
           begin
-            AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+            AnswValue := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
             if AnswValue.PRecord <> nil then
             begin
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -8301,7 +8289,7 @@ begin
                   AnswValue.PRecord.setProp := [];
                   AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
-                  AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
+                  AnswValue.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
                 end;
               end;
@@ -8315,7 +8303,7 @@ begin
                   AnswValue.PRecord.setProp := [];
                   AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
-                  AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
+                  AnswValue.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                   Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
                 end;
               end;
@@ -8324,10 +8312,10 @@ begin
           end
           else
           begin
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             AnswValue.DataPos := dataAnswVal.DataPos;
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
             New(AnswValue.PRecord);
             case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
               2:
@@ -8335,7 +8323,7 @@ begin
                 AnswValue.PRecord.setProp := [];
                 AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                 Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_ANSWER_CODE);
-                AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
+                AnswValue.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
                 Include(AnswValue.PRecord.setProp, NZIS_ANSWER_VALUE_NOMEN_POS);
               end;
             end;
@@ -8348,7 +8336,7 @@ begin
           dataResDiagRep := Pointer(PByte(TempComboLabel.node.FirstChild) + lenNode);
           if dataResDiagRep.index >= 0 then
           begin
-            ResDiagRep := ResDiagRepColl.Items[dataResDiagRep.index];
+            ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
             if ResDiagRep.PRecord <> nil then
             begin
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -8357,7 +8345,7 @@ begin
                   ResDiagRep.PRecord.setProp := [];
                   ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
-                  ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
+                  ResDiagRep.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
                 end;
               end;
@@ -8371,7 +8359,7 @@ begin
                   ResDiagRep.PRecord.setProp := [];
                   ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
-                  ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
+                  ResDiagRep.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                   Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
                 end;
               end;
@@ -8379,9 +8367,9 @@ begin
           end
           else
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(ResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             ResDiagRep.DataPos := dataResDiagRep.DataPos;
-            ResDiagRep.index := ResDiagRepColl.Count - 1;
+            ResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
             New(ResDiagRep.PRecord);
             case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
               2:
@@ -8389,7 +8377,7 @@ begin
                 ResDiagRep.PRecord.setProp := [];
                 ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);
                 Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE);
-                ResDiagRep.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
+                ResDiagRep.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(ResDiagRep.PRecord.VALUE_CODE);
                 Include(ResDiagRep.PRecord.setProp, NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS);
               end;
             end;
@@ -9050,8 +9038,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case answTemp.cl028 of
               3: //Количествено представяне
@@ -9074,11 +9062,11 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempMemoLabel.node, amAddChildLast, TempMemoLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := AnswValuesColl.Count - 1;
+            dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
           end;
           vvNZIS_RESULT_DIAGNOSTIC_REPORT:
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             ResDiagRep.DataPos := Data.DataPos;
             cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
             cl144Temp.DataPos := cl144Pos;
@@ -9105,7 +9093,7 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempMemoLabel.node, amAddChildLast, TempMemoLabel.nodeValue, linkpos);
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
-            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+            dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
           end;
         end;
       end
@@ -9118,7 +9106,7 @@ begin
             dataAnswVal := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -9145,10 +9133,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 3:
@@ -9166,7 +9154,7 @@ begin
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
             if dataResDiagRep.index >= 0 then
             begin
-              ResDiagRep := FResDiagRepColl.Items[dataResDiagRep.index];
+              ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
               if ResDiagRep.PRecord <> nil then
               begin
                 case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -9193,9 +9181,9 @@ begin
             end
             else
             begin
-              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
               ResDiagRep.DataPos := dataResDiagRep.DataPos;
-              dataResDiagRep.index := FResDiagRepColl.Count - 1;
+              dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
               New(ResDiagRep.PRecord);
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
                 3:
@@ -9269,8 +9257,8 @@ begin
             cl134Pos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             cl134Temp.DataPos := cl134Pos;
             answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL134_CL028)));
-            AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-            Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+            AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+            Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case answTemp.cl028 of
               3: //opis
@@ -9294,12 +9282,12 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_ANSWER_VALUE, AnswValue.DataPos, TempMemoLabel.node, amAddChildLast, TempMemoLabel.nodeValue, linkpos);
             dataAnswVal := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
-            dataAnswVal.index := FAnswValuesColl.Count - 1;
+            dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
             MarkSourceAnsw(TempMemoLabel.SourceAnsw, TempMemoLabel.rctSourceAnsw);
           end;
           vvNZIS_RESULT_DIAGNOSTIC_REPORT:
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             ResDiagRep.DataPos := Data.DataPos;
             cl144Pos := ResDiagRep.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
             cl144Temp.DataPos := cl144Pos;
@@ -9326,19 +9314,19 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempMemoLabel.node, amAddChildLast, TempMemoLabel.nodeValue, linkpos);
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
-            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+            dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
           end;
           vvNZIS_DIAGNOSTIC_REPORT:
           begin
-            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+            ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
             DIAGNOSTIC_REPTemp.DataPos := Data.DataPos;
             cl142Pos := DIAGNOSTIC_REPTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS));
-            for i := 0 to Cl144Coll.Count - 1 do
+            for i := 0 to Adb_dm.Cl144Coll.Count - 1 do
             begin
-              if Cl144Coll.Items[i].getAnsiStringMap(AspNomenBuf, AspNomenPosData, word(CL144_cl142)) =
-                 Cl142Coll.getAnsiStringMap(cl142Pos, word(CL142_Key)) then
+              if Adb_dm.Cl144Coll.Items[i].getAnsiStringMap(AspNomenBuf, AspNomenPosData, word(CL144_cl142)) =
+                 Adb_dm.Cl142Coll.getAnsiStringMap(cl142Pos, word(CL142_Key)) then
               begin
-                cl144Pos := Cl144Coll.Items[i].DataPos;
+                cl144Pos := Adb_dm.Cl144Coll.Items[i].DataPos;
                 Break;
               end;
             end;
@@ -9368,7 +9356,7 @@ begin
             end;
             FAspLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, ResDiagRep.DataPos, TempMemoLabel.node, amAddChildLast, TempMemoLabel.nodeValue, linkpos);
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
-            dataResDiagRep.index := FResDiagRepColl.Count - 1;
+            dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
           end;
         end;
       end
@@ -9381,7 +9369,7 @@ begin
             dataAnswVal := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
             if dataAnswVal.index >= 0 then
             begin
-              AnswValue := AnswValuesColl.Items[dataAnswVal.index];
+              AnswValue := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index];
               if AnswValue.PRecord <> nil then
               begin
                 case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
@@ -9408,10 +9396,10 @@ begin
             end
             else
             begin
-              AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-              Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+              AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+              Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
               AnswValue.DataPos := dataAnswVal.DataPos;
-              dataAnswVal.index := AnswValuesColl.Count - 1;
+              dataAnswVal.index := Adb_dm.CollNZIS_ANSWER_VALUE.Count - 1;
               New(AnswValue.PRecord);
               case AnswValue.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_CL028)) of
                 3:
@@ -9430,7 +9418,7 @@ begin
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
             if dataResDiagRep.index >= 0 then
             begin
-              ResDiagRep := FResDiagRepColl.Items[dataResDiagRep.index];
+              ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
               if ResDiagRep.PRecord <> nil then
               begin
                 case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -9457,9 +9445,9 @@ begin
             end
             else
             begin
-              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
               ResDiagRep.DataPos := dataResDiagRep.DataPos;
-              dataResDiagRep.index := FResDiagRepColl.Count - 1;
+              dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
               New(ResDiagRep.PRecord);
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
                 3:
@@ -9477,7 +9465,7 @@ begin
             dataResDiagRep := Pointer(PByte(TempMemoLabel.node.FirstChild) + lenNode);
             if dataResDiagRep.index >= 0 then
             begin
-              ResDiagRep := FResDiagRepColl.Items[dataResDiagRep.index];
+              ResDiagRep := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiagRep.index];
               if ResDiagRep.PRecord <> nil then
               begin
                 case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
@@ -9504,9 +9492,9 @@ begin
             end
             else
             begin
-              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(FResDiagRepColl.Add);
+              ResDiagRep := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Add);
               ResDiagRep.DataPos := dataResDiagRep.DataPos;
-              dataResDiagRep.index := FResDiagRepColl.Count - 1;
+              dataResDiagRep.index := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Count - 1;
               New(ResDiagRep.PRecord);
               case ResDiagRep.getWordMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
                 3:
@@ -9541,7 +9529,7 @@ begin
   if Assigned(FOnOfLinePregled) then
   begin
     data := Pointer(PByte(linkPreg) + lenNode);
-    PregledColl.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),13);
+    Adb_dm.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),13);
     FOnOfLinePregled(FPregled);
   end;
 end;
@@ -9781,8 +9769,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempMemoLabel.canValidate := False;
             TMemo(sender).Text := answValTemp.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
@@ -9794,7 +9782,7 @@ begin
               3:
               begin
                 TempMemoLabel.canValidate := False;
-                tedit(sender).Text := FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_TEXT;
+                tedit(sender).Text := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_TEXT;
                 TempMemoLabel.canValidate := True;
               end;
             end;
@@ -9827,8 +9815,8 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempMemoLabel.canValidate := False;
             TMemo(sender).Text := DIAGNOSTIC_REPTemp.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
@@ -9840,7 +9828,7 @@ begin
               3:
               begin
                 TempMemoLabel.canValidate := False;
-                TMemo(sender).Text := FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_STRING;
+                TMemo(sender).Text := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_STRING;
                 TempMemoLabel.canValidate := True;
               end;
             end;
@@ -9909,8 +9897,8 @@ begin
         end
         else
         begin
-          answValTemp.DataPos := FAnswValuesColl.Items[dataAnswVal.index].DataPos;
-          if FAnswValuesColl.Items[dataAnswVal.index].PRecord = nil then
+          answValTemp.DataPos := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].DataPos;
+          if Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord = nil then
           begin
             TempMemoLabel.canValidate := False;
             TMemo(sender).Text := answValTemp.getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
@@ -9922,7 +9910,7 @@ begin
               3:
               begin
                 TempMemoLabel.canValidate := False;
-                TMemo(sender).Text := FAnswValuesColl.Items[dataAnswVal.index].PRecord.ANSWER_TEXT;
+                TMemo(sender).Text := Adb_dm.CollNZIS_ANSWER_VALUE.Items[dataAnswVal.index].PRecord.ANSWER_TEXT;
                 TempMemoLabel.canValidate := True;
               end;
             end;
@@ -9956,20 +9944,20 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempMemoLabel.canValidate := False;
-            TMemo(sender).Text := ResDiagRepColl.getAnsiStringMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
+            TMemo(sender).Text := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
             TempMemoLabel.canValidate := True;
           end
           else
           begin
-            case ResDiagRepColl.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
+            case Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
               3:
               begin
                 TempMemoLabel.canValidate := False;
-                TMemo(sender).Text := FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_STRING;
+                TMemo(sender).Text := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_STRING;
                 TempMemoLabel.canValidate := True;
               end;
             end;
@@ -10002,20 +9990,20 @@ begin
         end
         else
         begin
-          dataResDiag.DataPos := FResDiagRepColl.Items[dataResDiag.index].DataPos;
-          if FResDiagRepColl.Items[dataResDiag.index].PRecord = nil then
+          dataResDiag.DataPos := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].DataPos;
+          if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempMemoLabel.canValidate := False;
-            TMemo(sender).Text := FResDiagRepColl.getAnsiStringMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
+            TMemo(sender).Text := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
             TempMemoLabel.canValidate := True;
           end
           else
           begin
-            case FResDiagRepColl.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
+            case Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getWordMap(dataResDiag.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
               3:
               begin
                 TempMemoLabel.canValidate := False;
-                TMemo(sender).Text := FResDiagRepColl.Items[dataResDiag.index].PRecord.VALUE_STRING;
+                TMemo(sender).Text := Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord.VALUE_STRING;
                 TempMemoLabel.canValidate := True;
               end;
             end;
@@ -10096,7 +10084,7 @@ procedure TfrmProfFormFMX.pmNzisActionPopup(Sender: TObject);
 var
   nzisStatus: Word;
 begin
-  nzisStatus := PregledColl.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
+  nzisStatus := Adb_dm.CollPregled.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
   case nzisStatus of
     0, 3, 15:
     begin
@@ -10352,13 +10340,13 @@ var
   nzisStatus: Word;
 begin
   data := Pointer(PByte(linkPreg) + lenNode);
-  nzisStatus := PregledColl.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
+  nzisStatus := Adb_dm.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
   case nzisStatus of
     0, 3, 4, 15, 16: // нищо, опит за отваряне, грешка при отваряне
     begin
       if Assigned(FOnOpenPregled) then
       begin
-        PregledColl.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),3);
+        Adb_dm.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),3);
         FOnOpenPregled(FPregled);
       end;
     end;
@@ -10366,7 +10354,7 @@ begin
     begin
       if Assigned(FOnClosePregled) then
       begin
-        PregledColl.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),8);
+        Adb_dm.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),8);
         FOnClosePregled(FPregled);
       end;
     end;
@@ -10374,7 +10362,7 @@ begin
     begin
       if Assigned(FOnEditPregled) then
       begin
-        PregledColl.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),12);
+        Adb_dm.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),12);
         FOnEditPregled(FPregled);
       end;
     end;
@@ -10405,7 +10393,7 @@ var
 begin
   Exit;
   data := Pointer(PByte(linkPreg) + lenNode);
-  nzisStatus := PregledColl.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
+  nzisStatus := Adb_dm.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
   case nzisStatus of
     5: rctNzisBTN.Stroke.Color := $FFDCD295;
     6: rctNzisBTN.Stroke.Color := $FF299045;
@@ -10423,7 +10411,7 @@ var
   nzisStatus: Word;
   //THipPregledStatus = (hpsNone, hpsValid, hpsNoValid, hpsStartOpen, hpsErr, hpsOpen, hpsClosed, hpsCancel);
 begin
-  nzisStatus := PregledColl.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
+  nzisStatus := Adb_dm.CollPregled.getWordMap(FPregled.DataPos, word(PregledNew_NZIS_STATUS));
   //animNzisButton.Tag:= nzisStatus;
   case nzisStatus of
     3:
@@ -11075,7 +11063,7 @@ begin
     dataRunPr001 :=pointer(PByte(RunNodePR001) + lenNode);
 
     if (RunNodeCL132.ChildCount > 1) or
-         ((RunNodePR001<> nil) and (ResDiagRepColl.getAnsiStringMap(dataRunPr001.DataPos, Word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE)) ='65-226-09'))then
+         ((RunNodePR001<> nil) and (Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(dataRunPr001.DataPos, Word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE)) ='65-226-09'))then
     begin
       AddExpanderPreg(idxListExpander, RunNodeCL132);
       tempFLYT := WalkChildrenFLYT(LstExpanders[idxListExpander]);
@@ -11391,7 +11379,7 @@ begin
     lstItem := frmFmxControls.lbComboOne.ListItems[i];
     if lstItem.IsChecked then  // ако е избрано
     begin
-      nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, AnswValuesColl);
+      nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, Adb_dm.CollNZIS_ANSWER_VALUE);
       if nodeValue <> nil then
         Continue;
       AddBtnMultiLyt(TempComboLabel, lstItem.Text, TempComboLabel.Flyt);
@@ -11399,8 +11387,8 @@ begin
       answTemp.DataPos := Data.DataPos;
       cl134Temp.DataPos := answTemp.getCardMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
       answTemp.cl028 := StrToInt(cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_CL028)));
-      AnswValue := TRealNZIS_ANSWER_VALUEItem(FAnswValuesColl.Add);
-      Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
+      AnswValue := TRealNZIS_ANSWER_VALUEItem(Adb_dm.CollNZIS_ANSWER_VALUE.Add);
+      Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
       New(AnswValue.PRecord);
       case answTemp.cl028 of
         2: //nomenkl
@@ -11409,7 +11397,7 @@ begin
           AnswValue.PRecord.ID := 0;
           AnswValue.PRecord.QUESTIONNAIRE_ANSWER_ID := 0;
           AnswValue.PRecord.CL028 := 2;
-          AnswValue.PRecord.NOMEN_POS := Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
+          AnswValue.PRecord.NOMEN_POS := Adb_dm.Cl139Coll.GetDataPosFromKey(AnswValue.PRecord.ANSWER_CODE);
 
           AnswValue.PRecord.setProp :=
           [NZIS_ANSWER_VALUE_ANSWER_CODE
@@ -11431,7 +11419,7 @@ begin
     end
     else  // ако не е избрано
     begin
-      nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, AnswValuesColl);
+      nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, Adb_dm.CollNZIS_ANSWER_VALUE);
       if nodeValue <> nil then // не е избрано, пък го има в дървото. Значи е премахнато
       begin
         FAspLink.MarkDeletedNode(nodeValue);// махам го от дървото
@@ -11522,8 +11510,8 @@ begin
     mkbPos := TempDiagLabel.diag.getCardMap(FAspAdbBuf, FAspAdbPosData, word(Diagnosis_MkbPos));
     if mkbPos > 100 then
     begin
-      TempDiagLabel.mmoDiag.Text := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
-      mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
+      TempDiagLabel.mmoDiag.Text := Adb_dm.CollMkb.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+      mkbNote := Adb_dm.CollMkb.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
       if TempDiagLabel.txtMain <> nil then
       begin
         if mkbNote.Contains('*') then
@@ -11580,9 +11568,9 @@ begin
   TempPlanedTypeLabel := TPlanedTypeLabel(rctPlane.TagObject);
   nodePlan := TempPlanedTypeLabel.nodePlan;
   dataPlan := Pointer(PByte(nodePlan) + lenNode);
-  cl132Key := PlanedTypeColl.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-  cl132pos := PlanedTypeColl.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-  cl136Key := CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+  cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+  cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+  cl136Key := ADB_DM.Cl132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
 
   if nodePlan.CheckState <> csUncheckedNormal then
   begin
@@ -11600,7 +11588,7 @@ begin
     dataPreg := Pointer(PByte(FPregled.FNode) + lenNode);
     if (FPregled.PRecord = nil) and (dataPreg.index > -1) then
     begin
-      //PregledColl.Delete(dataPreg.index);
+      //Adb_dm.CollPregled.Delete(dataPreg.index);
     end;
 
     FOnReShowProfForm(dataPat, dataPreg, FPregled.FNode);
@@ -11820,7 +11808,7 @@ end;
 procedure TfrmProfFormFMX.SetPregled(const Value: TRealPregledNewItem);
 begin
   FPregled := Value;
-  Memo1.Text := IntToStr(PregledColl.Count);
+  Memo1.Text := IntToStr(Adb_dm.CollPregled.Count);
 end;
 
 procedure TfrmProfFormFMX.SetPregledColl(const Value: TRealPregledNewColl);
@@ -11953,7 +11941,7 @@ var
 begin
   txt := TText(sender);
   dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-  IncNaprlog := TlogicalINC_NAPRSet(IncNaprColl.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
+  IncNaprlog := TlogicalINC_NAPRSet(Adb_dm.CollIncMN.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
   if category_R2 in IncNaprlog then
     txt.Text := 'Бланка 3'
   else
@@ -11981,7 +11969,7 @@ begin
     TText(Sender).Text := '';
     Exit;
   end;
-  log16 := TlogicalDiagnosisSet(DiagColl.getLogical16Map(TempDiagLabel.diag.DataPos, word(Diagnosis_Logical)));
+  log16 := TlogicalDiagnosisSet(Adb_dm.CollDiag.getLogical16Map(TempDiagLabel.diag.DataPos, word(Diagnosis_Logical)));
   if log16 <> [] then
   begin
     logStat := TRealDiagnosisColl.GetClinicStatus(log16);
@@ -12045,12 +12033,12 @@ begin
   txt := TText(sender);
 
   dataPreg := Pointer(PByte(pregNodes.pregNode) + lenNode);
-  Preglog := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
+  Preglog := TlogicalPregledNewSet(Adb_dm.CollPregled.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
   if TLogicalPregledNew.IS_PRIMARY in Preglog then
     txt.Text := 'Първичен'
   else
   begin
-    vtorNRN := PregledColl.getAnsiStringMap(dataPreg.DataPos, Word(PregledNew_COPIED_FROM_NRN));
+    vtorNRN := Adb_dm.CollPregled.getAnsiStringMap(dataPreg.DataPos, Word(PregledNew_COPIED_FROM_NRN));
     txt.Text := 'Вторичен: ' + vtorNRN;
   end;
 end;
@@ -12104,7 +12092,7 @@ begin
   end;
   if runDiag <> nil then
   begin
-    TEdit(Sender).Text := DiagColl.getAnsiStringMap(dataRun.DataPos, word(Diagnosis_code_CL011));
+    TEdit(Sender).Text := Adb_dm.CollDiag.getAnsiStringMap(dataRun.DataPos, word(Diagnosis_code_CL011));
   end
   else
   begin
@@ -12125,7 +12113,7 @@ begin
 
   txt := TText(sender);
   dataInkNapr := Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-  IncNaprlog := TlogicalINC_NAPRSet(IncNaprColl.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
+  IncNaprlog := TlogicalINC_NAPRSet(Adb_dm.CollIncMN.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
   //intSet := IncNaprColl.GetNaprCode_Quick(IncNaprlog);
   intSet := NativeUInt(NaprGroup * IncNaprLog);
   case intSet of
@@ -12431,7 +12419,7 @@ var
 begin
   //txt := TText(xpdrDoctor.Text);
   dataPreg := Pointer(PByte(pregNodes.pregNode) + lenNode);
-  Preglog := TlogicalPregledNewSet(PregledColl.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
+  Preglog := TlogicalPregledNewSet(Adb_dm.CollPregled.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
   if TLogicalPregledNew.IS_EXPERTIZA in Preglog then
     xpdrDoctor.Text := 'ЛКК'
   else

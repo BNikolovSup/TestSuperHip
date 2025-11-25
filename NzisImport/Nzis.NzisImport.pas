@@ -1371,7 +1371,7 @@ begin
 
     vImportNzisPregled := VtrImport.AddChild(vImportNzis, nil);
     data := VtrImport.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregledRoot;
+    data.vid := vvPregledNewRoot;
     data.index := -1;
     vImportNzisNapr := VtrImport.AddChild(vImportNzis, nil);
     data := VtrImport.GetNodeData(vImportNzisNapr);
@@ -2559,7 +2559,7 @@ begin
       if data.index = -1 then
       begin
         case data.vid of
-          vvPregledRoot: CellText := 'Прегледи';
+          vvPregledNewRoot: CellText := 'Прегледи';
           vvMDN: CellText := 'Направления';
           vvRecepta: CellText := 'Рецепти';
           vvExamImun: CellText := 'Имунизации';
@@ -3088,7 +3088,7 @@ begin
               pat := msgColl.CollPat.Items[dataPat.index];
               msg := TNzisReqRespItem(pat.FLstMsgImportNzis[data.index]);
             end;
-            vvPregledRoot:
+            vvPregledNewRoot:
             begin
               msg := msgColl.items[data.index];
             end;

@@ -1,11 +1,11 @@
-unit Table.Practica;
+﻿unit Table.Practica;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -21,49 +21,56 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
+TLogicalPractica = (
+    INVOICECOMPANY,
+    ISSUER_TYPE,
+    IS_SAMOOSIG,
+    SELF_INSURED_DECLARATION);
+TlogicalPracticaSet = set of TLogicalPractica;
+
 
 TPracticaItem = class(TBaseItem)
   public
     type
-      TPropertyIndex = (Practica_ADDRESS_ACT
-, Practica_ADDRESS_DOGNZOK
-, Practica_ADRES
-, Practica_BANKA
-, Practica_BANKOW_KOD
-, Practica_BULSTAT
-, Practica_COMPANYNAME
-, Practica_CONTRACT_DATE
-, Practica_CONTRACT_RZOK
-, Practica_CONTRACT_TYPE
-, Practica_DAN_NOMER
-, Practica_EGN
-, Practica_FNAME
-, Practica_FULLNAME
-, Practica_INVOICECOMPANY
-, Practica_ISSUER_TYPE
-, Practica_IS_SAMOOSIG
-, Practica_KOD_RAJON
-, Practica_KOD_RZOK
-, Practica_LNAME
-, Practica_LNCH
-, Practica_NAME
-, Practica_NAS_MQSTO
-, Practica_NEBL_USL
-, Practica_NOMER_LZ
-, Practica_NOM_NAP
-, Practica_NZOK_NOMER
-, Practica_OBLAST
-, Practica_OBSHTINA
-, Practica_SELF_INSURED_DECLARATION
-, Practica_SMETKA
-, Practica_SNAME
-, Practica_UPRAVITEL
-, Practica_VIDFIRMA
-, Practica_VID_IDENT
-, Practica_VID_PRAKTIKA
-, Practica_HIP_TYPE
-);
+      TPropertyIndex = (
+       Practica_ADDRESS_ACT
+       , Practica_ADDRESS_DOGNZOK
+       , Practica_ADRES
+       , Practica_BANKA
+       , Practica_BANKOW_KOD
+       , Practica_BULSTAT
+       , Practica_COMPANYNAME
+       , Practica_CONTRACT_DATE
+       , Practica_CONTRACT_RZOK
+       , Practica_CONTRACT_TYPE
+       , Practica_DAN_NOMER
+       , Practica_EGN
+       , Practica_FNAME
+       , Practica_FULLNAME
+       , Practica_KOD_RAJON
+       , Practica_KOD_RZOK
+       , Practica_LNAME
+       , Practica_LNCH
+       , Practica_NAME
+       , Practica_NAS_MQSTO
+       , Practica_NEBL_USL
+       , Practica_NOMER_LZ
+       , Practica_NOM_NAP
+       , Practica_NZOK_NOMER
+       , Practica_OBLAST
+       , Practica_OBSHTINA
+       , Practica_SMETKA
+       , Practica_SNAME
+       , Practica_UPRAVITEL
+       , Practica_VIDFIRMA
+       , Practica_VID_IDENT
+       , Practica_VID_PRAKTIKA
+       , Practica_HIP_TYPE
+       , Practica_Logical
+       );
+	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecPractica = ^TRecPractica;
       TRecPractica = record
         ADDRESS_ACT: AnsiString;
@@ -80,9 +87,6 @@ TPracticaItem = class(TBaseItem)
         EGN: AnsiString;
         FNAME: AnsiString;
         FULLNAME: AnsiString;
-        INVOICECOMPANY: boolean;
-        ISSUER_TYPE: boolean;
-        IS_SAMOOSIG: boolean;
         KOD_RAJON: AnsiString;
         KOD_RZOK: AnsiString;
         LNAME: AnsiString;
@@ -95,7 +99,6 @@ TPracticaItem = class(TBaseItem)
         NZOK_NOMER: AnsiString;
         OBLAST: AnsiString;
         OBSHTINA: AnsiString;
-        SELF_INSURED_DECLARATION: boolean;
         SMETKA: AnsiString;
         SNAME: AnsiString;
         UPRAVITEL: AnsiString;
@@ -103,22 +106,28 @@ TPracticaItem = class(TBaseItem)
         VID_IDENT: AnsiString;
         VID_PRAKTIKA: AnsiString;
         HIP_TYPE: AnsiString;
+        Logical: TlogicalPracticaSet;
         setProp: TSetProp;
       end;
 
   public
     PRecord: ^TRecPractica;
 	IndexInt: Integer;
-	IndexWord: word;
+	IndexWord: Word;
 	IndexAnsiStr: PAnsiChar;
     IndexAnsiStr1: AnsiString;
     IndexField: TPropertyIndex;
-
+	
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
     procedure InsertPractica;
     procedure UpdatePractica;
-    procedure SavePractica(var dataPosition: Cardinal);
+    procedure SavePractica(var dataPosition: Cardinal)overload;
+	procedure SavePractica(Abuf: Pointer; var dataPosition: Cardinal)overload;
+	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -126,39 +135,72 @@ TPracticaItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TPracticaItem;
     function GetItem(Index: Integer): TPracticaItem;
     procedure SetItem(Index: Integer; const Value: TPracticaItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TPracticaItem>;
     ListPracticaSearch: TList<TPracticaItem>;
+	PRecordSearch: ^TPracticaItem.TRecPractica;
+    ArrPropSearch: TArray<TPracticaItem.TPropertyIndex>;
+    ArrPropSearchClc: TArray<TPracticaItem.TPropertyIndex>;
+	VisibleColl: TPracticaItem.TSetProp;
+	ArrayPropOrder: TArray<TPracticaItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
 
     function AddItem(ver: word):TPracticaItem;
+	function AddItemForSearch: Integer;
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-    procedure GetCellFromMap(propIndex: word; ARow: Integer; Practica: TPracticaItem; var AValue:String);
+    procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
+    procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
+	procedure GetCellFromMap(propIndex: word; ARow: Integer; Practica: TPracticaItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; Practica: TPracticaItem; var AValue:String);
+	procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-	procedure DynControlEnter(Sender: TObject);
     procedure SortByIndexValue(propIndex: TPracticaItem.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
-	function DisplayName(propIndex: Word): string;
-  //function GetTableName: string; override;
+	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
+	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TPracticaItem>);
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
-
+    
     procedure IndexValue(propIndex: TPracticaItem.TPropertyIndex);
+	procedure IndexValueListNodes(propIndex:  TPracticaItem.TPropertyIndex);
     property Items[Index: Integer]: TPracticaItem read GetItem write SetItem;
+	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+    procedure OnSetTextSearchLog(Log: TlogicalPracticaSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
   end;
 
 implementation
@@ -175,6 +217,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TPracticaItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TPracticaItem.GetCollType: TCollectionsType;
+begin
+  Result := ctPractica;
+end;
+
+function TPracticaItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TPracticaItem.InsertPractica;
@@ -207,7 +278,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	    Self.DataPos := metaPosition;
+	  Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -228,9 +299,6 @@ begin
             Practica_EGN: SaveData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
             Practica_FNAME: SaveData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
             Practica_FULLNAME: SaveData(PRecord.FULLNAME, PropPosition, metaPosition, dataPosition);
-            Practica_INVOICECOMPANY: SaveData(PRecord.INVOICECOMPANY, PropPosition, metaPosition, dataPosition);
-            Practica_ISSUER_TYPE: SaveData(PRecord.ISSUER_TYPE, PropPosition, metaPosition, dataPosition);
-            Practica_IS_SAMOOSIG: SaveData(PRecord.IS_SAMOOSIG, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RAJON: SaveData(PRecord.KOD_RAJON, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RZOK: SaveData(PRecord.KOD_RZOK, PropPosition, metaPosition, dataPosition);
             Practica_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
@@ -243,7 +311,6 @@ begin
             Practica_NZOK_NOMER: SaveData(PRecord.NZOK_NOMER, PropPosition, metaPosition, dataPosition);
             Practica_OBLAST: SaveData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
             Practica_OBSHTINA: SaveData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
-            Practica_SELF_INSURED_DECLARATION: SaveData(PRecord.SELF_INSURED_DECLARATION, PropPosition, metaPosition, dataPosition);
             Practica_SMETKA: SaveData(PRecord.SMETKA, PropPosition, metaPosition, dataPosition);
             Practica_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Practica_UPRAVITEL: SaveData(PRecord.UPRAVITEL, PropPosition, metaPosition, dataPosition);
@@ -251,6 +318,7 @@ begin
             Practica_VID_IDENT: SaveData(PRecord.VID_IDENT, PropPosition, metaPosition, dataPosition);
             Practica_VID_PRAKTIKA: SaveData(PRecord.VID_PRAKTIKA, PropPosition, metaPosition, dataPosition);
             Practica_HIP_TYPE: SaveData(PRecord.HIP_TYPE, PropPosition, metaPosition, dataPosition);
+            Practica_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -266,6 +334,75 @@ begin
   end;
 end;
 
+function  TPracticaItem.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
+var
+  i: Integer;
+  pidx:  TPracticaItem.TPropertyIndex;
+  cot: TConditionSet;
+  ATempItem: TPracticaItem;
+begin
+  Result := True;
+  for i := 0 to Length(TPracticaColl(coll).ArrPropSearchClc) - 1 do
+  begin
+    if Result = false then
+      Exit;
+    pidx := TPracticaColl(coll).ArrPropSearchClc[i];
+	ATempItem := TPracticaColl(coll).ListForFinder.Items[0];
+    cot := ATempItem.ArrCondition[word(pidx)];
+    begin
+      case pidx of
+        Practica_ADDRESS_ACT: Result := IsFinded(ATempItem.PRecord.ADDRESS_ACT, buf, FPosDataADB, word(Practica_ADDRESS_ACT), cot);
+            Practica_ADDRESS_DOGNZOK: Result := IsFinded(ATempItem.PRecord.ADDRESS_DOGNZOK, buf, FPosDataADB, word(Practica_ADDRESS_DOGNZOK), cot);
+            Practica_ADRES: Result := IsFinded(ATempItem.PRecord.ADRES, buf, FPosDataADB, word(Practica_ADRES), cot);
+            Practica_BANKA: Result := IsFinded(ATempItem.PRecord.BANKA, buf, FPosDataADB, word(Practica_BANKA), cot);
+            Practica_BANKOW_KOD: Result := IsFinded(ATempItem.PRecord.BANKOW_KOD, buf, FPosDataADB, word(Practica_BANKOW_KOD), cot);
+            Practica_BULSTAT: Result := IsFinded(ATempItem.PRecord.BULSTAT, buf, FPosDataADB, word(Practica_BULSTAT), cot);
+            Practica_COMPANYNAME: Result := IsFinded(ATempItem.PRecord.COMPANYNAME, buf, FPosDataADB, word(Practica_COMPANYNAME), cot);
+            Practica_CONTRACT_DATE: Result := IsFinded(ATempItem.PRecord.CONTRACT_DATE, buf, FPosDataADB, word(Practica_CONTRACT_DATE), cot);
+            Practica_CONTRACT_RZOK: Result := IsFinded(ATempItem.PRecord.CONTRACT_RZOK, buf, FPosDataADB, word(Practica_CONTRACT_RZOK), cot);
+            Practica_CONTRACT_TYPE: Result := IsFinded(ATempItem.PRecord.CONTRACT_TYPE, buf, FPosDataADB, word(Practica_CONTRACT_TYPE), cot);
+            Practica_DAN_NOMER: Result := IsFinded(ATempItem.PRecord.DAN_NOMER, buf, FPosDataADB, word(Practica_DAN_NOMER), cot);
+            Practica_EGN: Result := IsFinded(ATempItem.PRecord.EGN, buf, FPosDataADB, word(Practica_EGN), cot);
+            Practica_FNAME: Result := IsFinded(ATempItem.PRecord.FNAME, buf, FPosDataADB, word(Practica_FNAME), cot);
+            Practica_FULLNAME: Result := IsFinded(ATempItem.PRecord.FULLNAME, buf, FPosDataADB, word(Practica_FULLNAME), cot);
+            Practica_KOD_RAJON: Result := IsFinded(ATempItem.PRecord.KOD_RAJON, buf, FPosDataADB, word(Practica_KOD_RAJON), cot);
+            Practica_KOD_RZOK: Result := IsFinded(ATempItem.PRecord.KOD_RZOK, buf, FPosDataADB, word(Practica_KOD_RZOK), cot);
+            Practica_LNAME: Result := IsFinded(ATempItem.PRecord.LNAME, buf, FPosDataADB, word(Practica_LNAME), cot);
+            Practica_LNCH: Result := IsFinded(ATempItem.PRecord.LNCH, buf, FPosDataADB, word(Practica_LNCH), cot);
+            Practica_NAME: Result := IsFinded(ATempItem.PRecord.NAME, buf, FPosDataADB, word(Practica_NAME), cot);
+            Practica_NAS_MQSTO: Result := IsFinded(ATempItem.PRecord.NAS_MQSTO, buf, FPosDataADB, word(Practica_NAS_MQSTO), cot);
+            Practica_NEBL_USL: Result := IsFinded(ATempItem.PRecord.NEBL_USL, buf, FPosDataADB, word(Practica_NEBL_USL), cot);
+            Practica_NOMER_LZ: Result := IsFinded(ATempItem.PRecord.NOMER_LZ, buf, FPosDataADB, word(Practica_NOMER_LZ), cot);
+            Practica_NOM_NAP: Result := IsFinded(ATempItem.PRecord.NOM_NAP, buf, FPosDataADB, word(Practica_NOM_NAP), cot);
+            Practica_NZOK_NOMER: Result := IsFinded(ATempItem.PRecord.NZOK_NOMER, buf, FPosDataADB, word(Practica_NZOK_NOMER), cot);
+            Practica_OBLAST: Result := IsFinded(ATempItem.PRecord.OBLAST, buf, FPosDataADB, word(Practica_OBLAST), cot);
+            Practica_OBSHTINA: Result := IsFinded(ATempItem.PRecord.OBSHTINA, buf, FPosDataADB, word(Practica_OBSHTINA), cot);
+            Practica_SMETKA: Result := IsFinded(ATempItem.PRecord.SMETKA, buf, FPosDataADB, word(Practica_SMETKA), cot);
+            Practica_SNAME: Result := IsFinded(ATempItem.PRecord.SNAME, buf, FPosDataADB, word(Practica_SNAME), cot);
+            Practica_UPRAVITEL: Result := IsFinded(ATempItem.PRecord.UPRAVITEL, buf, FPosDataADB, word(Practica_UPRAVITEL), cot);
+            Practica_VIDFIRMA: Result := IsFinded(ATempItem.PRecord.VIDFIRMA, buf, FPosDataADB, word(Practica_VIDFIRMA), cot);
+            Practica_VID_IDENT: Result := IsFinded(ATempItem.PRecord.VID_IDENT, buf, FPosDataADB, word(Practica_VID_IDENT), cot);
+            Practica_VID_PRAKTIKA: Result := IsFinded(ATempItem.PRecord.VID_PRAKTIKA, buf, FPosDataADB, word(Practica_VID_PRAKTIKA), cot);
+            Practica_HIP_TYPE: Result := IsFinded(ATempItem.PRecord.HIP_TYPE, buf, FPosDataADB, word(Practica_HIP_TYPE), cot);
+            Practica_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(Practica_Logical), cot);
+      end;
+    end;
+  end;
+end;
+
+procedure TPracticaItem.SavePractica(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SavePractica(dataPosition);
+end;
+
 procedure TPracticaItem.SavePractica(var dataPosition: Cardinal);
 var
   CollType: TCollectionsType;
@@ -273,7 +410,7 @@ var
   propIndx: TPropertyIndex;
 begin
   CollType := ctPractica;
-  SaveStreamCommand(TLogicalData40(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
+  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
     begin
@@ -298,9 +435,6 @@ begin
             Practica_EGN: SaveData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
             Practica_FNAME: SaveData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
             Practica_FULLNAME: SaveData(PRecord.FULLNAME, PropPosition, metaPosition, dataPosition);
-            Practica_INVOICECOMPANY: SaveData(PRecord.INVOICECOMPANY, PropPosition, metaPosition, dataPosition);
-            Practica_ISSUER_TYPE: SaveData(PRecord.ISSUER_TYPE, PropPosition, metaPosition, dataPosition);
-            Practica_IS_SAMOOSIG: SaveData(PRecord.IS_SAMOOSIG, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RAJON: SaveData(PRecord.KOD_RAJON, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RZOK: SaveData(PRecord.KOD_RZOK, PropPosition, metaPosition, dataPosition);
             Practica_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
@@ -313,7 +447,6 @@ begin
             Practica_NZOK_NOMER: SaveData(PRecord.NZOK_NOMER, PropPosition, metaPosition, dataPosition);
             Practica_OBLAST: SaveData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
             Practica_OBSHTINA: SaveData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
-            Practica_SELF_INSURED_DECLARATION: SaveData(PRecord.SELF_INSURED_DECLARATION, PropPosition, metaPosition, dataPosition);
             Practica_SMETKA: SaveData(PRecord.SMETKA, PropPosition, metaPosition, dataPosition);
             Practica_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Practica_UPRAVITEL: SaveData(PRecord.UPRAVITEL, PropPosition, metaPosition, dataPosition);
@@ -321,6 +454,7 @@ begin
             Practica_VID_IDENT: SaveData(PRecord.VID_IDENT, PropPosition, metaPosition, dataPosition);
             Practica_VID_PRAKTIKA: SaveData(PRecord.VID_PRAKTIKA, PropPosition, metaPosition, dataPosition);
             Practica_HIP_TYPE: SaveData(PRecord.HIP_TYPE, PropPosition, metaPosition, dataPosition);
+            Practica_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -365,9 +499,6 @@ begin
             Practica_EGN: UpdateData(PRecord.EGN, PropPosition, metaPosition, dataPosition);
             Practica_FNAME: UpdateData(PRecord.FNAME, PropPosition, metaPosition, dataPosition);
             Practica_FULLNAME: UpdateData(PRecord.FULLNAME, PropPosition, metaPosition, dataPosition);
-            Practica_INVOICECOMPANY: UpdateData(PRecord.INVOICECOMPANY, PropPosition, metaPosition, dataPosition);
-            Practica_ISSUER_TYPE: UpdateData(PRecord.ISSUER_TYPE, PropPosition, metaPosition, dataPosition);
-            Practica_IS_SAMOOSIG: UpdateData(PRecord.IS_SAMOOSIG, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RAJON: UpdateData(PRecord.KOD_RAJON, PropPosition, metaPosition, dataPosition);
             Practica_KOD_RZOK: UpdateData(PRecord.KOD_RZOK, PropPosition, metaPosition, dataPosition);
             Practica_LNAME: UpdateData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
@@ -380,7 +511,6 @@ begin
             Practica_NZOK_NOMER: UpdateData(PRecord.NZOK_NOMER, PropPosition, metaPosition, dataPosition);
             Practica_OBLAST: UpdateData(PRecord.OBLAST, PropPosition, metaPosition, dataPosition);
             Practica_OBSHTINA: UpdateData(PRecord.OBSHTINA, PropPosition, metaPosition, dataPosition);
-            Practica_SELF_INSURED_DECLARATION: UpdateData(PRecord.SELF_INSURED_DECLARATION, PropPosition, metaPosition, dataPosition);
             Practica_SMETKA: UpdateData(PRecord.SMETKA, PropPosition, metaPosition, dataPosition);
             Practica_SNAME: UpdateData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Practica_UPRAVITEL: UpdateData(PRecord.UPRAVITEL, PropPosition, metaPosition, dataPosition);
@@ -407,30 +537,328 @@ function TPracticaColl.AddItem(ver: word): TPracticaItem;
 begin
   Result := TPracticaItem(add);
   Result.Version := ver;
-  case ver of // � ���������� �� �������� �� ������
+  case ver of // в зависимост от версията на записа
     0:
     begin
     end;
   end;
 end;
 
+function TPracticaColl.AddItemForSearch: Integer;
+var
+  ItemForSearch: TPracticaItem;
+begin
+  ItemForSearch := TPracticaItem.Create(nil);
+  SetLength(ItemForSearch.ArrCondition, self.FieldCount);
+
+  New(ItemForSearch.PRecord);
+  ItemForSearch.PRecord.setProp := [];
+  ItemForSearch.PRecord.Logical := [];
+  Result := ListForFinder.Add(ItemForSearch);
+end;
+
+procedure TPracticaColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TPracticaItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TPracticaColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvPracticaRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TPracticaColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TPracticaItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (Practica_ADDRESS_ACT in tempItem.PRecord.setProp) and (tempItem.PRecord.ADDRESS_ACT <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_ADDRESS_ACT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_ADDRESS_DOGNZOK in tempItem.PRecord.setProp) and (tempItem.PRecord.ADDRESS_DOGNZOK <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_ADDRESS_DOGNZOK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_ADRES in tempItem.PRecord.setProp) and (tempItem.PRecord.ADRES <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_ADRES))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_BANKA in tempItem.PRecord.setProp) and (tempItem.PRecord.BANKA <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_BANKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_BANKOW_KOD in tempItem.PRecord.setProp) and (tempItem.PRecord.BANKOW_KOD <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_BANKOW_KOD))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_BULSTAT in tempItem.PRecord.setProp) and (tempItem.PRecord.BULSTAT <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_BULSTAT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_COMPANYNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.COMPANYNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_COMPANYNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_CONTRACT_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.CONTRACT_DATE <> Self.getDateMap(tempItem.DataPos, word(Practica_CONTRACT_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_CONTRACT_RZOK in tempItem.PRecord.setProp) and (tempItem.PRecord.CONTRACT_RZOK <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_CONTRACT_RZOK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_CONTRACT_TYPE in tempItem.PRecord.setProp) and (tempItem.PRecord.CONTRACT_TYPE <> Self.getIntMap(tempItem.DataPos, word(Practica_CONTRACT_TYPE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_DAN_NOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.DAN_NOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_DAN_NOMER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_EGN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_FNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_FULLNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FULLNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_FULLNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_KOD_RAJON in tempItem.PRecord.setProp) and (tempItem.PRecord.KOD_RAJON <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_KOD_RAJON))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_KOD_RZOK in tempItem.PRecord.setProp) and (tempItem.PRecord.KOD_RZOK <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_KOD_RZOK))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_LNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_LNCH in tempItem.PRecord.setProp) and (tempItem.PRecord.LNCH <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_LNCH))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NAME in tempItem.PRecord.setProp) and (tempItem.PRecord.NAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_NAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NAS_MQSTO in tempItem.PRecord.setProp) and (tempItem.PRecord.NAS_MQSTO <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_NAS_MQSTO))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NEBL_USL in tempItem.PRecord.setProp) and (Abs(tempItem.PRecord.NEBL_USL - Self.getDoubleMap(tempItem.DataPos, word(Practica_NEBL_USL))) > 0.000001) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NOMER_LZ in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMER_LZ <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_NOMER_LZ))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NOM_NAP in tempItem.PRecord.setProp) and (tempItem.PRecord.NOM_NAP <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_NOM_NAP))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_NZOK_NOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.NZOK_NOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_NZOK_NOMER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_OBLAST in tempItem.PRecord.setProp) and (tempItem.PRecord.OBLAST <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_OBLAST))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_OBSHTINA in tempItem.PRecord.setProp) and (tempItem.PRecord.OBSHTINA <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_OBSHTINA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_SMETKA in tempItem.PRecord.setProp) and (tempItem.PRecord.SMETKA <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_SMETKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_SNAME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_UPRAVITEL in tempItem.PRecord.setProp) and (tempItem.PRecord.UPRAVITEL <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_UPRAVITEL))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_VIDFIRMA in tempItem.PRecord.setProp) and (tempItem.PRecord.VIDFIRMA <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_VIDFIRMA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_VID_IDENT in tempItem.PRecord.setProp) and (tempItem.PRecord.VID_IDENT <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_VID_IDENT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_VID_PRAKTIKA in tempItem.PRecord.setProp) and (tempItem.PRecord.VID_PRAKTIKA <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_VID_PRAKTIKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_HIP_TYPE in tempItem.PRecord.setProp) and (tempItem.PRecord.HIP_TYPE <> Self.getAnsiStringMap(tempItem.DataPos, word(Practica_HIP_TYPE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (Practica_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(Practica_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
 
 constructor TPracticaColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
+  tempItem := TPracticaItem.Create(nil);
   ListPracticaSearch := TList<TPracticaItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TPracticaItem>.Create;
+  New(PRecordSearch);
+  PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TPracticaColl.destroy;
 begin
   FreeAndNil(ListPracticaSearch);
+  FreeAndNil(ListForFinder);
+  FreeAndNil(TempItem);
+  Dispose(PRecordSearch);
+  PRecordSearch := nil;
   inherited;
 end;
 
 function TPracticaColl.DisplayName(propIndex: Word): string;
 begin
+  inherited;
   case TPracticaItem.TPropertyIndex(propIndex) of
     Practica_ADDRESS_ACT: Result := 'ADDRESS_ACT';
     Practica_ADDRESS_DOGNZOK: Result := 'ADDRESS_DOGNZOK';
@@ -446,9 +874,6 @@ begin
     Practica_EGN: Result := 'EGN';
     Practica_FNAME: Result := 'FNAME';
     Practica_FULLNAME: Result := 'FULLNAME';
-    Practica_INVOICECOMPANY: Result := 'INVOICECOMPANY';
-    Practica_ISSUER_TYPE: Result := 'ISSUER_TYPE';
-    Practica_IS_SAMOOSIG: Result := 'IS_SAMOOSIG';
     Practica_KOD_RAJON: Result := 'KOD_RAJON';
     Practica_KOD_RZOK: Result := 'KOD_RZOK';
     Practica_LNAME: Result := 'LNAME';
@@ -461,7 +886,6 @@ begin
     Practica_NZOK_NOMER: Result := 'NZOK_NOMER';
     Practica_OBLAST: Result := 'OBLAST';
     Practica_OBSHTINA: Result := 'OBSHTINA';
-    Practica_SELF_INSURED_DECLARATION: Result := 'SELF_INSURED_DECLARATION';
     Practica_SMETKA: Result := 'SMETKA';
     Practica_SNAME: Result := 'SNAME';
     Practica_UPRAVITEL: Result := 'UPRAVITEL';
@@ -469,19 +893,194 @@ begin
     Practica_VID_IDENT: Result := 'VID_IDENT';
     Practica_VID_PRAKTIKA: Result := 'VID_PRAKTIKA';
     Practica_HIP_TYPE: Result := 'HIP_TYPE';
+    Practica_Logical: Result := 'Logical';
   end;
 end;
 
-procedure TPracticaColl.DynControlEnter(Sender: TObject);
+function TPracticaColl.DisplayLogicalName(flagIndex: Integer): string;
 begin
-  self.FindedRes.DataPos := 0;
-  //self.FindedRes.PropIndex := TBaseControl(sender).ColIndex;
-  self.IndexValue(TPracticaItem.TPropertyIndex(self.FindedRes.PropIndex));
+  case flagIndex of
+0: Result := 'INVOICECOMPANY';
+    1: Result := 'ISSUER_TYPE';
+    2: Result := 'IS_SAMOOSIG';
+    3: Result := 'SELF_INSURED_DECLARATION';
+  else
+    Result := '???';
+  end;
 end;
 
-function TPracticaColl.FieldCount: Integer;
+
+procedure TPracticaColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
 begin
-  Result := 37;
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
+
+
+function TPracticaColl.FieldCount: Integer; 
+begin
+  inherited;
+  Result := 34;
+end;
+
+function TPracticaColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvPracticaRoot then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TPracticaColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TPracticaColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TPracticaColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TPracticaColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -505,6 +1104,30 @@ begin
   end;
 end;
 
+procedure TPracticaColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
+var
+  RowSelect: Integer;
+  prop: TPracticaItem.TPropertyIndex;
+begin
+  inherited;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
+
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
+end;
+
 procedure TPracticaColl.GetCellFromRecord(propIndex: word; Practica: TPracticaItem; var AValue: String);
 var
   str: string;
@@ -517,16 +1140,13 @@ begin
     Practica_BANKOW_KOD: str := (Practica.PRecord.BANKOW_KOD);
     Practica_BULSTAT: str := (Practica.PRecord.BULSTAT);
     Practica_COMPANYNAME: str := (Practica.PRecord.COMPANYNAME);
-    Practica_CONTRACT_DATE: str := DateToStr(Practica.PRecord.CONTRACT_DATE);
+    Practica_CONTRACT_DATE: str := AspDateToStr(Practica.PRecord.CONTRACT_DATE);
     Practica_CONTRACT_RZOK: str := (Practica.PRecord.CONTRACT_RZOK);
     Practica_CONTRACT_TYPE: str := inttostr(Practica.PRecord.CONTRACT_TYPE);
     Practica_DAN_NOMER: str := (Practica.PRecord.DAN_NOMER);
     Practica_EGN: str := (Practica.PRecord.EGN);
     Practica_FNAME: str := (Practica.PRecord.FNAME);
     Practica_FULLNAME: str := (Practica.PRecord.FULLNAME);
-    Practica_INVOICECOMPANY: str := BoolToStr(Practica.PRecord.INVOICECOMPANY, True);
-    Practica_ISSUER_TYPE: str := BoolToStr(Practica.PRecord.ISSUER_TYPE, True);
-    Practica_IS_SAMOOSIG: str := BoolToStr(Practica.PRecord.IS_SAMOOSIG, True);
     Practica_KOD_RAJON: str := (Practica.PRecord.KOD_RAJON);
     Practica_KOD_RZOK: str := (Practica.PRecord.KOD_RZOK);
     Practica_LNAME: str := (Practica.PRecord.LNAME);
@@ -539,7 +1159,6 @@ begin
     Practica_NZOK_NOMER: str := (Practica.PRecord.NZOK_NOMER);
     Practica_OBLAST: str := (Practica.PRecord.OBLAST);
     Practica_OBSHTINA: str := (Practica.PRecord.OBSHTINA);
-    Practica_SELF_INSURED_DECLARATION: str := BoolToStr(Practica.PRecord.SELF_INSURED_DECLARATION, True);
     Practica_SMETKA: str := (Practica.PRecord.SMETKA);
     Practica_SNAME: str := (Practica.PRecord.SNAME);
     Practica_UPRAVITEL: str := (Practica.PRecord.UPRAVITEL);
@@ -547,12 +1166,48 @@ begin
     Practica_VID_IDENT: str := (Practica.PRecord.VID_IDENT);
     Practica_VID_PRAKTIKA: str := (Practica.PRecord.VID_PRAKTIKA);
     Practica_HIP_TYPE: str := (Practica.PRecord.HIP_TYPE);
+    Practica_Logical: str := Practica.Logical08ToStr(TLogicalData08(Practica.PRecord.Logical));
   else
     begin
       str := '';
     end;
   end;
   AValue := str;
+end;
+
+procedure TPracticaColl.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  AtempItem: TPracticaItem;
+  ACol: Integer;
+  prop: TPracticaItem.TPropertyIndex;
+begin
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if ListForFinder.Count = 0 then Exit;
+
+  AtempItem := ListForFinder[ARow];
+  prop := TPracticaItem.TPropertyIndex(ACol);
+  if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
+  begin
+    GetCellFromRecord(ACol, AtempItem, AValue);
+  end
+  else
+  begin
+    GetCellFromMap(ACol, ARow, AtempItem, AValue);
+  end;
+end;
+
+procedure TPracticaColl.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+var
+  ACol: Integer;
+  prop: TPracticaItem.TPropertyIndex;
+begin
+  inherited;
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if (ListNodes.count - 1) < ARow then exit;
+  
+  TempItem.DataPos := ListNodes[ARow].DataPos;
+  prop := TPracticaItem.TPropertyIndex(ACol);
+  GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
 
 procedure TPracticaColl.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -574,6 +1229,11 @@ begin
   begin
     GetCellFromMap(ACol, ARow, Practica, AValue);
   end;
+end;
+
+function TPracticaColl.GetCollType: TCollectionsType;
+begin
+  Result := ctPractica;
 end;
 
 procedure TPracticaColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -614,16 +1274,13 @@ begin
     Practica_BANKOW_KOD: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_BULSTAT: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_COMPANYNAME: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    Practica_CONTRACT_DATE: str :=  DateToStr(Practica.getDateMap(Self.Buf, Self.posData, propIndex));
+    Practica_CONTRACT_DATE: str :=  AspDateToStr(Practica.getDateMap(Self.Buf, Self.posData, propIndex));
     Practica_CONTRACT_RZOK: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_CONTRACT_TYPE: str :=  inttostr(Practica.getWordMap(Self.Buf, Self.posData, propIndex));
     Practica_DAN_NOMER: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_EGN: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_FNAME: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_FULLNAME: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    Practica_INVOICECOMPANY: str :=  BoolToStr(Practica.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
-    Practica_ISSUER_TYPE: str :=  BoolToStr(Practica.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
-    Practica_IS_SAMOOSIG: str :=  BoolToStr(Practica.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
     Practica_KOD_RAJON: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_KOD_RZOK: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_LNAME: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -635,7 +1292,6 @@ begin
     Practica_NZOK_NOMER: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_OBLAST: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_OBSHTINA: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    Practica_SELF_INSURED_DECLARATION: str :=  BoolToStr(Practica.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
     Practica_SMETKA: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_SNAME: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_UPRAVITEL: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
@@ -643,6 +1299,7 @@ begin
     Practica_VID_IDENT: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_VID_PRAKTIKA: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Practica_HIP_TYPE: str :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Practica_Logical: str :=  Practica.Logical08ToStr(Practica.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -656,11 +1313,6 @@ begin
   Result := TPracticaItem(inherited GetItem(Index));
 end;
 
-
-//function TPracticaColl.GetTableName: string;
-//begin
-//  Result := 'Practica';
-//end;
 
 procedure TPracticaColl.IndexValue(propIndex: TPracticaItem.TPropertyIndex);
 var
@@ -977,7 +1629,213 @@ end;
   end;
 end;
 
+procedure TPracticaColl.IndexValueListNodes(propIndex: TPracticaItem.TPropertyIndex);
+begin
 
+end;
+
+function TPracticaColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TPracticaItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
+procedure TPracticaColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+var
+  Tempitem: TPracticaItem;
+begin
+  if index < 0 then
+  begin
+    Tempitem := TPracticaItem.Create(nil);
+    Tempitem.DataPos := datapos;
+    GetCellFromMap(field, -1, Tempitem, value);
+    Tempitem.Free;
+  end
+  else
+  begin
+    Tempitem := Self.Items[index];
+    if Assigned(Tempitem.PRecord) then
+    begin
+      GetCellFromRecord(field, Tempitem, value);
+    end
+    else
+    begin
+      GetCellFromMap(field, index, Tempitem, value);
+    end;
+  end;
+end;
+
+{=== TEXT SEARCH HANDLER ===}
+procedure TPracticaColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TPracticaItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TPracticaItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPracticaItem.TPropertyIndex(Field) of
+Practica_ADDRESS_ACT: ListForFinder[0].PRecord.ADDRESS_ACT := AText;
+    Practica_ADDRESS_DOGNZOK: ListForFinder[0].PRecord.ADDRESS_DOGNZOK := AText;
+    Practica_ADRES: ListForFinder[0].PRecord.ADRES := AText;
+    Practica_BANKA: ListForFinder[0].PRecord.BANKA := AText;
+    Practica_BANKOW_KOD: ListForFinder[0].PRecord.BANKOW_KOD := AText;
+    Practica_BULSTAT: ListForFinder[0].PRecord.BULSTAT := AText;
+    Practica_COMPANYNAME: ListForFinder[0].PRecord.COMPANYNAME := AText;
+    Practica_CONTRACT_RZOK: ListForFinder[0].PRecord.CONTRACT_RZOK := AText;
+    Practica_DAN_NOMER: ListForFinder[0].PRecord.DAN_NOMER := AText;
+    Practica_EGN: ListForFinder[0].PRecord.EGN := AText;
+    Practica_FNAME: ListForFinder[0].PRecord.FNAME := AText;
+    Practica_FULLNAME: ListForFinder[0].PRecord.FULLNAME := AText;
+    Practica_KOD_RAJON: ListForFinder[0].PRecord.KOD_RAJON := AText;
+    Practica_KOD_RZOK: ListForFinder[0].PRecord.KOD_RZOK := AText;
+    Practica_LNAME: ListForFinder[0].PRecord.LNAME := AText;
+    Practica_LNCH: ListForFinder[0].PRecord.LNCH := AText;
+    Practica_NAME: ListForFinder[0].PRecord.NAME := AText;
+    Practica_NAS_MQSTO: ListForFinder[0].PRecord.NAS_MQSTO := AText;
+    Practica_NOMER_LZ: ListForFinder[0].PRecord.NOMER_LZ := AText;
+    Practica_NOM_NAP: ListForFinder[0].PRecord.NOM_NAP := AText;
+    Practica_NZOK_NOMER: ListForFinder[0].PRecord.NZOK_NOMER := AText;
+    Practica_OBLAST: ListForFinder[0].PRecord.OBLAST := AText;
+    Practica_OBSHTINA: ListForFinder[0].PRecord.OBSHTINA := AText;
+    Practica_SMETKA: ListForFinder[0].PRecord.SMETKA := AText;
+    Practica_SNAME: ListForFinder[0].PRecord.SNAME := AText;
+    Practica_UPRAVITEL: ListForFinder[0].PRecord.UPRAVITEL := AText;
+    Practica_VIDFIRMA: ListForFinder[0].PRecord.VIDFIRMA := AText;
+    Practica_VID_IDENT: ListForFinder[0].PRecord.VID_IDENT := AText;
+    Practica_VID_PRAKTIKA: ListForFinder[0].PRecord.VID_PRAKTIKA := AText;
+    Practica_HIP_TYPE: ListForFinder[0].PRecord.HIP_TYPE := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TPracticaColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPracticaItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPracticaItem.TPropertyIndex(Field) of
+Practica_CONTRACT_DATE: ListForFinder[0].PRecord.CONTRACT_DATE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TPracticaColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TPracticaItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TPracticaItem.TPropertyIndex(Field) of
+Practica_CONTRACT_TYPE: ListForFinder[0].PRecord.CONTRACT_TYPE := Value;
+    Practica_NEBL_USL: ListForFinder[0].PRecord.NEBL_USL := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TPracticaColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TPracticaItem.TPropertyIndex(Field) of
+    Practica_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalPractica(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalPractica(logIndex))   
+    end;
+  end;
+end;
+
+
+procedure TPracticaColl.OnSetTextSearchLog(Log: TlogicalPracticaSet);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
+end;
+
+procedure TPracticaColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
+
+function TPracticaColl.PropType(propIndex: Word): TAspectTypeKind;
+begin
+  inherited;
+  case TPracticaItem.TPropertyIndex(propIndex) of
+    Practica_ADDRESS_ACT: Result := actAnsiString;
+    Practica_ADDRESS_DOGNZOK: Result := actAnsiString;
+    Practica_ADRES: Result := actAnsiString;
+    Practica_BANKA: Result := actAnsiString;
+    Practica_BANKOW_KOD: Result := actAnsiString;
+    Practica_BULSTAT: Result := actAnsiString;
+    Practica_COMPANYNAME: Result := actAnsiString;
+    Practica_CONTRACT_DATE: Result := actTDate;
+    Practica_CONTRACT_RZOK: Result := actAnsiString;
+    Practica_CONTRACT_TYPE: Result := actword;
+    Practica_DAN_NOMER: Result := actAnsiString;
+    Practica_EGN: Result := actAnsiString;
+    Practica_FNAME: Result := actAnsiString;
+    Practica_FULLNAME: Result := actAnsiString;
+    Practica_KOD_RAJON: Result := actAnsiString;
+    Practica_KOD_RZOK: Result := actAnsiString;
+    Practica_LNAME: Result := actAnsiString;
+    Practica_LNCH: Result := actAnsiString;
+    Practica_NAME: Result := actAnsiString;
+    Practica_NAS_MQSTO: Result := actAnsiString;
+    Practica_NEBL_USL: Result := actdouble;
+    Practica_NOMER_LZ: Result := actAnsiString;
+    Practica_NOM_NAP: Result := actAnsiString;
+    Practica_NZOK_NOMER: Result := actAnsiString;
+    Practica_OBLAST: Result := actAnsiString;
+    Practica_OBSHTINA: Result := actAnsiString;
+    Practica_SMETKA: Result := actAnsiString;
+    Practica_SNAME: Result := actAnsiString;
+    Practica_UPRAVITEL: Result := actAnsiString;
+    Practica_VIDFIRMA: Result := actAnsiString;
+    Practica_VID_IDENT: Result := actAnsiString;
+    Practica_VID_PRAKTIKA: Result := actAnsiString;
+    Practica_HIP_TYPE: Result := actAnsiString;
+    Practica_Logical: Result := actLogical;
+  else
+    Result := actNone;
+  end
+end;
+
+function TPracticaColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
+end;
 
 procedure TPracticaColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
@@ -987,7 +1845,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   Practica := Items[ARow];
   if not Assigned(Practica.PRecord) then
   begin
@@ -997,7 +1855,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TPracticaItem.TPropertyIndex(ACol) of
       Practica_ADDRESS_ACT: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_ADDRESS_DOGNZOK: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1013,9 +1870,6 @@ begin
     Practica_EGN: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_FNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_FULLNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    Practica_INVOICECOMPANY: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
-    Practica_ISSUER_TYPE: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
-    Practica_IS_SAMOOSIG: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
     Practica_KOD_RAJON: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_KOD_RZOK: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_LNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1027,7 +1881,6 @@ begin
     Practica_NZOK_NOMER: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_OBLAST: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_OBSHTINA: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    Practica_SELF_INSURED_DECLARATION: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
     Practica_SMETKA: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_SNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Practica_UPRAVITEL: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1064,9 +1917,6 @@ begin
     Practica_EGN: Practica.PRecord.EGN := AValue;
     Practica_FNAME: Practica.PRecord.FNAME := AValue;
     Practica_FULLNAME: Practica.PRecord.FULLNAME := AValue;
-    Practica_INVOICECOMPANY: Practica.PRecord.INVOICECOMPANY := StrToBool(AValue);
-    Practica_ISSUER_TYPE: Practica.PRecord.ISSUER_TYPE := StrToBool(AValue);
-    Practica_IS_SAMOOSIG: Practica.PRecord.IS_SAMOOSIG := StrToBool(AValue);
     Practica_KOD_RAJON: Practica.PRecord.KOD_RAJON := AValue;
     Practica_KOD_RZOK: Practica.PRecord.KOD_RZOK := AValue;
     Practica_LNAME: Practica.PRecord.LNAME := AValue;
@@ -1079,7 +1929,6 @@ begin
     Practica_NZOK_NOMER: Practica.PRecord.NZOK_NOMER := AValue;
     Practica_OBLAST: Practica.PRecord.OBLAST := AValue;
     Practica_OBSHTINA: Practica.PRecord.OBSHTINA := AValue;
-    Practica_SELF_INSURED_DECLARATION: Practica.PRecord.SELF_INSURED_DECLARATION := StrToBool(AValue);
     Practica_SMETKA: Practica.PRecord.SMETKA := AValue;
     Practica_SNAME: Practica.PRecord.SNAME := AValue;
     Practica_UPRAVITEL: Practica.PRecord.UPRAVITEL := AValue;
@@ -1087,6 +1936,7 @@ begin
     Practica_VID_IDENT: Practica.PRecord.VID_IDENT := AValue;
     Practica_VID_PRAKTIKA: Practica.PRecord.VID_PRAKTIKA := AValue;
     Practica_HIP_TYPE: Practica.PRecord.HIP_TYPE := AValue;
+    Practica_Logical: Practica.PRecord.Logical := tlogicalPracticaSet(Practica.StrToLogical08(AValue));
   end;
 end;
 
@@ -1096,7 +1946,7 @@ var
   Practica: TPracticaItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   Practica := Items[ARow];
   if not Assigned(Practica.PRecord) then
   begin
@@ -1106,7 +1956,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TPracticaItem.TPropertyIndex(ACol) of
       Practica_ADDRESS_ACT: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_ADDRESS_DOGNZOK: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1122,9 +1971,6 @@ begin
     Practica_EGN: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_FNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_FULLNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    Practica_INVOICECOMPANY: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
-    Practica_ISSUER_TYPE: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
-    Practica_IS_SAMOOSIG: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
     Practica_KOD_RAJON: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_KOD_RZOK: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_LNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1136,7 +1982,6 @@ begin
     Practica_NZOK_NOMER: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_OBLAST: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_OBSHTINA: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    Practica_SELF_INSURED_DECLARATION: isOld :=  Practica.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
     Practica_SMETKA: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_SNAME: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Practica_UPRAVITEL: isOld :=  Practica.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1173,9 +2018,6 @@ begin
     Practica_EGN: Practica.PRecord.EGN := AFieldText;
     Practica_FNAME: Practica.PRecord.FNAME := AFieldText;
     Practica_FULLNAME: Practica.PRecord.FULLNAME := AFieldText;
-    Practica_INVOICECOMPANY: Practica.PRecord.INVOICECOMPANY := StrToBool(AFieldText);
-    Practica_ISSUER_TYPE: Practica.PRecord.ISSUER_TYPE := StrToBool(AFieldText);
-    Practica_IS_SAMOOSIG: Practica.PRecord.IS_SAMOOSIG := StrToBool(AFieldText);
     Practica_KOD_RAJON: Practica.PRecord.KOD_RAJON := AFieldText;
     Practica_KOD_RZOK: Practica.PRecord.KOD_RZOK := AFieldText;
     Practica_LNAME: Practica.PRecord.LNAME := AFieldText;
@@ -1188,7 +2030,6 @@ begin
     Practica_NZOK_NOMER: Practica.PRecord.NZOK_NOMER := AFieldText;
     Practica_OBLAST: Practica.PRecord.OBLAST := AFieldText;
     Practica_OBSHTINA: Practica.PRecord.OBSHTINA := AFieldText;
-    Practica_SELF_INSURED_DECLARATION: Practica.PRecord.SELF_INSURED_DECLARATION := StrToBool(AFieldText);
     Practica_SMETKA: Practica.PRecord.SMETKA := AFieldText;
     Practica_SNAME: Practica.PRecord.SNAME := AFieldText;
     Practica_UPRAVITEL: Practica.PRecord.UPRAVITEL := AFieldText;
@@ -1196,6 +2037,7 @@ begin
     Practica_VID_IDENT: Practica.PRecord.VID_IDENT := AFieldText;
     Practica_VID_PRAKTIKA: Practica.PRecord.VID_PRAKTIKA := AFieldText;
     Practica_HIP_TYPE: Practica.PRecord.HIP_TYPE := AFieldText;
+    Practica_Logical: Practica.PRecord.Logical := tlogicalPracticaSet(Practica.StrToLogical08(AFieldText));
   end;
 end;
 
@@ -1444,10 +2286,38 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := '���';
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCell;
   TVirtualModeData(Grid.Data).OnSetValue:=self.SetCell;
+
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    Grid.Columns[i].Width.Value := 100;
+  end;
+
+  Grid.Columns[self.FieldCount].Width.Value := 50;
+  Grid.Columns[self.FieldCount].Index := 0;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width + 1;
+  TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width - 1;
+
+end;
+
+procedure TPracticaColl.ShowGridFromList(Grid: TTeeGrid; LST: TList<TPracticaItem>);
+var
+  i: word;
+
+begin
+  ListForFinder := LST;
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
+  for i := 0 to self.FieldCount - 1 do
+  begin
+    TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
+  end;
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
+
+  TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellList;
+  TVirtualModeData(Grid.Data).OnSetValue:=nil;
 
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -1471,7 +2341,7 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('���/%d ��.', [self.ListPracticaSearch.Count]);
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListPracticaSearch.Count]);
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -1483,7 +2353,9 @@ begin
 
   Grid.Columns[self.FieldCount].Width.Value := 90;
   Grid.Columns[self.FieldCount].Index := 0;
-
+  grid.Margins.Left := 100;
+  grid.Margins.Left := 0;
+  grid.Scrolling.Active := true;
 end;
 
 procedure TPracticaColl.SortByIndexAnsiString;
@@ -1500,8 +2372,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -1644,44 +2516,3 @@ begin
 end;
 
 end.
-{
-
-
-
-ADDRESS_ACT=AnsiString
-ADDRESS_DOGNZOK=AnsiString
-ADRES=AnsiString
-BANKA=AnsiString
-BANKOW_KOD=AnsiString
-BULSTAT=AnsiString
-COMPANYNAME=AnsiString
-CONTRACT_DATE=TDate
-CONTRACT_RZOK=AnsiString
-CONTRACT_TYPE=word
-DAN_NOMER=AnsiString
-EGN=AnsiString
-FNAME=AnsiString
-FULLNAME=AnsiString
-INVOICECOMPANY=boolean
-ISSUER_TYPE=boolean
-IS_SAMOOSIG=boolean
-KOD_RAJON=AnsiString
-KOD_RZOK=AnsiString
-LNAME=AnsiString
-LNCH=AnsiString
-NAME=AnsiString
-NAS_MQSTO=AnsiString
-NEBL_USL=double
-NOMER_LZ=AnsiString
-NOM_NAP=AnsiString
-NZOK_NOMER=AnsiString
-OBLAST=AnsiString
-OBSHTINA=AnsiString
-SELF_INSURED_DECLARATION=boolean
-SMETKA=AnsiString
-SNAME=AnsiString
-UPRAVITEL=AnsiString
-VIDFIRMA=AnsiString
-VID_IDENT=AnsiString
-VID_PRAKTIKA=AnsiString
-}

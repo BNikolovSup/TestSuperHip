@@ -50,7 +50,7 @@ type
     FVtr: TVirtualStringTreeHipp;
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
-    FCollMkb: TMkbColl;
+    FCollMkb: TRealMkbColl;
     FAdb_DM: TADBDataModule;
     FCollDiag: TRealDiagnosisColl;
     FmmoTest: TMemo;
@@ -92,7 +92,7 @@ type
   public
     ListBlanki: TStringList;
     constructor Create(AVtr: TVirtualStringTreeHipp;
-          ACollMkb: TMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
+          ACollMkb: TRealMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
           ACollDoctor: TRealDoctorColl;
           AmmoTest: TMemo; AvNomenMKB: PVirtualNode; AFmxProfForm: TfrmProfFormFMX);
 
@@ -183,7 +183,7 @@ type
 
 
     property Vtr: TVirtualStringTreeHipp read FVtr write SetVtr;
-    property CollMkb: TMkbColl read FCollMkb write FCollMkb;
+    property CollMkb: TRealMkbColl read FCollMkb write FCollMkb;
     property Adb_DM: TADBDataModule read FAdb_DM write FAdb_DM;
     property CollDiag: TRealDiagnosisColl read FCollDiag write FCollDiag;
     property CollDoctor: TRealDoctorColl read FCollDoctor write FCollDoctor;
@@ -514,7 +514,7 @@ begin
 end;
 
 constructor TTempVtrHelper.Create(AVtr: TVirtualStringTreeHipp;
-  ACollMkb: TMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
+  ACollMkb: TRealMkbColl; AAdb_DM: TADBDataModule; ACollDiag: TRealDiagnosisColl;
   ACollDoctor: TRealDoctorColl;
   AmmoTest: TMemo; AvNomenMKB: PVirtualNode; AFmxProfForm: TfrmProfFormFMX);
 begin
@@ -930,7 +930,7 @@ begin
                 anal := TRealExamAnalysisItem.Create(nil);
                 anal.DataPos := dataAnal.DataPos;
                 mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                PosInNomen := anal.getIntMap(Adb_DM.AdbHip.Buf, Adb_DM.AdbHip.FPosData, word(ExamAnalysis_PosDataNomen));
+                PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
                 anal.LinkNode := runAnal;
               end;
               mdn.FExamAnals.Add(anal);
@@ -946,7 +946,7 @@ begin
         cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        cl136Key := Adb_DM.collCl132.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+        cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
         if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
         begin
           mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
@@ -973,7 +973,7 @@ begin
                   anal := TRealExamAnalysisItem.Create(nil);
                   anal.DataPos := dataAnal.DataPos;
                   mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                  PosInNomen := anal.getIntMap(Adb_DM.AdbHip.Buf, Adb_DM.AdbHip.FPosData, word(ExamAnalysis_PosDataNomen));
+                  PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
                   anal.LinkNode := runAnal;
                 end;
                 mdn.FExamAnals.Add(anal);
@@ -1009,7 +1009,7 @@ begin
           cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := Adb_DM.CollCL132.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
           runAnal := run.FirstChild;
           while runAnal <> nil do
           begin
@@ -1373,8 +1373,8 @@ begin
           if posCl22 > 0 then
           begin
             //Cl022temp.DataPos := posCl22;
-            CellText := Adb_DM.CollCL022.getAnsiStringMap(posCl22, word(CL022_Key));
-            CellText := CellText + ' / ' + Adb_DM.CollCL022.getAnsiStringMap(posCl22, word(CL022_nhif_code))
+            CellText := Adb_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_Key));
+            CellText := CellText + ' / ' + Adb_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_nhif_code))
           end;
         end;
       end;

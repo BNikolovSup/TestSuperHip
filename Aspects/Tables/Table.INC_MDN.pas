@@ -146,6 +146,9 @@ TINC_MDNItem = class(TBaseItem)
     procedure SaveINC_MDN(var dataPosition: Cardinal)overload;
 	procedure SaveINC_MDN(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -165,6 +168,7 @@ TINC_MDNItem = class(TBaseItem)
 	PRecordSearch: ^TINC_MDNItem.TRecINC_MDN;
     ArrPropSearch: TArray<TINC_MDNItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TINC_MDNItem.TPropertyIndex>;
+	VisibleColl: TINC_MDNItem.TSetProp;
 	ArrayPropOrder: TArray<TINC_MDNItem.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
@@ -176,7 +180,7 @@ TINC_MDNItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; INC_MDN: TINC_MDNItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; INC_MDN: TINC_MDNItem; var AValue:String);
@@ -191,13 +195,13 @@ TINC_MDNItem = class(TBaseItem)
 	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
-	//function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
     function FindSearchFieldCollOptionGridNode(): PVirtualNode;
     function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
     function FindSearchFieldCollOptionNode(): PVirtualNode;
     function CreateRootCollOptionNode(): PVirtualNode;
-    //procedure OrderFieldsSearch(Grid: TTeeGrid);override;
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
@@ -210,7 +214,15 @@ TINC_MDNItem = class(TBaseItem)
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalINC_MDNSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -227,6 +239,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TINC_MDNItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TINC_MDNItem.GetCollType: TCollectionsType;
+begin
+  Result := ctINC_MDN;
+end;
+
+function TINC_MDNItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TINC_MDNItem.InsertINC_MDN;
@@ -259,7 +300,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	    Self.DataPos := metaPosition;
+	  Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -506,6 +547,26 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TINC_MDNColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TINC_MDNItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
 function TINC_MDNColl.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
@@ -514,18 +575,20 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvINC_MDNRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
-
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
 
   if vOptionSearchGrid.ChildCount <> FieldCount then
   begin
     for i := 0 to FieldCount - 1 do
     begin
       linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
     end;
   end
   else
@@ -533,6 +596,178 @@ begin
     // при евентуално добавена колонка...
   end;  
 end;
+
+procedure TINC_MDNColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TINC_MDNItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (INC_MDN_ACCOUNT_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ACCOUNT_ID <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_ACCOUNT_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_AMBJOURNALN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMBJOURNALN <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_AMBJOURNALN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_AMBJOURNALN_PAYED in tempItem.PRecord.setProp) and (tempItem.PRecord.AMBJOURNALN_PAYED <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_AMBJOURNALN_PAYED))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_AMBLISTN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMBLISTN <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_AMBLISTN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_AMB_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.AMB_NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_AMB_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_ASSIGMENT_TIME in tempItem.PRecord.setProp) and (tempItem.PRecord.ASSIGMENT_TIME <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_ASSIGMENT_TIME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_DATA in tempItem.PRecord.setProp) and (tempItem.PRecord.DATA <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_DATA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_DATE_EXECUTION in tempItem.PRecord.setProp) and (tempItem.PRecord.DATE_EXECUTION <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_DATE_EXECUTION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_DATE_PROBOVZEMANE in tempItem.PRecord.setProp) and (tempItem.PRecord.DATE_PROBOVZEMANE <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_DATE_PROBOVZEMANE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_DESCRIPTION in tempItem.PRecord.setProp) and (tempItem.PRecord.DESCRIPTION <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_DESCRIPTION))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_EXECUTION_TIME in tempItem.PRecord.setProp) and (tempItem.PRecord.EXECUTION_TIME <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_EXECUTION_TIME))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_FUND_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.FUND_ID <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_FUND_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_NOMERBELEGKA in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERBELEGKA <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_NOMERBELEGKA))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_NOMERKASHAPARAT in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMERKASHAPARAT <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_NOMERKASHAPARAT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_NZOK_NOMER in tempItem.PRecord.setProp) and (tempItem.PRecord.NZOK_NOMER <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_NZOK_NOMER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_PACKAGE in tempItem.PRecord.setProp) and (tempItem.PRecord.PACKAGE <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_PACKAGE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_PASS in tempItem.PRecord.setProp) and (tempItem.PRecord.PASS <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_PASS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_SEND_MAIL_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.SEND_MAIL_DATE <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_SEND_MAIL_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_THREAD_IDS in tempItem.PRecord.setProp) and (tempItem.PRecord.THREAD_IDS <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_THREAD_IDS))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_TIME_PROBOVZEMANE in tempItem.PRecord.setProp) and (tempItem.PRecord.TIME_PROBOVZEMANE <> Self.getDateMap(tempItem.DataPos, word(INC_MDN_TIME_PROBOVZEMANE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_TOKEN_RESULT in tempItem.PRecord.setProp) and (tempItem.PRecord.TOKEN_RESULT <> Self.getAnsiStringMap(tempItem.DataPos, word(INC_MDN_TOKEN_RESULT))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_VISIT_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.VISIT_ID <> Self.getIntMap(tempItem.DataPos, word(INC_MDN_VISIT_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (INC_MDN_Logical in tempItem.PRecord.setProp) and (TLogicalData48(tempItem.PRecord.Logical) <> Self.getLogical48Map(tempItem.DataPos, word(INC_MDN_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
 
 constructor TINC_MDNColl.Create(ItemClass: TCollectionItemClass);
 var
@@ -544,11 +779,10 @@ begin
   ListForFinder := TList<TINC_MDNItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrder, FieldCount);
-  SetLength(ArrayPropOrderSearchOptions, FieldCount);
-  for i := 0 to FieldCount - 1 do
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
   begin
-    ArrayPropOrder[i] := TINC_MDNItem.TPropertyIndex(i);
     ArrayPropOrderSearchOptions[i] := i;
   end;
 
@@ -597,6 +831,56 @@ begin
   end;
 end;
 
+function TINC_MDNColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'FINANCING_SOURCE_MZ';
+    1: Result := 'FINANCING_SOURCE_NHIF';
+    2: Result := 'FINANCING_SOURCE_Fund';
+    3: Result := 'FINANCING_SOURCE_Patient';
+    4: Result := 'FINANCING_SOURCE_Budget';
+    5: Result := 'FINANCING_SOURCE_NSSI';
+    6: Result := 'FINANCING_SOURCE_None';
+    7: Result := 'FINANCING_SOURCE_Screening';
+    8: Result := 'FINANCING_SOURCE_MON';
+    9: Result := 'IS_BONUS';
+    10: Result := 'IS_FORM_VALID';
+    11: Result := 'IS_INSIDE';
+    12: Result := 'IS_LKK';
+    13: Result := 'IS_NAET';
+    14: Result := 'IS_NZOK';
+    15: Result := 'IS_PODVIZHNO_LZ';
+    16: Result := 'IS_REJECTED_BY_RZOK';
+    17: Result := 'IS_STACIONAR';
+    18: Result := 'IS_ZAMESTVASHT';
+    19: Result := 'MED_DIAG_NAPR_Ostro';
+    20: Result := 'MED_DIAG_NAPR_Hron';
+    21: Result := 'MED_DIAG_NAPR_Izbor';
+    22: Result := 'MED_DIAG_NAPR_Disp';
+    23: Result := 'MED_DIAG_NAPR_Eksp';
+    24: Result := 'MED_DIAG_NAPR_Prof';
+    25: Result := 'MED_DIAG_NAPR_Iskane_Telk';
+    26: Result := 'MED_DIAG_NAPR_Choice_Mother';
+    27: Result := 'MED_DIAG_NAPR_Choice_Child';
+    28: Result := 'MED_DIAG_NAPR_PreChoice_Mother';
+    29: Result := 'MED_DIAG_NAPR_PreChoice_Child';
+    30: Result := 'MED_DIAG_NAPR_Podg_Telk';
+    31: Result := 'NZIS_STATUS_None';
+    32: Result := 'NZIS_STATUS_Active';
+    33: Result := 'NZIS_STATUS_Izpuln';
+    34: Result := 'NZIS_STATUS_NotValid';
+    35: Result := 'NZIS_STATUS_Cancel';
+    36: Result := 'NZIS_STATUS_Iztegleno';
+    37: Result := 'NZIS_STATUS_ZaObrabotka';
+    38: Result := 'NZIS_STATUS_PoluIzpuln';
+    39: Result := 'NZIS_STATUS_Err';
+    40: Result := 'NZIS_STATUS_Izvetrel';
+  else
+    Result := '???';
+  end;
+end;
+
+
 procedure TINC_MDNColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
   FieldCollOptionNode, run: PVirtualNode;
@@ -633,6 +917,12 @@ begin
   begin
     linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
   end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
 end;
 
 
@@ -659,15 +949,22 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvINC_MDNRoot then
     begin
       Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
       Exit;
     end;
     inc(linkPos, LenData);
   end;
   if Result = nil then
     Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
 end;
 
 function TINC_MDNColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
@@ -780,17 +1077,17 @@ end;
 
 procedure TINC_MDNColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol, RowSelect: Integer;
+  RowSelect: Integer;
   prop: TINC_MDNItem.TPropertyIndex;
 begin
   inherited;
+ 
   if ARow < 0 then
   begin
     AValue := 'hhhh';
     Exit;
   end;
   try
-    ACol := TVirtualModeData(Sender).IndexOf(AColumn);
     if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
     RowSelect := ARow + Self.offsetTop;
     TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
@@ -799,7 +1096,7 @@ begin
     Exit;
   end;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[ACol], RowSelect, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TINC_MDNColl.GetCellFromRecord(propIndex: word; INC_MDN: TINC_MDNItem; var AValue: String);
@@ -895,6 +1192,16 @@ begin
   begin
     GetCellFromMap(ACol, ARow, INC_MDN, AValue);
   end;
+end;
+
+function TINC_MDNColl.GetCollType: TCollectionsType;
+begin
+  Result := ctINC_MDN;
+end;
+
+function TINC_MDNColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctINC_MDNDel;
 end;
 
 procedure TINC_MDNColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -1086,6 +1393,12 @@ begin
 
 end;
 
+function TINC_MDNColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TINC_MDNItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TINC_MDNColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TINC_MDNItem;
@@ -1111,7 +1424,10 @@ begin
   end;
 end;
 
+{=== TEXT SEARCH HANDLER ===}
 procedure TINC_MDNColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
 begin
   if Text = '' then
   begin
@@ -1119,24 +1435,82 @@ begin
   end
   else
   begin
-    include(ListForFinder[0].PRecord.setProp, TINC_MDNItem.TPropertyIndex(Field));
-    //ListForFinder[0].ArrCondition[Field] := [cotNotContain]; //  не му е тука мястото. само за тест е. трябва да се получава от финдера
-  end;
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-  if cotSens in Condition then
-  begin
-    case TINC_MDNItem.TPropertyIndex(Field) of
-      INC_MDN_AMB_NRN: ListForFinder[0].PRecord.AMB_NRN  := Text;
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
 
-    end;
-  end
-  else
-  begin
-    case TINC_MDNItem.TPropertyIndex(Field) of
-      INC_MDN_AMB_NRN: ListForFinder[0].PRecord.AMB_NRN  := AnsiUpperCase(Text);
+    Include(ListForFinder[0].PRecord.setProp, TINC_MDNItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TINC_MDNItem.TPropertyIndex(Field) of
+INC_MDN_AMB_NRN: ListForFinder[0].PRecord.AMB_NRN := AText;
+    INC_MDN_DESCRIPTION: ListForFinder[0].PRecord.DESCRIPTION := AText;
+    INC_MDN_NOMERBELEGKA: ListForFinder[0].PRecord.NOMERBELEGKA := AText;
+    INC_MDN_NOMERKASHAPARAT: ListForFinder[0].PRecord.NOMERKASHAPARAT := AText;
+    INC_MDN_NRN: ListForFinder[0].PRecord.NRN := AText;
+    INC_MDN_NZOK_NOMER: ListForFinder[0].PRecord.NZOK_NOMER := AText;
+    INC_MDN_PASS: ListForFinder[0].PRecord.PASS := AText;
+    INC_MDN_THREAD_IDS: ListForFinder[0].PRecord.THREAD_IDS := AText;
+    INC_MDN_TOKEN_RESULT: ListForFinder[0].PRecord.TOKEN_RESULT := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TINC_MDNColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TINC_MDNItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TINC_MDNItem.TPropertyIndex(Field) of
+INC_MDN_ASSIGMENT_TIME: ListForFinder[0].PRecord.ASSIGMENT_TIME := Value;
+    INC_MDN_DATA: ListForFinder[0].PRecord.DATA := Value;
+    INC_MDN_DATE_EXECUTION: ListForFinder[0].PRecord.DATE_EXECUTION := Value;
+    INC_MDN_DATE_PROBOVZEMANE: ListForFinder[0].PRecord.DATE_PROBOVZEMANE := Value;
+    INC_MDN_EXECUTION_TIME: ListForFinder[0].PRecord.EXECUTION_TIME := Value;
+    INC_MDN_SEND_MAIL_DATE: ListForFinder[0].PRecord.SEND_MAIL_DATE := Value;
+    INC_MDN_TIME_PROBOVZEMANE: ListForFinder[0].PRecord.TIME_PROBOVZEMANE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TINC_MDNColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TINC_MDNItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TINC_MDNItem.TPropertyIndex(Field) of
+INC_MDN_ACCOUNT_ID: ListForFinder[0].PRecord.ACCOUNT_ID := Value;
+    INC_MDN_AMBJOURNALN: ListForFinder[0].PRecord.AMBJOURNALN := Value;
+    INC_MDN_AMBJOURNALN_PAYED: ListForFinder[0].PRecord.AMBJOURNALN_PAYED := Value;
+    INC_MDN_AMBLISTN: ListForFinder[0].PRecord.AMBLISTN := Value;
+    INC_MDN_FUND_ID: ListForFinder[0].PRecord.FUND_ID := Value;
+    INC_MDN_ID: ListForFinder[0].PRecord.ID := Value;
+    INC_MDN_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+    INC_MDN_PACKAGE: ListForFinder[0].PRecord.PACKAGE := Value;
+    INC_MDN_VISIT_ID: ListForFinder[0].PRecord.VISIT_ID := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TINC_MDNColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TINC_MDNItem.TPropertyIndex(Field) of
+    INC_MDN_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalINC_MDN(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalINC_MDN(logIndex))   
     end;
   end;
 end;
+
 
 procedure TINC_MDNColl.OnSetTextSearchLog(Log: TlogicalINC_MDNSet);
 begin
@@ -1154,18 +1528,19 @@ begin
   if linkOptions = nil then  Exit;
 
   FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
   run := FieldCollOptionNode.FirstChild;
 
   while run <> nil do
   begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy);
-    ArrayPropOrderSearchOptions[run.index] :=  run.Dummy;
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
     run := run.NextSibling;
   end;
 
 end;
 
-function TINC_MDNColl.PropType(propIndex: Word): TAsectTypeKind;
+function TINC_MDNColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TINC_MDNItem.TPropertyIndex(propIndex) of
@@ -1198,6 +1573,11 @@ begin
   else
     Result := actNone;
   end
+end;
+
+function TINC_MDNColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure TINC_MDNColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1614,8 +1994,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

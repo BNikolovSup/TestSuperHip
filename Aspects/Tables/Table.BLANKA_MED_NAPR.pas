@@ -2,10 +2,10 @@ unit Table.BLANKA_MED_NAPR;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -20,6 +20,7 @@ TFindedResult = record
 end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
+
 TLogicalBLANKA_MED_NAPR = (
     EXAMED_BY_SPECIALIST,
     IS_PRINTED,
@@ -49,18 +50,19 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-        BLANKA_MED_NAPR_ID
-      , BLANKA_MED_NAPR_ISSUE_DATE
-      , BLANKA_MED_NAPR_NRN
-      , BLANKA_MED_NAPR_NUMBER
-      , BLANKA_MED_NAPR_PREGLED_ID
-      , BLANKA_MED_NAPR_REASON
-      , BLANKA_MED_NAPR_SPECIALITY_ID
-      , BLANKA_MED_NAPR_SpecDataPos
-      , BLANKA_MED_NAPR_Logical
-      );
-
+       BLANKA_MED_NAPR_ID
+       , BLANKA_MED_NAPR_ISSUE_DATE
+       , BLANKA_MED_NAPR_NRN
+       , BLANKA_MED_NAPR_NUMBER
+       , BLANKA_MED_NAPR_PREGLED_ID
+       , BLANKA_MED_NAPR_REASON
+       , BLANKA_MED_NAPR_SPECIALITY_ID
+       , BLANKA_MED_NAPR_SpecDataPos
+       , BLANKA_MED_NAPR_Logical
+       );
+	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecBLANKA_MED_NAPR = ^TRecBLANKA_MED_NAPR;
       TRecBLANKA_MED_NAPR = record
         ID: integer;
@@ -87,8 +89,12 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
     destructor Destroy; override;
     procedure InsertBLANKA_MED_NAPR;
     procedure UpdateBLANKA_MED_NAPR;
-    procedure SaveBLANKA_MED_NAPR(var dataPosition: Cardinal);
+    procedure SaveBLANKA_MED_NAPR(var dataPosition: Cardinal)overload;
+	procedure SaveBLANKA_MED_NAPR(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
   end;
 
 
@@ -96,17 +102,21 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TBLANKA_MED_NAPRItem;
     function GetItem(Index: Integer): TBLANKA_MED_NAPRItem;
     procedure SetItem(Index: Integer; const Value: TBLANKA_MED_NAPRItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	tempItem: TBLANKA_MED_NAPRItem;
-	ListForFDB: TList<TBLANKA_MED_NAPRItem>;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TBLANKA_MED_NAPRItem>;
     ListBLANKA_MED_NAPRSearch: TList<TBLANKA_MED_NAPRItem>;
 	PRecordSearch: ^TBLANKA_MED_NAPRItem.TRecBLANKA_MED_NAPR;
     ArrPropSearch: TArray<TBLANKA_MED_NAPRItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TBLANKA_MED_NAPRItem.TPropertyIndex>;
+	VisibleColl: TBLANKA_MED_NAPRItem.TSetProp;
+	ArrayPropOrder: TArray<TBLANKA_MED_NAPRItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -116,7 +126,7 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; BLANKA_MED_NAPR: TBLANKA_MED_NAPRItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; BLANKA_MED_NAPR: TBLANKA_MED_NAPRItem; var AValue:String);
@@ -128,8 +138,17 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TBLANKA_MED_NAPRItem>);
@@ -138,9 +157,18 @@ TBLANKA_MED_NAPRItem = class(TBaseItem)
     procedure IndexValue(propIndex: TBLANKA_MED_NAPRItem.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TBLANKA_MED_NAPRItem.TPropertyIndex);
     property Items[Index: Integer]: TBLANKA_MED_NAPRItem read GetItem write SetItem;
-    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalBLANKA_MED_NAPRSet);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -157,6 +185,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TBLANKA_MED_NAPRItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TBLANKA_MED_NAPRItem.GetCollType: TCollectionsType;
+begin
+  Result := ctBLANKA_MED_NAPR;
+end;
+
+function TBLANKA_MED_NAPRItem.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TBLANKA_MED_NAPRItem.InsertBLANKA_MED_NAPR;
@@ -196,14 +253,6 @@ begin
         if Assigned(PRecord) and (propIndx in PRecord.setProp) then
         begin
           case propIndx of
-            //BLANKA_MED_NAPR_ATTACHED_DOCS: SaveData(PRecord.ATTACHED_DOCS, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_DIAGNOSES: SaveData(PRecord.DIAGNOSES, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE: SaveData(PRecord.ICD_CODE, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2: SaveData(PRecord.ICD_CODE2, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2_ADD: SaveData(PRecord.ICD_CODE2_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3: SaveData(PRecord.ICD_CODE3, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3_ADD: SaveData(PRecord.ICD_CODE3_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE_ADD: SaveData(PRecord.ICD_CODE_ADD, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ISSUE_DATE: SaveData(PRecord.ISSUE_DATE, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
@@ -241,30 +290,35 @@ begin
     if Result = false then
       Exit;
     pidx := TBLANKA_MED_NAPRColl(coll).ArrPropSearchClc[i];
-	ATempItem := TBLANKA_MED_NAPRColl(coll).ListForFDB.Items[0];
+	ATempItem := TBLANKA_MED_NAPRColl(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
-        //BLANKA_MED_NAPR_ATTACHED_DOCS: Result := IsFinded(ATempItem.PRecord.ATTACHED_DOCS, buf, FPosDataADB, word(BLANKA_MED_NAPR_ATTACHED_DOCS), cot);
-//        BLANKA_MED_NAPR_DIAGNOSES: Result := IsFinded(ATempItem.PRecord.DIAGNOSES, buf, FPosDataADB, word(BLANKA_MED_NAPR_DIAGNOSES), cot);
-//        BLANKA_MED_NAPR_ICD_CODE: Result := IsFinded(ATempItem.PRecord.ICD_CODE, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE), cot);
-//        BLANKA_MED_NAPR_ICD_CODE2: Result := IsFinded(ATempItem.PRecord.ICD_CODE2, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE2), cot);
-//        BLANKA_MED_NAPR_ICD_CODE2_ADD: Result := IsFinded(ATempItem.PRecord.ICD_CODE2_ADD, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE2_ADD), cot);
-//        BLANKA_MED_NAPR_ICD_CODE3: Result := IsFinded(ATempItem.PRecord.ICD_CODE3, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE3), cot);
-//        BLANKA_MED_NAPR_ICD_CODE3_ADD: Result := IsFinded(ATempItem.PRecord.ICD_CODE3_ADD, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE3_ADD), cot);
-//        BLANKA_MED_NAPR_ICD_CODE_ADD: Result := IsFinded(ATempItem.PRecord.ICD_CODE_ADD, buf, FPosDataADB, word(BLANKA_MED_NAPR_ICD_CODE_ADD), cot);
         BLANKA_MED_NAPR_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(BLANKA_MED_NAPR_ID), cot);
-        BLANKA_MED_NAPR_ISSUE_DATE: Result := IsFinded(ATempItem.PRecord.ISSUE_DATE, buf, FPosDataADB, word(BLANKA_MED_NAPR_ISSUE_DATE), cot);
-        BLANKA_MED_NAPR_NRN: Result := IsFinded(ATempItem.PRecord.NRN, buf, FPosDataADB, word(BLANKA_MED_NAPR_NRN), cot);
-        BLANKA_MED_NAPR_NUMBER: Result := IsFinded(ATempItem.PRecord.NUMBER, buf, FPosDataADB, word(BLANKA_MED_NAPR_NUMBER), cot);
-        BLANKA_MED_NAPR_PREGLED_ID: Result := IsFinded(ATempItem.PRecord.PREGLED_ID, buf, FPosDataADB, word(BLANKA_MED_NAPR_PREGLED_ID), cot);
-        BLANKA_MED_NAPR_REASON: Result := IsFinded(ATempItem.PRecord.REASON, buf, FPosDataADB, word(BLANKA_MED_NAPR_REASON), cot);
-        BLANKA_MED_NAPR_SPECIALITY_ID: Result := IsFinded(ATempItem.PRecord.SPECIALITY_ID, buf, FPosDataADB, word(BLANKA_MED_NAPR_SPECIALITY_ID), cot);
-        BLANKA_MED_NAPR_SpecDataPos: Result := IsFinded(ATempItem.PRecord.SpecDataPos, buf, FPosDataADB, word(BLANKA_MED_NAPR_SpecDataPos), cot);
-        BLANKA_MED_NAPR_Logical: Result := IsFinded(TLogicalData24(ATempItem.PRecord.Logical), buf, FPosDataADB, word(BLANKA_MED_NAPR_Logical), cot);
+            BLANKA_MED_NAPR_ISSUE_DATE: Result := IsFinded(ATempItem.PRecord.ISSUE_DATE, buf, FPosDataADB, word(BLANKA_MED_NAPR_ISSUE_DATE), cot);
+            BLANKA_MED_NAPR_NRN: Result := IsFinded(ATempItem.PRecord.NRN, buf, FPosDataADB, word(BLANKA_MED_NAPR_NRN), cot);
+            BLANKA_MED_NAPR_NUMBER: Result := IsFinded(ATempItem.PRecord.NUMBER, buf, FPosDataADB, word(BLANKA_MED_NAPR_NUMBER), cot);
+            BLANKA_MED_NAPR_PREGLED_ID: Result := IsFinded(ATempItem.PRecord.PREGLED_ID, buf, FPosDataADB, word(BLANKA_MED_NAPR_PREGLED_ID), cot);
+            BLANKA_MED_NAPR_REASON: Result := IsFinded(ATempItem.PRecord.REASON, buf, FPosDataADB, word(BLANKA_MED_NAPR_REASON), cot);
+            BLANKA_MED_NAPR_SPECIALITY_ID: Result := IsFinded(ATempItem.PRecord.SPECIALITY_ID, buf, FPosDataADB, word(BLANKA_MED_NAPR_SPECIALITY_ID), cot);
+            BLANKA_MED_NAPR_SpecDataPos: Result := IsFinded(ATempItem.PRecord.SpecDataPos, buf, FPosDataADB, word(BLANKA_MED_NAPR_SpecDataPos), cot);
+            BLANKA_MED_NAPR_Logical: Result := IsFinded(TLogicalData24(ATempItem.PRecord.Logical), buf, FPosDataADB, word(BLANKA_MED_NAPR_Logical), cot);
       end;
     end;
   end;
+end;
+
+procedure TBLANKA_MED_NAPRItem.SaveBLANKA_MED_NAPR(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveBLANKA_MED_NAPR(dataPosition);
 end;
 
 procedure TBLANKA_MED_NAPRItem.SaveBLANKA_MED_NAPR(var dataPosition: Cardinal);
@@ -285,14 +339,6 @@ begin
           SaveHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            //BLANKA_MED_NAPR_ATTACHED_DOCS: SaveData(PRecord.ATTACHED_DOCS, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_DIAGNOSES: SaveData(PRecord.DIAGNOSES, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE: SaveData(PRecord.ICD_CODE, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2: SaveData(PRecord.ICD_CODE2, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2_ADD: SaveData(PRecord.ICD_CODE2_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3: SaveData(PRecord.ICD_CODE3, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3_ADD: SaveData(PRecord.ICD_CODE3_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE_ADD: SaveData(PRecord.ICD_CODE_ADD, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ISSUE_DATE: SaveData(PRecord.ISSUE_DATE, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_NRN: SaveData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
@@ -332,20 +378,13 @@ begin
           UpdateHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            //BLANKA_MED_NAPR_ATTACHED_DOCS: UpdateData(PRecord.ATTACHED_DOCS, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_DIAGNOSES: UpdateData(PRecord.DIAGNOSES, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE: UpdateData(PRecord.ICD_CODE, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2: UpdateData(PRecord.ICD_CODE2, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE2_ADD: UpdateData(PRecord.ICD_CODE2_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3: UpdateData(PRecord.ICD_CODE3, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE3_ADD: UpdateData(PRecord.ICD_CODE3_ADD, PropPosition, metaPosition, dataPosition);
-//            BLANKA_MED_NAPR_ICD_CODE_ADD: UpdateData(PRecord.ICD_CODE_ADD, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ID: UpdateData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_ISSUE_DATE: UpdateData(PRecord.ISSUE_DATE, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_NRN: UpdateData(PRecord.NRN, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_NUMBER: UpdateData(PRecord.NUMBER, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_PREGLED_ID: UpdateData(PRecord.PREGLED_ID, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_REASON: UpdateData(PRecord.REASON, PropPosition, metaPosition, dataPosition);
+            BLANKA_MED_NAPR_SPECIALITY_ID: UpdateData(PRecord.SPECIALITY_ID, PropPosition, metaPosition, dataPosition);
             BLANKA_MED_NAPR_SpecDataPos: UpdateData(PRecord.SpecDataPos, PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -383,25 +422,152 @@ begin
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
   ItemForSearch.PRecord.Logical := [];
-  Result := ListForFDB.Add(ItemForSearch);
+  Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TBLANKA_MED_NAPRColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TBLANKA_MED_NAPRItem.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TBLANKA_MED_NAPRColl.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvBLANKA_MED_NAPRRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TBLANKA_MED_NAPRColl.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TBLANKA_MED_NAPRItem;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (BLANKA_MED_NAPR_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(BLANKA_MED_NAPR_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_ISSUE_DATE in tempItem.PRecord.setProp) and (tempItem.PRecord.ISSUE_DATE <> Self.getDateMap(tempItem.DataPos, word(BLANKA_MED_NAPR_ISSUE_DATE))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_NRN in tempItem.PRecord.setProp) and (tempItem.PRecord.NRN <> Self.getAnsiStringMap(tempItem.DataPos, word(BLANKA_MED_NAPR_NRN))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_NUMBER in tempItem.PRecord.setProp) and (tempItem.PRecord.NUMBER <> Self.getIntMap(tempItem.DataPos, word(BLANKA_MED_NAPR_NUMBER))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_PREGLED_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.PREGLED_ID <> Self.getIntMap(tempItem.DataPos, word(BLANKA_MED_NAPR_PREGLED_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_REASON in tempItem.PRecord.setProp) and (tempItem.PRecord.REASON <> Self.getAnsiStringMap(tempItem.DataPos, word(BLANKA_MED_NAPR_REASON))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_SPECIALITY_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.SPECIALITY_ID <> Self.getIntMap(tempItem.DataPos, word(BLANKA_MED_NAPR_SPECIALITY_ID))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_SpecDataPos in tempItem.PRecord.setProp) and (tempItem.PRecord.SpecDataPos <> Self.getIntMap(tempItem.DataPos, word(BLANKA_MED_NAPR_SpecDataPos))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (BLANKA_MED_NAPR_Logical in tempItem.PRecord.setProp) and (TLogicalData24(tempItem.PRecord.Logical) <> Self.getLogical24Map(tempItem.DataPos, word(BLANKA_MED_NAPR_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
+
 constructor TBLANKA_MED_NAPRColl.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
   tempItem := TBLANKA_MED_NAPRItem.Create(nil);
   ListBLANKA_MED_NAPRSearch := TList<TBLANKA_MED_NAPRItem>.Create;
-  ListForFDB := TList<TBLANKA_MED_NAPRItem>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TBLANKA_MED_NAPRItem>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TBLANKA_MED_NAPRColl.destroy;
 begin
   FreeAndNil(ListBLANKA_MED_NAPRSearch);
-  FreeAndNil(ListForFDB);
+  FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -412,14 +578,6 @@ function TBLANKA_MED_NAPRColl.DisplayName(propIndex: Word): string;
 begin
   inherited;
   case TBLANKA_MED_NAPRItem.TPropertyIndex(propIndex) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: Result := 'ATTACHED_DOCS';
-//    BLANKA_MED_NAPR_DIAGNOSES: Result := 'DIAGNOSES';
-//    BLANKA_MED_NAPR_ICD_CODE: Result := 'ICD_CODE';
-//    BLANKA_MED_NAPR_ICD_CODE2: Result := 'ICD_CODE2';
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: Result := 'ICD_CODE2_ADD';
-//    BLANKA_MED_NAPR_ICD_CODE3: Result := 'ICD_CODE3';
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: Result := 'ICD_CODE3_ADD';
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: Result := 'ICD_CODE_ADD';
     BLANKA_MED_NAPR_ID: Result := 'ID';
     BLANKA_MED_NAPR_ISSUE_DATE: Result := 'ISSUE_DATE';
     BLANKA_MED_NAPR_NRN: Result := 'NRN';
@@ -432,12 +590,207 @@ begin
   end;
 end;
 
+function TBLANKA_MED_NAPRColl.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'EXAMED_BY_SPECIALIST';
+    1: Result := 'IS_PRINTED';
+    2: Result := 'NZIS_STATUS_None';
+    3: Result := 'NZIS_STATUS_Valid';
+    4: Result := 'NZIS_STATUS_NoValid';
+    5: Result := 'NZIS_STATUS_Sended';
+    6: Result := 'NZIS_STATUS_Err';
+    7: Result := 'NZIS_STATUS_Cancel';
+    8: Result := 'NZIS_STATUS_Edited';
+    9: Result := 'MED_NAPR_Ostro';
+    10: Result := 'MED_NAPR_Hron';
+    11: Result := 'MED_NAPR_Izbor';
+    12: Result := 'MED_NAPR_Disp';
+    13: Result := 'MED_NAPR_Eksp';
+    14: Result := 'MED_NAPR_Prof';
+    15: Result := 'MED_NAPR_Iskane_Telk';
+    16: Result := 'MED_NAPR_Choice_Mother';
+    17: Result := 'MED_NAPR_Choice_Child';
+    18: Result := 'MED_NAPR_PreChoice_Mother';
+    19: Result := 'MED_NAPR_PreChoice_Child';
+    20: Result := 'MED_NAPR_Podg_Telk';
+  else
+    Result := '???';
+  end;
+end;
 
 
-function TBLANKA_MED_NAPRColl.FieldCount: Integer;
+procedure TBLANKA_MED_NAPRColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
+begin
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
+
+
+function TBLANKA_MED_NAPRColl.FieldCount: Integer; 
 begin
   inherited;
   Result := 9;
+end;
+
+function TBLANKA_MED_NAPRColl.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvBLANKA_MED_NAPRRoot then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TBLANKA_MED_NAPRColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TBLANKA_MED_NAPRColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TBLANKA_MED_NAPRColl.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TBLANKA_MED_NAPRColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -463,16 +816,26 @@ end;
 
 procedure TBLANKA_MED_NAPRColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol: Integer;
+  RowSelect: Integer;
   prop: TBLANKA_MED_NAPRItem.TPropertyIndex;
 begin
   inherited;
-  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if (ListDataPos.count - 1) < ARow then exit;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
 
-  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
-  prop := TBLANKA_MED_NAPRItem.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, ARow, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TBLANKA_MED_NAPRColl.GetCellFromRecord(propIndex: word; BLANKA_MED_NAPR: TBLANKA_MED_NAPRItem; var AValue: String);
@@ -480,16 +843,8 @@ var
   str: string;
 begin
   case TBLANKA_MED_NAPRItem.TPropertyIndex(propIndex) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: str := (BLANKA_MED_NAPR.PRecord.ATTACHED_DOCS);
-//    BLANKA_MED_NAPR_DIAGNOSES: str := (BLANKA_MED_NAPR.PRecord.DIAGNOSES);
-//    BLANKA_MED_NAPR_ICD_CODE: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE);
-//    BLANKA_MED_NAPR_ICD_CODE2: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE2);
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE2_ADD);
-//    BLANKA_MED_NAPR_ICD_CODE3: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE3);
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE3_ADD);
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: str := (BLANKA_MED_NAPR.PRecord.ICD_CODE_ADD);
     BLANKA_MED_NAPR_ID: str := inttostr(BLANKA_MED_NAPR.PRecord.ID);
-    BLANKA_MED_NAPR_ISSUE_DATE: str := DateToStr(BLANKA_MED_NAPR.PRecord.ISSUE_DATE);
+    BLANKA_MED_NAPR_ISSUE_DATE: str := AspDateToStr(BLANKA_MED_NAPR.PRecord.ISSUE_DATE);
     BLANKA_MED_NAPR_NRN: str := (BLANKA_MED_NAPR.PRecord.NRN);
     BLANKA_MED_NAPR_NUMBER: str := inttostr(BLANKA_MED_NAPR.PRecord.NUMBER);
     BLANKA_MED_NAPR_PREGLED_ID: str := inttostr(BLANKA_MED_NAPR.PRecord.PREGLED_ID);
@@ -512,9 +867,9 @@ var
   prop: TBLANKA_MED_NAPRItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFDB.Count = 0 then Exit;
+  if ListForFinder.Count = 0 then Exit;
 
-  AtempItem := ListForFDB[ARow];
+  AtempItem := ListForFinder[ARow];
   prop := TBLANKA_MED_NAPRItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -561,6 +916,16 @@ begin
   end;
 end;
 
+function TBLANKA_MED_NAPRColl.GetCollType: TCollectionsType;
+begin
+  Result := ctBLANKA_MED_NAPR;
+end;
+
+function TBLANKA_MED_NAPRColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctBLANKA_MED_NAPRDel;
+end;
+
 procedure TBLANKA_MED_NAPRColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   BLANKA_MED_NAPR: TBLANKA_MED_NAPRItem;
@@ -592,23 +957,14 @@ var
   pbl: PBoolean;
 begin
   case TBLANKA_MED_NAPRItem.TPropertyIndex(propIndex) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_DIAGNOSES: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE2: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE3: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     BLANKA_MED_NAPR_ID: str :=  inttostr(BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, propIndex));
-    BLANKA_MED_NAPR_ISSUE_DATE: str :=  DateToStr(BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, propIndex));
+    BLANKA_MED_NAPR_ISSUE_DATE: str :=  AspDateToStr(BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, propIndex));
     BLANKA_MED_NAPR_NRN: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     BLANKA_MED_NAPR_NUMBER: str :=  inttostr(BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, propIndex));
     BLANKA_MED_NAPR_PREGLED_ID: str :=  inttostr(BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, propIndex));
     BLANKA_MED_NAPR_REASON: str :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     BLANKA_MED_NAPR_SPECIALITY_ID: str :=  inttostr(BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, propIndex));
-    BLANKA_MED_NAPR_SpecDataPos: str :=  inttostr(BLANKA_MED_NAPR.getCardMap(Self.Buf, Self.posData, propIndex));
-    BLANKA_MED_NAPR_Logical: str :=  BLANKA_MED_NAPR.Logical32ToStr(BLANKA_MED_NAPR.getLogical32Map(Self.Buf, Self.posData, propIndex));
+    BLANKA_MED_NAPR_Logical: str :=  BLANKA_MED_NAPR.Logical24ToStr(BLANKA_MED_NAPR.getLogical24Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -633,86 +989,6 @@ begin
   begin
     TempItem := self.Items[i];
     case propIndex of
-      //BLANKA_MED_NAPR_ATTACHED_DOCS:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_DIAGNOSES:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE2:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE2_ADD:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE3:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE3_ADD:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE_ADD:
-//      begin
-//        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-//        if TempItem.IndexAnsiStr <> nil then
-//        begin
-//          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-//        end
-//        else
-//          TempItem.IndexAnsiStr1 := '';
-//      end;
       BLANKA_MED_NAPR_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
       BLANKA_MED_NAPR_NRN:
       begin
@@ -736,9 +1012,7 @@ begin
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-
       BLANKA_MED_NAPR_SPECIALITY_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
-      BLANKA_MED_NAPR_SpecDataPos: TempItem.IndexInt :=  TempItem.getPCardMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -747,6 +1021,12 @@ procedure TBLANKA_MED_NAPRColl.IndexValueListNodes(propIndex: TBLANKA_MED_NAPRIt
 begin
 
 end;
+
+function TBLANKA_MED_NAPRColl.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TBLANKA_MED_NAPRItem.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
 
 procedure TBLANKA_MED_NAPRColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
@@ -773,28 +1053,109 @@ begin
   end;
 end;
 
+{=== TEXT SEARCH HANDLER ===}
+procedure TBLANKA_MED_NAPRColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TBLANKA_MED_NAPRItem.TPropertyIndex(Field) of
+BLANKA_MED_NAPR_NRN: ListForFinder[0].PRecord.NRN := AText;
+    BLANKA_MED_NAPR_REASON: ListForFinder[0].PRecord.REASON := AText;
+  end;
+end;
 
 
+{=== DATE SEARCH HANDLER ===}
+procedure TBLANKA_MED_NAPRColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
+  case TBLANKA_MED_NAPRItem.TPropertyIndex(Field) of
+BLANKA_MED_NAPR_ISSUE_DATE: ListForFinder[0].PRecord.ISSUE_DATE := Value;
+  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TBLANKA_MED_NAPRColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TBLANKA_MED_NAPRItem.TPropertyIndex(Field) of
+BLANKA_MED_NAPR_ID: ListForFinder[0].PRecord.ID := Value;
+    BLANKA_MED_NAPR_NUMBER: ListForFinder[0].PRecord.NUMBER := Value;
+    BLANKA_MED_NAPR_PREGLED_ID: ListForFinder[0].PRecord.PREGLED_ID := Value;
+    BLANKA_MED_NAPR_SPECIALITY_ID: ListForFinder[0].PRecord.SPECIALITY_ID := Value;
+    BLANKA_MED_NAPR_SpecDataPos: ListForFinder[0].PRecord.SpecDataPos := Value;
+  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TBLANKA_MED_NAPRColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TBLANKA_MED_NAPRItem.TPropertyIndex(Field) of
+    BLANKA_MED_NAPR_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalBLANKA_MED_NAPR(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalBLANKA_MED_NAPR(logIndex))   
+    end;
+  end;
+end;
 
 
 procedure TBLANKA_MED_NAPRColl.OnSetTextSearchLog(Log: TlogicalBLANKA_MED_NAPRSet);
 begin
-  ListForFDB[0].PRecord.Logical := Log;
+  ListForFinder[0].PRecord.Logical := Log;
 end;
 
-function TBLANKA_MED_NAPRColl.PropType(propIndex: Word): TAsectTypeKind;
+procedure TBLANKA_MED_NAPRColl.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
+
+function TBLANKA_MED_NAPRColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TBLANKA_MED_NAPRItem.TPropertyIndex(propIndex) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: Result := actAnsiString;
-//    BLANKA_MED_NAPR_DIAGNOSES: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE2: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE3: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: Result := actAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: Result := actAnsiString;
     BLANKA_MED_NAPR_ID: Result := actinteger;
     BLANKA_MED_NAPR_ISSUE_DATE: Result := actTDate;
     BLANKA_MED_NAPR_NRN: Result := actAnsiString;
@@ -809,6 +1170,11 @@ begin
   end
 end;
 
+function TBLANKA_MED_NAPRColl.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
+end;
+
 procedure TBLANKA_MED_NAPRColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   isOld: Boolean;
@@ -817,7 +1183,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   BLANKA_MED_NAPR := Items[ARow];
   if not Assigned(BLANKA_MED_NAPR.PRecord) then
   begin
@@ -827,24 +1193,14 @@ begin
   end
   else
   begin
-    isOld := False;
     case TBLANKA_MED_NAPRItem.TPropertyIndex(ACol) of
-      //BLANKA_MED_NAPR_ATTACHED_DOCS: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_DIAGNOSES: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE2: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE2_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE3: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE3_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-//      BLANKA_MED_NAPR_ICD_CODE_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
       BLANKA_MED_NAPR_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      BLANKA_MED_NAPR_ISSUE_DATE: isOld :=  BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
-      BLANKA_MED_NAPR_NRN: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-      BLANKA_MED_NAPR_NUMBER: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      BLANKA_MED_NAPR_PREGLED_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      BLANKA_MED_NAPR_REASON: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-      BLANKA_MED_NAPR_SpecDataPos: isOld :=  BLANKA_MED_NAPR.getCardMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-      BLANKA_MED_NAPR_SPECIALITY_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    BLANKA_MED_NAPR_ISSUE_DATE: isOld :=  BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
+    BLANKA_MED_NAPR_NRN: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    BLANKA_MED_NAPR_NUMBER: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    BLANKA_MED_NAPR_PREGLED_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+    BLANKA_MED_NAPR_REASON: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    BLANKA_MED_NAPR_SPECIALITY_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -860,14 +1216,6 @@ begin
   end;
   Include(BLANKA_MED_NAPR.PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(ACol));
   case TBLANKA_MED_NAPRItem.TPropertyIndex(ACol) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: BLANKA_MED_NAPR.PRecord.ATTACHED_DOCS := AValue;
-//    BLANKA_MED_NAPR_DIAGNOSES: BLANKA_MED_NAPR.PRecord.DIAGNOSES := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE: BLANKA_MED_NAPR.PRecord.ICD_CODE := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE2: BLANKA_MED_NAPR.PRecord.ICD_CODE2 := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE2_ADD := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE3: BLANKA_MED_NAPR.PRecord.ICD_CODE3 := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE3_ADD := AValue;
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE_ADD := AValue;
     BLANKA_MED_NAPR_ID: BLANKA_MED_NAPR.PRecord.ID := StrToInt(AValue);
     BLANKA_MED_NAPR_ISSUE_DATE: BLANKA_MED_NAPR.PRecord.ISSUE_DATE := StrToDate(AValue);
     BLANKA_MED_NAPR_NRN: BLANKA_MED_NAPR.PRecord.NRN := AValue;
@@ -876,7 +1224,7 @@ begin
     BLANKA_MED_NAPR_REASON: BLANKA_MED_NAPR.PRecord.REASON := AValue;
     BLANKA_MED_NAPR_SPECIALITY_ID: BLANKA_MED_NAPR.PRecord.SPECIALITY_ID := StrToInt(AValue);
     BLANKA_MED_NAPR_SpecDataPos: BLANKA_MED_NAPR.PRecord.SpecDataPos := StrToInt(AValue);
-    BLANKA_MED_NAPR_Logical: BLANKA_MED_NAPR.PRecord.Logical := TlogicalBLANKA_MED_NAPRSet(BLANKA_MED_NAPR.StrToLogical32(AValue));
+    BLANKA_MED_NAPR_Logical: BLANKA_MED_NAPR.PRecord.Logical := tlogicalBLANKA_MED_NAPRSet(BLANKA_MED_NAPR.StrToLogical24(AValue));
   end;
 end;
 
@@ -886,7 +1234,7 @@ var
   BLANKA_MED_NAPR: TBLANKA_MED_NAPRItem;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   BLANKA_MED_NAPR := Items[ARow];
   if not Assigned(BLANKA_MED_NAPR.PRecord) then
   begin
@@ -896,24 +1244,14 @@ begin
   end
   else
   begin
-    isOld := False;
     case TBLANKA_MED_NAPRItem.TPropertyIndex(ACol) of
-      //BLANKA_MED_NAPR_ATTACHED_DOCS: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_DIAGNOSES: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE2: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE2_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE3: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE3_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-//      BLANKA_MED_NAPR_ICD_CODE_ADD: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
       BLANKA_MED_NAPR_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      BLANKA_MED_NAPR_ISSUE_DATE: isOld :=  BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
-      BLANKA_MED_NAPR_NRN: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-      BLANKA_MED_NAPR_NUMBER: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      BLANKA_MED_NAPR_PREGLED_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      BLANKA_MED_NAPR_REASON: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-      BLANKA_MED_NAPR_SPECIALITY_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-      BLANKA_MED_NAPR_SpecDataPos: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    BLANKA_MED_NAPR_ISSUE_DATE: isOld :=  BLANKA_MED_NAPR.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
+    BLANKA_MED_NAPR_NRN: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    BLANKA_MED_NAPR_NUMBER: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    BLANKA_MED_NAPR_PREGLED_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+    BLANKA_MED_NAPR_REASON: isOld :=  BLANKA_MED_NAPR.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    BLANKA_MED_NAPR_SPECIALITY_ID: isOld :=  BLANKA_MED_NAPR.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -929,14 +1267,6 @@ begin
   end;
   Include(BLANKA_MED_NAPR.PRecord.setProp, TBLANKA_MED_NAPRItem.TPropertyIndex(ACol));
   case TBLANKA_MED_NAPRItem.TPropertyIndex(ACol) of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: BLANKA_MED_NAPR.PRecord.ATTACHED_DOCS := AFieldText;
-//    BLANKA_MED_NAPR_DIAGNOSES: BLANKA_MED_NAPR.PRecord.DIAGNOSES := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE: BLANKA_MED_NAPR.PRecord.ICD_CODE := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE2: BLANKA_MED_NAPR.PRecord.ICD_CODE2 := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE2_ADD := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE3: BLANKA_MED_NAPR.PRecord.ICD_CODE3 := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE3_ADD := AFieldText;
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: BLANKA_MED_NAPR.PRecord.ICD_CODE_ADD := AFieldText;
     BLANKA_MED_NAPR_ID: BLANKA_MED_NAPR.PRecord.ID := StrToInt(AFieldText);
     BLANKA_MED_NAPR_ISSUE_DATE: BLANKA_MED_NAPR.PRecord.ISSUE_DATE := StrToDate(AFieldText);
     BLANKA_MED_NAPR_NRN: BLANKA_MED_NAPR.PRecord.NRN := AFieldText;
@@ -945,7 +1275,7 @@ begin
     BLANKA_MED_NAPR_REASON: BLANKA_MED_NAPR.PRecord.REASON := AFieldText;
     BLANKA_MED_NAPR_SPECIALITY_ID: BLANKA_MED_NAPR.PRecord.SPECIALITY_ID := StrToInt(AFieldText);
     BLANKA_MED_NAPR_SpecDataPos: BLANKA_MED_NAPR.PRecord.SpecDataPos := StrToInt(AFieldText);
-    BLANKA_MED_NAPR_Logical: BLANKA_MED_NAPR.PRecord.Logical := TlogicalBLANKA_MED_NAPRSet(BLANKA_MED_NAPR.StrToLogical32(AFieldText));
+    BLANKA_MED_NAPR_Logical: BLANKA_MED_NAPR.PRecord.Logical := tlogicalBLANKA_MED_NAPRSet(BLANKA_MED_NAPR.StrToLogical24(AFieldText));
   end;
 end;
 
@@ -963,69 +1293,13 @@ begin
   for i := 0 to self.Count - 1 do
   begin
     case  TBLANKA_MED_NAPRItem.TPropertyIndex(self.FindedRes.PropIndex) of
-	   // BLANKA_MED_NAPR_ATTACHED_DOCS:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_DIAGNOSES:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE2:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE2_ADD:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE3:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE3_ADD:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_ICD_CODE_ADD:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-      BLANKA_MED_NAPR_ID:
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-        end;
-      end;
+	  BLANKA_MED_NAPR_ID: 
+begin
+  if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+  begin
+    ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
+  end;
+end;
       BLANKA_MED_NAPR_NRN:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
@@ -1054,29 +1328,7 @@ begin
           ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
         end;
       end;
-      //BLANKA_MED_NAPR_SPECIALIST_AMB_LIST_INFO:
-//      begin
-//        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-//      BLANKA_MED_NAPR_SPECIALIST_ID:
-//      begin
-//        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-//        begin
-//          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-//        end;
-//      end;
-      BLANKA_MED_NAPR_SPECIALITY_ID:
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
-        begin
-          ListBLANKA_MED_NAPRSearch.Add(self.Items[i]);
-        end;
-      end;
-
-      BLANKA_MED_NAPR_SpecDataPos:
+      BLANKA_MED_NAPR_SPECIALITY_ID: 
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -1119,7 +1371,7 @@ var
   i: word;
 
 begin
-  ListForFDB := LST;
+  ListForFinder := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -1183,8 +1435,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -1292,23 +1544,12 @@ end;
 procedure TBLANKA_MED_NAPRColl.SortByIndexValue(propIndex: TBLANKA_MED_NAPRItem.TPropertyIndex);
 begin
   case propIndex of
-    //BLANKA_MED_NAPR_ATTACHED_DOCS: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_DIAGNOSES: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE2: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE2_ADD: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE3: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE3_ADD: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_ICD_CODE_ADD: SortByIndexAnsiString;
     BLANKA_MED_NAPR_ID: SortByIndexInt;
-    BLANKA_MED_NAPR_NRN: SortByIndexAnsiString;
-    BLANKA_MED_NAPR_NUMBER: SortByIndexInt;
-    BLANKA_MED_NAPR_PREGLED_ID: SortByIndexInt;
-    BLANKA_MED_NAPR_REASON: SortByIndexAnsiString;
-    //BLANKA_MED_NAPR_SPECIALIST_AMB_LIST_INFO: SortByIndexAnsiString;
-//    BLANKA_MED_NAPR_SPECIALIST_ID: SortByIndexInt;
-    BLANKA_MED_NAPR_SPECIALITY_ID: SortByIndexInt;
-    BLANKA_MED_NAPR_SpecDataPos: SortByIndexInt;
+      BLANKA_MED_NAPR_NRN: SortByIndexAnsiString;
+      BLANKA_MED_NAPR_NUMBER: SortByIndexInt;
+      BLANKA_MED_NAPR_PREGLED_ID: SortByIndexInt;
+      BLANKA_MED_NAPR_REASON: SortByIndexAnsiString;
+      BLANKA_MED_NAPR_SPECIALITY_ID: SortByIndexInt;
   end;
 end;
 

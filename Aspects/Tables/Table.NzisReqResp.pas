@@ -147,7 +147,7 @@ TNzisReqRespItem = class(TBaseItem)
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; NzisReqResp: TNzisReqRespItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; NzisReqResp: TNzisReqRespItem; var AValue:String);
@@ -406,7 +406,7 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvPregledRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvPregledNewRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
@@ -589,7 +589,7 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvPregledRoot then
+    if data.vid = vvPregledNewRoot then
     begin
       Result := Run;
       Exit;
@@ -983,7 +983,7 @@ begin
 
 end;
 
-function TNzisReqRespColl.PropType(propIndex: Word): TAsectTypeKind;
+function TNzisReqRespColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TNzisReqRespItem.TPropertyIndex(propIndex) of

@@ -1,11 +1,11 @@
 unit FinderFormFMX;
-          //logicallabel
+          //logicallabel   cot
 interface
 
 uses
    Aspects.Types, Aspects.Collections, Table.PregledNew, Table.PatientNew, VirtualTrees,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  System.Generics.Collections, SearchThread,
+  System.Generics.Collections, SearchThread, FmxControls,
 
   RealObj.RealHipp, system.Rtti,
 
@@ -119,7 +119,6 @@ type
     txtPatName: TText;
     edtPatName: TEdit;
     lytExpIn: TLayout;
-    stylbk1: TStyleBook;
     rctCot1: TRectangle;
     rctCot2: TRectangle;
     rctCot3: TRectangle;
@@ -179,7 +178,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure expndrCollectionResize(Sender: TObject);
     procedure edtForCloningValidating(Sender: TObject; var Text: string);
-    procedure rctCot1MouseUp(Sender: TObject; Button: TMouseButton;
+    procedure rctCotMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure scrlbx1CalcContentBounds(Sender: TObject;
       var ContentBounds: TRectF);
@@ -334,8 +333,8 @@ begin
   TempDateLabel.edtDate.OnPainting := edtDateRawPainting;
   TempDateLabel.edtDate.OnValidating := edtDateRawValidating;
   TempDateLabel.rctPopup.OnMouseUp := rctDatePickerPopupMouseUp;
-  TempDateLabel.cot1.OnMouseUp  := rctCot1MouseUp;
-  TempDateLabel.cot2.OnMouseUp  := rctCot1MouseUp;
+  TempDateLabel.cot1.OnMouseUp  := rctCotMouseUp;
+  TempDateLabel.cot2.OnMouseUp  := rctCotMouseUp;
   TempDateCot.OnChange := dtdtForCloningChange;// edtForCloningValidating;
   TempDateCot.Parent := lyt;
 end;
@@ -386,11 +385,11 @@ begin
     end;
   end;
 
-  TempEditLabel.cot1.OnMouseUp := rctCot1MouseUp;
-  TempEditLabel.cot2.OnMouseUp := rctCot1MouseUp;
-  TempEditLabel.cot3.OnMouseUp := rctCot1MouseUp;
-  TempEditLabel.cot4.OnMouseUp := rctCot1MouseUp;
-  TempEditLabel.cot5.OnMouseUp := rctCot1MouseUp;
+  TempEditLabel.cot1.OnMouseUp := rctCotMouseUp;
+  TempEditLabel.cot2.OnMouseUp := rctCotMouseUp;
+  TempEditLabel.cot3.OnMouseUp := rctCotMouseUp;
+  TempEditLabel.cot4.OnMouseUp := rctCotMouseUp;
+  TempEditLabel.cot5.OnMouseUp := rctCotMouseUp;
   TempEditCot.OnValidating := edtForCloningValidating;
   TempEditCot.Parent := lyt;
 end;
@@ -404,7 +403,7 @@ var
   TempGrid: TGridLayout;
   TempExpander: TExpander;
   i: integer;
-  act: TAsectTypeKind;
+  act: TAspectTypeKind;
   edt1, edt2: TEdit;
   txt1, txt2: TText;
   ArctCot1: TRectangle;
@@ -474,7 +473,7 @@ var
   TempExpndrLyt, TempExpIn: TLayout;   ///TExpanerTableLabel;
   TempExpander: TExpander;
   i: integer;
-  act: TAsectTypeKind;
+  act: TAspectTypeKind;
   edt: TEdit;
   ArctCot1: TRectangle;
   h: Single;
@@ -518,7 +517,7 @@ begin
       begin
         edt := TEdit(self.edtForCloning.Clone(self));
         ArctCot1 := WalkChildrenRectStyle(edt, 'Cot1');
-        ArctCot1.OnMouseUp  := rctCot1MouseUp;
+        ArctCot1.OnMouseUp  := rctCotMouseUp;
         edt.Position.y := 0;
         edt.Align  := TAlignLayout.Top;
         edt.Parent := TempExpIn;
@@ -571,7 +570,7 @@ var
   TempExpndrLyt, TempExpIn: TLayout;   ///TExpanerTableLabel;
   TempExpander: TExpander;
   i: integer;
-  act: TAsectTypeKind;
+  act: TAspectTypeKind;
   edt1, edt2: TEdit;
   txt1, txt2: TText;
   ArctCot1: TRectangle;
@@ -877,7 +876,7 @@ begin
     end;
     vvPregled:
     begin
-      CollPregled.OnSetTextSearchDateEdt(dat, field, Condition);
+      CollPregled.OnSetDateSearchEDT(dat, field, Condition);
       CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
@@ -903,7 +902,7 @@ begin
   end;
 end;
 
-procedure TfrmFinder.rctCot1MouseUp(Sender: TObject; Button: TMouseButton;
+procedure TfrmFinder.rctCotMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Single);
 var
   rct: TRectangle;
@@ -1041,6 +1040,8 @@ begin
     hLogical := InnerChildrenRect(grdLogical).Height / FScaleDyn
   else
     hLogical := 0;
+
+  grdLogical.Height := hLogical;
 
   if Assigned(txtLogical) then
     hTxt := txtLogical.Height + 6

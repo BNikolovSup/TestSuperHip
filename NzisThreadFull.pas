@@ -78,9 +78,6 @@ TNzisThread = class(TThread)
   procedure InitCertToken;
   procedure CheckStreamDataType;
 public
-    PregColl: TPregledNewColl;
-    CollNzisToken: TNzisTokenColl;
-    CollDoctor: TRealDoctorColl;
     indexInListSended: Integer;
     constructor Create(CreateSuspended: Boolean; dm: TADBDataModule = nil);
     destructor Destroy; override;
@@ -443,10 +440,10 @@ begin
               if StrTemp.StartsWith('PNOBG-') then
               begin
                 certEgn := Copy(StrTemp, 7, 10);
-                for j := 0 to CollDoctor.Count - 1 do
+                for j := 0 to Dm_adb.CollDoctor.Count - 1 do
                 begin
-                  doc := CollDoctor.Items[j];
-                  docEgn := CollDoctor.getAnsiStringMap(doc.DataPos, word(Doctor_EGN));
+                  doc := Dm_adb.CollDoctor.Items[j];
+                  docEgn := Dm_adb.CollDoctor.getAnsiStringMap(doc.DataPos, word(Doctor_EGN));
                   if docEgn = certEgn then
                   begin
                     doc.Cert := TElX509Certificate.Create(nil);
@@ -555,15 +552,15 @@ begin
   begin
     FStreamData.Size := 0;
 
-    for  i := 0 to CollNzisToken.Count - 1 do
+    for  i := 0 to Dm_adb.CollNzisToken.Count - 1 do
     begin
-      TokenCertId := Trim(CollNzisToken.getAnsiStringMap(CollNzisToken.Items[i].DataPos, word(NzisToken_CertID)));
+      TokenCertId := Trim(Dm_adb.CollNzisToken.getAnsiStringMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_CertID)));
       if TokenCertId = BuildHexString(CurrentCert.SerialNumber) then
       begin
-        EndDateTime := CollNzisToken.getDateMap(CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime));
+        EndDateTime := Dm_adb.CollNzisToken.getDateMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime));
         if (EndDateTime - Now) < (1/24/12) then //5 min
           Continue;
-        FToken := Trim(CollNzisToken.getAnsiStringMap(CollNzisToken.Items[i].DataPos, word(NzisToken_Bearer)));
+        FToken := Trim(Dm_adb.CollNzisToken.getAnsiStringMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_Bearer)));
         Exit;
       end;
 
@@ -601,7 +598,7 @@ begin
     NzisStatus := AX004.Contents.Status.Value;
 
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 6); //затворен
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 6); //затворен
     //lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
     //PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
@@ -610,7 +607,7 @@ begin
   else
   begin
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 9); //грешка
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 9); //грешка
     ShowMessage((AX004.Contents.XML));
     //lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN)), 13, 36);
     //PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN), NRN + lrn);
@@ -639,13 +636,13 @@ begin
     NzisStatus := AX010.Contents.Status.Value;
 
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 10); //редактиран
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 10); //редактиран
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
   end
   else
   begin
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 11); //грешка
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 11); //грешка
     ShowMessage((AX010.Contents.XML));
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 3);//  1 - грешка при редактиране
   end;
@@ -671,16 +668,16 @@ begin
     NzisStatus := AX002.Contents.Status.Value;
 
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 5); //otworen
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 5); //otworen
+    lrn := Copy(Dm_adb.CollPregled.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    Dm_adb.CollPregled.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
   else
   begin
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 4); //грешка
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 4); //грешка
 
 
 
@@ -727,16 +724,16 @@ begin
     end;
 
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), NzisStatus);
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), NzisStatus);
+    lrn := Copy(Dm_adb.CollPregled.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    Dm_adb.CollPregled.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
   else
   begin
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 4); //грешка
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 4); //грешка
     ShowMessage((AX006.Contents.XML));
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 1);//  1 - грешка при отваряне
   end;
@@ -763,19 +760,19 @@ begin
     NzisStatus := AX014.Contents.Status.Value;
 
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 14); //затворен  с готов преглед
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 14); //затворен  с готов преглед
+    lrn := Copy(Dm_adb.CollPregled.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    Dm_adb.CollPregled.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 0);//  нула значи ОК
 
   end
   else
   begin
     data := Pointer(PByte(FNode) + lenNode);
-    PregColl.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 15); //грешка при готов преглед
+    Dm_adb.CollPregled.SetwordMap(data.DataPos, Word(PregledNew_NZIS_STATUS), 15); //грешка при готов преглед
     ShowMessage((AX014.Contents.XML));
-    lrn := Copy(PregColl.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
-    PregColl.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
+    lrn := Copy(Dm_adb.CollPregled.GetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
+    Dm_adb.CollPregled.SetAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN), NRN + lrn);
     PostMessage(FHndSuperHip, WM_USER + 501, nativeint(FNode), 2);//  1 - грешка при затваряне
   end;
 
@@ -820,22 +817,22 @@ begin
     end;
   end;
 
-  for  i := 0 to CollNzisToken.Count - 1 do
+  for  i := 0 to Dm_adb.CollNzisToken.Count - 1 do
   begin
-    TokenCertId := Trim(CollNzisToken.getAnsiStringMap(CollNzisToken.Items[i].DataPos, word(NzisToken_CertID)));
+    TokenCertId := Trim(Dm_adb.CollNzisToken.getAnsiStringMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_CertID)));
     if TokenCertId = BuildHexString(CurrentCert.SerialNumber) then
     begin
-      EndDateTime := CollNzisToken.getDateMap(CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime));
+      EndDateTime := Dm_adb.CollNzisToken.getDateMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime));
       if (EndDateTime - Now) < (1/24/12) then //5 min
         Continue;
-      CollNzisToken.SetAnsiStringMap(CollNzisToken.Items[i].DataPos, word(NzisToken_Bearer), FToken.PadRight(100, ' '));
-      CollNzisToken.SetDateMap(CollNzisToken.Items[i].DataPos, word(NzisToken_fromDatTime), now);
-      CollNzisToken.SetDateMap(CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime), TokenToTime);
+      Dm_adb.CollNzisToken.SetAnsiStringMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_Bearer), FToken.PadRight(100, ' '));
+      Dm_adb.CollNzisToken.SetDateMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_fromDatTime), now);
+      Dm_adb.CollNzisToken.SetDateMap(Dm_adb.CollNzisToken.Items[i].DataPos, word(NzisToken_ToDatTime), TokenToTime);
       Exit;
     end;
   end;
 
-  NzisToken := TNzisTokenItem(CollNzisToken.Add);
+  NzisToken := TNzisTokenItem(Dm_adb.CollNzisToken.Add);
   New(NzisToken.PRecord);
   NzisToken.PRecord.Bearer := FToken.PadRight(100, ' ');
   NzisToken.PRecord.ToDatTime := TokenToTime;

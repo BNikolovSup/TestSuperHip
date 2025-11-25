@@ -83,7 +83,7 @@ NzisToken_Bearer
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
-    function PropType(propIndex: Word): TAsectTypeKind; override;
+    function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellFromMap(propIndex: word; ARow: Integer; NzisToken: TNzisTokenItem; var AValue:String);
     procedure GetCellFromRecord(propIndex: word; NzisToken: TNzisTokenItem; var AValue:String);
@@ -580,7 +580,7 @@ end;
 
 
 
-function TNzisTokenColl.PropType(propIndex: Word): TAsectTypeKind;
+function TNzisTokenColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
   case TNzisTokenItem.TPropertyIndex(propIndex) of
