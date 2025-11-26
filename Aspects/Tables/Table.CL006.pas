@@ -2,11 +2,10 @@ unit Table.CL006;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types,
+  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control;
-
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -22,21 +21,27 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
+TLogicalCL006 = (
+    Is_);
+TlogicalCL006Set = set of TLogicalCL006;
+
 
 TCL006Item = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-CL006_Key
-, CL006_Description
-, CL006_DescriptionEn
-, CL006_nhif_code
-, CL006_clinical_speciality
-, CL006_nhif_name
-, CL006_role
-);
+       CL006_Key
+       , CL006_Description
+       , CL006_DescriptionEn
+       , CL006_nhif_code
+       , CL006_clinical_speciality
+       , CL006_nhif_name
+       , CL006_role
+       , CL006_Logical
+       );
 	  
       TSetProp = set of TPropertyIndex;
+      PSetProp = ^TSetProp;
       PRecCL006 = ^TRecCL006;
       TRecCL006 = record
         Key: AnsiString;
@@ -46,6 +51,7 @@ CL006_Key
         clinical_speciality: AnsiString;
         nhif_name: AnsiString;
         role: AnsiString;
+        Logical: TlogicalCL006Set;
         setProp: TSetProp;
       end;
 
@@ -61,8 +67,14 @@ CL006_Key
     destructor Destroy; override;
     procedure InsertCL006;
     procedure UpdateCL006;
-    procedure SaveCL006(var dataPosition: Cardinal);
+    procedure SaveCL006(var dataPosition: Cardinal)overload;
+	procedure SaveCL006(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
+	function GetPRecord: Pointer; override;
+    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
+    function GetCollType: TCollectionsType; override;
+	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
+	procedure FillPropCL006(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
@@ -70,17 +82,21 @@ CL006_Key
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
+	tempItem: TCL006Item;
     function GetItem(Index: Integer): TCL006Item;
     procedure SetItem(Index: Integer; const Value: TCL006Item);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	tempItem: TCL006Item;
-	ListForFDB: TList<TCL006Item>;
+	linkOptions: TMappedLinkFile;
+	ListForFinder: TList<TCL006Item>;
     ListCL006Search: TList<TCL006Item>;
 	PRecordSearch: ^TCL006Item.TRecCL006;
     ArrPropSearch: TArray<TCL006Item.TPropertyIndex>;
     ArrPropSearchClc: TArray<TCL006Item.TPropertyIndex>;
+	VisibleColl: TCL006Item.TSetProp;
+	ArrayPropOrder: TArray<TCL006Item.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -102,8 +118,17 @@ CL006_Key
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
+	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
+	function DisplayLogicalName(flagIndex: Integer): string;
+	function RankSortOption(propIndex: Word): cardinal; override;
+    function FindRootCollOptionNode(): PVirtualNode; override;
+    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
+    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
+    function FindSearchFieldCollOptionNode(): PVirtualNode;
+    function CreateRootCollOptionNode(): PVirtualNode;
+    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TCL006Item>);
@@ -112,9 +137,18 @@ CL006_Key
     procedure IndexValue(propIndex: TCL006Item.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TCL006Item.TPropertyIndex);
     property Items[Index: Integer]: TCL006Item read GetItem write SetItem;
-    property SearchingValue: string read FSearchingValue write SetSearchingValue;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
-
+    property SearchingValue: string read FSearchingValue write SetSearchingValue;
+    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+    procedure OnSetTextSearchLog(Log: TlogicalCL006Set);
+	procedure CheckForSave(var cnt: Integer);
+	function IsCollVisible(PropIndex: Word): Boolean; override;
+    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
+	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -131,6 +165,35 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
+end;
+
+procedure TCL006Item.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+var
+  paramField: TParamProp;
+  setPropPat: TSetProp;
+  i: Integer;
+  PropertyIndex: TPropertyIndex;
+begin
+  i := 0;
+  for paramField in SetOfProp do
+  begin
+    PropertyIndex := TPropertyIndex(byte(paramField));
+    Include(Self.PRecord.setProp, PropertyIndex);
+    //case PropertyIndex of
+      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
+    //end;
+    inc(i);
+  end;
+end;
+
+function TCL006Item.GetCollType: TCollectionsType;
+begin
+  Result := ctCL006;
+end;
+
+function TCL006Item.GetPRecord: Pointer;
+begin
+  result := Pointer(PRecord);
 end;
 
 procedure TCL006Item.InsertCL006;
@@ -177,6 +240,7 @@ begin
             CL006_clinical_speciality: SaveData(PRecord.clinical_speciality, PropPosition, metaPosition, dataPosition);
             CL006_nhif_name: SaveData(PRecord.nhif_name, PropPosition, metaPosition, dataPosition);
             CL006_role: SaveData(PRecord.role, PropPosition, metaPosition, dataPosition);
+            CL006_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -205,7 +269,7 @@ begin
     if Result = false then
       Exit;
     pidx := TCL006Coll(coll).ArrPropSearchClc[i];
-	ATempItem := TCL006Coll(coll).ListForFDB.Items[0];
+	ATempItem := TCL006Coll(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
@@ -216,9 +280,109 @@ begin
             CL006_clinical_speciality: Result := IsFinded(ATempItem.PRecord.clinical_speciality, buf, FPosDataADB, word(CL006_clinical_speciality), cot);
             CL006_nhif_name: Result := IsFinded(ATempItem.PRecord.nhif_name, buf, FPosDataADB, word(CL006_nhif_name), cot);
             CL006_role: Result := IsFinded(ATempItem.PRecord.role, buf, FPosDataADB, word(CL006_role), cot);
+            CL006_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(CL006_Logical), cot);
       end;
     end;
   end;
+end;
+
+procedure TCL006Item.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
+  vCmd: PVirtualNode; CmdItem: TCmdItem);
+var
+  delta: integer;
+  flds08: TLogicalData08;
+  propindexCL006: TCL006Item.TPropertyIndex;
+  vCmdProp: PVirtualNode;
+  dataCmdProp: PAspRec;
+begin
+  delta := sizeof(TLogicalData128) - sizeof(TLogicalData08);
+  stream.Read(flds08, sizeof(TLogicalData08));
+  stream.Position := stream.Position + delta;
+  New(self.PRecord);
+
+  self.PRecord.setProp := TCL006Item.TSetProp(flds08);// тука се записва какво има като полета
+
+
+  for propindexCL006 := Low(TCL006Item.TPropertyIndex) to High(TCL006Item.TPropertyIndex) do
+  begin
+    if not (propindexCL006 in self.PRecord.setProp) then
+      continue;
+    if vtrTemp <> nil then
+    begin
+      vCmdProp := vtrTemp.AddChild(vCmd, nil);
+      dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
+      dataCmdProp.index := word(propindexCL006);
+      dataCmdProp.vid := vvPregled;
+    end;
+    self.FillPropCL006(propindexCL006, stream);
+  end;
+
+  CmdItem.AdbItem := self;
+end;
+
+procedure TCL006Item.FillPropCL006(propindex: TPropertyIndex;
+  stream: TStream);
+var
+  lenStr: Word;
+begin
+  case propindex of
+    CL006_Key:
+        begin
+          stream.Read(lenStr, 2);
+          SetLength(Self.PRecord.Key, lenStr);
+          stream.Read(Self.PRecord.Key[1], lenStr);
+        end;
+            CL006_Description:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.Description, lenStr);
+              stream.Read(Self.PRecord.Description[1], lenStr);
+            end;
+            CL006_DescriptionEn:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.DescriptionEn, lenStr);
+              stream.Read(Self.PRecord.DescriptionEn[1], lenStr);
+            end;
+            CL006_nhif_code:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.nhif_code, lenStr);
+              stream.Read(Self.PRecord.nhif_code[1], lenStr);
+            end;
+            CL006_clinical_speciality:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.clinical_speciality, lenStr);
+              stream.Read(Self.PRecord.clinical_speciality[1], lenStr);
+            end;
+            CL006_nhif_name:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.nhif_name, lenStr);
+              stream.Read(Self.PRecord.nhif_name[1], lenStr);
+            end;
+            CL006_role:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.role, lenStr);
+              stream.Read(Self.PRecord.role[1], lenStr);
+            end;
+            CL006_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
+  end;
+end;
+
+procedure TCL006Item.SaveCL006(Abuf: Pointer; var dataPosition: Cardinal);
+var
+  pCardinalData: PCardinal;
+  APosData, ALenData: Cardinal;
+begin
+  pCardinalData := pointer(PByte(ABuf) + 8);
+  APosData := pCardinalData^;
+  pCardinalData := pointer(PByte(ABuf) + 12);
+  ALenData := pCardinalData^;
+  dataPosition :=  ALenData + APosData;
+  SaveCL006(dataPosition);
 end;
 
 procedure TCL006Item.SaveCL006(var dataPosition: Cardinal);
@@ -246,6 +410,7 @@ begin
             CL006_clinical_speciality: SaveData(PRecord.clinical_speciality, PropPosition, metaPosition, dataPosition);
             CL006_nhif_name: SaveData(PRecord.nhif_name, PropPosition, metaPosition, dataPosition);
             CL006_role: SaveData(PRecord.role, PropPosition, metaPosition, dataPosition);
+            CL006_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -318,25 +483,147 @@ begin
 
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
-  Result := ListForFDB.Add(ItemForSearch);
+  ItemForSearch.PRecord.Logical := [];
+  Result := ListForFinder.Add(ItemForSearch);
 end;
 
+procedure TCL006Coll.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+var
+  run: PVirtualNode;
+  data: PAspRec;
+begin
+  VisibleColl := [];
+
+  run := RootNode.FirstChild;
+  while run <> nil do
+  begin
+    data := PAspRec(PByte(run) + lenNode);
+
+    if run.CheckState = csCheckedNormal then
+      Include(VisibleColl, TCL006Item.TPropertyIndex(run.Dummy - 1));
+
+    run := run.NextSibling;
+  end;
+end;
+
+
+function TCL006Coll.CreateRootCollOptionNode(): PVirtualNode;
+var
+  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+begin
+  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
+  linkOptions.AddNewNode(vvCL006Root, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
+  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
+
+  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
+
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i + 1;
+	  run.CheckType := ctCheckBox;
+      run.CheckState := csCheckedNormal;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;  
+end;
+
+procedure TCL006Coll.CheckForSave(var cnt: Integer);
+var
+  i: Integer;
+  tempItem: TCL006Item;
+begin
+  for i := 0 to Self.Count - 1 do
+  begin
+    tempItem := Items[i];
+    if tempItem.PRecord <> nil then
+    begin
+	  // === проверки за запазване (CheckForSave) ===
+
+  if (CL006_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_Key))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_Description))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_DescriptionEn))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_nhif_code in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_nhif_code))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_clinical_speciality in tempItem.PRecord.setProp) and (tempItem.PRecord.clinical_speciality <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_clinical_speciality))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_nhif_name in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_name <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_nhif_name))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_role in tempItem.PRecord.setProp) and (tempItem.PRecord.role <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_role))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (CL006_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL006_Logical))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+    end;
+  end;
+end;
+
+
 constructor TCL006Coll.Create(ItemClass: TCollectionItemClass);
+var
+  i: Integer;
 begin
   inherited;
   tempItem := TCL006Item.Create(nil);
   ListCL006Search := TList<TCL006Item>.Create;
-  ListForFDB := TList<TCL006Item>.Create;
-  FindedRes.DataPos := 0;
-  FindedRes.PropIndex := MAXWORD;
+  ListForFinder := TList<TCL006Item>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
+  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
+  ArrayPropOrderSearchOptions[0] := FieldCount;
+  for i := 1 to FieldCount do
+  begin
+    ArrayPropOrderSearchOptions[i] := i;
+  end;
+
 end;
 
 destructor TCL006Coll.destroy;
 begin
   FreeAndNil(ListCL006Search);
-  FreeAndNil(ListForFDB);
+  FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -354,15 +641,191 @@ begin
     CL006_clinical_speciality: Result := 'clinical_speciality';
     CL006_nhif_name: Result := 'nhif_name';
     CL006_role: Result := 'role';
+    CL006_Logical: Result := 'Logical';
   end;
 end;
 
+function TCL006Coll.DisplayLogicalName(flagIndex: Integer): string;
+begin
+  case flagIndex of
+0: Result := 'Is_';
+  else
+    Result := '???';
+  end;
+end;
+
+
+procedure TCL006Coll.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  pSource, pTarget: PVirtualNode;
+begin
+  inherited;
+  if linkOptions = nil then Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
+  run := FieldCollOptionNode.FirstChild;
+  pSource := nil;
+  pTarget := nil;
+  while run <> nil do
+  begin
+    if run.Index = NewPos - 1 then
+    begin
+      pTarget := run;
+    end;
+    if run.index = OldPos - 1 then
+    begin
+      pSource := run;
+    end;
+    run := run.NextSibling;
+  end;
+
+  if pTarget = nil then Exit;
+  if pSource = nil then Exit;
+  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
+  if pSource.Index < pTarget.Index then
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
+  end
+  else
+  begin
+    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
+  end;
+  run := FieldCollOptionNode.FirstChild;
+  while run <> nil do
+  begin
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end; 
+end;
 
 
 function TCL006Coll.FieldCount: Integer; 
 begin
   inherited;
-  Result := 7;
+  Result := 8;
+end;
+
+function TCL006Coll.FindRootCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  pCardinalData: PCardinal;
+  PosLinkData: Cardinal;
+  Run: PVirtualNode;
+  data: PAspRec;
+begin
+  Result := nil;
+  linkPos := 100;
+  pCardinalData := pointer(PByte(linkOptions.Buf));
+  PosLinkData := pCardinalData^;
+
+  while linkPos <= PosLinkData do
+  begin
+    Run := pointer(PByte(linkOptions.Buf) + linkpos);
+    data := Pointer(PByte(Run)+ lenNode);
+    if data.vid = vvCL006Root then
+    begin
+      Result := Run;
+	  data := Pointer(PByte(Result)+ lenNode);
+      data.DataPos := Cardinal(Self);
+      Exit;
+    end;
+    inc(linkPos, LenData);
+  end;
+  if Result = nil then
+    Result := CreateRootCollOptionNode;
+  if Result <> nil then
+  begin
+    data := Pointer(PByte(Result)+ lenNode);
+    data.DataPos := Cardinal(Self);
+  end;
+end;
+
+function TCL006Coll.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchCot: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TCL006Coll.FindSearchFieldCollOptionGridNode: PVirtualNode;
+var
+  run, vRootPregOptions: PVirtualNode;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+
+  result := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: result := run;
+    end;
+    run := run.NextSibling;
+  end;
+end;
+
+function TCL006Coll.FindSearchFieldCollOptionNode(): PVirtualNode;
+var
+  linkPos: Cardinal;
+  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
+  i: Integer;
+  dataRun: PAspRec;
+begin
+  vRootPregOptions := self.FindRootCollOptionNode();
+  if vRootPregOptions = nil then
+    vRootPregOptions := CreateRootCollOptionNode;
+  vOptionSearchGrid := nil;
+  vOptionSearchCOT := nil;
+
+  run := vRootPregOptions.FirstChild;
+  while run <> nil do
+  begin
+    dataRun := pointer(PByte(run) + lenNode);
+    case dataRun.vid of
+      vvOptionSearchGrid: vOptionSearchGrid := run;
+      vvOptionSearchCot: vOptionSearchCOT := run;
+    end;
+
+    run := run.NextSibling;
+  end;
+  if vOptionSearchGrid = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+  if vOptionSearchCOT = nil then
+  begin
+    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
+  end;
+
+  Result := vOptionSearchGrid;
+  if vOptionSearchGrid.ChildCount <> FieldCount then
+  begin
+    for i := 0 to FieldCount - 1 do
+    begin
+      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
+      run.Dummy := i;
+    end;
+  end
+  else
+  begin
+    // при евентуално добавена колонка...
+  end;
 end;
 
 procedure TCL006Coll.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -388,16 +851,26 @@ end;
 
 procedure TCL006Coll.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  ACol: Integer;
+  RowSelect: Integer;
   prop: TCL006Item.TPropertyIndex;
 begin
   inherited;
-  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if (ListDataPos.count - 1) < ARow then exit;
+ 
+  if ARow < 0 then
+  begin
+    AValue := 'hhhh';
+    Exit;
+  end;
+  try
+    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
+    RowSelect := ARow + Self.offsetTop;
+    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  except
+    AValue := 'ddddd';
+    Exit;
+  end;
 
-  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
-  prop := TCL006Item.TPropertyIndex(ACol);
-  GetCellFromMap(ACol, ARow, TempItem, AValue);
+  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
 procedure TCL006Coll.GetCellFromRecord(propIndex: word; CL006: TCL006Item; var AValue: String);
@@ -412,6 +885,7 @@ begin
     CL006_clinical_speciality: str := (CL006.PRecord.clinical_speciality);
     CL006_nhif_name: str := (CL006.PRecord.nhif_name);
     CL006_role: str := (CL006.PRecord.role);
+    CL006_Logical: str := CL006.Logical08ToStr(TLogicalData08(CL006.PRecord.Logical));
   else
     begin
       str := '';
@@ -427,9 +901,9 @@ var
   prop: TCL006Item.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFDB.Count = 0 then Exit;
+  if ListForFinder.Count = 0 then Exit;
 
-  AtempItem := ListForFDB[ARow];
+  AtempItem := ListForFinder[ARow];
   prop := TCL006Item.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -476,6 +950,16 @@ begin
   end;
 end;
 
+function TCL006Coll.GetCollType: TCollectionsType;
+begin
+  Result := ctCL006;
+end;
+
+function TCL006Coll.GetCollDelType: TCollectionsType;
+begin
+  Result := ctCL006Del;
+end;
+
 procedure TCL006Coll.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   CL006: TCL006Item;
@@ -514,6 +998,7 @@ begin
     CL006_clinical_speciality: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL006_nhif_name: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL006_role: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_Logical: str :=  CL006.Logical08ToStr(CL006.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -617,6 +1102,12 @@ begin
 
 end;
 
+function TCL006Coll.IsCollVisible(PropIndex: Word): Boolean;
+begin
+  Result  := TCL006Item.TPropertyIndex(PropIndex) in  VisibleColl;
+end;
+
+
 procedure TCL006Coll.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
   Tempitem: TCL006Item;
@@ -642,6 +1133,105 @@ begin
   end;
 end;
 
+{=== TEXT SEARCH HANDLER ===}
+procedure TCL006Coll.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+var
+  AText: string;
+begin
+  if Text = '' then
+  begin
+    Exclude(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
+  end
+  else
+  begin
+    if not (cotSens in Condition) then
+      AText := AnsiUpperCase(Text)
+    else
+      AText := Text;
+
+    Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
+  end;
+
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  case TCL006Item.TPropertyIndex(Field) of
+CL006_Key: ListForFinder[0].PRecord.Key := AText;
+    CL006_Description: ListForFinder[0].PRecord.Description := AText;
+    CL006_DescriptionEn: ListForFinder[0].PRecord.DescriptionEn := AText;
+    CL006_nhif_code: ListForFinder[0].PRecord.nhif_code := AText;
+    CL006_clinical_speciality: ListForFinder[0].PRecord.clinical_speciality := AText;
+    CL006_nhif_name: ListForFinder[0].PRecord.nhif_name := AText;
+    CL006_role: ListForFinder[0].PRecord.role := AText;
+  end;
+end;
+
+
+{=== DATE SEARCH HANDLER ===}
+procedure TCL006Coll.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  //case TCL006Item.TPropertyIndex(Field) of
+//
+//  end;
+end;
+
+
+{=== NUMERIC SEARCH HANDLER ===}
+procedure TCL006Coll.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+begin
+  Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
+  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
+
+  //case TCL006Item.TPropertyIndex(Field) of
+//
+//  end;
+end;
+
+
+{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
+procedure TCL006Coll.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+begin
+  case TCL006Item.TPropertyIndex(Field) of
+    CL006_Logical:
+    begin
+      if value then
+        Include(ListForFinder[0].PRecord.Logical, TlogicalCL006(logIndex))
+      else
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalCL006(logIndex))   
+    end;
+  end;
+end;
+
+
+procedure TCL006Coll.OnSetTextSearchLog(Log: TlogicalCL006Set);
+begin
+  ListForFinder[0].PRecord.Logical := Log;
+end;
+
+procedure TCL006Coll.OrderFieldsSearch1(Grid: TTeeGrid);
+var
+  FieldCollOptionNode, run: PVirtualNode;
+  Comparison: TComparison<PVirtualNode>;
+  i, index, rank: Integer;
+  ArrCol: TArray<TColumn>;
+begin
+  inherited;
+  if linkOptions = nil then  Exit;
+
+  FieldCollOptionNode := FindSearchFieldCollOptionNode;
+  ApplyVisibilityFromTree(FieldCollOptionNode);
+  run := FieldCollOptionNode.FirstChild;
+
+  while run <> nil do
+  begin
+    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
+    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
+    run := run.NextSibling;
+  end;
+
+end;
 
 function TCL006Coll.PropType(propIndex: Word): TAspectTypeKind;
 begin
@@ -654,9 +1244,15 @@ begin
     CL006_clinical_speciality: Result := actAnsiString;
     CL006_nhif_name: Result := actAnsiString;
     CL006_role: Result := actAnsiString;
+    CL006_Logical: Result := actLogical;
   else
     Result := actNone;
   end
+end;
+
+function TCL006Coll.RankSortOption(propIndex: Word): cardinal;
+begin
+  //
 end;
 
 procedure TCL006Coll.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -667,7 +1263,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-
+  isOld := False;
   CL006 := Items[ARow];
   if not Assigned(CL006.PRecord) then
   begin
@@ -677,7 +1273,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TCL006Item.TPropertyIndex(ACol) of
       CL006_Key: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     CL006_Description: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -708,6 +1303,7 @@ begin
     CL006_clinical_speciality: CL006.PRecord.clinical_speciality := AValue;
     CL006_nhif_name: CL006.PRecord.nhif_name := AValue;
     CL006_role: CL006.PRecord.role := AValue;
+    CL006_Logical: CL006.PRecord.Logical := tlogicalCL006Set(CL006.StrToLogical08(AValue));
   end;
 end;
 
@@ -717,7 +1313,7 @@ var
   CL006: TCL006Item;
 begin
   if Count = 0 then Exit;
-
+  isOld := False; 
   CL006 := Items[ARow];
   if not Assigned(CL006.PRecord) then
   begin
@@ -727,7 +1323,6 @@ begin
   end
   else
   begin
-    isOld := False;
     case TCL006Item.TPropertyIndex(ACol) of
       CL006_Key: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     CL006_Description: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -758,6 +1353,7 @@ begin
     CL006_clinical_speciality: CL006.PRecord.clinical_speciality := AFieldText;
     CL006_nhif_name: CL006.PRecord.nhif_name := AFieldText;
     CL006_role: CL006.PRecord.role := AFieldText;
+    CL006_Logical: CL006.PRecord.Logical := tlogicalCL006Set(CL006.StrToLogical08(AFieldText));
   end;
 end;
 
@@ -860,7 +1456,7 @@ var
   i: word;
 
 begin
-  ListForFDB := LST;
+  ListForFinder := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -924,8 +1520,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
-        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
+        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
+        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

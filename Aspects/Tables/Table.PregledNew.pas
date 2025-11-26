@@ -151,8 +151,8 @@ TPregledNewItem = class(TBaseItem)
 	function GetPRecord: Pointer; override;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
     function GetCollType: TCollectionsType; override;
-    procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
-    procedure FillPropPregledNew(propindex: TPropertyIndex; stream: TStream);
+	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
+	procedure FillPropPregledNew(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
@@ -173,6 +173,8 @@ TPregledNewItem = class(TBaseItem)
     ArrPropSearch: TArray<TPregledNewItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TPregledNewItem.TPropertyIndex>;
 	VisibleColl: TPregledNewItem.TSetProp;
+	ArrayPropOrder: TArray<TPregledNewItem.TPropertyIndex>;
+    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -224,6 +226,7 @@ TPregledNewItem = class(TBaseItem)
 	function IsCollVisible(PropIndex: Word): Boolean; override;
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -258,33 +261,6 @@ begin
       //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
     //end;
     inc(i);
-  end;
-end;
-
-procedure TPregledNewItem.FillPropPregledNew(propindex: TPropertyIndex;
-  stream: TStream);
-var
-  lenStr: Word;
-begin
-  case propindex of
-    PregledNew_AMB_LISTN:
-    begin
-      stream.Read(Self.PRecord.AMB_LISTN, SizeOf(Integer));
-    end;
-    PregledNew_ANAMN:
-    begin
-      stream.Read(lenStr, 2);
-      setlength(Self.PRecord.ANAMN, lenstr);
-      stream.Read(Self.PRecord.ANAMN[1], lenStr);
-    end;
-    PregledNew_START_DATE:
-    begin
-      stream.Read(Self.PRecord.START_DATE, SizeOf(TDate));
-    end;
-    PregledNew_Logical:
-    begin
-      stream.Read(Self.PRecord.Logical, SizeOf(Self.PRecord.Logical));
-    end;
   end;
 end;
 
@@ -462,6 +438,104 @@ begin
   end;
 
   CmdItem.AdbItem := self;
+end;
+
+procedure TPregledNewItem.FillPropPregledNew(propindex: TPropertyIndex;
+  stream: TStream);
+var
+  lenStr: Word;
+begin
+  case propindex of
+    PregledNew_AMB_LISTN: stream.Read(Self.PRecord.AMB_LISTN, SizeOf(Integer));
+            PregledNew_ANAMN:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.ANAMN, lenStr);
+              stream.Read(Self.PRecord.ANAMN[1], lenStr);
+            end;
+            PregledNew_COPIED_FROM_NRN:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.COPIED_FROM_NRN, lenStr);
+              stream.Read(Self.PRecord.COPIED_FROM_NRN[1], lenStr);
+            end;
+            PregledNew_GS: stream.Read(Self.PRecord.GS, SizeOf(Word));
+            PregledNew_ID: stream.Read(Self.PRecord.ID, SizeOf(Integer));
+            PregledNew_IZSL:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.IZSL, lenStr);
+              stream.Read(Self.PRecord.IZSL[1], lenStr);
+            end;
+            PregledNew_MEDTRANSKM: stream.Read(Self.PRecord.MEDTRANSKM, SizeOf(Integer));
+            PregledNew_NAPRAVLENIE_AMBL_NOMER:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.NAPRAVLENIE_AMBL_NOMER, lenStr);
+              stream.Read(Self.PRecord.NAPRAVLENIE_AMBL_NOMER[1], lenStr);
+            end;
+            PregledNew_NAPR_TYPE_ID: stream.Read(Self.PRecord.NAPR_TYPE_ID, SizeOf(Word));
+            PregledNew_NOMERBELEGKA:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.NOMERBELEGKA, lenStr);
+              stream.Read(Self.PRecord.NOMERBELEGKA[1], lenStr);
+            end;
+            PregledNew_NOMERKASHAPARAT:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.NOMERKASHAPARAT, lenStr);
+              stream.Read(Self.PRecord.NOMERKASHAPARAT[1], lenStr);
+            end;
+            PregledNew_NRD: stream.Read(Self.PRecord.NRD, SizeOf(Word));
+            PregledNew_NRN_LRN:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.NRN_LRN, lenStr);
+              stream.Read(Self.PRecord.NRN_LRN[1], lenStr);
+            end;
+            PregledNew_NZIS_STATUS: stream.Read(Self.PRecord.NZIS_STATUS, SizeOf(Word));
+            PregledNew_OBSHTAPR: stream.Read(Self.PRecord.OBSHTAPR, SizeOf(Word));
+            PregledNew_PATIENTOF_NEOTL:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.PATIENTOF_NEOTL, lenStr);
+              stream.Read(Self.PRecord.PATIENTOF_NEOTL[1], lenStr);
+            end;
+            PregledNew_PATIENTOF_NEOTLID: stream.Read(Self.PRecord.PATIENTOF_NEOTLID, SizeOf(Integer));
+            PregledNew_PREVENTIVE_TYPE: stream.Read(Self.PRecord.PREVENTIVE_TYPE, SizeOf(Word));
+            PregledNew_REH_FINISHED_AT: stream.Read(Self.PRecord.REH_FINISHED_AT, SizeOf(TDate));
+            PregledNew_START_DATE: stream.Read(Self.PRecord.START_DATE, SizeOf(TDate));
+            PregledNew_START_TIME: stream.Read(Self.PRecord.START_TIME, SizeOf(TTime));
+            PregledNew_SYST:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.SYST, lenStr);
+              stream.Read(Self.PRecord.SYST[1], lenStr);
+            end;
+            PregledNew_TALON_LKK:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.TALON_LKK, lenStr);
+              stream.Read(Self.PRecord.TALON_LKK[1], lenStr);
+            end;
+            PregledNew_TERAPY:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.TERAPY, lenStr);
+              stream.Read(Self.PRecord.TERAPY[1], lenStr);
+            end;
+            PregledNew_THREAD_IDS:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.THREAD_IDS, lenStr);
+              stream.Read(Self.PRecord.THREAD_IDS[1], lenStr);
+            end;
+            PregledNew_VISIT_ID: stream.Read(Self.PRecord.VISIT_ID, SizeOf(Integer));
+            PregledNew_VISIT_TYPE_ID: stream.Read(Self.PRecord.VISIT_TYPE_ID, SizeOf(Word));
+            PregledNew_VSD_TYPE: stream.Read(Self.PRecord.VSD_TYPE, SizeOf(Word));
+            PregledNew_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData40));
+  end;
 end;
 
 procedure TPregledNewItem.SavePregledNew(Abuf: Pointer; var dataPosition: Cardinal);
@@ -895,7 +969,7 @@ begin
   inherited;
   case TPregledNewItem.TPropertyIndex(propIndex) of
     PregledNew_AMB_LISTN: Result := 'AMB_LISTN';
-    PregledNew_ANAMN: Result := 'Анамнеза';
+    PregledNew_ANAMN: Result := 'ANAMN';
     PregledNew_COPIED_FROM_NRN: Result := 'COPIED_FROM_NRN';
     PregledNew_GS: Result := 'GS';
     PregledNew_ID: Result := 'ID';
@@ -1291,6 +1365,11 @@ end;
 function TPregledNewColl.GetCollType: TCollectionsType;
 begin
   Result := ctPregledNew;
+end;
+
+function TPregledNewColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctPregledNewDel;
 end;
 
 procedure TPregledNewColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
@@ -1921,14 +2000,14 @@ begin
 end;
       PregledNew_ANAMN:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
       end;
       PregledNew_COPIED_FROM_NRN:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -1949,7 +2028,7 @@ end;
       end;
       PregledNew_IZSL:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -1963,7 +2042,7 @@ end;
       end;
       PregledNew_NAPRAVLENIE_AMBL_NOMER:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -1977,14 +2056,14 @@ end;
       end;
       PregledNew_NOMERBELEGKA:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
       end;
       PregledNew_NOMERKASHAPARAT:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -1998,7 +2077,7 @@ end;
       end;
       PregledNew_NRN_LRN:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -2019,7 +2098,7 @@ end;
       end;
       PregledNew_PATIENTOF_NEOTL:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
@@ -2040,28 +2119,28 @@ end;
       end;
       PregledNew_SYST:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
       end;
       PregledNew_TALON_LKK:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
       end;
       PregledNew_TERAPY:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;
       end;
       PregledNew_THREAD_IDS:
       begin
-        if string(self.Items[i].IndexAnsiStr).Contains(FSearchingValue) then
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListPregledNewSearch.Add(self.Items[i]);
         end;

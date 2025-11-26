@@ -2761,7 +2761,11 @@ begin
   //lstColl.Add(CollAnalsNew);
 
   CL006Coll := TRealCL006Coll.Create(TRealCl006Item);
+  lstColl[Ord(CL006Coll.GetCollType)] := CL006Coll;
+
   CL022Coll := TRealCL022Coll.Create(TRealCl022Item);
+  lstColl[Ord(CL022Coll.GetCollType)] := CL022Coll;
+
   CL024Coll := TRealCL024Coll.Create(TRealCl024Item);
   CL037Coll := TRealCL037Coll.Create(TRealCl037Item);
   CL038Coll := TRealCL038Coll.Create(TRealCl038Item);
@@ -2770,8 +2774,10 @@ begin
   CL132Coll := TRealCL132Coll.Create(TRealCl132Item);
   CL134Coll := TRealCL134Coll.Create(TRealCl134Item);
   CL139Coll := TRealCL139Coll.Create(TRealCl139Item);
+
   CL142Coll := TRealCL142Coll.Create(TRealCl142Item);
   lstColl[Ord(CL142Coll.GetCollType)] := CL142Coll;
+
   CL144Coll := TRealCl144Coll.Create(TRealCl144Item);
   PR001Coll := TRealPR001Coll.Create(TRealPR001Item);
   NomenNzisColl := TNomenNzisColl.Create(TNomenNzisItem);

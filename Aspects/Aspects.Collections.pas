@@ -594,6 +594,7 @@ TCollectionForSort = class(TPersistent)
 
     function FieldCount: Integer; virtual;
     function DisplayName(propIndex: Word): string; virtual;
+    function DisplayLogicalName(flagIndex: Integer): string; virtual;
     function RankSortOption(propIndex: Word): cardinal; virtual;
 
     function PropType(propIndex: Word): TAspectTypeKind; virtual;
@@ -3088,6 +3089,11 @@ begin
   FreeAndNil(ScrollTimer);
 
   inherited;
+end;
+
+function TBaseCollection.DisplayLogicalName(flagIndex: Integer): string;
+begin
+
 end;
 
 function TBaseCollection.DisplayName(propIndex: Word): string;

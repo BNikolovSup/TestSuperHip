@@ -1,4 +1,4 @@
-unit Table.CL022;
+unit Table.CL006;
 
 interface
 uses
@@ -21,44 +21,42 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
-TLogicalCL022 = (
-    IS_);
-TlogicalCL022Set = set of TLogicalCL022;
+TLogicalCL006 = (
+    Is_);
+TlogicalCL006Set = set of TLogicalCL006;
 
 
-TCL022Item = class(TBaseItem)
+TCL006Item = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-       CL022_Key
-       , CL022_Description
-       , CL022_DescriptionEn
-       , CL022_achi_code
-       , CL022_nhif_package
-       , CL022_achi_chapter
-       , CL022_nhif_code
-       , CL022_achi_block
-       , CL022_Logical
+       CL006_Key
+       , CL006_Description
+       , CL006_DescriptionEn
+       , CL006_nhif_code
+       , CL006_clinical_speciality
+       , CL006_nhif_name
+       , CL006_role
+       , CL006_Logical
        );
 	  
       TSetProp = set of TPropertyIndex;
       PSetProp = ^TSetProp;
-      PRecCL022 = ^TRecCL022;
-      TRecCL022 = record
+      PRecCL006 = ^TRecCL006;
+      TRecCL006 = record
         Key: AnsiString;
         Description: AnsiString;
         DescriptionEn: AnsiString;
-        achi_code: AnsiString;
-        nhif_package: AnsiString;
-        achi_chapter: AnsiString;
         nhif_code: AnsiString;
-        achi_block: AnsiString;
-        Logical: TlogicalCL022Set;
+        clinical_speciality: AnsiString;
+        nhif_name: AnsiString;
+        role: AnsiString;
+        Logical: TlogicalCL006Set;
         setProp: TSetProp;
       end;
 
   public
-    PRecord: ^TRecCL022;
+    PRecord: ^TRecCL006;
 	IndexInt: Integer;
 	IndexWord: Word;
 	IndexAnsiStr: PAnsiChar;
@@ -67,56 +65,56 @@ TCL022Item = class(TBaseItem)
 	
     constructor Create(Collection: TCollection); override;
     destructor Destroy; override;
-    procedure InsertCL022;
-    procedure UpdateCL022;
-    procedure SaveCL022(var dataPosition: Cardinal)overload;
-	procedure SaveCL022(Abuf: Pointer; var dataPosition: Cardinal)overload;
+    procedure InsertCL006;
+    procedure UpdateCL006;
+    procedure SaveCL006(var dataPosition: Cardinal)overload;
+	procedure SaveCL006(Abuf: Pointer; var dataPosition: Cardinal)overload;
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
 	function GetPRecord: Pointer; override;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
     function GetCollType: TCollectionsType; override;
 	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
-	procedure FillPropCL022(propindex: TPropertyIndex; stream: TStream);
+	procedure FillPropPregledNew(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
-  TCL022Coll = class(TBaseCollection)
+  TCL006Coll = class(TBaseCollection)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
-	tempItem: TCL022Item;
-    function GetItem(Index: Integer): TCL022Item;
-    procedure SetItem(Index: Integer; const Value: TCL022Item);
+	tempItem: TCL006Item;
+    function GetItem(Index: Integer): TCL006Item;
+    procedure SetItem(Index: Integer; const Value: TCL006Item);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
 	linkOptions: TMappedLinkFile;
-	ListForFinder: TList<TCL022Item>;
-    ListCL022Search: TList<TCL022Item>;
-	PRecordSearch: ^TCL022Item.TRecCL022;
-    ArrPropSearch: TArray<TCL022Item.TPropertyIndex>;
-    ArrPropSearchClc: TArray<TCL022Item.TPropertyIndex>;
-	VisibleColl: TCL022Item.TSetProp;
-	ArrayPropOrder: TArray<TCL022Item.TPropertyIndex>;
+	ListForFinder: TList<TCL006Item>;
+    ListCL006Search: TList<TCL006Item>;
+	PRecordSearch: ^TCL006Item.TRecCL006;
+    ArrPropSearch: TArray<TCL006Item.TPropertyIndex>;
+    ArrPropSearchClc: TArray<TCL006Item.TPropertyIndex>;
+	VisibleColl: TCL006Item.TSetProp;
+	ArrayPropOrder: TArray<TCL006Item.TPropertyIndex>;
     ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
 
-    function AddItem(ver: word):TCL022Item;
+    function AddItem(ver: word):TCL006Item;
 	function AddItemForSearch: Integer;
     procedure GetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetCellSearch(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
     procedure GetCellDataPos(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     function PropType(propIndex: Word): TAspectTypeKind; override;
     procedure GetCellList(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
-	procedure GetCellFromMap(propIndex: word; ARow: Integer; CL022: TCL022Item; var AValue:String);
-    procedure GetCellFromRecord(propIndex: word; CL022: TCL022Item; var AValue:String);
+	procedure GetCellFromMap(propIndex: word; ARow: Integer; CL006: TCL006Item; var AValue:String);
+    procedure GetCellFromRecord(propIndex: word; CL006: TCL006Item; var AValue:String);
 	procedure GetCellListNodes(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);override;
     procedure SetCell(Sender:TObject; const AColumn:TColumn; const ARow:Integer; var AValue:String);
 	procedure GetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
     procedure SetFieldText(Sender:TObject; const ACol, ARow:Integer; var AFieldText:String);
-    procedure SortByIndexValue(propIndex: TCL022Item.TPropertyIndex);
+    procedure SortByIndexValue(propIndex: TCL006Item.TPropertyIndex);
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
@@ -133,19 +131,19 @@ TCL022Item = class(TBaseItem)
     procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
-	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TCL022Item>);
+	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TCL006Item>);
 	procedure ShowSearchedGrid(Grid: TTeeGrid);
     
-    procedure IndexValue(propIndex: TCL022Item.TPropertyIndex);
-	procedure IndexValueListNodes(propIndex:  TCL022Item.TPropertyIndex);
-    property Items[Index: Integer]: TCL022Item read GetItem write SetItem;
+    procedure IndexValue(propIndex: TCL006Item.TPropertyIndex);
+	procedure IndexValueListNodes(propIndex:  TCL006Item.TPropertyIndex);
+    property Items[Index: Integer]: TCL006Item read GetItem write SetItem;
 	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
     procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
     procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
     procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
-    procedure OnSetTextSearchLog(Log: TlogicalCL022Set);
+    procedure OnSetTextSearchLog(Log: TlogicalCL006Set);
 	procedure CheckForSave(var cnt: Integer);
 	function IsCollVisible(PropIndex: Word): Boolean; override;
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
@@ -155,21 +153,21 @@ TCL022Item = class(TBaseItem)
 
 implementation
 
-{ TCL022Item }
+{ TCL006Item }
 
-constructor TCL022Item.Create(Collection: TCollection);
+constructor TCL006Item.Create(Collection: TCollection);
 begin
   inherited;
 end;
 
-destructor TCL022Item.Destroy;
+destructor TCL006Item.Destroy;
 begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
 end;
 
-procedure TCL022Item.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
+procedure TCL006Item.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
 var
   paramField: TParamProp;
   setPropPat: TSetProp;
@@ -188,17 +186,17 @@ begin
   end;
 end;
 
-function TCL022Item.GetCollType: TCollectionsType;
+function TCL006Item.GetCollType: TCollectionsType;
 begin
-  Result := ctCL022;
+  Result := ctCL006;
 end;
 
-function TCL022Item.GetPRecord: Pointer;
+function TCL006Item.GetPRecord: Pointer;
 begin
   result := Pointer(PRecord);
 end;
 
-procedure TCL022Item.InsertCL022;
+procedure TCL006Item.InsertCL006;
 var
   CollType: TCollectionsType;
   metaPosition, dataPosition, PropPosition: cardinal;
@@ -207,7 +205,7 @@ var
   pCardinalData: ^Cardinal;
   pWordData: ^Word;
 begin
-  CollType := Aspects.Types.TCollectionsType.ctCL022;
+  CollType := Aspects.Types.TCollectionsType.ctCL006;
   pCardinalData := pointer(PByte(buf));
   FPosMetaData := pCardinalData^;
   pCardinalData := pointer(PByte(buf) + 4);
@@ -235,15 +233,14 @@ begin
         if Assigned(PRecord) and (propIndx in PRecord.setProp) then
         begin
           case propIndx of
-            CL022_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
-            CL022_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL022_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL022_achi_code: SaveData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
-            CL022_achi_block: SaveData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
-            CL022_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            CL006_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
+            CL006_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
+            CL006_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL006_clinical_speciality: SaveData(PRecord.clinical_speciality, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_name: SaveData(PRecord.nhif_name, PropPosition, metaPosition, dataPosition);
+            CL006_role: SaveData(PRecord.role, PropPosition, metaPosition, dataPosition);
+            CL006_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -259,130 +256,123 @@ begin
   end;
 end;
 
-function  TCL022Item.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
+function  TCL006Item.IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean;
 var
   i: Integer;
-  pidx:  TCL022Item.TPropertyIndex;
+  pidx:  TCL006Item.TPropertyIndex;
   cot: TConditionSet;
-  ATempItem: TCL022Item;
+  ATempItem: TCL006Item;
 begin
   Result := True;
-  for i := 0 to Length(TCL022Coll(coll).ArrPropSearchClc) - 1 do
+  for i := 0 to Length(TCL006Coll(coll).ArrPropSearchClc) - 1 do
   begin
     if Result = false then
       Exit;
-    pidx := TCL022Coll(coll).ArrPropSearchClc[i];
-	ATempItem := TCL022Coll(coll).ListForFinder.Items[0];
+    pidx := TCL006Coll(coll).ArrPropSearchClc[i];
+	ATempItem := TCL006Coll(coll).ListForFinder.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
-        CL022_Key: Result := IsFinded(ATempItem.PRecord.Key, buf, FPosDataADB, word(CL022_Key), cot);
-            CL022_Description: Result := IsFinded(ATempItem.PRecord.Description, buf, FPosDataADB, word(CL022_Description), cot);
-            CL022_DescriptionEn: Result := IsFinded(ATempItem.PRecord.DescriptionEn, buf, FPosDataADB, word(CL022_DescriptionEn), cot);
-            CL022_achi_code: Result := IsFinded(ATempItem.PRecord.achi_code, buf, FPosDataADB, word(CL022_achi_code), cot);
-            CL022_nhif_package: Result := IsFinded(ATempItem.PRecord.nhif_package, buf, FPosDataADB, word(CL022_nhif_package), cot);
-            CL022_achi_chapter: Result := IsFinded(ATempItem.PRecord.achi_chapter, buf, FPosDataADB, word(CL022_achi_chapter), cot);
-            CL022_nhif_code: Result := IsFinded(ATempItem.PRecord.nhif_code, buf, FPosDataADB, word(CL022_nhif_code), cot);
-            CL022_achi_block: Result := IsFinded(ATempItem.PRecord.achi_block, buf, FPosDataADB, word(CL022_achi_block), cot);
-            CL022_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(CL022_Logical), cot);
+        CL006_Key: Result := IsFinded(ATempItem.PRecord.Key, buf, FPosDataADB, word(CL006_Key), cot);
+            CL006_Description: Result := IsFinded(ATempItem.PRecord.Description, buf, FPosDataADB, word(CL006_Description), cot);
+            CL006_DescriptionEn: Result := IsFinded(ATempItem.PRecord.DescriptionEn, buf, FPosDataADB, word(CL006_DescriptionEn), cot);
+            CL006_nhif_code: Result := IsFinded(ATempItem.PRecord.nhif_code, buf, FPosDataADB, word(CL006_nhif_code), cot);
+            CL006_clinical_speciality: Result := IsFinded(ATempItem.PRecord.clinical_speciality, buf, FPosDataADB, word(CL006_clinical_speciality), cot);
+            CL006_nhif_name: Result := IsFinded(ATempItem.PRecord.nhif_name, buf, FPosDataADB, word(CL006_nhif_name), cot);
+            CL006_role: Result := IsFinded(ATempItem.PRecord.role, buf, FPosDataADB, word(CL006_role), cot);
+            CL006_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(CL006_Logical), cot);
       end;
     end;
   end;
 end;
 
-procedure TCL022Item.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
+procedure TCL006Item.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
   vCmd: PVirtualNode; CmdItem: TCmdItem);
 var
   delta: integer;
-  flds16: TLogicalData16;
-  propindexCL022: TCL022Item.TPropertyIndex;
+  flds08: TLogicalData08;
+  propindexCL006: TCL006Item.TPropertyIndex;
   vCmdProp: PVirtualNode;
   dataCmdProp: PAspRec;
 begin
-  delta := sizeof(TLogicalData128) - sizeof(TLogicalData16);
-  stream.Read(flds16, sizeof(TLogicalData16));
+  delta := sizeof(TLogicalData128) - sizeof(TLogicalData08);
+  stream.Read(flds08, sizeof(TLogicalData08));
   stream.Position := stream.Position + delta;
   New(self.PRecord);
 
-  self.PRecord.setProp := TCL022Item.TSetProp(flds16);// тука се записва какво има като полета
+  self.PRecord.setProp := TCL006Item.TSetProp(flds08);// тука се записва какво има като полета
 
 
-  for propindexCL022 := Low(TCL022Item.TPropertyIndex) to High(TCL022Item.TPropertyIndex) do
+  for propindexCL006 := Low(TCL006Item.TPropertyIndex) to High(TCL006Item.TPropertyIndex) do
   begin
-    if not (propindexCL022 in self.PRecord.setProp) then
+    if not (propindexCL006 in self.PRecord.setProp) then
       continue;
     if vtrTemp <> nil then
     begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
-      dataCmdProp.index := word(propindexCL022);
+      dataCmdProp.index := word(propindexCL006);
       dataCmdProp.vid := vvPregled;
     end;
-    self.FillPropCL022(propindexCL022, stream);
+    self.FillPropCL006(propindexCL006, stream);
   end;
 
   CmdItem.AdbItem := self;
 end;
 
-procedure TCL022Item.FillPropCL022(propindex: TPropertyIndex;
+procedure TCL006Item.FillPropCL006(propindex: TPropertyIndex;
   stream: TStream);
 var
   lenStr: Word;
 begin
   case propindex of
-    CL022_Key:
+    CL006_Key:
         begin
           stream.Read(lenStr, 2);
           SetLength(Self.PRecord.Key, lenStr);
           stream.Read(Self.PRecord.Key[1], lenStr);
         end;
-            CL022_Description:
+            CL006_Description:
             begin
               stream.Read(lenStr, 2);
               SetLength(Self.PRecord.Description, lenStr);
               stream.Read(Self.PRecord.Description[1], lenStr);
             end;
-            CL022_DescriptionEn:
+            CL006_DescriptionEn:
             begin
               stream.Read(lenStr, 2);
               SetLength(Self.PRecord.DescriptionEn, lenStr);
               stream.Read(Self.PRecord.DescriptionEn[1], lenStr);
             end;
-            CL022_achi_code:
-            begin
-              stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.achi_code, lenStr);
-              stream.Read(Self.PRecord.achi_code[1], lenStr);
-            end;
-            CL022_nhif_package:
-            begin
-              stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.nhif_package, lenStr);
-              stream.Read(Self.PRecord.nhif_package[1], lenStr);
-            end;
-            CL022_achi_chapter:
-            begin
-              stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.achi_chapter, lenStr);
-              stream.Read(Self.PRecord.achi_chapter[1], lenStr);
-            end;
-            CL022_nhif_code:
+            CL006_nhif_code:
             begin
               stream.Read(lenStr, 2);
               SetLength(Self.PRecord.nhif_code, lenStr);
               stream.Read(Self.PRecord.nhif_code[1], lenStr);
             end;
-            CL022_achi_block:
+            CL006_clinical_speciality:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.achi_block, lenStr);
-              stream.Read(Self.PRecord.achi_block[1], lenStr);
+              SetLength(Self.PRecord.clinical_speciality, lenStr);
+              stream.Read(Self.PRecord.clinical_speciality[1], lenStr);
             end;
-            CL022_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
+            CL006_nhif_name:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.nhif_name, lenStr);
+              stream.Read(Self.PRecord.nhif_name[1], lenStr);
+            end;
+            CL006_role:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.role, lenStr);
+              stream.Read(Self.PRecord.role[1], lenStr);
+            end;
+            CL006_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
   end;
 end;
 
-procedure TCL022Item.SaveCL022(Abuf: Pointer; var dataPosition: Cardinal);
+procedure TCL006Item.SaveCL006(Abuf: Pointer; var dataPosition: Cardinal);
 var
   pCardinalData: PCardinal;
   APosData, ALenData: Cardinal;
@@ -392,16 +382,16 @@ begin
   pCardinalData := pointer(PByte(ABuf) + 12);
   ALenData := pCardinalData^;
   dataPosition :=  ALenData + APosData;
-  SaveCL022(dataPosition);
+  SaveCL006(dataPosition);
 end;
 
-procedure TCL022Item.SaveCL022(var dataPosition: Cardinal);
+procedure TCL006Item.SaveCL006(var dataPosition: Cardinal);
 var
   CollType: TCollectionsType;
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctCL022;
+  CollType := ctCL006;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -413,15 +403,14 @@ begin
           SaveHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            CL022_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
-            CL022_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL022_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL022_achi_code: SaveData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
-            CL022_achi_block: SaveData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
-            CL022_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
+            CL006_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
+            CL006_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
+            CL006_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL006_clinical_speciality: SaveData(PRecord.clinical_speciality, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_name: SaveData(PRecord.nhif_name, PropPosition, metaPosition, dataPosition);
+            CL006_role: SaveData(PRecord.role, PropPosition, metaPosition, dataPosition);
+            CL006_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -435,13 +424,13 @@ begin
   end;
 end;
 
-procedure TCL022Item.UpdateCL022;
+procedure TCL006Item.UpdateCL006;
 var
   CollType: TCollectionsType;
   metaPosition, dataPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctCL022;
+  CollType := ctCL006;
   case FVersion of
     0:
     begin
@@ -452,14 +441,13 @@ begin
           UpdateHeaderData(PropPosition, dataPosition);
           metaPosition := FDataPos + 4 * Integer(propIndx);
           case propIndx of
-            CL022_Key: UpdateData(PRecord.Key, PropPosition, metaPosition, dataPosition);
-            CL022_Description: UpdateData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL022_DescriptionEn: UpdateData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL022_achi_code: UpdateData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: UpdateData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: UpdateData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: UpdateData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
-            CL022_achi_block: UpdateData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
+            CL006_Key: UpdateData(PRecord.Key, PropPosition, metaPosition, dataPosition);
+            CL006_Description: UpdateData(PRecord.Description, PropPosition, metaPosition, dataPosition);
+            CL006_DescriptionEn: UpdateData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_code: UpdateData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL006_clinical_speciality: UpdateData(PRecord.clinical_speciality, PropPosition, metaPosition, dataPosition);
+            CL006_nhif_name: UpdateData(PRecord.nhif_name, PropPosition, metaPosition, dataPosition);
+            CL006_role: UpdateData(PRecord.role, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -473,11 +461,11 @@ begin
   end;
 end;
 
-{ TCL022Coll }
+{ TCL006Coll }
 
-function TCL022Coll.AddItem(ver: word): TCL022Item;
+function TCL006Coll.AddItem(ver: word): TCL006Item;
 begin
-  Result := TCL022Item(add);
+  Result := TCL006Item(add);
   Result.Version := ver;
   case ver of // в зависимост от версията на записа
     0:
@@ -486,11 +474,11 @@ begin
   end;
 end;
 
-function TCL022Coll.AddItemForSearch: Integer;
+function TCL006Coll.AddItemForSearch: Integer;
 var
-  ItemForSearch: TCL022Item;
+  ItemForSearch: TCL006Item;
 begin
-  ItemForSearch := TCL022Item.Create(nil);
+  ItemForSearch := TCL006Item.Create(nil);
   SetLength(ItemForSearch.ArrCondition, self.FieldCount);
 
   New(ItemForSearch.PRecord);
@@ -499,7 +487,7 @@ begin
   Result := ListForFinder.Add(ItemForSearch);
 end;
 
-procedure TCL022Coll.ApplyVisibilityFromTree(RootNode: PVirtualNode);
+procedure TCL006Coll.ApplyVisibilityFromTree(RootNode: PVirtualNode);
 var
   run: PVirtualNode;
   data: PAspRec;
@@ -512,14 +500,14 @@ begin
     data := PAspRec(PByte(run) + lenNode);
 
     if run.CheckState = csCheckedNormal then
-      Include(VisibleColl, TCL022Item.TPropertyIndex(run.Dummy - 1));
+      Include(VisibleColl, TCL006Item.TPropertyIndex(run.Dummy - 1));
 
     run := run.NextSibling;
   end;
 end;
 
 
-function TCL022Coll.CreateRootCollOptionNode(): PVirtualNode;
+function TCL006Coll.CreateRootCollOptionNode(): PVirtualNode;
 var
   NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
   linkPos: Cardinal;
@@ -527,7 +515,7 @@ var
   i: Integer;
 begin
   NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvCL022Root, 0, NodeRoot , amAddChildLast, result, linkPos);
+  linkOptions.AddNewNode(vvCL006Root, 0, NodeRoot , amAddChildLast, result, linkPos);
   linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
   linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
 
@@ -549,10 +537,10 @@ begin
   end;  
 end;
 
-procedure TCL022Coll.CheckForSave(var cnt: Integer);
+procedure TCL006Coll.CheckForSave(var cnt: Integer);
 var
   i: Integer;
-  tempItem: TCL022Item;
+  tempItem: TCL006Item;
 begin
   for i := 0 to Self.Count - 1 do
   begin
@@ -561,55 +549,49 @@ begin
     begin
 	  // === проверки за запазване (CheckForSave) ===
 
-  if (CL022_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Key))) then
+  if (CL006_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_Key))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Description))) then
+  if (CL006_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_Description))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_DescriptionEn))) then
+  if (CL006_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_DescriptionEn))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_achi_code in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_code))) then
+  if (CL006_nhif_code in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_nhif_code))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_nhif_package in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_package <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_package))) then
+  if (CL006_clinical_speciality in tempItem.PRecord.setProp) and (tempItem.PRecord.clinical_speciality <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_clinical_speciality))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_achi_chapter in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_chapter <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_chapter))) then
+  if (CL006_nhif_name in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_name <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_nhif_name))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_nhif_code in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_code))) then
+  if (CL006_role in tempItem.PRecord.setProp) and (tempItem.PRecord.role <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_role))) then
   begin
     inc(cnt);
     exit;
   end;
 
-  if (CL022_achi_block in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_block <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_block))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
-
-  if (CL022_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL022_Logical))) then
+  if (CL006_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL006_Logical))) then
   begin
     inc(cnt);
     exit;
@@ -619,14 +601,14 @@ begin
 end;
 
 
-constructor TCL022Coll.Create(ItemClass: TCollectionItemClass);
+constructor TCL006Coll.Create(ItemClass: TCollectionItemClass);
 var
   i: Integer;
 begin
   inherited;
-  tempItem := TCL022Item.Create(nil);
-  ListCL022Search := TList<TCL022Item>.Create;
-  ListForFinder := TList<TCL022Item>.Create;
+  tempItem := TCL006Item.Create(nil);
+  ListCL006Search := TList<TCL006Item>.Create;
+  ListForFinder := TList<TCL006Item>.Create;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
   SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
@@ -638,9 +620,9 @@ begin
 
 end;
 
-destructor TCL022Coll.destroy;
+destructor TCL006Coll.destroy;
 begin
-  FreeAndNil(ListCL022Search);
+  FreeAndNil(ListCL006Search);
   FreeAndNil(ListForFinder);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
@@ -648,33 +630,32 @@ begin
   inherited;
 end;
 
-function TCL022Coll.DisplayName(propIndex: Word): string;
+function TCL006Coll.DisplayName(propIndex: Word): string;
 begin
   inherited;
-  case TCL022Item.TPropertyIndex(propIndex) of
-    CL022_Key: Result := 'Key';
-    CL022_Description: Result := 'Description';
-    CL022_DescriptionEn: Result := 'DescriptionEn';
-    CL022_achi_code: Result := 'achi_code';
-    CL022_nhif_package: Result := 'nhif_package';
-    CL022_achi_chapter: Result := 'achi_chapter';
-    CL022_nhif_code: Result := 'nhif_code';
-    CL022_achi_block: Result := 'achi_block';
-    CL022_Logical: Result := 'Logical';
+  case TCL006Item.TPropertyIndex(propIndex) of
+    CL006_Key: Result := 'Key';
+    CL006_Description: Result := 'Description';
+    CL006_DescriptionEn: Result := 'DescriptionEn';
+    CL006_nhif_code: Result := 'nhif_code';
+    CL006_clinical_speciality: Result := 'clinical_speciality';
+    CL006_nhif_name: Result := 'nhif_name';
+    CL006_role: Result := 'role';
+    CL006_Logical: Result := 'Logical';
   end;
 end;
 
-function TCL022Coll.DisplayLogicalName(flagIndex: Integer): string;
+function TCL006Coll.DisplayLogicalName(flagIndex: Integer): string;
 begin
   case flagIndex of
-0: Result := 'IS_';
+0: Result := 'Is_';
   else
     Result := '???';
   end;
 end;
 
 
-procedure TCL022Coll.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
+procedure TCL006Coll.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
 var
   FieldCollOptionNode, run: PVirtualNode;
   pSource, pTarget: PVirtualNode;
@@ -719,13 +700,13 @@ begin
 end;
 
 
-function TCL022Coll.FieldCount: Integer; 
+function TCL006Coll.FieldCount: Integer; 
 begin
   inherited;
-  Result := 9;
+  Result := 8;
 end;
 
-function TCL022Coll.FindRootCollOptionNode(): PVirtualNode;
+function TCL006Coll.FindRootCollOptionNode(): PVirtualNode;
 var
   linkPos: Cardinal;
   pCardinalData: PCardinal;
@@ -742,7 +723,7 @@ begin
   begin
     Run := pointer(PByte(linkOptions.Buf) + linkpos);
     data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvCL022Root then
+    if data.vid = vvCL006Root then
     begin
       Result := Run;
 	  data := Pointer(PByte(Result)+ lenNode);
@@ -760,7 +741,7 @@ begin
   end;
 end;
 
-function TCL022Coll.FindSearchFieldCollOptionCOTNode: PVirtualNode;
+function TCL006Coll.FindSearchFieldCollOptionCOTNode: PVirtualNode;
 var
   run, vRootPregOptions: PVirtualNode;
   dataRun: PAspRec;
@@ -779,7 +760,7 @@ begin
   end;
 end;
 
-function TCL022Coll.FindSearchFieldCollOptionGridNode: PVirtualNode;
+function TCL006Coll.FindSearchFieldCollOptionGridNode: PVirtualNode;
 var
   run, vRootPregOptions: PVirtualNode;
   dataRun: PAspRec;
@@ -799,7 +780,7 @@ begin
   end;
 end;
 
-function TCL022Coll.FindSearchFieldCollOptionNode(): PVirtualNode;
+function TCL006Coll.FindSearchFieldCollOptionNode(): PVirtualNode;
 var
   linkPos: Cardinal;
   run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
@@ -847,31 +828,31 @@ begin
   end;
 end;
 
-procedure TCL022Coll.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TCL006Coll.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  CL022: TCL022Item;
+  CL006: TCL006Item;
   ACol: Integer;
-  prop: TCL022Item.TPropertyIndex;
+  prop: TCL006Item.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if Count = 0 then Exit;
 
-  CL022 := Items[ARow];
-  prop := TCL022Item.TPropertyIndex(ACol);
-  if Assigned(CL022.PRecord) and (prop in CL022.PRecord.setProp) then
+  CL006 := Items[ARow];
+  prop := TCL006Item.TPropertyIndex(ACol);
+  if Assigned(CL006.PRecord) and (prop in CL006.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, CL022, AValue);
+    GetCellFromRecord(ACol, CL006, AValue);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, CL022, AValue);
+    GetCellFromMap(ACol, ARow, CL006, AValue);
   end;
 end;
 
-procedure TCL022Coll.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
+procedure TCL006Coll.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
   RowSelect: Integer;
-  prop: TCL022Item.TPropertyIndex;
+  prop: TCL006Item.TPropertyIndex;
 begin
   inherited;
  
@@ -892,20 +873,19 @@ begin
   GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
 end;
 
-procedure TCL022Coll.GetCellFromRecord(propIndex: word; CL022: TCL022Item; var AValue: String);
+procedure TCL006Coll.GetCellFromRecord(propIndex: word; CL006: TCL006Item; var AValue: String);
 var
   str: string;
 begin
-  case TCL022Item.TPropertyIndex(propIndex) of
-    CL022_Key: str := (CL022.PRecord.Key);
-    CL022_Description: str := (CL022.PRecord.Description);
-    CL022_DescriptionEn: str := (CL022.PRecord.DescriptionEn);
-    CL022_achi_code: str := (CL022.PRecord.achi_code);
-    CL022_nhif_package: str := (CL022.PRecord.nhif_package);
-    CL022_achi_chapter: str := (CL022.PRecord.achi_chapter);
-    CL022_nhif_code: str := (CL022.PRecord.nhif_code);
-    CL022_achi_block: str := (CL022.PRecord.achi_block);
-    CL022_Logical: str := CL022.Logical08ToStr(TLogicalData08(CL022.PRecord.Logical));
+  case TCL006Item.TPropertyIndex(propIndex) of
+    CL006_Key: str := (CL006.PRecord.Key);
+    CL006_Description: str := (CL006.PRecord.Description);
+    CL006_DescriptionEn: str := (CL006.PRecord.DescriptionEn);
+    CL006_nhif_code: str := (CL006.PRecord.nhif_code);
+    CL006_clinical_speciality: str := (CL006.PRecord.clinical_speciality);
+    CL006_nhif_name: str := (CL006.PRecord.nhif_name);
+    CL006_role: str := (CL006.PRecord.role);
+    CL006_Logical: str := CL006.Logical08ToStr(TLogicalData08(CL006.PRecord.Logical));
   else
     begin
       str := '';
@@ -914,17 +894,17 @@ begin
   AValue := str;
 end;
 
-procedure TCL022Coll.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TCL006Coll.GetCellList(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  AtempItem: TCL022Item;
+  AtempItem: TCL006Item;
   ACol: Integer;
-  prop: TCL022Item.TPropertyIndex;
+  prop: TCL006Item.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if ListForFinder.Count = 0 then Exit;
 
   AtempItem := ListForFinder[ARow];
-  prop := TCL022Item.TPropertyIndex(ACol);
+  prop := TCL006Item.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
     GetCellFromRecord(ACol, AtempItem, AValue);
@@ -935,71 +915,71 @@ begin
   end;
 end;
 
-procedure TCL022Coll.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TCL006Coll.GetCellListNodes(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   ACol: Integer;
-  prop: TCL022Item.TPropertyIndex;
+  prop: TCL006Item.TPropertyIndex;
 begin
   inherited;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if (ListNodes.count - 1) < ARow then exit;
   
   TempItem.DataPos := ListNodes[ARow].DataPos;
-  prop := TCL022Item.TPropertyIndex(ACol);
+  prop := TCL006Item.TPropertyIndex(ACol);
   GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
 
-procedure TCL022Coll.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TCL006Coll.GetCellSearch(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
-  CL022: TCL022Item;
+  CL006: TCL006Item;
   ACol: Integer;
-  prop: TCL022Item.TPropertyIndex;
+  prop: TCL006Item.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   if Count = 0 then Exit;
 
-  CL022 := ListCL022Search[ARow];
-  prop := TCL022Item.TPropertyIndex(ACol);
-  if Assigned(CL022.PRecord) and (prop in CL022.PRecord.setProp) then
+  CL006 := ListCL006Search[ARow];
+  prop := TCL006Item.TPropertyIndex(ACol);
+  if Assigned(CL006.PRecord) and (prop in CL006.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, CL022, AValue);
+    GetCellFromRecord(ACol, CL006, AValue);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, CL022, AValue);
+    GetCellFromMap(ACol, ARow, CL006, AValue);
   end;
 end;
 
-function TCL022Coll.GetCollType: TCollectionsType;
+function TCL006Coll.GetCollType: TCollectionsType;
 begin
-  Result := ctCL022;
+  Result := ctCL006;
 end;
 
-function TCL022Coll.GetCollDelType: TCollectionsType;
+function TCL006Coll.GetCollDelType: TCollectionsType;
 begin
-  Result := ctCL022Del;
+  Result := ctCL006Del;
 end;
 
-procedure TCL022Coll.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+procedure TCL006Coll.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
-  CL022: TCL022Item;
-  prop: TCL022Item.TPropertyIndex;
+  CL006: TCL006Item;
+  prop: TCL006Item.TPropertyIndex;
 begin
   if Count = 0 then Exit;
 
-  CL022 := Items[ARow];
-  prop := TCL022Item.TPropertyIndex(ACol);
-  if Assigned(CL022.PRecord) and (prop in CL022.PRecord.setProp) then
+  CL006 := Items[ARow];
+  prop := TCL006Item.TPropertyIndex(ACol);
+  if Assigned(CL006.PRecord) and (prop in CL006.PRecord.setProp) then
   begin
-    GetCellFromRecord(ACol, CL022, AFieldText);
+    GetCellFromRecord(ACol, CL006, AFieldText);
   end
   else
   begin
-    GetCellFromMap(ACol, ARow, CL022, AFieldText);
+    GetCellFromMap(ACol, ARow, CL006, AFieldText);
   end;
 end;
 
-procedure TCL022Coll.GetCellFromMap(propIndex: word; ARow: Integer; CL022: TCL022Item; var AValue: String);
+procedure TCL006Coll.GetCellFromMap(propIndex: word; ARow: Integer; CL006: TCL006Item; var AValue: String);
 var
   str: string;
   len: Word;
@@ -1010,16 +990,15 @@ var
   pDbl: PDouble;
   pbl: PBoolean;
 begin
-  case TCL022Item.TPropertyIndex(propIndex) of
-    CL022_Key: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_Description: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_DescriptionEn: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_achi_code: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_nhif_package: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_achi_chapter: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_nhif_code: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_achi_block: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_Logical: str :=  CL022.Logical08ToStr(CL022.getLogical08Map(Self.Buf, Self.posData, propIndex));
+  case TCL006Item.TPropertyIndex(propIndex) of
+    CL006_Key: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_Description: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_DescriptionEn: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_nhif_code: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_clinical_speciality: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_nhif_name: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_role: str :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL006_Logical: str :=  CL006.Logical08ToStr(CL006.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -1028,23 +1007,23 @@ begin
   AValue := str;
 end;
 
-function TCL022Coll.GetItem(Index: Integer): TCL022Item;
+function TCL006Coll.GetItem(Index: Integer): TCL006Item;
 begin
-  Result := TCL022Item(inherited GetItem(Index));
+  Result := TCL006Item(inherited GetItem(Index));
 end;
 
 
-procedure TCL022Coll.IndexValue(propIndex: TCL022Item.TPropertyIndex);
+procedure TCL006Coll.IndexValue(propIndex: TCL006Item.TPropertyIndex);
 var
   i: Integer;
   len: Word;
-  TempItem: TCL022Item;
+  TempItem: TCL006Item;
 begin
   for i := 0 to self.Count - 1 do
   begin
     TempItem := self.Items[i];
     case propIndex of
-      CL022_Key:
+      CL006_Key:
 begin
   TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
   if TempItem.IndexAnsiStr <> nil then
@@ -1054,7 +1033,7 @@ begin
   else
     TempItem.IndexAnsiStr1 := '';
 end;
-      CL022_Description:
+      CL006_Description:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1064,7 +1043,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_DescriptionEn:
+      CL006_DescriptionEn:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1074,7 +1053,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_achi_code:
+      CL006_nhif_code:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1084,7 +1063,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_nhif_package:
+      CL006_clinical_speciality:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1094,7 +1073,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_achi_chapter:
+      CL006_nhif_name:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1104,17 +1083,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_nhif_code:
-      begin
-        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
-        if TempItem.IndexAnsiStr <> nil then
-        begin
-          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
-        end
-        else
-          TempItem.IndexAnsiStr1 := '';
-      end;
-      CL022_achi_block:
+      CL006_role:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1128,24 +1097,24 @@ end;
   end;
 end;
 
-procedure TCL022Coll.IndexValueListNodes(propIndex: TCL022Item.TPropertyIndex);
+procedure TCL006Coll.IndexValueListNodes(propIndex: TCL006Item.TPropertyIndex);
 begin
 
 end;
 
-function TCL022Coll.IsCollVisible(PropIndex: Word): Boolean;
+function TCL006Coll.IsCollVisible(PropIndex: Word): Boolean;
 begin
-  Result  := TCL022Item.TPropertyIndex(PropIndex) in  VisibleColl;
+  Result  := TCL006Item.TPropertyIndex(PropIndex) in  VisibleColl;
 end;
 
 
-procedure TCL022Coll.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
+procedure TCL006Coll.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
-  Tempitem: TCL022Item;
+  Tempitem: TCL006Item;
 begin
   if index < 0 then
   begin
-    Tempitem := TCL022Item.Create(nil);
+    Tempitem := TCL006Item.Create(nil);
     Tempitem.DataPos := datapos;
     GetCellFromMap(field, -1, Tempitem, value);
     Tempitem.Free;
@@ -1165,13 +1134,13 @@ begin
 end;
 
 {=== TEXT SEARCH HANDLER ===}
-procedure TCL022Coll.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
+procedure TCL006Coll.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
 var
   AText: string;
 begin
   if Text = '' then
   begin
-    Exclude(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
+    Exclude(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
   end
   else
   begin
@@ -1180,69 +1149,68 @@ begin
     else
       AText := Text;
 
-    Include(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
+    Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
   end;
 
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  case TCL022Item.TPropertyIndex(Field) of
-CL022_Key: ListForFinder[0].PRecord.Key := AText;
-    CL022_Description: ListForFinder[0].PRecord.Description := AText;
-    CL022_DescriptionEn: ListForFinder[0].PRecord.DescriptionEn := AText;
-    CL022_achi_code: ListForFinder[0].PRecord.achi_code := AText;
-    CL022_nhif_package: ListForFinder[0].PRecord.nhif_package := AText;
-    CL022_achi_chapter: ListForFinder[0].PRecord.achi_chapter := AText;
-    CL022_nhif_code: ListForFinder[0].PRecord.nhif_code := AText;
-    CL022_achi_block: ListForFinder[0].PRecord.achi_block := AText;
+  case TCL006Item.TPropertyIndex(Field) of
+CL006_Key: ListForFinder[0].PRecord.Key := AText;
+    CL006_Description: ListForFinder[0].PRecord.Description := AText;
+    CL006_DescriptionEn: ListForFinder[0].PRecord.DescriptionEn := AText;
+    CL006_nhif_code: ListForFinder[0].PRecord.nhif_code := AText;
+    CL006_clinical_speciality: ListForFinder[0].PRecord.clinical_speciality := AText;
+    CL006_nhif_name: ListForFinder[0].PRecord.nhif_name := AText;
+    CL006_role: ListForFinder[0].PRecord.role := AText;
   end;
 end;
 
 
 {=== DATE SEARCH HANDLER ===}
-procedure TCL022Coll.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
+procedure TCL006Coll.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
 begin
-  Include(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
+  Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  //case TCL022Item.TPropertyIndex(Field) of
-//
-//  end;
+  case TCL006Item.TPropertyIndex(Field) of
+
+  end;
 end;
 
 
 {=== NUMERIC SEARCH HANDLER ===}
-procedure TCL022Coll.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
+procedure TCL006Coll.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
 begin
-  Include(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
+  Include(ListForFinder[0].PRecord.setProp, TCL006Item.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  //case TCL022Item.TPropertyIndex(Field) of
-//
-//  end;
+  case TCL006Item.TPropertyIndex(Field) of
+
+  end;
 end;
 
 
 {=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
-procedure TCL022Coll.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
+procedure TCL006Coll.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
 begin
-  case TCL022Item.TPropertyIndex(Field) of
-    CL022_Logical:
+  case TCL006Item.TPropertyIndex(Field) of
+    CL006_Logical:
     begin
       if value then
-        Include(ListForFinder[0].PRecord.Logical, TlogicalCL022(logIndex))
+        Include(ListForFinder[0].PRecord.Logical, TlogicalCL006(logIndex))
       else
-        Exclude(ListForFinder[0].PRecord.Logical, TlogicalCL022(logIndex))   
+        Exclude(ListForFinder[0].PRecord.Logical, TlogicalCL006(logIndex))   
     end;
   end;
 end;
 
 
-procedure TCL022Coll.OnSetTextSearchLog(Log: TlogicalCL022Set);
+procedure TCL006Coll.OnSetTextSearchLog(Log: TlogicalCL006Set);
 begin
   ListForFinder[0].PRecord.Logical := Log;
 end;
 
-procedure TCL022Coll.OrderFieldsSearch1(Grid: TTeeGrid);
+procedure TCL006Coll.OrderFieldsSearch1(Grid: TTeeGrid);
 var
   FieldCollOptionNode, run: PVirtualNode;
   Comparison: TComparison<PVirtualNode>;
@@ -1265,210 +1233,198 @@ begin
 
 end;
 
-function TCL022Coll.PropType(propIndex: Word): TAspectTypeKind;
+function TCL006Coll.PropType(propIndex: Word): TAspectTypeKind;
 begin
   inherited;
-  case TCL022Item.TPropertyIndex(propIndex) of
-    CL022_Key: Result := actAnsiString;
-    CL022_Description: Result := actAnsiString;
-    CL022_DescriptionEn: Result := actAnsiString;
-    CL022_achi_code: Result := actAnsiString;
-    CL022_nhif_package: Result := actAnsiString;
-    CL022_achi_chapter: Result := actAnsiString;
-    CL022_nhif_code: Result := actAnsiString;
-    CL022_achi_block: Result := actAnsiString;
-    CL022_Logical: Result := actLogical;
+  case TCL006Item.TPropertyIndex(propIndex) of
+    CL006_Key: Result := actAnsiString;
+    CL006_Description: Result := actAnsiString;
+    CL006_DescriptionEn: Result := actAnsiString;
+    CL006_nhif_code: Result := actAnsiString;
+    CL006_clinical_speciality: Result := actAnsiString;
+    CL006_nhif_name: Result := actAnsiString;
+    CL006_role: Result := actAnsiString;
+    CL006_Logical: Result := actLogical;
   else
     Result := actNone;
   end
 end;
 
-function TCL022Coll.RankSortOption(propIndex: Word): cardinal;
+function TCL006Coll.RankSortOption(propIndex: Word): cardinal;
 begin
   //
 end;
 
-procedure TCL022Coll.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
+procedure TCL006Coll.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
 var
   isOld: Boolean;
-  CL022: TCL022Item;
+  CL006: TCL006Item;
   ACol: Integer;
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
   isOld := False;
-  CL022 := Items[ARow];
-  if not Assigned(CL022.PRecord) then
+  CL006 := Items[ARow];
+  if not Assigned(CL006.PRecord) then
   begin
-    New(CL022.PRecord);
-    CL022.PRecord.setProp := [];
+    New(CL006.PRecord);
+    CL006.PRecord.setProp := [];
 	CntUpdates := CntUpdates + 1;
   end
   else
   begin
-    case TCL022Item.TPropertyIndex(ACol) of
-      CL022_Key: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_Description: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_DescriptionEn: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_achi_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_achi_block: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    case TCL006Item.TPropertyIndex(ACol) of
+      CL006_Key: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_Description: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_DescriptionEn: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_nhif_code: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_clinical_speciality: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_nhif_name: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL006_role: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     end;
   end;
   if isOld then
   begin
-    Exclude(CL022.PRecord.setProp, TCL022Item.TPropertyIndex(ACol));
-    if CL022.PRecord.setProp = [] then
+    Exclude(CL006.PRecord.setProp, TCL006Item.TPropertyIndex(ACol));
+    if CL006.PRecord.setProp = [] then
     begin
-      Dispose(CL022.PRecord);
-      CL022.PRecord := nil;
+      Dispose(CL006.PRecord);
+      CL006.PRecord := nil;
       CntUpdates := CntUpdates - 1;
       Exit;
     end;
   end;
-  Include(CL022.PRecord.setProp, TCL022Item.TPropertyIndex(ACol));
-  case TCL022Item.TPropertyIndex(ACol) of
-    CL022_Key: CL022.PRecord.Key := AValue;
-    CL022_Description: CL022.PRecord.Description := AValue;
-    CL022_DescriptionEn: CL022.PRecord.DescriptionEn := AValue;
-    CL022_achi_code: CL022.PRecord.achi_code := AValue;
-    CL022_nhif_package: CL022.PRecord.nhif_package := AValue;
-    CL022_achi_chapter: CL022.PRecord.achi_chapter := AValue;
-    CL022_nhif_code: CL022.PRecord.nhif_code := AValue;
-    CL022_achi_block: CL022.PRecord.achi_block := AValue;
-    CL022_Logical: CL022.PRecord.Logical := tlogicalCL022Set(CL022.StrToLogical08(AValue));
+  Include(CL006.PRecord.setProp, TCL006Item.TPropertyIndex(ACol));
+  case TCL006Item.TPropertyIndex(ACol) of
+    CL006_Key: CL006.PRecord.Key := AValue;
+    CL006_Description: CL006.PRecord.Description := AValue;
+    CL006_DescriptionEn: CL006.PRecord.DescriptionEn := AValue;
+    CL006_nhif_code: CL006.PRecord.nhif_code := AValue;
+    CL006_clinical_speciality: CL006.PRecord.clinical_speciality := AValue;
+    CL006_nhif_name: CL006.PRecord.nhif_name := AValue;
+    CL006_role: CL006.PRecord.role := AValue;
+    CL006_Logical: CL006.PRecord.Logical := tlogicalCL006Set(CL006.StrToLogical08(AValue));
   end;
 end;
 
-procedure TCL022Coll.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
+procedure TCL006Coll.SetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   isOld: Boolean;
-  CL022: TCL022Item;
+  CL006: TCL006Item;
 begin
   if Count = 0 then Exit;
   isOld := False; 
-  CL022 := Items[ARow];
-  if not Assigned(CL022.PRecord) then
+  CL006 := Items[ARow];
+  if not Assigned(CL006.PRecord) then
   begin
-    New(CL022.PRecord);
-    CL022.PRecord.setProp := [];
+    New(CL006.PRecord);
+    CL006.PRecord.setProp := [];
 	  CntUpdates := CntUpdates + 1;
   end
   else
   begin
-    case TCL022Item.TPropertyIndex(ACol) of
-      CL022_Key: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_Description: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_DescriptionEn: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_achi_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_achi_block: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    case TCL006Item.TPropertyIndex(ACol) of
+      CL006_Key: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_Description: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_DescriptionEn: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_nhif_code: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_clinical_speciality: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_nhif_name: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL006_role: isOld :=  CL006.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     end;
   end;
   if isOld then
   begin
-    Exclude(CL022.PRecord.setProp, TCL022Item.TPropertyIndex(ACol));
-    if CL022.PRecord.setProp = [] then
+    Exclude(CL006.PRecord.setProp, TCL006Item.TPropertyIndex(ACol));
+    if CL006.PRecord.setProp = [] then
     begin
-      Dispose(CL022.PRecord);
-      CL022.PRecord := nil;
+      Dispose(CL006.PRecord);
+      CL006.PRecord := nil;
       CntUpdates := CntUpdates - 1;
       Exit;
     end;
   end;
-  Include(CL022.PRecord.setProp, TCL022Item.TPropertyIndex(ACol));
-  case TCL022Item.TPropertyIndex(ACol) of
-    CL022_Key: CL022.PRecord.Key := AFieldText;
-    CL022_Description: CL022.PRecord.Description := AFieldText;
-    CL022_DescriptionEn: CL022.PRecord.DescriptionEn := AFieldText;
-    CL022_achi_code: CL022.PRecord.achi_code := AFieldText;
-    CL022_nhif_package: CL022.PRecord.nhif_package := AFieldText;
-    CL022_achi_chapter: CL022.PRecord.achi_chapter := AFieldText;
-    CL022_nhif_code: CL022.PRecord.nhif_code := AFieldText;
-    CL022_achi_block: CL022.PRecord.achi_block := AFieldText;
-    CL022_Logical: CL022.PRecord.Logical := tlogicalCL022Set(CL022.StrToLogical08(AFieldText));
+  Include(CL006.PRecord.setProp, TCL006Item.TPropertyIndex(ACol));
+  case TCL006Item.TPropertyIndex(ACol) of
+    CL006_Key: CL006.PRecord.Key := AFieldText;
+    CL006_Description: CL006.PRecord.Description := AFieldText;
+    CL006_DescriptionEn: CL006.PRecord.DescriptionEn := AFieldText;
+    CL006_nhif_code: CL006.PRecord.nhif_code := AFieldText;
+    CL006_clinical_speciality: CL006.PRecord.clinical_speciality := AFieldText;
+    CL006_nhif_name: CL006.PRecord.nhif_name := AFieldText;
+    CL006_role: CL006.PRecord.role := AFieldText;
+    CL006_Logical: CL006.PRecord.Logical := tlogicalCL006Set(CL006.StrToLogical08(AFieldText));
   end;
 end;
 
-procedure TCL022Coll.SetItem(Index: Integer; const Value: TCL022Item);
+procedure TCL006Coll.SetItem(Index: Integer; const Value: TCL006Item);
 begin
   inherited SetItem(Index, Value);
 end;
 
-procedure TCL022Coll.SetSearchingValue(const Value: string);
+procedure TCL006Coll.SetSearchingValue(const Value: string);
 var
   i: Integer;
 begin
   FSearchingValue := Value;
-  ListCL022Search.Clear;
+  ListCL006Search.Clear;
   for i := 0 to self.Count - 1 do
   begin
-    case  TCL022Item.TPropertyIndex(self.FindedRes.PropIndex) of
-	  CL022_Key:
+    case  TCL006Item.TPropertyIndex(self.FindedRes.PropIndex) of
+	  CL006_Key:
 begin
   if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
   begin
-    ListCL022Search.Add(self.Items[i]);
+    ListCL006Search.Add(self.Items[i]);
   end;
 end;
-      CL022_Description:
+      CL006_Description:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
-      CL022_DescriptionEn:
+      CL006_DescriptionEn:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
-      CL022_achi_code:
+      CL006_nhif_code:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
-      CL022_nhif_package:
+      CL006_clinical_speciality:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
-      CL022_achi_chapter:
+      CL006_nhif_name:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
-      CL022_nhif_code:
+      CL006_role:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
-          ListCL022Search.Add(self.Items[i]);
-        end;
-      end;
-      CL022_achi_block:
-      begin
-        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListCL022Search.Add(self.Items[i]);
+          ListCL006Search.Add(self.Items[i]);
         end;
       end;
     end;
   end;
 end;
 
-procedure TCL022Coll.ShowGrid(Grid: TTeeGrid);
+procedure TCL006Coll.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
 
@@ -1495,7 +1451,7 @@ begin
 
 end;
 
-procedure TCL022Coll.ShowGridFromList(Grid: TTeeGrid; LST: TList<TCL022Item>);
+procedure TCL006Coll.ShowGridFromList(Grid: TTeeGrid; LST: TList<TCL006Item>);
 var
   i: word;
 
@@ -1523,17 +1479,17 @@ begin
 
 end;
 
-procedure TCL022Coll.ShowSearchedGrid(Grid: TTeeGrid);
+procedure TCL006Coll.ShowSearchedGrid(Grid: TTeeGrid);
 var
   i: word;
 
 begin
-  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListCL022Search.Count);
+  Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.ListCL006Search.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListCL022Search.Count]);
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListCL006Search.Count]);
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -1550,7 +1506,7 @@ begin
   grid.Scrolling.Active := true;
 end;
 
-procedure TCL022Coll.SortByIndexAnsiString;
+procedure TCL006Coll.SortByIndexAnsiString;
 var
   sc : TList<TCollectionItem>;
 
@@ -1590,7 +1546,7 @@ begin
   end;
 end;
 
-procedure TCL022Coll.SortByIndexInt;
+procedure TCL006Coll.SortByIndexInt;
 var
   sc : TList<TCollectionItem>;
 
@@ -1630,7 +1586,7 @@ begin
   end;
 end;
 
-procedure TCL022Coll.SortByIndexWord;
+procedure TCL006Coll.SortByIndexWord;
 var
   sc : TList<TCollectionItem>;
 
@@ -1670,17 +1626,16 @@ begin
   end;
 end;
 
-procedure TCL022Coll.SortByIndexValue(propIndex: TCL022Item.TPropertyIndex);
+procedure TCL006Coll.SortByIndexValue(propIndex: TCL006Item.TPropertyIndex);
 begin
   case propIndex of
-    CL022_Key: SortByIndexAnsiString;
-      CL022_Description: SortByIndexAnsiString;
-      CL022_DescriptionEn: SortByIndexAnsiString;
-      CL022_achi_code: SortByIndexAnsiString;
-      CL022_nhif_package: SortByIndexAnsiString;
-      CL022_achi_chapter: SortByIndexAnsiString;
-      CL022_nhif_code: SortByIndexAnsiString;
-      CL022_achi_block: SortByIndexAnsiString;
+    CL006_Key: SortByIndexAnsiString;
+      CL006_Description: SortByIndexAnsiString;
+      CL006_DescriptionEn: SortByIndexAnsiString;
+      CL006_nhif_code: SortByIndexAnsiString;
+      CL006_clinical_speciality: SortByIndexAnsiString;
+      CL006_nhif_name: SortByIndexAnsiString;
+      CL006_role: SortByIndexAnsiString;
   end;
 end;
 
