@@ -127,6 +127,8 @@ TKARTA_PROFILAKTIKA2017Item = class(TBaseItem)
 	function GetPRecord: Pointer; override;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
     function GetCollType: TCollectionsType; override;
+	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
+	procedure FillPropKARTA_PROFILAKTIKA2017(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
@@ -359,6 +361,61 @@ begin
             KARTA_PROFILAKTIKA2017_Logical: Result := IsFinded(TLogicalData32(ATempItem.PRecord.Logical), buf, FPosDataADB, word(KARTA_PROFILAKTIKA2017_Logical), cot);
       end;
     end;
+  end;
+end;
+
+procedure TKARTA_PROFILAKTIKA2017Item.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
+  vCmd: PVirtualNode; CmdItem: TCmdItem);
+var
+  delta: integer;
+  flds24: TLogicalData24;
+  propindexKARTA_PROFILAKTIKA2017: TKARTA_PROFILAKTIKA2017Item.TPropertyIndex;
+  vCmdProp: PVirtualNode;
+  dataCmdProp: PAspRec;
+begin
+  delta := sizeof(TLogicalData128) - sizeof(TLogicalData24);
+  stream.Read(flds24, sizeof(TLogicalData24));
+  stream.Position := stream.Position + delta;
+  New(self.PRecord);
+
+  self.PRecord.setProp := TKARTA_PROFILAKTIKA2017Item.TSetProp(flds24);// тука се записва какво има като полета
+
+
+  for propindexKARTA_PROFILAKTIKA2017 := Low(TKARTA_PROFILAKTIKA2017Item.TPropertyIndex) to High(TKARTA_PROFILAKTIKA2017Item.TPropertyIndex) do
+  begin
+    if not (propindexKARTA_PROFILAKTIKA2017 in self.PRecord.setProp) then
+      continue;
+    if vtrTemp <> nil then
+    begin
+      vCmdProp := vtrTemp.AddChild(vCmd, nil);
+      dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
+      dataCmdProp.index := word(propindexKARTA_PROFILAKTIKA2017);
+      dataCmdProp.vid := vvPregled;
+    end;
+    self.FillPropKARTA_PROFILAKTIKA2017(propindexKARTA_PROFILAKTIKA2017, stream);
+  end;
+
+  CmdItem.AdbItem := self;
+end;
+
+procedure TKARTA_PROFILAKTIKA2017Item.FillPropKARTA_PROFILAKTIKA2017(propindex: TPropertyIndex;
+  stream: TStream);
+var
+  lenStr: Word;
+begin
+  case propindex of
+    KARTA_PROFILAKTIKA2017_BDDIASTOLNO43: stream.Read(Self.PRecord.BDDIASTOLNO43, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_BDGIRTWAIST44: stream.Read(Self.PRecord.BDGIRTWAIST44, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_BDHEIGHT39: stream.Read(Self.PRecord.BDHEIGHT39, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_BDSYSTOLNO42: stream.Read(Self.PRecord.BDSYSTOLNO42, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_BDWEIGHT40: stream.Read(Self.PRecord.BDWEIGHT40, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_CIGARETESCOUNT71: stream.Read(Self.PRecord.CIGARETESCOUNT71, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_FINDRISK: stream.Read(Self.PRecord.FINDRISK, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_ISSUE_DATE: stream.Read(Self.PRecord.ISSUE_DATE, SizeOf(TDate));
+            KARTA_PROFILAKTIKA2017_NOMER: stream.Read(Self.PRecord.NOMER, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_PREGLED_ID: stream.Read(Self.PRecord.PREGLED_ID, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_SCORE: stream.Read(Self.PRecord.SCORE, SizeOf(Integer));
+            KARTA_PROFILAKTIKA2017_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData32));
   end;
 end;
 

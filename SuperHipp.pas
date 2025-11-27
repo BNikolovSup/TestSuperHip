@@ -3325,6 +3325,7 @@ procedure TfrmSuperHip.CalcStatusDB;
 var
   k: Double;
 begin
+  exit;
   if Adb_DM.AdbMain = nil then exit;
 
   lblGuidDb.caption := 'GUID: ' + Adb_DM.AdbMain.GUID.ToString;
