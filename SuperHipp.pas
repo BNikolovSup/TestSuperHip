@@ -2669,7 +2669,10 @@ end;
 
 procedure TfrmSuperHip.btnUpdateNomenClick(Sender: TObject);
 begin
-  LoadFromNzisNewNomen(22);
+  vtrNomenNzis.AddWaitNode(vtrNomenNzis.GetFirstSelected());
+  vtrNomenNzis.UpdateWaitNode(vtrNomenNzis.GetFirstSelected(), true, true);
+
+  //LoadFromNzisNewNomen(22);
 end;
 
 procedure TfrmSuperHip.btnX006Click(Sender: TObject);
