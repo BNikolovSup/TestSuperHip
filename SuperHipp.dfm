@@ -284,7 +284,7 @@ object frmSuperHip: TfrmSuperHip
       Width = 437
       Height = 503
       Margins.Left = 82
-      ActivePage = tsNomenNzis
+      ActivePage = tsTreePat
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False

@@ -1850,6 +1850,7 @@ begin
     TempEditLabel.rctNull := WalkChildrenRect(TempEditLabel.chk);
     TempEditLabel.edt :=  WalkChildrenEdit(TempEditLYT);
     TempEditLabel.edt.TabOrder := idxListEdits;
+    TempEditLabel.edt.TagObject := TempEditLabel;//zzzzzzzzzzzzzzz
     TempEditLabel.rctSourceAnsw := WalkChildrenRectStyle(TempEditLYT, 'AnswRect');
     TempEditLabel.rctSourceAnsw.TagObject := TempEditLabel;
     migach := WalkChildrenAnim(TempEditLabel.edt);
