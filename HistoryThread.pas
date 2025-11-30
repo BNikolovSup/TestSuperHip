@@ -1,5 +1,5 @@
 unit HistoryThread;
-     // save<
+     // treal
 interface
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.StdCtrls, Winapi.Messages,
@@ -59,11 +59,11 @@ THistoryThread = class(TThread)
     procedure ibvnts1EventAlert(Sender: TObject; EventName: string; EventCount: Integer; var CancelAlerts: Boolean);
     procedure GetChanges(IdHistory: integer);
   public
-    FCollUnfav: TRealUnfavColl;
-    FCollPregled: TRealPregledNewColl;
-    FCollDoctor: TRealDoctorColl;
-    FCollPatient: TRealPatientNewColl;
-    FCollDiag: TRealDiagnosisColl;
+    FCollUnfavHist: TRealUnfavColl;
+    FCollPregledHist: TRealPregledNewColl;
+    FCollDoctorHist: TRealDoctorColl;
+    FCollPatientHist: TRealPatientNewColl;
+    FCollDiagHist: TRealDiagnosisColl;
     FDBHelper: TDbHelper;
 
     FGrid: VCLTee.Grid.TTeeGrid;
@@ -92,7 +92,7 @@ constructor THistoryThread.Create(CreateSuspended: Boolean; DbName: string);
 begin
   inherited Create(CreateSuspended);
 
-  FCollPatient := TRealPatientNewColl.Create(TRealPatientNewItem);
+  FCollPatientHist := TRealPatientNewColl.Create(TRealPatientNewItem);
   FStop := False;
   Fdm := TDUNzis.Create(nil);
   Fdm.InitDb(DbName);
@@ -178,14 +178,14 @@ var
   pCardinalData: ^Cardinal;
   PWordData: PWord;
 begin
-  for i := 0 to FCollUnfav.Count - 1 do
+  for i := 0 to FCollUnfavHist.Count - 1 do
   begin
-    TempItem := FCollUnfav.Items[i];
+    TempItem := FCollUnfavHist.Items[i];
     if TempItem.getIntMap(Fbuf, FDataPos, word(Unfav_ID)) = id then
     begin
       PWordData := Pointer(pbyte(Buf) + TempItem.DataPos - 4);
       PWordData^ := word(ctUnfavDel);
-      FCollUnfav.Delete(i);
+      FCollUnfavHist.Delete(i);
       Break;
     end;
   end;
@@ -199,7 +199,7 @@ begin
   FreeAndNil(ibvnts1);
   FreeAndNil(ib);
   FreeAndNil(fdm);
-  FreeAndNil(FCollPatient);
+  FreeAndNil(FCollPatientHist);
 
   inherited;
 end;
@@ -279,10 +279,10 @@ begin
       case VV of
         vvPregled:
         begin
-          if FCollPregled.getIntMap(Data.DataPos, word(PregledNew_ID)) = id then
+          if FCollPregledHist.getIntMap(Data.DataPos, word(PregledNew_ID)) = id then
           begin
             //FreeAndNil(ATempItem);
-            Result := TRealPregledNewItem(FCollPregled.Add);
+            Result := TRealPregledNewItem(FCollPregledHist.Add);
             Result.DataPos := data.DataPos;
             TRealPregledNewItem(Result).FNode := ANode;
             Exit;
@@ -290,10 +290,10 @@ begin
         end;
         vvPatient:
         begin
-          if FCollPatient.getIntMap(Data.DataPos, word(PatientNew_ID)) = id then
+          if FCollPatientHist.getIntMap(Data.DataPos, word(PatientNew_ID)) = id then
           begin
             //FreeAndNil(ATempItem);
-            Result := TRealPatientNewItem(FCollPatient.Add);
+            Result := TRealPatientNewItem(FCollPatientHist.Add);
             Result.DataPos := data.DataPos;
             TRealPatientNewItem(Result).FNode := ANode;
             runNode := ANode.FirstChild;
@@ -312,10 +312,10 @@ begin
         end;
         vvDoctor:
         begin
-          if FCollDoctor.getIntMap(Data.DataPos, word(Doctor_ID)) = id then
+          if FCollDoctorHist.getIntMap(Data.DataPos, word(Doctor_ID)) = id then
           begin
             //FreeAndNil(ATempItem);
-            Result := TRealDoctorItem(FCollDoctor.Add);
+            Result := TRealDoctorItem(FCollDoctorHist.Add);
             Result.DataPos := data.DataPos;
             TRealDoctorItem(Result).node := ANode;
             Exit;
@@ -467,19 +467,19 @@ begin
   ibsqlPregledNew.Params[0].AsInteger := id;
   ibsqlPregledNew.ExecQuery;
 
-  TempPregItem := TRealPregledNewItem(FCollPregled.Add);
+  TempPregItem := TRealPregledNewItem(FCollPregledHist.Add);
   New(TempPregItem.PRecord);
   TempPregItem.PRecord.setProp := [];
-  FCollPregled.FCollDiag := FCollDiag;
-  FCollDiag.cmdFile := cmdFile;
+  FCollPregledHist.FCollDiag := FCollDiagHist;
+  FCollDiagHist.cmdFile := cmdFile;
   FDBHelper.InsertPregledField(ibsqlPregledNew, TempPregItem);
   TempPatItem := TRealPatientNewItem(FindItemADB(TempPregItem.PatID, Buf, BufLink, vvPatient));
   nodePat := TempPatItem.FNode;
 
   TempPregItem.InsertPregledNew;
 
-  FCollPregled.streamComm.Len := FCollPregled.streamComm.Size;
-  CmdFile.CopyFrom(FCollPregled.streamComm, 0);
+  FCollPregledHist.streamComm.Len := FCollPregledHist.streamComm.Size;
+  CmdFile.CopyFrom(FCollPregledHist.streamComm, 0);
 
 
   Dispose(TempPregItem.PRecord);
@@ -541,7 +541,7 @@ begin
       FDBHelper.UpdateDiagInPreg(diag4, TempPregItem, 4);
     end;
   end;
-  FCollPregled.Delete(TempPregItem.Index);
+  FCollPregledHist.Delete(TempPregItem.Index);
   pCardinalData := pointer(PByte(FBuf) + 32);
   pCardinalData^  := NewID;
 
@@ -557,7 +557,7 @@ var
   FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
   dataPosition: Cardinal;
 begin
-  uf := TRealUnfavItem(FCollUnfav.add);
+  uf := TRealUnfavItem(FCollUnfavHist.add);
   ib.Close;
   ib.SQL.Text :=
 
@@ -611,14 +611,14 @@ end;
 procedure THistoryThread.SetBuf(const Value: Pointer);
 begin
   FBuf := Value;
-  FCollPatient.Buf := FBuf;
+  FCollPatientHist.Buf := FBuf;
 
 end;
 
 procedure THistoryThread.SetDataPos(const Value: Cardinal);
 begin
   FDataPos := Value;
-  FCollPatient.posData := FDataPos;
+  FCollPatientHist.posData := FDataPos;
 end;
 
 procedure THistoryThread.TickerChange(Acol, ARow: Integer);
@@ -658,14 +658,14 @@ begin
     FDBHelper.UpdateDoctorField(ibsqlDoctor, TempItem);
   end;
   cnt := 0;
-  for i := 0 to FCollDoctor.Count - 1 do
+  for i := 0 to FCollDoctorHist.Count - 1 do
   begin
-    TempItem := FCollDoctor.Items[i];
+    TempItem := FCollDoctorHist.Items[i];
     if TempItem.PRecord <> nil then
     begin
       TempItem.SaveDoctor(FBuf, dataPosition);
-      FCollDoctor.streamComm.Len := FCollDoctor.streamComm.Size;
-      CmdFile.CopyFrom(FCollDoctor.streamComm, 0);
+      FCollDoctorHist.streamComm.Len := FCollDoctorHist.streamComm.Size;
+      CmdFile.CopyFrom(FCollDoctorHist.streamComm, 0);
       inc(cnt);
     end;
 
@@ -677,7 +677,7 @@ begin
   end;
   pCardinalData := pointer(PByte(FBuf) + 32);
   pCardinalData^  := NewID;
-  FCollDoctor.CntUpdates := 0;
+  FCollDoctorHist.CntUpdates := 0;
 
 end;
 
@@ -724,19 +724,19 @@ begin
     FDBHelper.UpdatePatientField(ibsqlPatientNew, TempItem);
   end;
   cnt := 0;
-  for i := FCollPatient.Count - 1 downto 0 do
+  for i := FCollPatientHist.Count - 1 downto 0 do
   begin
-    TempItem := FCollPatient.Items[i];
+    TempItem := FCollPatientHist.Items[i];
     if (TempItem.PRecord <> nil) and (TempItem.PRecord.setProp <> []) then
     begin
       TempItem.SavePatientNew(dataPosition);
-      FCollPatient.streamComm.Len := FCollPatient.streamComm.Size;
-      CmdFile.CopyFrom(FCollPatient.streamComm, 0);
+      FCollPatientHist.streamComm.Len := FCollPatientHist.streamComm.Size;
+      CmdFile.CopyFrom(FCollPatientHist.streamComm, 0);
       inc(cnt);
     end
     else
     begin
-      FCollPatient.Delete(i);
+      FCollPatientHist.Delete(i);
     end;
   end;
   if cnt > 0 then
@@ -746,7 +746,7 @@ begin
   end;
   pCardinalData := pointer(PByte(FBuf) + 32);
   pCardinalData^  := NewID;
-  FCollPatient.CntUpdates := 0;
+  FCollPatientHist.CntUpdates := 0;
 
 end;
 
@@ -795,15 +795,15 @@ begin
     FDBHelper.UpdatePregledField(ibsqlPregledNew, TempItem);
   end;
   cnt := 0;
-  for i := 0 to FCollPregled.Count - 1 do
+  for i := 0 to FCollPregledHist.Count - 1 do
   begin
-    TempItem := FCollPregled.Items[i];
+    TempItem := FCollPregledHist.Items[i];
     if TempItem.PRecord <> nil then
     begin
       TempItem.SavePregledNew(FBuf, dataPosition);
       //TempItem.SavePregledNew(dataPosition);
-      FCollPregled.streamComm.Len := FCollPregled.streamComm.Size;
-      CmdFile.CopyFrom(FCollPregled.streamComm, 0);
+      FCollPregledHist.streamComm.Len := FCollPregledHist.streamComm.Size;
+      CmdFile.CopyFrom(FCollPregledHist.streamComm, 0);
       //Dispose(TempItem.PRecord); //SavePregledNew го прави това, така че тука не тр€бва да го има
       //TempItem.PRecord := nil;
       inc(cnt);
@@ -817,7 +817,7 @@ begin
   end;
   pCardinalData := pointer(PByte(FBuf) + 32);
   pCardinalData^  := NewID;
-  FCollPregled.CntUpdates := 0;
+  FCollPregledHist.CntUpdates := 0;
 
 end;
 
@@ -830,9 +830,9 @@ var
   FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
   dataPosition: Cardinal;
 begin
-  for i := 0 to FCollUnfav.Count - 1 do
+  for i := 0 to FCollUnfavHist.Count - 1 do
   begin
-    uf := FCollUnfav.Items[i];
+    uf := FCollUnfavHist.Items[i];
     if uf.getIntMap(Fbuf, FDataPos, word(Unfav_ID)) = id then
     begin
       ib.Close;
@@ -883,9 +883,9 @@ begin
   pCardinalData := pointer(PByte(FBuf) + 12);
   FLenData := pCardinalData^;
   dataPosition :=  FPosData + FLenData;
-  for i := 0 to FCollUnfav.Count - 1 do
+  for i := 0 to FCollUnfavHist.Count - 1 do
   begin
-    uf := FCollUnfav.Items[i];
+    uf := FCollUnfavHist.Items[i];
     if uf.PRecord <> nil then
     begin
       uf.SaveUnfav(dataPosition);
@@ -902,7 +902,7 @@ begin
   end;
   pCardinalData := pointer(PByte(FBuf) + 32);
   pCardinalData^  := NewID;
-  FCollUnfav.CntUpdates := 0;
+  FCollUnfavHist.CntUpdates := 0;
 end;
 
 end.

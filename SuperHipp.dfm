@@ -284,7 +284,7 @@ object frmSuperHip: TfrmSuperHip
       Width = 437
       Height = 503
       Margins.Left = 82
-      ActivePage = tsTreePat
+      ActivePage = tsNomenNzis
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -615,7 +615,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAspect = 0
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
-          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -10429,7 +10428,7 @@ object frmSuperHip: TfrmSuperHip
       Top = 42
       Width = 1080
       Height = 325
-      ActivePage = tsTest
+      ActivePage = tsMemo
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -10799,6 +10798,8 @@ object frmSuperHip: TfrmSuperHip
           ScrollBars = ssBoth
           TabOrder = 0
           WordWrap = False
+          ExplicitLeft = 1
+          ExplicitTop = -2
         end
       end
       object tsPdf: TTabSheet
@@ -11786,6 +11787,8 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrRecentDBDrawButton
           OnButtonClick = vtrRecentDBButtonClick
+          ExplicitLeft = 1
+          ExplicitTop = 163
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -15983,7 +15986,6 @@ object frmSuperHip: TfrmSuperHip
     Top = 160
     Width = 1589
     Height = 2
-    UseSystemFont = False
     Caption = 'actmmb1'
     Color = clMenuBar
     ColorMap.DisabledFontColor = 7171437
@@ -15991,7 +15993,7 @@ object frmSuperHip: TfrmSuperHip
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Segoe UI'
     Font.Style = []
@@ -40424,7 +40426,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C0101700088048C1510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010170008804941510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000D0010000010020000000000000D0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -44371,7 +44373,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 360
     Bitmap = {
-      494C010164006814481518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164006814501518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000006000000070020000010020000000000000A8
       0300000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -52207,7 +52209,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 720
     Top = 296
     Bitmap = {
-      494C010106000800400118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010106000800480118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000003000000001002000000000000048
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

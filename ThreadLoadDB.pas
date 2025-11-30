@@ -1449,6 +1449,7 @@ end;
 constructor TLoadDBThread.Create(CreateSuspended: Boolean; DbName: string);
 begin
   inherited Create(CreateSuspended);
+  //Exit;
   Fdm := TDUNzis.Create(nil);
   Fdm.InitDb(DbName);
 
@@ -1457,7 +1458,10 @@ end;
 destructor TLoadDBThread.Destroy;
 begin
   FreeAndNil(fdm);
-  FreeAndNil(Adb_dm.CollAnalsNew);
+ // if Adb_dm.CollAnalsNew <> nil then
+//  begin
+//    FreeAndNil(Adb_dm.CollAnalsNew);
+//  end;
   inherited;
 end;
 

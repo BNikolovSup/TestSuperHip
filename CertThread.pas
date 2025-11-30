@@ -1,5 +1,5 @@
 unit CertThread;
-     // save<
+     // coll<
 interface
 uses
   System.SysUtils, System.Classes, Vcl.Controls, Vcl.StdCtrls, Winapi.Messages,
@@ -10,7 +10,7 @@ uses
   DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr,
   VCLTee.Grid, Tee.Grid.Ticker, Aspects.Collections,
   RealObj.RealHipp, VirtualStringTreeAspect, Table.Unfav, Table.PregledNew, Table.PatientNew,
-  Table.Doctor, Table.Certificates,
+  Table.Doctor, Table.Certificates, ADB_DataUnit,
 
   DbHelper, CertHelper
   ;
@@ -80,8 +80,9 @@ TCertThread = class(TThread)
     function FindCertFromPeriod(startDatetime, endDateTime: TDateTime): TElX509Certificate;
     function FindCertFromSerNumber(serNom: TArray<System.Byte>): TElX509Certificate;
   public
-    CollDoctor: TRealDoctorColl;
-    CollCert: TCertificatesColl;
+    Adb_dm: TADBDataModule;
+    //CollDoctor: TRealDoctorColl;
+    //CollCert: TCertificatesColl;
     LstPlugCardDoctor: TList<Cardinal>;
     IsFirst: Boolean;
     constructor Create(CreateSuspended: Boolean);
@@ -158,9 +159,9 @@ begin
 
     end;
 
-    for k := 0 to CollDoctor.Count - 1 do
+    for k := 0 to Adb_dm.CollDoctor.Count - 1 do
     begin
-      CollDoctor.Items[k].TokenIsPlug := False;
+      Adb_dm.CollDoctor.Items[k].TokenIsPlug := False;
     end;
     LstPlugCardDoctor.Clear;
 
@@ -179,19 +180,19 @@ begin
         if ArrRdn[j].StartsWith('SN=PNOBG-') then
         begin
           egn := Copy(ArrRdn[j], 10, 100);// намира егн-то на подписа (доктор или какъвто и да е)
-          for k := 0 to CollDoctor.Count - 1 do
+          for k := 0 to Adb_dm.CollDoctor.Count - 1 do
           begin
-            if (CollDoctor.getAnsiStringMap(CollDoctor.Items[k].DataPos, word(Doctor_EGN)) = egn)  then
+            if (Adb_dm.CollDoctor.getAnsiStringMap(Adb_dm.CollDoctor.Items[k].DataPos, word(Doctor_EGN)) = egn)  then
             begin
-              CollDoctor.Items[k].SlotTokenSerial := CertStorage.Config('PKCS11SlotTokenSerial[' + IntToStr(LstToken[i]) + ']' );;
-              CollDoctor.Items[k].TokenIsPlug := True;
-              CollDoctor.Items[k].Cert := FindCertFromSerNumber(CertStorage.Certificates[0].SerialNumber);
-              CollDoctor.Items[k].SlotNom := LstToken[i];
-              CollDoctor.Items[k].CertPlug := CertStorage.Certificates[0];
+              Adb_dm.CollDoctor.Items[k].SlotTokenSerial := CertStorage.Config('PKCS11SlotTokenSerial[' + IntToStr(LstToken[i]) + ']' );;
+              Adb_dm.CollDoctor.Items[k].TokenIsPlug := True;
+              Adb_dm.CollDoctor.Items[k].Cert := FindCertFromSerNumber(CertStorage.Certificates[0].SerialNumber);
+              Adb_dm.CollDoctor.Items[k].SlotNom := LstToken[i];
+              Adb_dm.CollDoctor.Items[k].CertPlug := CertStorage.Certificates[0];
               Cert := nil;
-              for m := 0 to CollCert.Count - 1 do
+              for m := 0 to Adb_dm.CollCertificates.Count - 1 do
               begin
-                if Trim(CollCert.getAnsiStringMap(CollCert.Items[m].DataPos, word(Certificates_CERT_ID))) =
+                if Trim(Adb_dm.CollCertificates.getAnsiStringMap(Adb_dm.CollCertificates.Items[m].DataPos, word(Certificates_CERT_ID))) =
                               BuildHexString1(CertStorage.Certificates.item[0].SerialNumber) then
                 begin
                   fs.DateSeparator := '-';
@@ -201,12 +202,12 @@ begin
 
                   satrtTime := StrToDateTime(CertStorage.Certificates[0].ValidFrom, fs);
                   endTime := StrToDateTime(CertStorage.Certificates[0].ValidTo, fs);
-                  CollCert.SetIntMap(CollCert.Items[m].DataPos, word(Certificates_SlotNom), LstToken[i]);
-                  CollCert.SetAnsiStringMap(CollCert.Items[m].DataPos, word(Certificates_SLOT_ID), CollDoctor.Items[k].SlotTokenSerial.PadRight(100, ' '));
-                  CollCert.SetDateMap(CollCert.Items[m].DataPos, word(Certificates_VALID_FROM_DATE), satrtTime);
-                  CollCert.SetDateMap(CollCert.Items[m].DataPos, word(Certificates_VALID_TO_DATE), endTime);
+                  Adb_dm.CollCertificates.SetIntMap(Adb_dm.CollCertificates.Items[m].DataPos, word(Certificates_SlotNom), LstToken[i]);
+                  Adb_dm.CollCertificates.SetAnsiStringMap(Adb_dm.CollCertificates.Items[m].DataPos, word(Certificates_SLOT_ID), Adb_dm.CollDoctor.Items[k].SlotTokenSerial.PadRight(100, ' '));
+                  Adb_dm.CollCertificates.SetDateMap(Adb_dm.CollCertificates.Items[m].DataPos, word(Certificates_VALID_FROM_DATE), satrtTime);
+                  Adb_dm.CollCertificates.SetDateMap(Adb_dm.CollCertificates.Items[m].DataPos, word(Certificates_VALID_TO_DATE), endTime);
 
-                  Cert := CollCert.Items[m];
+                  Cert := Adb_dm.CollCertificates.Items[m];
                   Break;
                 end;
               end;
@@ -219,12 +220,12 @@ begin
 
                 satrtTime := StrToDateTime(CertStorage.Certificates[0].ValidFrom, fs);
                 endTime := StrToDateTime(CertStorage.Certificates[0].ValidTo, fs);
-                Cert := TCertificatesItem(CollCert.Add);
+                Cert := TCertificatesItem(Adb_dm.CollCertificates.Add);
                 New(Cert.PRecord);
                 Cert.PRecord.setProp := [Certificates_SLOT_ID, Certificates_CERT_ID, Certificates_VALID_FROM_DATE,
                                          Certificates_VALID_TO_DATE, Certificates_SlotNom, Certificates_Pin];
                 Cert.PRecord.CERT_ID := BuildHexString1(CertStorage.Certificates[0].SerialNumber).PadRight(100, ' ');;
-                Cert.PRecord.SLOT_ID := CollDoctor.Items[k].SlotTokenSerial.PadRight(100, ' ');
+                Cert.PRecord.SLOT_ID := Adb_dm.CollDoctor.Items[k].SlotTokenSerial.PadRight(100, ' ');
                 Cert.PRecord.VALID_FROM_DATE :=  satrtTime;
                 Cert.PRecord.VALID_TO_DATE :=  endTime;
                 Cert.PRecord.SlotNom :=  LstToken[i];
@@ -240,7 +241,7 @@ begin
 
               end;
 
-              LstPlugCardDoctor.Add(CollDoctor.Items[k].DataPos);
+              LstPlugCardDoctor.Add(Adb_dm.CollDoctor.Items[k].DataPos);
             end;
           end;
 

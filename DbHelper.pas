@@ -1,4 +1,4 @@
-﻿unit DbHelper; //date_zapisvane
+﻿unit DbHelper; //mkbColl
 
 interface
 uses
@@ -32,7 +32,7 @@ uses
     Fdm: TDUNzis;
     NasMesto: TRealNasMestoAspects;
     Adb_DM: TADBDataModule;
-    mkbColl: TRealMkbColl;
+    //mkbColl: TRealMkbColl;
 
 
     procedure InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
@@ -2931,7 +2931,7 @@ begin
     begin
       if mkbPos > 100 then
     begin
-      ibsql.ParamByName('MAIN_DIAG_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+      ibsql.ParamByName('MAIN_DIAG_OPIS').Asstring := Adb_DM.CollMkb.getAnsiStringMap(mkbPos, word(Mkb_NAME));
       //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
     end;
       ibsql.ParamByName('main_diag_mkb').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));
@@ -2942,7 +2942,7 @@ begin
     begin
       if mkbPos > 100 then
       begin
-        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_OPIS').Asstring := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NAME));
+        ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_OPIS').Asstring := Adb_DM.CollMkb.getAnsiStringMap(mkbPos, word(Mkb_NAME));
         //mkbNote := MKBColl.getAnsiStringMap(mkbPos, word(Mkb_NOTE));
       end;
       ibsql.ParamByName('PR_ZAB' + IntToStr(rankDiag) + '_MKB').Asstring := Adb_DM.CollDiag.getAnsiStringMap(datadiag.DataPos, word(Diagnosis_code_CL011));

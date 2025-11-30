@@ -50,9 +50,9 @@ type
     FVtr: TVirtualStringTreeHipp;
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
-    FCollMkb: TRealMkbColl;
+    //FCollMkb: TRealMkbColl;
     FAdb_DM: TADBDataModule;
-    FCollDiag: TRealDiagnosisColl;
+    //FCollDiag: TRealDiagnosisColl;
     FmmoTest: TMemo;
     FvNomenMKB, vDiagPat, vDiagPreg: PVirtualNode;
 
@@ -60,7 +60,7 @@ type
     FFmxProfForm: TfrmProfFormFMX;
     FvtrNewAnal: TVirtualStringTreeAspect;
     FFilterText: string;
-    FCollDoctor: TRealDoctorColl;
+    //FCollDoctor: TRealDoctorColl;
     FthrCert: TCertThread;
 
     function CompareStrings(const S1, S2: string): Integer;
@@ -183,10 +183,10 @@ type
 
 
     property Vtr: TVirtualStringTreeHipp read FVtr write SetVtr;
-    property CollMkb: TRealMkbColl read FCollMkb write FCollMkb;
+    //property CollMkb: TRealMkbColl read FCollMkb write FCollMkb;
     property Adb_DM: TADBDataModule read FAdb_DM write FAdb_DM;
-    property CollDiag: TRealDiagnosisColl read FCollDiag write FCollDiag;
-    property CollDoctor: TRealDoctorColl read FCollDoctor write FCollDoctor;
+    //property CollDiag: TRealDiagnosisColl read FCollDiag write FCollDiag;
+    //property CollDoctor: TRealDoctorColl read FCollDoctor write FCollDoctor;
 
     property mmoTest: TMemo read FmmoTest write FmmoTest;
     property vNomenMKB: PVirtualNode read FvNomenMKB write FvNomenMKB;
@@ -251,12 +251,12 @@ begin
   data.vid := vvRootDoctorColege;
   data.index := -1;
 
-  for i := 0 to CollDoctor.Count - 1 do
+  for i := 0 to Adb_DM.CollDoctor.Count - 1 do
   begin
     vDoctor := FVtr.AddChild(vRootDoctorPrac, nil);
     data := FVtr.GetNodeData(vDoctor);
     data.vid := vvdoctor;
-    data.DataPos := CollDoctor.Items[i].DataPos;
+    data.DataPos := Adb_DM.CollDoctor.Items[i].DataPos;
     data.index := i;
   end;
 
@@ -292,26 +292,26 @@ begin
   InitVariableVtrMkb;
 
 
-  if not CollMkb.IsSortedMKB then
+  if not Adb_DM.CollMkb.IsSortedMKB then
   begin
-    CollMkb.IndexValue(Mkb_CODE);
-    CollMkb.SortByIndexValue(Mkb_CODE);
-    CollMkb.IsSortedMKB := True;
+    Adb_DM.CollMkb.IndexValue(Mkb_CODE);
+    Adb_DM.CollMkb.SortByIndexValue(Mkb_CODE);
+    Adb_DM.CollMkb.IsSortedMKB := True;
   end;
-  if CollMkb.MkbGroups.Count = 0 then
+  if Adb_DM.CollMkb.MkbGroups.Count = 0 then
   begin
     LStream := TResourceStream.Create(HInstance, 'Resource_GroupMkb', RT_RCDATA);
     try
-      CollMkb.MkbGroups.LoadFromStream(LStream, TEncoding.UTF8);
+      Adb_DM.CollMkb.MkbGroups.LoadFromStream(LStream, TEncoding.UTF8);
     finally
       LStream.free;
     end;
   end;
-  if CollMkb.MkbSubGroups.Count = 0 then
+  if Adb_DM.CollMkb.MkbSubGroups.Count = 0 then
   begin
     LStream := TResourceStream.Create(HInstance, 'Resource_SubGroupMkb', RT_RCDATA);
     try
-      CollMkb.MkbSubGroups.LoadFromStream(LStream, TEncoding.UTF8);
+      Adb_DM.CollMkb.MkbSubGroups.LoadFromStream(LStream, TEncoding.UTF8);
       //mmoTest.Lines.Add(CollMkb.MkbSubGroups[3].Split([#9])[2]);
     finally
       LStream.free;
@@ -346,7 +346,7 @@ begin
     //preg := TRealPregledNewItem(sender);
     patNode := CurrentPregled.FNode.Parent;
     PatNodes := Adb_DM.GetPatNodes(patNode);
-    patNodes.CollDiag := CollDiag;
+    patNodes.CollDiag := Adb_DM.CollDiag;
     patNodes.SortDiag(true);
 
     Elapsed := Stopwatch.Elapsed;
@@ -354,9 +354,9 @@ begin
     for i := 0 to PatNodes.diags.Count - 1 do
     begin
       data := Pointer(PByte(PatNodes.diags[i]) + lenNode);
-      if CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011)) <> mkbCode then
+      if Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011)) <> mkbCode then
       begin
-        mkbCode := CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011));
+        mkbCode := Adb_DM.CollDiag.getAnsiStringMap(data.DataPos, word(Diagnosis_code_CL011));
         mmotest.Lines.Add(mkbCode);
       end;
     end;
@@ -387,9 +387,9 @@ begin
   data := FVtr.GetNodeData(vNomenMKB);
   data.vid := vvNomenMkb;
   data.index := -1;
-  for i := 0 to CollMkb.MkbGroups.Count - 1 do
+  for i := 0 to Adb_DM.CollMkb.MkbGroups.Count - 1 do
   begin
-    startMkbGroup := CollMkb.MkbGroups[i].Split([#9])[1];
+    startMkbGroup := Adb_DM.CollMkb.MkbGroups[i].Split([#9])[1];
     endMkbGroup := Copy(startMkbGroup, 6, 3) + '.99';
     startMkbGroup := Copy(startMkbGroup, 2, 3);
     vGroup := FVtr.AddChild(vNomenMKB, nil);
@@ -397,10 +397,10 @@ begin
     data.vid := vvMKBGroup;
     data.index := i;
 
-    while (j < CollMkb.MkbSubGroups.Count) and
+    while (j < Adb_DM.CollMkb.MkbSubGroups.Count) and
           (endMkbSubGroup <= endMkbGroup) do
     begin
-      startMkbSubGroup := CollMkb.MkbSubGroups[j].Split([#9])[2];
+      startMkbSubGroup := Adb_DM.CollMkb.MkbSubGroups[j].Split([#9])[2];
       endMkbSubGroup := Copy(startMkbSubGroup, 5, 3) + '.99';
       startMkbSubGroup := Copy(startMkbSubGroup, 1, 3);
       if (endMkbSubGroup > endMkbGroup) then
@@ -411,7 +411,7 @@ begin
       data.index := j;
       Inc(j);
 
-      while (k < CollMkb.Count) and (CollMkb.getAnsiStringMap(CollMkb.Items[k].DataPos, Word(Mkb_CODE)) <= endMkbSubGroup) do
+      while (k < Adb_DM.CollMkb.Count) and (Adb_DM.CollMkb.getAnsiStringMap(Adb_DM.CollMkb.Items[k].DataPos, Word(Mkb_CODE)) <= endMkbSubGroup) do
       begin
         //if CollMkb.Items[k].Version = 0 then
 //        begin
@@ -431,13 +431,13 @@ begin
         data := FVtr.GetNodeData(vMkb);
         data.vid := vvMKB;
         data.index := k;
-        data.DataPos := CollMkb.Items[k].DataPos;
+        data.DataPos := Adb_DM.CollMkb.Items[k].DataPos;
         if sender is TRealPregledNewItem then
         begin
           for m := 0 to CurrentPregled.FDiagnosis.Count - 1 do
           begin
             diag := CurrentPregled.FDiagnosis[m];
-            if (diag <> nil) and  (CollDiag.getCardMap(diag.DataPos, word(Diagnosis_MkbPos)) = data.DataPos) then
+            if (diag <> nil) and  (Adb_DM.CollDiag.getCardMap(diag.DataPos, word(Diagnosis_MkbPos)) = data.DataPos) then
             begin
               vMkb.CheckState := csCheckedNormal;
               diag.MkbNode := vMkb;
@@ -449,7 +449,7 @@ begin
               vMkb.CheckState := csUncheckedNormal;
               data := FVtr.GetNodeData(vMkb);
               data.vid := vvMKB;
-              data.DataPos := CollMkb.Items[k].DataPos;
+              data.DataPos := Adb_DM.CollMkb.Items[k].DataPos;
             end;
           end;
         end;
@@ -519,10 +519,7 @@ constructor TTempVtrHelper.Create(AVtr: TVirtualStringTreeHipp;
   AmmoTest: TMemo; AvNomenMKB: PVirtualNode; AFmxProfForm: TfrmProfFormFMX);
 begin
   Vtr := AVtr;
-  FCollMkb := ACollMkb;
   FAdb_DM := AAdb_DM;
-  FCollDiag := ACollDiag;
-  FCollDoctor := ACollDoctor;
   FmmoTest := AmmoTest;
   FvNomenMKB := AvNomenMKB;
   FFmxProfForm := AFmxProfForm;
@@ -599,11 +596,11 @@ var
 begin
   Result := False;
   L := 0;
-  H := CollMkb.Count - 1;
+  H := Adb_DM.CollMkb.Count - 1;
   while L <= H do
   begin
     I := (L + H) shr 1;
-    str := CollMkb.getAnsiStringMap(CollMkb.items[i].DataPos, word(Mkb_CODE));
+    str := Adb_DM.CollMkb.getAnsiStringMap(Adb_DM.CollMkb.items[i].DataPos, word(Mkb_CODE));
     C := CompareStrings(Trim(str), code);
     if C < 0 then L := I + 1 else
     begin
@@ -1226,7 +1223,7 @@ begin
       if FindMkbDataPosFromCode(tempArrstr[i], IndexMkb) then
       begin
         SetLength(Result, length(Result) + 1);
-        Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+        Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
       end
       else
       begin
@@ -1246,7 +1243,7 @@ begin
       if FindMkbDataPosFromCode(mkb, IndexMkb) then
       begin
         SetLength(Result, length(Result) + 1);
-        Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+        Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
       end
     end;
     for i := 0 to 99 do
@@ -1256,7 +1253,7 @@ begin
       if FindMkbDataPosFromCode(mkb, IndexMkb) then
       begin
         SetLength(Result, length(Result) + 1);
-        Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+        Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
       end
     end;
   end
@@ -1270,7 +1267,7 @@ begin
       if FindMkbDataPosFromCode(mkb, IndexMkb) then
       begin
         SetLength(Result, length(Result) + 1);
-        Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+        Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
       end
     end;
     for i := 0 to 99 do
@@ -1280,7 +1277,7 @@ begin
       if FindMkbDataPosFromCode(mkb, IndexMkb) then
       begin
         SetLength(Result, length(Result) + 1);
-        Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+        Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
       end
     end;
   end
@@ -1290,7 +1287,7 @@ begin
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
   end
   else if str.Contains('G05.1-G05.2') then
@@ -1299,13 +1296,13 @@ begin
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
     mkb := 'G05.2';
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
   end
   else if str.Contains('M01.4-M01.5') then
@@ -1314,13 +1311,13 @@ begin
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
     mkb := 'M01.5';
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
   end
   else if str.Contains('M36.2-M36.3') then
@@ -1329,13 +1326,13 @@ begin
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
     mkb := 'M36.3';
     if FindMkbDataPosFromCode(mkb, IndexMkb) then
     begin
       SetLength(Result, length(Result) + 1);
-      Result[Length(Result) - 1] := CollMkb.Items[IndexMkb].DataPos;
+      Result[Length(Result) - 1] := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
     end;
   end;
 
@@ -1500,7 +1497,7 @@ begin
         case data.vid of
           vvDoctor:
           begin
-            CellText := CollDoctor.Items[data.index].FullName;
+            CellText := Adb_DM.CollDoctor.Items[data.index].FullName;
           end;
 
 
@@ -1514,7 +1511,7 @@ begin
       case data.vid of
         vvDoctor:
         begin
-          CellText := CollDoctor.getAnsiStringMap(Data.DataPos, word(Doctor_UIN));
+          CellText := Adb_DM.CollDoctor.getAnsiStringMap(Data.DataPos, word(Doctor_UIN));
         end;
       else
         begin
@@ -1760,11 +1757,11 @@ begin
       begin
         CurrentPregled.CanDeleteDiag := False;
         //Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-        Adb_DM.AddNewDiag(CurrentPregled.FNode, CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE)), '', CurrentPregled.FDiagnosis.Count, Data.DataPos);
-        CurrentPregled.FDiagnosis.Add(CollDiag.Items[CollDiag.Count - 1]);
+        Adb_DM.AddNewDiag(CurrentPregled.FNode, Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE)), '', CurrentPregled.FDiagnosis.Count, Data.DataPos);
+        CurrentPregled.FDiagnosis.Add(Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
         dataPat := Pointer(PByte(CurrentPregled.FNode.Parent) + lenNode);
         dataPreg := Pointer(PByte(CurrentPregled.FNode) + lenNode);
-        FmxProfForm.AddDiag(nil, nil, FmxProfForm.Pregled.FDiagnosis.Count, CollDiag.Items[CollDiag.Count - 1]);
+        FmxProfForm.AddDiag(nil, nil, FmxProfForm.Pregled.FDiagnosis.Count, Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
         FmxProfForm.xpdrDiagn.RecalcSize;
         FmxProfForm.lytDiagFrame.Height := FmxProfForm.xpdrDiagn.Height + 30;
         //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -1893,11 +1890,11 @@ begin
       case Column of
         0:
         begin
-          CellText := CollMkb.MkbGroups[Data.index].Split([#9])[1];
+          CellText := Adb_DM.CollMkb.MkbGroups[Data.index].Split([#9])[1];
         end;
         1:
         begin
-          CellText := CollMkb.MkbGroups[Data.index].Split([#9])[2];
+          CellText := Adb_DM.CollMkb.MkbGroups[Data.index].Split([#9])[2];
         end;
       end;
 
@@ -1907,11 +1904,11 @@ begin
       case Column of
         0:
         begin
-          CellText := CollMkb.MkbSubGroups[Data.index].Split([#9])[2];
+          CellText := Adb_DM.CollMkb.MkbSubGroups[Data.index].Split([#9])[2];
         end;
         1:
         begin
-          CellText := CollMkb.MkbSubGroups[Data.index].Split([#9])[3];
+          CellText := Adb_DM.CollMkb.MkbSubGroups[Data.index].Split([#9])[3];
         end;
       end;
 
@@ -1921,11 +1918,11 @@ begin
       case Column of
         0:
         begin
-          CellText := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+          CellText := Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
         end;
         1:
         begin
-          CellText := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_NAME));
+          CellText := Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_NAME));
         end;
         2:
         begin
@@ -1944,14 +1941,14 @@ begin
           if data.DataPos > 0 then
           begin
             //data.index.ToString();
-            CellText := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+            CellText := Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
           end;
         end;
         1:
         begin
           if data.DataPos > 0 then
           begin
-            CellText := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_NAME));
+            CellText := Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_NAME));
           end;
         end;
 
@@ -2005,7 +2002,7 @@ begin
   case data.vid of
     vvMKB:
     begin
-      mkbNote := CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_NOTE));
+      mkbNote := Adb_DM.CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_NOTE));
       if mkbNote.Contains('*)') then
          Sender.HasChildren[Node] := True;
       arrstr := mkbNote.Split(['(', ')']);
@@ -2043,7 +2040,7 @@ begin
   case data.vid of
     vvMKB:
     begin
-      mkbNote := CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_NOTE));
+      mkbNote := Adb_DM.CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_NOTE));
       if mkbNote.Contains('*)') then
       begin
         Sender.HasChildren[Node] := True;
@@ -2065,7 +2062,7 @@ begin
               vAddMkb.CheckType := ctRadioButton;
               dataAdd := Sender.GetNodeData(vAddMkb);
               dataAdd.vid := vvMKBAdd;
-              dataAdd.DataPos := CollMkb.Items[IndexMkb].DataPos;
+              dataAdd.DataPos := Adb_DM.CollMkb.Items[IndexMkb].DataPos;
             end
             else
             begin
@@ -2074,7 +2071,7 @@ begin
               begin
                 //dataAdd.DataPos := 0;
 
-                mmoTest.Lines.Add(CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_CODE)) + '...........' + arrstr[i]);
+                mmoTest.Lines.Add(Adb_DM.CollMkb.getAnsiStringMap(Data.DataPos, Word(Mkb_CODE)) + '...........' + arrstr[i]);
               end
               else
               begin

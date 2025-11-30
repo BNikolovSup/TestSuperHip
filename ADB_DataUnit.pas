@@ -14,7 +14,7 @@ uses
   Table.INC_NAPR,Table.NzisToken, Table.CL050, Table.NomenNzis, Table.NzisReqResp,
   ProfGraph, RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
-  , SBxCertificateStorage, Nzis.Nomen.baseCL000, DM;
+  , SBxCertificateStorage, Nzis.Nomen.baseCL000, DM, Vcl.StdCtrls;
 
   type
 
@@ -129,15 +129,33 @@ uses
     FAdbMainLink: TMappedLinkFile;
     FOnClearColl: TNotifyEvent;
     FFDM: TDUNzis;
+    FNasMestaLink: TMappedLinkFile;
+    FAdbOptionFileName: string;
+    FAdbNzisNomenFileName: string;
+    FAdbNasMestoFileName: string;
+    FAdbNzokNomenFileName: string;
+    FAdbMainFileName: string;
+    FAdbHipNomenFileName: string;
+    FmmoTest: Tmemo;
     procedure SetAdbMain(const Value: TMappedFile);
     procedure SetAdbNomenHip(const Value: TMappedFile);
     procedure SetAdbNomenNzis(const Value: TMappedFile);
     procedure SetAdbNomenNZOK(const Value: TMappedFile);
+    //procedure SetNasMestaLink(const Value: TMappedLinkFile);
+    procedure SetAdbHipNomenFileName(const Value: string);
+    procedure SetAdbMainFileName(const Value: string);
+    procedure SetAdbNasMestoFileName(const Value: string);
+    procedure SetAdbNzisNomenFileName(const Value: string);
+    procedure SetAdbNzokNomenFileName(const Value: string);
+    procedure SetAdbOptionFileName(const Value: string);
     //FPatNodes: TPatNodes;
   protected
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
     ver: string;
+    streamCmdFile: TFileCmdStream;
+    StreamCmdFileTemp: TFileCmdStream;
+    streamCmdFileNomenNzis: TFileCmdStream;
     procedure AddTagToStream(XmlStream: TXmlStream;NameTag, ValueTag :string; amp: Boolean = true; Node: PVirtualNode = nil);
 
     procedure FillXmlStreamHeader(XmlStream: TXmlStream; msgType: TNzisMsgType; SenderID: string);
@@ -147,14 +165,15 @@ uses
     procedure FillXmlStreamObjectiveCondition(XmlStream: TXmlStream; PregNodes: TPregledNodes; logPat: TlogicalPatientNewSet);
     procedure InitColl;
     procedure ReInitColl;
+    procedure SetCmdColl;
     procedure FreeColl;
     procedure ClearColl;
+    procedure OpenADB(ADB: TMappedFile);
+    procedure OpenCmd(ADB: TMappedFile);
+    procedure OpenLinkPatPreg(LNK: TMappedLinkFile);
+    procedure AddToListNodes(data: PAspRec);
 
   public
-
-
-
-
     CollPregled: TRealPregledNewColl;
     CollPractica: TPracticaColl;
     CollDoctor: TRealDoctorColl;
@@ -221,9 +240,6 @@ uses
     ListPatientForFDB: TList<TPatientNewItem>;
     ListNomenNzisNames: TList<TNomenNzisRec>;
 
-
-
-
   public
     listLog: TStringList;
     lstColl: TList<TBaseCollection>;
@@ -232,7 +248,8 @@ uses
     AdbLink: TMappedLinkFile;
     NasMesto: TRealNasMestoAspects;
     cmdFile: TFileStream;
-    Vtr: TVirtualStringTreeAspect;
+    VtrMain: TVirtualStringTreeAspect;
+    VtrNasMesta: TVirtualStringTreeAspect;
     strGuid: string;
     LstNodeSended: TList<TNodesSendedToNzis>;
     ListPrimDocuments: TList<TBaseCollection>;
@@ -270,7 +287,11 @@ uses
     procedure InitPerformer(XmlStream: TXmlStream; PregNodes: TPregledNodes; var performer: TRealDoctorItem);
 
     procedure OpenDB(FFDbName: string);
+    procedure OpenADBNomenHip(FileName: string);
+    procedure OpenADBNomenNzis(FileName: string);
+    procedure OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
     procedure initDB(FFDbName: string);
+    procedure FindLNK(AGUID: TGUID);
     procedure FindADB(AGUID: TList<TGUID>);
 
     property patEgn: string read FPatEgn;
@@ -280,9 +301,19 @@ uses
     property AdbNomenNZOK: TMappedFile read FAdbNomenNZOK write SetAdbNomenNZOK; // НЗОК номенклатура
 
     property AdbMainLink: TMappedLinkFile read FAdbMainLink write FAdbMainLink;
+    //property NasMestaLink: TMappedLinkFile read FNasMestaLink write SetNasMestaLink;
     property FDM: TDUNzis read FFDM write FFDM;
 
     property OnClearColl: TNotifyEvent read FOnClearColl write FOnClearColl;
+    property mmoTest: Tmemo read FmmoTest write FmmoTest;
+
+    //ADB файлове
+    property AdbMainFileName: string  read FAdbMainFileName write SetAdbMainFileName;
+    property AdbOptionFileName: string read FAdbOptionFileName write SetAdbOptionFileName;
+    property AdbNasMestoFileName: string read FAdbNasMestoFileName write SetAdbNasMestoFileName;
+    property AdbNzisNomenFileName: string read FAdbNzisNomenFileName write SetAdbNzisNomenFileName;
+    property AdbHipNomenFileName: string read FAdbHipNomenFileName write SetAdbHipNomenFileName;
+    property AdbNzokNomenFileName: string read FAdbNzokNomenFileName write SetAdbNzokNomenFileName;
 
 
   end;
@@ -672,12 +703,19 @@ begin
   end;
 end;
 
+procedure TADBDataModule.AddToListNodes(data: PAspRec);
+begin
+
+end;
+
 constructor TADBDataModule.Create();
 begin
   inherited;
   //FPatNodes.evnts := TList<PVirtualNode>.Create;
 //  FPatNodes.ExamAnals := TList<PVirtualNode>.Create;
   //XMLStream := TXmlStream.Create('', TEncoding.UTF8);
+
+  //NasMesto := TRealNasMestoAspects.Create();
 
   lstColl := TList<TBaseCollection>.Create;
   LstNodeSended := TList<TNodesSendedToNzis>.Create;
@@ -1960,6 +1998,59 @@ begin
   end;
 end;
 
+procedure TADBDataModule.FindLNK(AGUID: TGUID);
+var
+  S: string;
+
+  i, j: Integer;
+  collType: TCollectionsType;
+  aspVersion: Word;
+  b: Byte;
+  pByteData: ^Byte;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  pg: PGUID;
+
+  AInt64: Int64;
+  dirAdb: string;
+begin
+  if ParamStr(2) <> '' then
+    dirAdb := ParamStr(2)
+  else
+    dirAdb := '.\';
+  for S in TDirectory.GetFiles(dirAdb, '*Hip*.lnk', TSearchOption.soAllDirectories) do
+  begin
+    if FAdbMainLink <> nil then
+      FAdbMainLink.Free;
+    FAdbMainLink := TMappedLinkFile.Create(s, false, TGUID.Empty);
+    if FAdbMainLink.Buf <> nil then
+    begin
+      //pCardinalData := pointer(PByte(AspectsHipFile.Buf));
+//      FPosMetaData := pCardinalData^;
+//      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 4);
+//      FLenMetaData := pCardinalData^;
+//      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 8);
+//      FPosData := pCardinalData^;
+//      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
+//      FLenData := pCardinalData^;
+      Pg := pointer(PByte(FAdbMainLink.Buf) + 16 );
+      if AGUID <> TGUID.Empty then
+        begin
+          if AGUID = pg^ then
+          begin
+            Exit;
+          end;
+        end;
+
+      FAdbMainLink.Free;
+      FAdbMainLink := nil;
+    end;
+  end;
+
+end;
+
 procedure TADBDataModule.FormatingXML(stream: TStream);
 var
   oXml: IXMLDocument;
@@ -2389,6 +2480,445 @@ begin
   end;
 end;
 
+procedure TADBDataModule.OpenADB(ADB: TMappedFile);
+var
+  collType: TCollectionsType;
+  aspVersion: Word;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  pg: PGUID;
+  mkb: TMkbItem;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  if ADB.Buf <> nil then
+  begin
+    pCardinalData := pointer(PByte(ADB.Buf));
+    ADB.FPosMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(ADB.Buf) + 4);
+    ADB.FLenMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(ADB.Buf) + 8);
+    ADB.FPosData := pCardinalData^;
+    pCardinalData := pointer(PByte(ADB.Buf) + 12);
+    ADB.FLenData := pCardinalData^;
+    Pg := pointer(PByte(ADB.Buf) + 16 );
+    ADB.GUID := pg^;
+
+    aspPos := ADB.FPosMetaData;
+    while aspPos < (ADB.FPosMetaData + ADB.FLenMetaData) do
+    begin
+      p := Pointer(pbyte(ADB.Buf) + aspPos);
+      collType := TCollectionsType(p^);
+      inc(aspPos, 2);
+
+      p := Pointer(pbyte(ADB.Buf) + aspPos);
+      aspVersion := word(p^);
+      inc(aspPos, 2);
+
+      case collType of
+
+    // ===== FULL =====
+        ctPractica,
+        ctDoctor,
+        ctOtherDoctor,
+        ctMkb,
+        ctNzisToken,
+        ctCertificates:
+          lstColl[ord(collType)].OpenAdbFull(aspPos);
+
+        // ===== LAZY =====
+        ctPregledNew,
+        ctPatientNew,
+        ctPatientNZOK,
+        ctDiagnosis,
+        ctMDN,
+        ctUnfav,
+        ctExam_boln_list,
+        ctExamAnalysis,
+        ctExamImmunization,
+        ctProcedures,
+        ctKARTA_PROFILAKTIKA2017,
+        ctBLANKA_MED_NAPR,
+        ctBLANKA_MED_NAPR_3A,
+        ctHOSPITALIZATION,
+        ctEXAM_LKK,
+        ctINC_MDN,
+        ctINC_NAPR,
+        ctNZIS_PLANNED_TYPE,
+        ctNZIS_QUESTIONNAIRE_RESPONSE,
+        ctNZIS_QUESTIONNAIRE_ANSWER,
+        ctNZIS_DIAGNOSTIC_REPORT,
+        ctNZIS_RESULT_DIAGNOSTIC_REPORT,
+        ctNZIS_ANSWER_VALUE:
+          begin
+            Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
+            lstColl[ord(collType)].IncCntInADB;
+          end;
+
+        // ===== DELETED =====
+        ctDiagnosisDel,
+        ctUnfavDel,
+        ctProceduresDel,
+        ctKARTA_PROFILAKTIKA2017Del,
+        ctBLANKA_MED_NAPRDel,
+        ctBLANKA_MED_NAPR_3ADel,
+        ctHOSPITALIZATIONDel,
+        ctEXAM_LKKDel,
+        ctINC_MDNDel,
+        ctINC_NAPRDel,
+        ctNZIS_PLANNED_TYPEDel,
+        ctNZIS_QUESTIONNAIRE_RESPONSEDel,
+        ctNZIS_QUESTIONNAIRE_ANSWERDel,
+        ctNZIS_ANSWER_VALUEDel,
+        ctOtherDoctorDel,
+        ctCL142Del,
+        ctPregledNewDel,
+        ctCL006Del,
+        ctCL022Del:
+        begin
+          Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
+        end;
+
+        //ctAddres:
+//        begin
+//          //Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
+////          FNasMesto.addresColl.IncCntInADB;
+//        end;
+      else
+        Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
+        //raise Exception.Create('Непознат : collType' + TRttiEnumerationType.GetName(collType));
+      end;
+    end;
+  end;
+
+
+  //FNasMesto.addresColl.Buf := ADB.Buf;
+//  FNasMesto.addresColl.posData := ADB.FPosData;
+
+
+  Elapsed := Stopwatch.Elapsed;
+  //mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
+  //mmoTest.Lines.endUpdate;
+
+  //CalcStatusDB;
+//  FDBHelper.AdbHip := ADB;
+//  FDBHelper.Fdm := Fdm;
+//  FDBHelper.NasMesto := FNasMesto;
+//  FDBHelper.Adb_DM := Adb_DM;
+//
+//
+//  FDBHelper.AdbLink := AspectsLinkPatPregFile;
+//  Adb_DM.AdbMain := ADB;
+//  Adb_DM.AdbLink := AspectsLinkPatPregFile;
+//  Adb_DM.NasMesto := FNasMesto;
+
+end;
+
+procedure TADBDataModule.OpenADBNomenHip(FileName: string);
+var
+  i, j: Integer;
+  collType: TCollectionsType;
+  aspVersion: Word;
+  b: Byte;
+  pByteData: ^Byte;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  anal: TAnalsNewItem;
+
+  AInt64: Int64;
+begin
+  if FAdbNomenHip <> nil then
+    FAdbNomenHip.Free;
+  FAdbNomenHip := TMappedFile.Create(FileName, false, TGUID.Empty);
+  FPosData := FAdbNomenHip.FPosData;
+
+
+  if FAdbNomenHip.Buf <> nil then
+  begin
+    CollAnalsNew.Buf := FAdbNomenHip.Buf;
+    CollAnalsNew.posData := FAdbNomenHip.FPosData;
+
+
+    pCardinalData := pointer(PByte(FAdbNomenHip.Buf));
+    FPosMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenHip.Buf) + 4);
+    FLenMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenHip.Buf) + 8);
+    FPosData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenHip.Buf) + 12);
+    FLenData := pCardinalData^;
+    aspPos := FPosMetaData;
+    begin
+      while aspPos < (FPosMetaData + FLenMetaData) do
+      begin
+        p := Pointer(pbyte(FAdbNomenHip.Buf) + aspPos);
+        collType := TCollectionsType(p^);
+        inc(aspPos, 2);
+
+        p := Pointer(pbyte(FAdbNomenHip.Buf) + aspPos);
+        aspVersion := word(p^);
+        inc(aspPos, 2);
+
+        case collType of
+          ctAnalsNew:
+          begin
+            anal := TAnalsNewItem(CollAnalsNew.Add);
+            anal.DataPos := aspPos;
+            Inc(aspPos, (CollAnalsNew.FieldCount) * 4);
+          end;
+
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure TADBDataModule.OpenADBNomenNzis(FileName: string);
+var
+  i, j: Integer;
+  collType: TCollectionsType;
+  aspVersion: Word;
+  b: Byte;
+  pByteData: ^Byte;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  //FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+
+  NomenNzis: TNomenNzisItem;
+  fileStr: TFileStream;
+
+  AInt64: Int64;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  if FAdbNomenNzis <> nil then
+    Exit;
+    //AspectsNomFile.Free;
+  try
+    FAdbNomenNzis := TMappedFile.Create(FileName, false, TGUID.Empty);
+
+  except
+
+  end;
+
+
+  if (FAdbNomenNzis <> nil) and (FAdbNomenNzis.Buf <> nil) then
+  begin
+    ReInitColl;
+    pCardinalData := pointer(PByte(FAdbNomenNzis.Buf));
+    FAdbNomenNzis.FPosMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenNzis.Buf) + 4);
+    FAdbNomenNzis.FLenMetaData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenNzis.Buf) + 8);
+    FAdbNomenNzis.FPosData := pCardinalData^;
+    pCardinalData := pointer(PByte(FAdbNomenNzis.Buf) + 12);
+    FAdbNomenNzis.FLenData := pCardinalData^;
+    aspPos := FAdbNomenNzis.FPosMetaData;
+    begin
+      while aspPos < (FAdbNomenNzis.FPosMetaData + FAdbNomenNzis.FLenMetaData) do
+      begin
+        p := Pointer(pbyte(FAdbNomenNzis.Buf) + aspPos);
+        collType := TCollectionsType(p^);
+        inc(aspPos, 2);
+
+        p := Pointer(pbyte(FAdbNomenNzis.Buf) + aspPos);
+        aspVersion := word(p^);
+        inc(aspPos, 2);
+
+        //try
+//          lstColl[Ord(collType)].OpenAdbFull(aspPos);
+//        except
+//          ShowMessage('ddd');
+//        end;
+
+        case collType of
+          ctCL132:
+          begin
+            //Cl132 := TCL132Item(CL132Coll.Add);
+            //Cl132.DataPos := aspPos;
+            Inc(aspPos, (CL132Coll.FieldCount) * 4);
+          end;
+          ctCL050:
+          begin
+            //Cl050 := TCL050Item(CL050Coll.Add);
+//            Cl050.DataPos := aspPos;
+            Inc(aspPos, (CL050Coll.FieldCount) * 4);
+          end;
+          ctCL006:
+          begin
+            lstColl[ord(collType)].OpenAdbFull(aspPos);
+          end;
+          ctCL022:
+          begin
+            //Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
+//            Cl022.DataPos := aspPos;
+            Inc(aspPos, (CL022Coll.FieldCount) * 4);
+          end;
+          ctCL024:
+          begin
+            //Cl024 := TCL024Item(Adb_DM.CL024Coll.Add);
+//            Cl024.DataPos := aspPos;
+            Inc(aspPos, (CL024Coll.FieldCount) * 4);
+          end;
+          ctCL037:
+          begin
+            //Cl037 := TCL037Item(Adb_DM.CL037Coll.Add);
+//            Cl037.DataPos := aspPos;
+            Inc(aspPos, (CL037Coll.FieldCount) * 4);
+          end;
+          ctCL038:
+          begin
+            //Cl038 := TCL038Item(Adb_DM.CL038Coll.Add);
+//            Cl038.DataPos := aspPos;
+            Inc(aspPos, (CL038Coll.FieldCount) * 4);
+          end;
+          ctCL088:
+          begin
+            //Cl088 := TCL088Item(Adb_DM.CL088Coll.Add);
+//            Cl088.DataPos := aspPos;
+            Inc(aspPos, (CL088Coll.FieldCount) * 4);
+          end;
+
+
+          ctCL134:
+          begin
+            //Cl134 := TCl134Item(Adb_DM.Cl134Coll.Add);
+//            Cl134.DataPos := aspPos;
+            Inc(aspPos, (Cl134Coll.FieldCount) * 4);
+          end;
+          ctCL139:
+          begin
+            //Cl139 := TCl139Item(Adb_DM.Cl139Coll.Add);
+//            Cl139.DataPos := aspPos;
+            Inc(aspPos, (Cl139Coll.FieldCount) * 4);
+          end;
+          ctCL142:
+          begin
+            //Cl142 := TCl142Item(Adb_DM.Cl142Coll.Add);
+//            Cl142.DataPos := aspPos;
+            Inc(aspPos, (Cl142Coll.FieldCount) * 4);
+          end;
+          ctCL144:
+          begin
+            //Cl144 := TRealCl144Item(Adb_DM.Cl144Coll.Add);
+//            Cl144.DataPos := aspPos;
+            Inc(aspPos, (Cl144Coll.FieldCount) * 4);
+          end;
+
+          ctPR001:
+          begin
+            //PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
+//            PR001.DataPos := aspPos;
+            Inc(aspPos, (PR001Coll.FieldCount) * 4);
+          end;
+
+          ctNomenNzis:
+          begin
+            //NomenNzis := TNomenNzisItem(NomenNzisColl.Add);
+            //NomenNzis.DataPos := aspPos;
+            Inc(aspPos, (NomenNzisColl.FieldCount) * 4);
+          end;
+        end;
+      end;
+    end;
+  end
+  else
+  begin
+    fileStr := TFileStream.Create(FileName, fmCreate);
+    fileStr.Size := 20000000;
+    fileStr.Free;
+    FAdbNomenNzis := TMappedFile.Create(FileName, True, TGUID.Empty);
+    ReInitColl;
+  end;
+
+
+
+  //Adb_DM.AdbNomenNzis := FAdbNomenNzis;
+  //FDBHelper.AdbNomenNzis := FAdbNomenNzis;
+
+
+  OpenCmdNomenNzis(FAdbNomenNzis);
+
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
+end;
+
+procedure TADBDataModule.OpenCmd(ADB: TMappedFile);
+var
+  fileName, fileNameTemp: string;
+begin
+
+  fileName := ADB.FileName.Replace('.adb', '.cmd');
+
+  if TFile.Exists (fileName) then
+  begin
+    streamCmdFile := TFileCMDStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
+    //FDBHelper.cmdFile := streamCmdFile;
+    CollPregled.cmdFile := streamCmdFile;
+    CollDoctor.cmdFile := streamCmdFile;
+    CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
+    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+  end
+  else
+  begin
+    streamCmdFile := TFileCmdStream.Create(fileName, fmCreate);
+    streamCmdFile.Size := 100;
+  end;
+  streamCmdFile.Position := streamCmdFile.Size;
+
+  fileNameTemp := ADB.FileName.Replace('.adb', '.tmp');
+  if TFile.Exists (fileNameTemp) then
+  begin
+    streamCmdFileTemp := TFileCMDStream.Create(fileNameTemp, fmOpenReadWrite + fmShareDenyNone);
+    streamCmdFileTemp.Guid := ADB.GUID;
+    //FDBHelper.cmdFile := streamCmdFile;
+    //CollPregled.cmdFile := streamCmdFile;
+    CollDoctor.cmdFileTemp := streamCmdFileTemp;
+    //CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
+//    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+//    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+  end
+  else
+  begin
+    streamCmdFileTemp := TFileCmdStream.Create(fileNameTemp, fmCreate);
+
+    streamCmdFileTemp.Size := 100;
+
+    CollDoctor.cmdFileTemp := streamCmdFileTemp;
+  end;
+  streamCmdFileTemp.Position := streamCmdFileTemp.Size;
+  cmdFile := streamCmdFile;
+end;
+
+procedure TADBDataModule.OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
+var
+  fileName: string;
+  TempPos: Cardinal;
+begin
+
+  fileName := ADBNomenNzis.FileName.Replace('.adb', '.cmd');
+
+  if TFile.Exists (fileName) then
+  begin
+    streamCmdFileNomenNzis := TFileCmdStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
+    streamCmdFileNomenNzis.Position := 0;
+    streamCmdFileNomenNzis.Read(TempPos, 4);
+    streamCmdFileNomenNzis.AspectDataPos := TempPos;
+  end
+  else
+  begin
+    streamCmdFileNomenNzis := TFileCmdStream.Create(fileName, fmCreate + fmShareDenyNone);
+    streamCmdFileNomenNzis.AspectDataPos := 0;
+    streamCmdFileNomenNzis.Size := 100;
+  end;
+
+  streamCmdFileNomenNzis.Position := streamCmdFileNomenNzis.Size;
+  SetCmdColl;
+end;
+
 procedure TADBDataModule.OpenDB(FFDbName: string);
 var
   nodeLink: PVirtualNode;
@@ -2417,6 +2947,199 @@ begin
     if Assigned(FOnClearColl) then
       FOnClearColl(self);
     initDB(FFDbName);
+end;
+
+procedure TADBDataModule.OpenLinkPatPreg(LNK: TMappedLinkFile);
+var
+  i, j: Integer;
+  collType: TCollectionsType;
+  aspVersion: Word;
+  b: Byte;
+  pByteData: ^Byte;
+  pCardinalData: ^Cardinal;
+  aspPos: Cardinal;
+  p: Pointer;
+  FPosLinkData: Cardinal;
+  node: PVirtualNode;
+  linkPos: Cardinal;
+  deltaBuf, oldBuf: Cardinal;
+  oldRoot: Cardinal;
+  fileNameLink: string;
+  AInt64: Int64;
+  data: PAspRec;
+  preg: TPregledNewItem;
+  pat: TPatientNewItem;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  //ListNodes.Clear;
+  LNK.FVTR.BeginUpdate;
+
+  pCardinalData := pointer(PByte(LNK.Buf) + 4);
+  oldBuf := pCardinalData^;
+  if Cardinal(LNK.Buf) >= oldBuf then
+  begin
+    deltaBuf := Cardinal(LNK.Buf) - oldBuf;
+  end
+  else
+  begin
+    deltaBuf := oldBuf - Cardinal(LNK.Buf);
+  end;
+  pCardinalData := pointer(PByte(LNK.Buf) + 4);
+  pCardinalData^ := Cardinal(LNK.Buf);
+  pCardinalData := pointer(PByte(LNK.Buf) + 8);
+  oldRoot := pCardinalData^;
+
+  //mmotest.Lines.Add(Format('BufLink  = %d', [cardinal(AspectsLinkPatPregFile.Buf)]));
+
+  linkPos := 100;
+  pCardinalData := pointer(PByte(LNK.Buf));
+  FPosLinkData := pCardinalData^;
+  node := pointer(PByte(LNK.Buf) + linkpos);
+  //node.NodeHeight := 27;
+
+  Exclude(node.States, vsSelected);
+  data := pointer(PByte(node) + lenNode);
+  if not (data.vid in [vvPatientRevision]) then
+    data.index := -1;
+  AddToListNodes(data);
+  i := 0;
+  if Cardinal(LNK.Buf) > oldBuf then
+  begin
+    while linkPos <= FPosLinkData do
+    begin
+      if node.PrevSibling <> nil then
+        node.PrevSibling := Pointer(Integer(deltaBuf) + Integer(node.PrevSibling));
+      if node.NextSibling <> nil then
+        node.NextSibling := Pointer(Integer(deltaBuf) + Integer(node.NextSibling));
+      if node.FirstChild <> nil then
+        node.FirstChild := Pointer(Integer(deltaBuf) + Integer(node.FirstChild));
+      if node.LastChild <> nil then
+        node.LastChild := Pointer(Integer(deltaBuf) + Integer(node.LastChild));
+
+      if linkPos <> 100 then
+      begin
+        if (node.Parent <> nil)  then
+          node.parent := Pointer(Integer(deltaBuf) + Integer(node.parent));
+      end
+      else
+      begin
+        node.parent := nil;
+      end;
+      Inc(linkPos, LenData);
+
+      node := pointer(PByte(LNK.Buf) + linkpos);
+      //node.NodeHeight := 27;
+      Exclude(node.States, vsSelected);
+      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      data := pointer(PByte(node) + lenNode);
+      if not (data.vid in [vvPatientRevision]) then
+        data.index := -1;
+      if data.vid = vvEvntList then
+      begin
+        data.DataPos := data.DataPos + deltaBuf;
+      end;
+
+      AddToListNodes(data);
+    end;
+  end
+  else
+  begin
+    if deltaBuf <> 0 then
+    begin
+      while linkPos <= FPosLinkData do
+      begin
+        if node.PrevSibling <> nil then
+            node.PrevSibling := Pointer(-Integer(deltaBuf) + Integer(node.PrevSibling));
+        if node.NextSibling <> nil then
+          node.NextSibling := Pointer(-Integer(deltaBuf) + Integer(node.NextSibling));
+        if node.FirstChild <> nil then
+          node.FirstChild := Pointer(-Integer(deltaBuf) + Integer(node.FirstChild));
+        if node.LastChild <> nil then
+          node.LastChild := Pointer(-Integer(deltaBuf) + Integer(node.LastChild));
+        if linkPos <> 100 then
+        begin
+          if (node.Parent <> nil)  then
+            node.parent := Pointer(-Integer(deltaBuf) + Integer(node.parent));
+        end
+        else
+        begin
+          node.Parent := nil;
+        end;
+        Inc(linkPos, LenData);
+        node := pointer(PByte(LNK.Buf) + linkpos);
+        Exclude(node.States, vsSelected);
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        data := pointer(PByte(node) + lenNode);
+        if data.vid = vvEvntList then
+        begin
+          data.DataPos := data.DataPos - deltaBuf;
+        end;
+        if not (data.vid in [vvPatientRevision]) then
+          data.index := -1;
+        //if data.vid <> vvPatient then
+//          Exclude(node.States, vsFiltered);
+        AddToListNodes(data);
+      end;
+    end
+    else
+    begin
+      //PregledColl.Capacity := 1000000;
+      while linkPos <= FPosLinkData do
+      begin
+        Inc(linkPos, LenData);
+        node := pointer(PByte(LNK.Buf) + linkpos);
+        Exclude(node.States, vsSelected);
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Exclude(node.States, vsInitialized);
+        data := pointer(PByte(node) + lenNode);
+        //if data.vid <> vvPatient then
+//          Exclude(node.States, vsFiltered);
+        if not (data.vid in [vvPatientRevision]) then
+          data.index := -1;
+        AddToListNodes(data);
+      end;
+    end;
+  end;
+
+
+  //pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+//  pCardinalData^ := linkpos;
+  node := pointer(PByte(LNK.Buf) + 100);
+   //node.NodeHeight := 27;
+
+  LNK.FVTR.InternalConnectNode_cmd(node, LNK.FVTR.RootNode, LNK.FVTR, amAddChildFirst);
+  LNK.FVTR.BufLink := LNK.Buf;
+  //node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+  //vtrPregledPat.InternalDisconnectNode(node, false);
+  pCardinalData := pointer(PByte(LNK.Buf) + 8);
+  pCardinalData^ := Cardinal(LNK.FVTR.RootNode);
+  LNK.FVTR.UpdateVerticalScrollBar(true);
+  LNK.FVTR.EndUpdate;
+  Stopwatch.StartNew;
+  //vtrPregledPat.Sort(vtrPregledPat.RootNode.FirstChild, 0, sdAscending, false);
+  Elapsed := Stopwatch.Elapsed;
+  //LNK.FVTR := LNK.FVTR;
+  LNK.FStreamCmdFile := streamCmdFile;
+  //FDBHelper.AdbLink := LNK;
+  //FmxProfForm.AspLink := LNK;
+  AdbLink := LNK;
+
+  //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
+
+  //vtrPregledPat.Selected[vtrPregledPat.GetLast()] := True;
+  //vtrPregledPat.IsFiltered[vtrPregledPat.Getlast()] := True;
+  //vtrPregledPat.ReinitNode(vtrPregledPat.GetFirst(), true);
+
+  //Elapsed := Stopwatch.Elapsed;
+
+  //mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
+  //PregledColl.ShowGrid(TeeGrid1);
+
+  //FindOldItemsForInsert;
+  //CheckCollForSave;
+
+
 end;
 
 procedure TADBDataModule.ReadXmlL010(streamL010: TStream; ls: TStrings);
@@ -2732,33 +3455,33 @@ begin
 
 
   CollNZIS_PLANNED_TYPE := TRealNZIS_PLANNED_TYPEColl.Create(TRealNZIS_PLANNED_TYPEItem);
-  //lstColl[Ord(CollNZIS_PLANNED_TYPE.GetCollType)] := CollNZIS_PLANNED_TYPE;
+  lstColl[Ord(CollNZIS_PLANNED_TYPE.GetCollType)] := CollNZIS_PLANNED_TYPE;
 
   CollNZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEColl.Create(TRealNZIS_QUESTIONNAIRE_RESPONSEItem);
-  //lstColl[Ord(CollNZIS_QUESTIONNAIRE_RESPONSE.GetCollType)] := CollNZIS_QUESTIONNAIRE_RESPONSE;
+  lstColl[Ord(CollNZIS_QUESTIONNAIRE_RESPONSE.GetCollType)] := CollNZIS_QUESTIONNAIRE_RESPONSE;
 
   CollNZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERColl.Create(TRealNZIS_QUESTIONNAIRE_ANSWERItem);
-  //lstColl[Ord(CollNZIS_QUESTIONNAIRE_ANSWER.GetCollType)] := CollNZIS_QUESTIONNAIRE_ANSWER;
+  lstColl[Ord(CollNZIS_QUESTIONNAIRE_ANSWER.GetCollType)] := CollNZIS_QUESTIONNAIRE_ANSWER;
 
   CollNZIS_ANSWER_VALUE := TRealNZIS_ANSWER_VALUEColl.Create(TRealNZIS_ANSWER_VALUEItem);
-  //lstColl[Ord(CollNZIS_ANSWER_VALUE.GetCollType)] := CollNZIS_ANSWER_VALUE;
+  lstColl[Ord(CollNZIS_ANSWER_VALUE.GetCollType)] := CollNZIS_ANSWER_VALUE;
 
   CollNZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_DIAGNOSTIC_REPORTItem);
-  //lstColl.Add(CollNZIS_DIAGNOSTIC_REPORT);
+  lstColl[Ord(CollNZIS_DIAGNOSTIC_REPORT.GetCollType)] := CollNZIS_DIAGNOSTIC_REPORT;
 
   CollNzis_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl.Create(TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem);
-  //lstColl.Add(CollNzis_RESULT_DIAGNOSTIC_REPORT);
+  lstColl[Ord(CollNzis_RESULT_DIAGNOSTIC_REPORT.GetCollType)] := CollNzis_RESULT_DIAGNOSTIC_REPORT;
 
   CollNzisToken := TNzisTokenColl.Create(TNzisTokenItem);
-  //lstColl.Add(CollNzisToken);
+  lstColl[Ord(CollNzisToken.GetCollType)] := CollNzisToken;
 
   CollCertificates := TCertificatesColl.Create(TCertificatesItem);
-  //lstColl.Add(CollCertificates);
+  lstColl[Ord(CollCertificates.GetCollType)] := CollCertificates;
 
 
 
   CollAnalsNew := TAnalsNewColl.Create(TAnalsNewItem);
-  //lstColl.Add(CollAnalsNew);
+  lstColl[Ord(CollAnalsNew.GetCollType)] := CollAnalsNew;
 
   CL006Coll := TRealCL006Coll.Create(TRealCl006Item);
   lstColl[Ord(CL006Coll.GetCollType)] := CL006Coll;
@@ -2767,21 +3490,45 @@ begin
   lstColl[Ord(CL022Coll.GetCollType)] := CL022Coll;
 
   CL024Coll := TRealCL024Coll.Create(TRealCl024Item);
+  lstColl[Ord(CL024Coll.GetCollType)] := CL024Coll;
+
   CL037Coll := TRealCL037Coll.Create(TRealCl037Item);
+  lstColl[Ord(CL037Coll.GetCollType)] := CL037Coll;
+
   CL038Coll := TRealCL038Coll.Create(TRealCl038Item);
+  lstColl[Ord(CL038Coll.GetCollType)] := CL038Coll;
+
   CL050Coll := TCL050Coll.Create(TCl050Item);
+  lstColl[Ord(CL050Coll.GetCollType)] := CL050Coll;
+
   CL088Coll := TRealCL088Coll.Create(TRealCl088Item);
+  lstColl[Ord(CL088Coll.GetCollType)] := CL088Coll;
+
   CL132Coll := TRealCL132Coll.Create(TRealCl132Item);
+  lstColl[Ord(CL132Coll.GetCollType)] := CL132Coll;
+
   CL134Coll := TRealCL134Coll.Create(TRealCl134Item);
+  lstColl[Ord(CL134Coll.GetCollType)] := CL134Coll;
+
   CL139Coll := TRealCL139Coll.Create(TRealCl139Item);
+  lstColl[Ord(CL139Coll.GetCollType)] := CL134Coll;
 
   CL142Coll := TRealCL142Coll.Create(TRealCl142Item);
   lstColl[Ord(CL142Coll.GetCollType)] := CL142Coll;
 
+
   CL144Coll := TRealCl144Coll.Create(TRealCl144Item);
+  lstColl[Ord(CL144Coll.GetCollType)] := CL144Coll;
+
   PR001Coll := TRealPR001Coll.Create(TRealPR001Item);
+  lstColl[Ord(PR001Coll.GetCollType)] := PR001Coll;
+
   NomenNzisColl := TNomenNzisColl.Create(TNomenNzisItem);
+  lstColl[Ord(NomenNzisColl.GetCollType)] := NomenNzisColl;
+
   ProceduresNomenColl:= TRealProceduresColl.Create(TRealCl006Item);
+  lstColl[Ord(ProceduresNomenColl.GetCollType)] := ProceduresNomenColl;
+
 
   // ... добави тук другите колекции, ако имаш още полета в DM ...
 
@@ -2806,12 +3553,12 @@ end;
 procedure TADBDataModule.initDB(FFDbName: string);
 begin
   Stopwatch := TStopwatch.StartNew;
-  //mmoTest.Lines.BeginUpdate;
+  mmoTest.Lines.BeginUpdate;
   if FFDM = nil then
   begin
     FFDM := TDUNzis.Create(nil);
   end;
-  //mmoTest.Lines.Add('FDbName =' + FDbName);
+  mmoTest.Lines.Add('FDbName =' + FFDbName);
   if FFDbName = '' then
     exit;
   FFDM.InitDb(FFDbName);
@@ -2820,32 +3567,32 @@ begin
     FindADB(FFDM.FGuidDB);
   end;
   Elapsed := Stopwatch.Elapsed;
-  //mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
   if AdbMain = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
   begin
-    //mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
+    mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
     //RolPnlDoktorOPL.Enabled := False;
     //RolPnlDoktorOPL.Repaint;
   end
   else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
   begin
-    //mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
+    mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
     //if AspectsNomFile = nil then
-//      OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
-    //OpenADB(Adb_DM.AdbMain);
-//    OpenCmd(Adb_DM.AdbMain);
-//    FindLNK(Adb_DM.AdbMain.GUID);
-//    if AspectsLinkPatPregFile <> nil then
-//      OpenLinkPatPreg(AspectsLinkPatPregFile);
-//    StartHistoryThread(FDbName);
-//    StartCertThread;
+      //OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
+    OpenADB(AdbMain);
+    OpenCmd(AdbMain);
+    FindLNK(AdbMain.GUID);
+    if FAdbMainLink <> nil then
+      OpenLinkPatPreg(FAdbMainLink);
+    //StartHistoryThread(FDbName);
+    //StartCertThread;
 //    if chkAspectDistr.Checked then
 //    begin
 //      StartAspectPerformerThread;
 //    end;
 
   end;
-  //mmoTest.Lines.EndUpdate;
+  mmoTest.Lines.EndUpdate;
 end;
 
 procedure TADBDataModule.ReInitColl;
@@ -2961,66 +3708,71 @@ begin
   end;
 
 
-  CollPregled := nil;
-  CollPractica := nil;
-  CollDoctor := nil;
-  CollOtherDoctor := nil;
-  CollUnfav := nil;
-  CollPatient := nil;
-  CollPatPis := nil;
-  CollDiag := nil;
-  CollMDN := nil;
-  CollEbl := nil;
-  CollExamAnal := nil;
-  CollExamImun := nil;
-  CollProceduresPreg := nil;
-  CollCardProf := nil;
-  CollMedNapr := nil;
-  CollMedNapr3A := nil;
-  CollMedNaprHosp := nil;
-  CollMedNaprLkk := nil;
-  CollIncMdn := nil;
-  CollIncMN := nil;
-  CollNZIS_PLANNED_TYPE := nil;
-  CollNZIS_QUESTIONNAIRE_RESPONSE := nil;
-  CollNZIS_QUESTIONNAIRE_ANSWER := nil;
-  CollNZIS_ANSWER_VALUE := nil;
-  CollNZIS_DIAGNOSTIC_REPORT := nil;
-  CollNzis_RESULT_DIAGNOSTIC_REPORT := nil;
-  CollNzisToken := nil;
-  CollCertificates := nil;
-  CollMkb := nil;
-  CollAnalsNew := nil;
+  //CollPregled := nil;
+//  CollPractica := nil;
+//  CollDoctor := nil;
+//  CollOtherDoctor := nil;
+//  CollUnfav := nil;
+//  CollPatient := nil;
+//  CollPatPis := nil;
+//  CollDiag := nil;
+//  CollMDN := nil;
+//  CollEbl := nil;
+//  CollExamAnal := nil;
+//  CollExamImun := nil;
+//  CollProceduresPreg := nil;
+//  CollCardProf := nil;
+//  CollMedNapr := nil;
+//  CollMedNapr3A := nil;
+//  CollMedNaprHosp := nil;
+//  CollMedNaprLkk := nil;
+//  CollIncMdn := nil;
+//  CollIncMN := nil;
+//  CollNZIS_PLANNED_TYPE := nil;
+//  CollNZIS_QUESTIONNAIRE_RESPONSE := nil;
+//  CollNZIS_QUESTIONNAIRE_ANSWER := nil;
+//  CollNZIS_ANSWER_VALUE := nil;
+//  CollNZIS_DIAGNOSTIC_REPORT := nil;
+//  CollNzis_RESULT_DIAGNOSTIC_REPORT := nil;
+//  CollNzisToken := nil;
+//  CollCertificates := nil;
+//  CollMkb := nil;
+//  CollAnalsNew := nil;
+//
+//  FreeandNil(CL006Coll);
+//  FreeandNil(CL022Coll);
+//  FreeandNil(CL024Coll);
+//  FreeandNil(CL037Coll);
+//  FreeandNil(CL038Coll);
+//  FreeandNil(CL050Coll);
+//  FreeandNil(CL088Coll);
+//  FreeandNil(CL132Coll);
+//  FreeandNil(CL134Coll);
+//  FreeandNil(CL139Coll);
+//  FreeandNil(CL142Coll);
+//  FreeandNil(CL144Coll);
+//  FreeandNil(PR001Coll);
+//
+//  FreeAndNil(lstPatGraph);
+//  FreeAndNil(ListPregledForFDB);
+//  FreeAndNil(ListDoctorForFDB);
+//  FreeAndNil(ListPregledLinkForInsert);
+//  FreeAndNil(CollPregledVtor);
+//  FreeAndNil(CollPregledPrim);
+//  FreeAndNil(LstPatForExportDB);
+//  FreeAndNil(LstPregForExportDB);
+//  FreeAndNil(ListPatientForFDB);
+//  for i := 0 to ListNomenNzisNames.Count - 1 do
+//  begin
+//    nomen := ListNomenNzisNames[i];
+//    FreeAndNil(nomen);
+//  end;
+//  FreeAndNil(ListNomenNzisNames);
+end;
 
-  FreeandNil(CL006Coll);
-  FreeandNil(CL022Coll);
-  FreeandNil(CL024Coll);
-  FreeandNil(CL037Coll);
-  FreeandNil(CL038Coll);
-  FreeandNil(CL050Coll);
-  FreeandNil(CL088Coll);
-  FreeandNil(CL132Coll);
-  FreeandNil(CL134Coll);
-  FreeandNil(CL139Coll);
-  FreeandNil(CL142Coll);
-  FreeandNil(CL144Coll);
-  FreeandNil(PR001Coll);
-
-  FreeAndNil(lstPatGraph);
-  FreeAndNil(ListPregledForFDB);
-  FreeAndNil(ListDoctorForFDB);
-  FreeAndNil(ListPregledLinkForInsert);
-  FreeAndNil(CollPregledVtor);
-  FreeAndNil(CollPregledPrim);
-  FreeAndNil(LstPatForExportDB);
-  FreeAndNil(LstPregForExportDB);
-  FreeAndNil(ListPatientForFDB);
-  for i := 0 to ListNomenNzisNames.Count - 1 do
-  begin
-    nomen := ListNomenNzisNames[i];
-    FreeAndNil(nomen);
-  end;
-  FreeAndNil(ListNomenNzisNames);
+procedure TADBDataModule.SetAdbHipNomenFileName(const Value: string);
+begin
+  FAdbHipNomenFileName := Value;
 end;
 
 procedure TADBDataModule.SetAdbMain(const Value: TMappedFile);
@@ -3031,6 +3783,16 @@ begin
   // Optionally: if ADB is loaded, build indexes
   //if Assigned(FAdbMain) and (FAdbMain is TMappedLinkFile) then
 //    TMappedLinkFile(FAdbMain).BuildPathIndex;
+end;
+
+procedure TADBDataModule.SetAdbMainFileName(const Value: string);
+begin
+  FAdbMainFileName := Value;
+end;
+
+procedure TADBDataModule.SetAdbNasMestoFileName(const Value: string);
+begin
+  FAdbNasMestoFileName := Value;
 end;
 
 procedure TADBDataModule.SetAdbNomenHip(const Value: TMappedFile);
@@ -3051,6 +3813,78 @@ end;
 
 
 
+
+procedure TADBDataModule.SetAdbNzisNomenFileName(const Value: string);
+begin
+  FAdbNzisNomenFileName := Value;
+end;
+
+procedure TADBDataModule.SetAdbNzokNomenFileName(const Value: string);
+begin
+  FAdbNzokNomenFileName := Value;
+end;
+
+procedure TADBDataModule.SetAdbOptionFileName(const Value: string);
+begin
+  FAdbOptionFileName := Value;
+end;
+
+procedure TADBDataModule.SetCmdColl;
+var
+  coll: TBaseCollection;
+begin
+  for coll in lstColl do
+  begin
+    if coll = nil then Continue;
+
+    case coll.GetCollType of
+      ctPregledNew, ctPractica, ctDoctor, ctUnfav, ctPatientNew,
+      ctPatientNZOK, ctDiagnosis, ctMDN, ctExam_boln_list,
+      ctExamAnalysis, ctExamImmunization, ctProcedures,
+      ctKARTA_PROFILAKTIKA2017, ctBLANKA_MED_NAPR, ctBLANKA_MED_NAPR_3A,
+      ctHOSPITALIZATION, ctEXAM_LKK, ctINC_MDN, ctINC_NAPR,
+      ctNZIS_PLANNED_TYPE, ctNZIS_QUESTIONNAIRE_RESPONSE,
+      ctNZIS_QUESTIONNAIRE_ANSWER, ctNZIS_ANSWER_VALUE,
+      ctNZIS_DIAGNOSTIC_REPORT, ctNZIS_RESULT_DIAGNOSTIC_REPORT,
+      ctNzisToken, ctCertificates, ctMkb, ctAnalsNew:
+      begin
+        if Assigned(AdbMain) then
+        begin
+          coll.cmdFile := streamCmdFile;
+        end
+        else
+        begin
+          coll.cmdFile := nil;
+        end;
+      end;
+
+      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038,
+      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139,
+      ctCL142, ctCL144, ctPR001, ctNomenNzis:
+      begin
+        if Assigned(streamCmdFileNomenNzis) then
+        begin
+          coll.cmdFile := streamCmdFileNomenNzis;
+        end
+        else
+        begin
+          coll.cmdFile := nil;
+        end;
+      end;
+
+    else
+      begin
+        coll.cmdFile := nil;
+      end;
+    end;
+  end;
+end;
+
+//procedure TADBDataModule.SetNasMestaLink(const Value: TMappedLinkFile);
+//begin
+//  FNasMestaLink := Value;
+//  //NasMesto := TRealNasMestoAspects.Create(FNasMestaLink);
+//end;
 
 { TPregledNodes }
 

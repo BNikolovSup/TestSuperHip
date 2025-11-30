@@ -1,5 +1,5 @@
 unit ProfForm;
-//answerval
+// SetDiagColl
 
 interface
 uses
@@ -950,19 +950,13 @@ type
     FOnAddNewImun: TActionEventImunInPregled;
     FOnDeleteNewImun: TActionEventImunInPregled;
     FOnReShowProfForm: TReShowPregledFMX;
-    FCL006Coll: TRealCL006Coll;
-    FDoctorColl: TRealDoctorColl;
     FOtherPregleds: TList<PVirtualNode>;
     FOnChoicerMkb: TNotifyEvent;
 
-    FDiagColl: TRealDiagnosisColl;
     FOnDeleteNewDiag: TActionEventDiagInPregled;
-    FMkbColl: TMkbColl;
     FOnSelectMkb: TNotifyEvent;
     FTmpVtr: Tobject;
     FNasMesto: TRealNasMestoAspects;
-    FIncNaprColl: TRealINC_NAPRColl;
-    FCollOtherDoctor: TRealOtherDoctorColl;
 
 
 
@@ -1071,14 +1065,7 @@ type
   property VtrPregLink: TVirtualStringTreeAspect read FVtrPregLink write FVtrPregLink;
   property Adb_dm: TADBDataModule read FAdb_dm write SetAdb_dm;
   property profGR: TProfGraph read FprofGR write FprofGR;
-  //property CL006Coll: TRealCL006Coll read FCL006Coll write FCL006Coll;
-//  property Cl132Coll: TCL132Coll read FCl132Coll write FCl132Coll;
-//  property Cl139Coll: TRealCL139Coll read FCl139Coll write FCl139Coll;
-//  property Cl134Coll: TCL134Coll read FCl134Coll write FCl134Coll;
-//  property Cl142Coll: TCL142Coll read FCl142Coll write FCl142Coll;
-//  property Cl144Coll: TCL144Coll read FCl144Coll write FCl144Coll;
-//  property Cl088Coll: TCL088Coll read FCl088Coll write FCl088Coll;
-//  property Pr001Coll: TPR001Coll read FPr001Coll write FPr001Coll;
+
 
   property NasMesto: TRealNasMestoAspects read FNasMesto write FNasMesto;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;

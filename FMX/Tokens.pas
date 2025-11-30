@@ -8,7 +8,7 @@ uses
   FMX.Ani, FMX.Layouts, FMX.StdCtrls, FMX.Controls.Presentation, FMX.Edit, System.Math,
   Options, CertThread, System.Generics.Collections, WalkFunctions, RealObj.RealHipp,
   Table.Doctor, FMX.ScrollBox, FMX.Memo, sbxcertificatestorage, sbxtypes, CertHelper,
-  SBX509, SBxMessageEncryptor, sbxmessagedecryptor;
+  SBX509, SBxMessageEncryptor, sbxmessagedecryptor, ADB_DataUnit;
 
 type
   TTokensLabel = class
@@ -87,7 +87,8 @@ type
   public
     Option: TOptions;
     thrCert: TCertThread;
-    collDoctor: TRealDoctorColl;
+    Adb_dm: TADBDataModule;
+    //collDoctor: TRealDoctorColl;
     procedure FillTokens;
     procedure ClearBlanka;
     property scaleDyn: Single read FScaleDyn write SetScaleDyn;
@@ -144,14 +145,14 @@ begin
   TempTokenRect.Parent := lytToken;
 
   TempTokenRect.Visible := True;
-  for i := 0 to collDoctor.Count - 1 do
+  for i := 0 to Adb_dm.collDoctor.Count - 1 do
   begin
-    doctor := collDoctor.Items[i];
+    doctor := Adb_dm.collDoctor.Items[i];
     if doctor.DataPos = docDataPos then
     begin
-      TempTokenLabel.txtCapt.Text := collDoctor.getAnsiStringMap(docDataPos, word(Doctor_FNAME)) + ' ' +
-                                     collDoctor.getAnsiStringMap(docDataPos, word(Doctor_SNAME)) + ' ' +
-                                     collDoctor.getAnsiStringMap(docDataPos, word(Doctor_LNAME));
+      TempTokenLabel.txtCapt.Text := Adb_dm.collDoctor.getAnsiStringMap(docDataPos, word(Doctor_FNAME)) + ' ' +
+                                     Adb_dm.collDoctor.getAnsiStringMap(docDataPos, word(Doctor_SNAME)) + ' ' +
+                                     Adb_dm.collDoctor.getAnsiStringMap(docDataPos, word(Doctor_LNAME));
 
       startDate := DateToStr(doctor.Cert.ValidFrom);
       endDate := DateToStr(doctor.Cert.ValidTo);

@@ -1,11 +1,11 @@
 unit FinderFormFMX;
-          //logicallabel   cot
+          //private   cot
 interface
 
 uses
    Aspects.Types, Aspects.Collections, Table.PregledNew, Table.PatientNew, VirtualTrees,
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  System.Generics.Collections, SearchThread, FmxControls,
+  System.Generics.Collections, SearchThread, FmxControls, ADB_DataUnit,
 
   RealObj.RealHipp, system.Rtti,
 
@@ -205,8 +205,9 @@ type
     expanderPatLyt: TLayout;
     expanderPregLyt: TLayout;
     ArrCondition: TArray<TConditionSet>;
-    CollPatient: TRealPatientNewColl;
-    CollPregled: TRealPregledNewColl;
+    Adb_dm: TADBDataModule;
+    //CollPatient: TRealPatientNewColl;
+    //CollPregled: TRealPregledNewColl;
     lstExpanedrTable: TList<TExpanerTableLabel>;
     lstEditCot: TList<TEditCotLabel>;
     lstCheckLog: TList<TCheckLabel>;
@@ -321,12 +322,12 @@ begin
   case VtrVid of
     vvPatient:
     begin
-      TempDateLabel.captTxt.Text := CollPatient.DisplayName(field);
+      TempDateLabel.captTxt.Text := Adb_dm.CollPatient.DisplayName(field);
       //TempDateCot.TextPrompt := CollPatient.DisplayName(field);
     end;
     vvPregled:
     begin
-      TempDateLabel.captTxt.Text := CollPregled.DisplayName(field);
+      TempDateLabel.captTxt.Text := Adb_dm.CollPregled.DisplayName(field);
       //TempDateCot.TextPrompt := CollPregled.DisplayName(field);
     end;
   end;
@@ -375,13 +376,13 @@ begin
   case VtrVid of
     vvPatient:
     begin
-      TempEditLabel.captTxt.Text := CollPatient.DisplayName(field);
-      TempEditCot.TextPrompt := CollPatient.DisplayName(field);
+      TempEditLabel.captTxt.Text := Adb_dm.CollPatient.DisplayName(field);
+      TempEditCot.TextPrompt := Adb_dm.CollPatient.DisplayName(field);
     end;
     vvPregled:
     begin
-      TempEditLabel.captTxt.Text := CollPregled.DisplayName(field);
-      TempEditCot.TextPrompt := CollPregled.DisplayName(field);
+      TempEditLabel.captTxt.Text := Adb_dm.CollPregled.DisplayName(field);
+      TempEditCot.TextPrompt := Adb_dm.CollPregled.DisplayName(field);
     end;
   end;
 
@@ -436,9 +437,9 @@ begin
 
   end;
 
-  for i := 0 to CollPatient.FieldCount - 1 do
+  for i := 0 to Adb_dm.CollPatient.FieldCount - 1 do
   begin
-    act := CollPatient.PropType(i);
+    act := Adb_dm.CollPatient.PropType(i);
     case act of
       actAnsiString:
       begin
@@ -509,9 +510,9 @@ begin
 //
   end;
 
-  for i := 0 to CollPregled.FieldCount - 1 do
+  for i := 0 to Adb_dm.CollPregled.FieldCount - 1 do
   begin
-    act := CollPregled.PropType(i);
+    act := Adb_dm.CollPregled.PropType(i);
     case act of
       actAnsiString:
       begin
@@ -522,7 +523,7 @@ begin
         edt.Align  := TAlignLayout.Top;
         edt.Parent := TempExpIn;
         edt.Visible := True;
-        edt.TextPrompt := CollPregled.DisplayName(i);
+        edt.TextPrompt := Adb_dm.CollPregled.DisplayName(i);
         edt.OnValidating := edtForCloningValidating;
         //edt.Field := i;// филд от пациент
 //          edt.VidTable := vvPatient; // пациент
@@ -601,9 +602,9 @@ begin
 
   end;
 
-  for i := 0 to CollPregled.FieldCount - 1 do
+  for i := 0 to Adb_dm.CollPregled.FieldCount - 1 do
   begin
-    act := CollPregled.PropType(i);
+    act := Adb_dm.CollPregled.PropType(i);
     case act of
       actAnsiString:
       begin
@@ -870,14 +871,14 @@ begin
   case Vid of
     vvPatient:
     begin
-      CollPatient.OnSetDateSearchEDT(dat, field, Condition);
-      CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
+      Adb_dm.CollPatient.OnSetDateSearchEDT(dat, field, Condition);
+      Adb_dm.CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
     vvPregled:
     begin
-      CollPregled.OnSetDateSearchEDT(dat, field, Condition);
-      CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
+      Adb_dm.CollPregled.OnSetDateSearchEDT(dat, field, Condition);
+      Adb_dm.CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
   end;
@@ -889,14 +890,14 @@ begin
   case Vid of
     vvPatient:
     begin
-      CollPatient.OnSetTextSearchEDT(Text, field, Condition);
-      CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
+      Adb_dm.CollPatient.OnSetTextSearchEDT(Text, field, Condition);
+      Adb_dm.CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
     vvPregled:
     begin
-      CollPregled.OnSetTextSearchEDT(Text, field, Condition);
-      CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
+      Adb_dm.CollPregled.OnSetTextSearchEDT(Text, field, Condition);
+      Adb_dm.CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
   end;

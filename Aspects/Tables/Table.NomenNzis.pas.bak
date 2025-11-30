@@ -22,12 +22,7 @@ end;
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
 TLogicalNomenNzis = (
-    IsXML,
-    IsExcel,
-    StatusImport_none,
-    StatusImport_xml,
-    StatusImport_adb,
-    StatusImport_save );
+    Is_);
 TlogicalNomenNzisSet = set of TLogicalNomenNzis;
 
 
@@ -37,6 +32,9 @@ TNomenNzisItem = class(TBaseItem)
       TPropertyIndex = (
        NomenNzis_NomenID
        , NomenNzis_NomenName
+       , NomenNzis_IsXML
+       , NomenNzis_IsExcel
+       , NomenNzis_StatusImport
        , NomenNzis_Logical
        );
 	  
@@ -46,6 +44,9 @@ TNomenNzisItem = class(TBaseItem)
       TRecNomenNzis = record
         NomenID: AnsiString;
         NomenName: AnsiString;
+        IsXML: boolean;
+        IsExcel: boolean;
+        StatusImport: word;
         Logical: TlogicalNomenNzisSet;
         setProp: TSetProp;
       end;
@@ -230,6 +231,9 @@ begin
           case propIndx of
             NomenNzis_NomenID: SaveData(PRecord.NomenID, PropPosition, metaPosition, dataPosition);
             NomenNzis_NomenName: SaveData(PRecord.NomenName, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsXML: SaveData(PRecord.IsXML, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsExcel: SaveData(PRecord.IsExcel, PropPosition, metaPosition, dataPosition);
+            NomenNzis_StatusImport: SaveData(PRecord.StatusImport, PropPosition, metaPosition, dataPosition);
             NomenNzis_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -265,6 +269,9 @@ begin
       case pidx of
         NomenNzis_NomenID: Result := IsFinded(ATempItem.PRecord.NomenID, buf, FPosDataADB, word(NomenNzis_NomenID), cot);
             NomenNzis_NomenName: Result := IsFinded(ATempItem.PRecord.NomenName, buf, FPosDataADB, word(NomenNzis_NomenName), cot);
+            NomenNzis_IsXML: Result := IsFinded(ATempItem.PRecord.IsXML, buf, FPosDataADB, word(NomenNzis_IsXML), cot);
+            NomenNzis_IsExcel: Result := IsFinded(ATempItem.PRecord.IsExcel, buf, FPosDataADB, word(NomenNzis_IsExcel), cot);
+            NomenNzis_StatusImport: Result := IsFinded(ATempItem.PRecord.StatusImport, buf, FPosDataADB, word(NomenNzis_StatusImport), cot);
             NomenNzis_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(NomenNzis_Logical), cot);
       end;
     end;
@@ -323,6 +330,9 @@ begin
               SetLength(Self.PRecord.NomenName, lenStr);
               stream.Read(Self.PRecord.NomenName[1], lenStr);
             end;
+            NomenNzis_IsXML: stream.Read(Self.PRecord.IsXML, SizeOf(Boolean));
+            NomenNzis_IsExcel: stream.Read(Self.PRecord.IsExcel, SizeOf(Boolean));
+            NomenNzis_StatusImport: stream.Read(Self.PRecord.StatusImport, SizeOf(Word));
             NomenNzis_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
   end;
 end;
@@ -360,6 +370,9 @@ begin
           case propIndx of
             NomenNzis_NomenID: SaveData(PRecord.NomenID, PropPosition, metaPosition, dataPosition);
             NomenNzis_NomenName: SaveData(PRecord.NomenName, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsXML: SaveData(PRecord.IsXML, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsExcel: SaveData(PRecord.IsExcel, PropPosition, metaPosition, dataPosition);
+            NomenNzis_StatusImport: SaveData(PRecord.StatusImport, PropPosition, metaPosition, dataPosition);
             NomenNzis_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -393,6 +406,9 @@ begin
           case propIndx of
             NomenNzis_NomenID: UpdateData(PRecord.NomenID, PropPosition, metaPosition, dataPosition);
             NomenNzis_NomenName: UpdateData(PRecord.NomenName, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsXML: UpdateData(PRecord.IsXML, PropPosition, metaPosition, dataPosition);
+            NomenNzis_IsExcel: UpdateData(PRecord.IsExcel, PropPosition, metaPosition, dataPosition);
+            NomenNzis_StatusImport: UpdateData(PRecord.StatusImport, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -506,6 +522,24 @@ begin
     exit;
   end;
 
+  if (NomenNzis_IsXML in tempItem.PRecord.setProp) and (tempItem.PRecord.IsXML <> Self.getCardinalMap(tempItem.DataPos, word(NomenNzis_IsXML))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NomenNzis_IsExcel in tempItem.PRecord.setProp) and (tempItem.PRecord.IsExcel <> Self.getCardinalMap(tempItem.DataPos, word(NomenNzis_IsExcel))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
+  if (NomenNzis_StatusImport in tempItem.PRecord.setProp) and (tempItem.PRecord.StatusImport <> Self.getIntMap(tempItem.DataPos, word(NomenNzis_StatusImport))) then
+  begin
+    inc(cnt);
+    exit;
+  end;
+
   if (NomenNzis_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(NomenNzis_Logical))) then
   begin
     inc(cnt);
@@ -551,6 +585,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(propIndex) of
     NomenNzis_NomenID: Result := 'NomenID';
     NomenNzis_NomenName: Result := 'NomenName';
+    NomenNzis_IsXML: Result := 'IsXML';
+    NomenNzis_IsExcel: Result := 'IsExcel';
+    NomenNzis_StatusImport: Result := 'StatusImport';
     NomenNzis_Logical: Result := 'Logical';
   end;
 end;
@@ -558,12 +595,7 @@ end;
 function TNomenNzisColl.DisplayLogicalName(flagIndex: Integer): string;
 begin
   case flagIndex of
-0: Result := 'IsXML';
-    1: Result := 'IsExcel';
-    2: Result := 'StatusImport_none';
-    3: Result := 'StatusImport_xml';
-    4: Result := 'StatusImport_adb';
-    5: Result := 'StatusImport_save';
+0: Result := 'Is_';
   else
     Result := '???';
   end;
@@ -618,7 +650,7 @@ end;
 function TNomenNzisColl.FieldCount: Integer; 
 begin
   inherited;
-  Result := 3;
+  Result := 6;
 end;
 
 function TNomenNzisColl.FindRootCollOptionNode(): PVirtualNode;
@@ -795,6 +827,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(propIndex) of
     NomenNzis_NomenID: str := (NomenNzis.PRecord.NomenID);
     NomenNzis_NomenName: str := (NomenNzis.PRecord.NomenName);
+    NomenNzis_IsXML: str := BoolToStr(NomenNzis.PRecord.IsXML, True);
+    NomenNzis_IsExcel: str := BoolToStr(NomenNzis.PRecord.IsExcel, True);
+    NomenNzis_StatusImport: str := inttostr(NomenNzis.PRecord.StatusImport);
     NomenNzis_Logical: str := NomenNzis.Logical08ToStr(TLogicalData08(NomenNzis.PRecord.Logical));
   else
     begin
@@ -903,6 +938,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(propIndex) of
     NomenNzis_NomenID: str :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     NomenNzis_NomenName: str :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    NomenNzis_IsXML: str :=  BoolToStr(NomenNzis.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    NomenNzis_IsExcel: str :=  BoolToStr(NomenNzis.getBooleanMap(Self.Buf, Self.posData, propIndex), true);
+    NomenNzis_StatusImport: str :=  inttostr(NomenNzis.getWordMap(Self.Buf, Self.posData, propIndex));
     NomenNzis_Logical: str :=  NomenNzis.Logical08ToStr(NomenNzis.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
@@ -948,6 +986,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
+      NomenNzis_StatusImport: TempItem.IndexWord :=  TempItem.getPWordMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -1022,9 +1061,9 @@ begin
   Include(ListForFinder[0].PRecord.setProp, TNomenNzisItem.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  //case TNomenNzisItem.TPropertyIndex(Field) of
-//
-//  end;
+  case TNomenNzisItem.TPropertyIndex(Field) of
+
+  end;
 end;
 
 
@@ -1034,9 +1073,9 @@ begin
   Include(ListForFinder[0].PRecord.setProp, TNomenNzisItem.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  //case TNomenNzisItem.TPropertyIndex(Field) of
-//
-//  end;
+  case TNomenNzisItem.TPropertyIndex(Field) of
+NomenNzis_StatusImport: ListForFinder[0].PRecord.StatusImport := Value;
+  end;
 end;
 
 
@@ -1089,6 +1128,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(propIndex) of
     NomenNzis_NomenID: Result := actAnsiString;
     NomenNzis_NomenName: Result := actAnsiString;
+    NomenNzis_IsXML: Result := actboolean;
+    NomenNzis_IsExcel: Result := actboolean;
+    NomenNzis_StatusImport: Result := actword;
     NomenNzis_Logical: Result := actLogical;
   else
     Result := actNone;
@@ -1121,6 +1163,9 @@ begin
     case TNomenNzisItem.TPropertyIndex(ACol) of
       NomenNzis_NomenID: isOld :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     NomenNzis_NomenName: isOld :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    NomenNzis_IsXML: isOld :=  NomenNzis.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    NomenNzis_IsExcel: isOld :=  NomenNzis.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AValue);
+    NomenNzis_StatusImport: isOld :=  NomenNzis.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -1138,6 +1183,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(ACol) of
     NomenNzis_NomenID: NomenNzis.PRecord.NomenID := AValue;
     NomenNzis_NomenName: NomenNzis.PRecord.NomenName := AValue;
+    NomenNzis_IsXML: NomenNzis.PRecord.IsXML := StrToBool(AValue);
+    NomenNzis_IsExcel: NomenNzis.PRecord.IsExcel := StrToBool(AValue);
+    NomenNzis_StatusImport: NomenNzis.PRecord.StatusImport := StrToInt(AValue);
     NomenNzis_Logical: NomenNzis.PRecord.Logical := tlogicalNomenNzisSet(NomenNzis.StrToLogical08(AValue));
   end;
 end;
@@ -1161,6 +1209,9 @@ begin
     case TNomenNzisItem.TPropertyIndex(ACol) of
       NomenNzis_NomenID: isOld :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     NomenNzis_NomenName: isOld :=  NomenNzis.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    NomenNzis_IsXML: isOld :=  NomenNzis.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    NomenNzis_IsExcel: isOld :=  NomenNzis.getBooleanMap(Self.Buf, Self.posData, ACol) = StrToBool(AFieldText);
+    NomenNzis_StatusImport: isOld :=  NomenNzis.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -1178,6 +1229,9 @@ begin
   case TNomenNzisItem.TPropertyIndex(ACol) of
     NomenNzis_NomenID: NomenNzis.PRecord.NomenID := AFieldText;
     NomenNzis_NomenName: NomenNzis.PRecord.NomenName := AFieldText;
+    NomenNzis_IsXML: NomenNzis.PRecord.IsXML := StrToBool(AFieldText);
+    NomenNzis_IsExcel: NomenNzis.PRecord.IsExcel := StrToBool(AFieldText);
+    NomenNzis_StatusImport: NomenNzis.PRecord.StatusImport := StrToInt(AFieldText);
     NomenNzis_Logical: NomenNzis.PRecord.Logical := tlogicalNomenNzisSet(NomenNzis.StrToLogical08(AFieldText));
   end;
 end;
@@ -1206,6 +1260,13 @@ end;
       NomenNzis_NomenName:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListNomenNzisSearch.Add(self.Items[i]);
+        end;
+      end;
+      NomenNzis_StatusImport: 
+      begin
+        if IntToStr(self.Items[i].IndexWord) = FSearchingValue then
         begin
           ListNomenNzisSearch.Add(self.Items[i]);
         end;
@@ -1421,6 +1482,7 @@ begin
   case propIndex of
     NomenNzis_NomenID: SortByIndexAnsiString;
       NomenNzis_NomenName: SortByIndexAnsiString;
+      NomenNzis_StatusImport: SortByIndexWord;
   end;
 end;
 

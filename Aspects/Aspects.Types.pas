@@ -57,7 +57,7 @@ type
                       ctBLANKA_MED_NAPR_3ADel, ctHOSPITALIZATIONDel, ctEXAM_LKKDel,
                       ctINC_MDNDel, ctINC_NAPRDel, ctNZIS_PLANNED_TYPEDel, ctNZIS_QUESTIONNAIRE_RESPONSEDel,
                       ctNZIS_QUESTIONNAIRE_ANSWERDel, ctNZIS_ANSWER_VALUEDel, ctMkbDel, ctOtherDoctorDel,
-                      ctCL142Del, ctPregledNewDel, ctCL006Del, ctCL022Del);
+                      ctCL142Del, ctPregledNewDel, ctCL006Del, ctCL022Del, ctCL024Del, ctNomenNzisDel);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -230,7 +230,9 @@ type
              vvMkbRoot,
              vvCL142Root,
              vvCL006Root,
-             vvCL022Root
+             vvCL022Root,
+             vvCL024Root,
+             vvNomenNzisRoot
              );
 
 

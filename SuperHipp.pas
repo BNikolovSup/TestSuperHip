@@ -917,11 +917,11 @@ type
           AData: Pointer; var Abort: Boolean);
 
    procedure HideTabs;
-   procedure initDB;
+   //procedure initDB;
    procedure InitHttpNzis;
    procedure LoadADB;
    procedure OpenDB(index: Integer);
-   procedure OpenADB(ADB: TMappedFile);
+   //procedure OpenADB(ADB: TMappedFile);
    procedure OpenCmd(ADB: TMappedFile);
    procedure OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
    procedure OpenLinkPatPreg(LNK: TMappedFile);
@@ -933,7 +933,6 @@ type
    //procedure FreeColl;
    procedure FreeFMXDin;
    //procedure ClearColl;
-   procedure InitAdb;
    procedure InitExpression;
    procedure InitFMXDyn;
    procedure InitGlobalValues;
@@ -1157,6 +1156,8 @@ type
     CanSelectNodeFromSearchGrid: Boolean;
     vtrTempTopNode: PVirtualNode;
 
+    procedure InitAdbDM;
+
     procedure LoadThreadDB(dbName: string);
     procedure StartHistoryThread(dbName: string);
     procedure StartCertThread();
@@ -1194,7 +1195,7 @@ type
     procedure NzisOnSended(Sender: TObject);
     procedure OpenExcels;
     procedure OpenBufNomenNzis(FileName: string);
-    procedure OpenBufNomenHip(FileName: string);
+    //procedure OpenBufNomenHip(FileName: string);
     procedure ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode );
     procedure ShowTokensFMX();
     procedure ShowOptionsFMX();
@@ -8624,294 +8625,294 @@ begin
   SendMessage(Self.Handle, WM_SHOW_GRID, 0, 0);
 end;
 
-procedure TfrmSuperHip.OpenADB(ADB: TMappedFile);
-var
-  collType: TCollectionsType;
-  aspVersion: Word;
-  pCardinalData: ^Cardinal;
-  aspPos: Cardinal;
-  p: Pointer;
-  pg: PGUID;
-  mkb: TMkbItem;
-begin
-  mmoTest.Lines.BeginUpdate;
-  Stopwatch := TStopwatch.StartNew;
-  if ADB.Buf <> nil then
-  begin
-    pCardinalData := pointer(PByte(ADB.Buf));
-    ADB.FPosMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(ADB.Buf) + 4);
-    ADB.FLenMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(ADB.Buf) + 8);
-    ADB.FPosData := pCardinalData^;
-    pCardinalData := pointer(PByte(ADB.Buf) + 12);
-    ADB.FLenData := pCardinalData^;
-    Pg := pointer(PByte(ADB.Buf) + 16 );
-    ADB.GUID := pg^;
-    mmoTest.Lines.Add(pg^.ToString);
-    mmoTest.Lines.Add(inttostr(SizeOf(tguid)));
+//procedure TfrmSuperHip.OpenADB(ADB: TMappedFile);
+//var
+//  collType: TCollectionsType;
+//  aspVersion: Word;
+//  pCardinalData: ^Cardinal;
+//  aspPos: Cardinal;
+//  p: Pointer;
+//  pg: PGUID;
+//  mkb: TMkbItem;
+//begin
+//  mmoTest.Lines.BeginUpdate;
+//  Stopwatch := TStopwatch.StartNew;
+//  if ADB.Buf <> nil then
+//  begin
+//    pCardinalData := pointer(PByte(ADB.Buf));
+//    ADB.FPosMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(ADB.Buf) + 4);
+//    ADB.FLenMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(ADB.Buf) + 8);
+//    ADB.FPosData := pCardinalData^;
+//    pCardinalData := pointer(PByte(ADB.Buf) + 12);
+//    ADB.FLenData := pCardinalData^;
+//    Pg := pointer(PByte(ADB.Buf) + 16 );
+//    ADB.GUID := pg^;
+//    mmoTest.Lines.Add(pg^.ToString);
+//    mmoTest.Lines.Add(inttostr(SizeOf(tguid)));
+//
+//    aspPos := ADB.FPosMetaData;
+//    while aspPos < (ADB.FPosMetaData + ADB.FLenMetaData) do
+//    begin
+//      p := Pointer(pbyte(ADB.Buf) + aspPos);
+//      collType := TCollectionsType(p^);
+//      inc(aspPos, 2);
+//
+//      p := Pointer(pbyte(ADB.Buf) + aspPos);
+//      aspVersion := word(p^);
+//      inc(aspPos, 2);
+//
+//      case collType of // в зависимост от това какъв е типа на колекцията.
+//        ctPractica:
+//        begin
+//          Adb_DM.CollPractica.OpenAdbFull(aspPos);
+//        end;
+//        ctPregledNew:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollPregled.FieldCount) * 4);
+//          Adb_DM.CollPregled.IncCntInADB;
+//        end;
+//        ctPatientNew:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollPatient.FieldCount) * 4);
+//          Adb_DM.CollPatient.IncCntInADB;
+//        end;
+//        ctPatientNZOK:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollPatPis.FieldCount) * 4);
+//          Adb_DM.CollPatPis.IncCntInADB;
+//        end;
+//        ctDiagnosis:
+//        begin
+//          //CollDiag.OpenAdbFull(aspPos);
+//          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
+//          Adb_DM.CollDiag.IncCntInADB;
+//        end;
+//        ctDiagnosisDel:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
+//        end;
+//        ctMDN:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollMDN.FieldCount) * 4);
+//          Adb_DM.CollMDN.IncCntInADB;
+//        end;
+//        ctDoctor:
+//        begin
+//          Adb_DM.CollDoctor.OpenAdbFull(aspPos);
+//        end;
+//        ctOtherDoctor:
+//        begin
+//          Adb_DM.CollOtherDoctor.OpenAdbFull(aspPos);
+//        end;
+//        ctUnfav:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
+//          Adb_DM.CollUnfav.IncCntInADB;
+//        end;
+//        ctUnfavDel:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
+//        end;
+//        ctMkb:
+//        begin
+//          Adb_DM.CollMkb.OpenAdbFull(aspPos);
+//        end;
+//        ctEventsManyTimes:
+//        begin
+//          //Inc(aspPos, (CollEventsManyTimes.FieldCount) * 4);
+////          CollEventsManyTimes.IncCntInADB;
+//        end;
+//        ctExam_boln_list:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollEbl.FieldCount) * 4);
+//          Adb_DM.CollEbl.IncCntInADB;
+//        end;
+//        ctExamAnalysis:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollExamAnal.FieldCount) * 4);
+//          Adb_DM.CollExamAnal.IncCntInADB;
+//        end;
+//        ctExamImmunization:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollExamImun.FieldCount) * 4);
+//          Adb_DM.CollExamImun.IncCntInADB;
+//        end;
+//        ctProcedures:
+//        begin
+//          Inc(aspPos, (Adb_DM.ProceduresNomenColl.FieldCount) * 4);
+//          Adb_DM.ProceduresNomenColl.IncCntInADB;
+//        end;
+//        ctKARTA_PROFILAKTIKA2017:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollCardProf.FieldCount) * 4);
+//          Adb_DM.CollCardProf.IncCntInADB;
+//        end;
+//        ctBLANKA_MED_NAPR:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollMedNapr.FieldCount) * 4);
+//          Adb_DM.CollMedNapr.IncCntInADB;
+//        end;
+//        ctBLANKA_MED_NAPR_3A:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollMedNapr3A.FieldCount) * 4);
+//          Adb_DM.CollMedNapr3A.IncCntInADB;
+//        end;
+//        ctHOSPITALIZATION:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollMedNaprHosp.FieldCount) * 4);
+//          Adb_DM.CollMedNaprHosp.IncCntInADB;
+//        end;
+//        ctEXAM_LKK:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollMedNaprLkk.FieldCount) * 4);
+//          Adb_DM.CollMedNaprLkk.IncCntInADB;
+//        end;
+//        ctINC_MDN:
+//        begin
+//          //CollIncMdn.OpenAdbFull(aspPos);
+//          Inc(aspPos, (Adb_DM.CollIncMdn.FieldCount) * 4);
+//          Adb_DM.CollIncMdn.IncCntInADB;
+//        end;
+//        ctINC_NAPR:
+//        begin
+//          //CollIncMdn.OpenAdbFull(aspPos);
+//          Inc(aspPos, (Adb_DM.CollIncMN.FieldCount) * 4);
+//          Adb_DM.CollIncMN.IncCntInADB;
+//        end;
+//        ctNZIS_PLANNED_TYPE:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_PLANNED_TYPE.FieldCount) * 4);
+//          Adb_DM.CollNZIS_PLANNED_TYPE.IncCntInADB;
+//        end;
+//        ctNZIS_QUESTIONNAIRE_RESPONSE:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FieldCount) * 4);
+//          Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
+//        end;
+//        ctNZIS_QUESTIONNAIRE_ANSWER:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FieldCount) * 4);
+//          Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
+//        end;
+//        ctNZIS_DIAGNOSTIC_REPORT:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.FieldCount) * 4);
+//          Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
+//        end;
+//        ctNZIS_RESULT_DIAGNOSTIC_REPORT:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.FieldCount) * 4);
+//          Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
+//        end;
+//        ctNZIS_ANSWER_VALUE:
+//        begin
+//          Inc(aspPos, (Adb_DM.CollNZIS_ANSWER_VALUE.FieldCount) * 4);
+//          Adb_DM.CollNZIS_ANSWER_VALUE.IncCntInADB;
+//        end;
+//        ctNzisToken:
+//        begin
+//          Adb_DM.CollNzisToken.OpenAdbFull(aspPos);
+//        end;
+//        ctCertificates:
+//        begin
+//          Adb_DM.CollCertificates.OpenAdbFull(aspPos);
+//        end;
+//        ctAddres:
+//        begin
+//          Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
+//          FNasMesto.addresColl.IncCntInADB;
+//        end;
+//      else
+//        //raise Exception.Create('Непознат : collType' + TRttiEnumerationType.GetName(collType));
+//      end;
+//    end;
+//  end;
+//
+//
+//  FNasMesto.addresColl.Buf := ADB.Buf;
+//  FNasMesto.addresColl.posData := ADB.FPosData;
+//
+//
+//  Elapsed := Stopwatch.Elapsed;
+//  mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
+//  mmoTest.Lines.endUpdate;
+//
+//  CalcStatusDB;
+//  FDBHelper.AdbHip := ADB;
+//  FDBHelper.Fdm := Fdm;
+//  FDBHelper.NasMesto := FNasMesto;
+//  FDBHelper.Adb_DM := Adb_DM;
+//
+//
+//  FDBHelper.AdbLink := AspectsLinkPatPregFile;
+//  Adb_DM.AdbMain := ADB;
+//  Adb_DM.AdbLink := AspectsLinkPatPregFile;
+//  Adb_DM.NasMesto := FNasMesto;
+//
+//end;
 
-    aspPos := ADB.FPosMetaData;
-    while aspPos < (ADB.FPosMetaData + ADB.FLenMetaData) do
-    begin
-      p := Pointer(pbyte(ADB.Buf) + aspPos);
-      collType := TCollectionsType(p^);
-      inc(aspPos, 2);
-
-      p := Pointer(pbyte(ADB.Buf) + aspPos);
-      aspVersion := word(p^);
-      inc(aspPos, 2);
-
-      case collType of // в зависимост от това какъв е типа на колекцията.
-        ctPractica:
-        begin
-          Adb_DM.CollPractica.OpenAdbFull(aspPos);
-        end;
-        ctPregledNew:
-        begin
-          Inc(aspPos, (Adb_DM.CollPregled.FieldCount) * 4);
-          Adb_DM.CollPregled.IncCntInADB;
-        end;
-        ctPatientNew:
-        begin
-          Inc(aspPos, (Adb_DM.CollPatient.FieldCount) * 4);
-          Adb_DM.CollPatient.IncCntInADB;
-        end;
-        ctPatientNZOK:
-        begin
-          Inc(aspPos, (Adb_DM.CollPatPis.FieldCount) * 4);
-          Adb_DM.CollPatPis.IncCntInADB;
-        end;
-        ctDiagnosis:
-        begin
-          //CollDiag.OpenAdbFull(aspPos);
-          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
-          Adb_DM.CollDiag.IncCntInADB;
-        end;
-        ctDiagnosisDel:
-        begin
-          Inc(aspPos, (Adb_DM.CollDiag.FieldCount) * 4);
-        end;
-        ctMDN:
-        begin
-          Inc(aspPos, (Adb_DM.CollMDN.FieldCount) * 4);
-          Adb_DM.CollMDN.IncCntInADB;
-        end;
-        ctDoctor:
-        begin
-          Adb_DM.CollDoctor.OpenAdbFull(aspPos);
-        end;
-        ctOtherDoctor:
-        begin
-          Adb_DM.CollOtherDoctor.OpenAdbFull(aspPos);
-        end;
-        ctUnfav:
-        begin
-          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
-          Adb_DM.CollUnfav.IncCntInADB;
-        end;
-        ctUnfavDel:
-        begin
-          Inc(aspPos, (Adb_DM.CollUnfav.FieldCount) * 4);
-        end;
-        ctMkb:
-        begin
-          Adb_DM.CollMkb.OpenAdbFull(aspPos);
-        end;
-        ctEventsManyTimes:
-        begin
-          //Inc(aspPos, (CollEventsManyTimes.FieldCount) * 4);
-//          CollEventsManyTimes.IncCntInADB;
-        end;
-        ctExam_boln_list:
-        begin
-          Inc(aspPos, (Adb_DM.CollEbl.FieldCount) * 4);
-          Adb_DM.CollEbl.IncCntInADB;
-        end;
-        ctExamAnalysis:
-        begin
-          Inc(aspPos, (Adb_DM.CollExamAnal.FieldCount) * 4);
-          Adb_DM.CollExamAnal.IncCntInADB;
-        end;
-        ctExamImmunization:
-        begin
-          Inc(aspPos, (Adb_DM.CollExamImun.FieldCount) * 4);
-          Adb_DM.CollExamImun.IncCntInADB;
-        end;
-        ctProcedures:
-        begin
-          Inc(aspPos, (Adb_DM.ProceduresNomenColl.FieldCount) * 4);
-          Adb_DM.ProceduresNomenColl.IncCntInADB;
-        end;
-        ctKARTA_PROFILAKTIKA2017:
-        begin
-          Inc(aspPos, (Adb_DM.CollCardProf.FieldCount) * 4);
-          Adb_DM.CollCardProf.IncCntInADB;
-        end;
-        ctBLANKA_MED_NAPR:
-        begin
-          Inc(aspPos, (Adb_DM.CollMedNapr.FieldCount) * 4);
-          Adb_DM.CollMedNapr.IncCntInADB;
-        end;
-        ctBLANKA_MED_NAPR_3A:
-        begin
-          Inc(aspPos, (Adb_DM.CollMedNapr3A.FieldCount) * 4);
-          Adb_DM.CollMedNapr3A.IncCntInADB;
-        end;
-        ctHOSPITALIZATION:
-        begin
-          Inc(aspPos, (Adb_DM.CollMedNaprHosp.FieldCount) * 4);
-          Adb_DM.CollMedNaprHosp.IncCntInADB;
-        end;
-        ctEXAM_LKK:
-        begin
-          Inc(aspPos, (Adb_DM.CollMedNaprLkk.FieldCount) * 4);
-          Adb_DM.CollMedNaprLkk.IncCntInADB;
-        end;
-        ctINC_MDN:
-        begin
-          //CollIncMdn.OpenAdbFull(aspPos);
-          Inc(aspPos, (Adb_DM.CollIncMdn.FieldCount) * 4);
-          Adb_DM.CollIncMdn.IncCntInADB;
-        end;
-        ctINC_NAPR:
-        begin
-          //CollIncMdn.OpenAdbFull(aspPos);
-          Inc(aspPos, (Adb_DM.CollIncMN.FieldCount) * 4);
-          Adb_DM.CollIncMN.IncCntInADB;
-        end;
-        ctNZIS_PLANNED_TYPE:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_PLANNED_TYPE.FieldCount) * 4);
-          Adb_DM.CollNZIS_PLANNED_TYPE.IncCntInADB;
-        end;
-        ctNZIS_QUESTIONNAIRE_RESPONSE:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FieldCount) * 4);
-          Adb_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
-        end;
-        ctNZIS_QUESTIONNAIRE_ANSWER:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FieldCount) * 4);
-          Adb_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
-        end;
-        ctNZIS_DIAGNOSTIC_REPORT:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.FieldCount) * 4);
-          Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
-        end;
-        ctNZIS_RESULT_DIAGNOSTIC_REPORT:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.FieldCount) * 4);
-          Adb_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
-        end;
-        ctNZIS_ANSWER_VALUE:
-        begin
-          Inc(aspPos, (Adb_DM.CollNZIS_ANSWER_VALUE.FieldCount) * 4);
-          Adb_DM.CollNZIS_ANSWER_VALUE.IncCntInADB;
-        end;
-        ctNzisToken:
-        begin
-          Adb_DM.CollNzisToken.OpenAdbFull(aspPos);
-        end;
-        ctCertificates:
-        begin
-          Adb_DM.CollCertificates.OpenAdbFull(aspPos);
-        end;
-        ctAddres:
-        begin
-          Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
-          FNasMesto.addresColl.IncCntInADB;
-        end;
-      else
-        //raise Exception.Create('Непознат : collType' + TRttiEnumerationType.GetName(collType));
-      end;
-    end;
-  end;
-
-  
-  FNasMesto.addresColl.Buf := ADB.Buf;
-  FNasMesto.addresColl.posData := ADB.FPosData;
-
-
-  Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
-  mmoTest.Lines.endUpdate;
-
-  CalcStatusDB;
-  FDBHelper.AdbHip := ADB;
-  FDBHelper.Fdm := Fdm;
-  FDBHelper.NasMesto := FNasMesto;
-  FDBHelper.Adb_DM := Adb_DM;
-
-
-  FDBHelper.AdbLink := AspectsLinkPatPregFile;
-  Adb_DM.AdbMain := ADB;
-  Adb_DM.AdbLink := AspectsLinkPatPregFile;
-  Adb_DM.NasMesto := FNasMesto;
-
-end;
-
-procedure TfrmSuperHip.OpenBufNomenHip(FileName: string);
-var
-  i, j: Integer;
-  collType: TCollectionsType;
-  aspVersion: Word;
-  b: Byte;
-  pByteData: ^Byte;
-  pCardinalData: ^Cardinal;
-  aspPos: Cardinal;
-  p: Pointer;
-  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
-  anal: TAnalsNewItem;
-
-  AInt64: Int64;
-begin
-  if AspectsNomHipFile <> nil then
-    AspectsNomHipFile.Free;
-  AspectsNomHipFile := TMappedFile.Create(FileName, false, TGUID.Empty);
-  FPosData := AspectsNomHipFile.FPosData;
-
-
-  if AspectsNomHipFile.Buf <> nil then
-  begin
-    Adb_DM.CollAnalsNew.Buf := AspectsNomHipFile.Buf;
-    Adb_DM.CollAnalsNew.posData := AspectsNomHipFile.FPosData;
-
-
-    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf));
-    FPosMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 4);
-    FLenMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 8);
-    FPosData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 12);
-    FLenData := pCardinalData^;
-    aspPos := FPosMetaData;
-    begin
-      while aspPos < (FPosMetaData + FLenMetaData) do
-      begin
-        p := Pointer(pbyte(AspectsNomHipFile.Buf) + aspPos);
-        collType := TCollectionsType(p^);
-        inc(aspPos, 2);
-
-        p := Pointer(pbyte(AspectsNomHipFile.Buf) + aspPos);
-        aspVersion := word(p^);
-        inc(aspPos, 2);
-
-        case collType of
-          ctAnalsNew:
-          begin
-            anal := TAnalsNewItem(Adb_DM.CollAnalsNew.Add);
-            anal.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CollAnalsNew.FieldCount) * 4);
-          end;
-
-        end;
-      end;
-    end;
-  end;
-end;
+//procedure TfrmSuperHip.OpenBufNomenHip(FileName: string);
+//var
+//  i, j: Integer;
+//  collType: TCollectionsType;
+//  aspVersion: Word;
+//  b: Byte;
+//  pByteData: ^Byte;
+//  pCardinalData: ^Cardinal;
+//  aspPos: Cardinal;
+//  p: Pointer;
+//  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+//  anal: TAnalsNewItem;
+//
+//  AInt64: Int64;
+//begin
+//  if AspectsNomHipFile <> nil then
+//    AspectsNomHipFile.Free;
+//  AspectsNomHipFile := TMappedFile.Create(FileName, false, TGUID.Empty);
+//  FPosData := AspectsNomHipFile.FPosData;
+//
+//
+//  if AspectsNomHipFile.Buf <> nil then
+//  begin
+//    Adb_DM.CollAnalsNew.Buf := AspectsNomHipFile.Buf;
+//    Adb_DM.CollAnalsNew.posData := AspectsNomHipFile.FPosData;
+//
+//
+//    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf));
+//    FPosMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 4);
+//    FLenMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 8);
+//    FPosData := pCardinalData^;
+//    pCardinalData := pointer(PByte(AspectsNomHipFile.Buf) + 12);
+//    FLenData := pCardinalData^;
+//    aspPos := FPosMetaData;
+//    begin
+//      while aspPos < (FPosMetaData + FLenMetaData) do
+//      begin
+//        p := Pointer(pbyte(AspectsNomHipFile.Buf) + aspPos);
+//        collType := TCollectionsType(p^);
+//        inc(aspPos, 2);
+//
+//        p := Pointer(pbyte(AspectsNomHipFile.Buf) + aspPos);
+//        aspVersion := word(p^);
+//        inc(aspPos, 2);
+//
+//        case collType of
+//          ctAnalsNew:
+//          begin
+//            anal := TAnalsNewItem(Adb_DM.CollAnalsNew.Add);
+//            anal.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CollAnalsNew.FieldCount) * 4);
+//          end;
+//
+//        end;
+//      end;
+//    end;
+//  end;
+//end;
 
 procedure TfrmSuperHip.OpenBufNomenNzis(FileName: string);
 var
@@ -9764,7 +9765,7 @@ begin
 
   InitHttpNzis;
   //InitColl;
-  InitAdb;
+  InitAdbDM;
   InitVTRs;
 
   AZipHelpFile:=TZipFile.Create;
@@ -10120,7 +10121,7 @@ begin
   if profGR = nil then
   begin
 
-    OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
 
     profGR := TProfGraph.create;
@@ -10226,7 +10227,7 @@ begin
   if profGR = nil then
   begin
 
-    OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
 
     profGR := TProfGraph.create;
@@ -10976,10 +10977,13 @@ begin
   end;
 end;
 
-procedure TfrmSuperHip.InitAdb;
+
+procedure TfrmSuperHip.InitAdbDM;
 begin
   Adb_DM := TADBDataModule.Create;
   Adb_DM.FDM := Fdm;
+  Adb_DM.mmoTest := mmoTest;
+  Adb_DM.AdbMainFileName := '';
   Adb_DM.OnClearColl := Adb_DMOnClearColl;
 end;
 
@@ -11082,51 +11086,51 @@ end;
 //  //TFilterTreeLoader.LoadLinkFilters('LinkFilters.lnk', vtrSearch, AspectsFilterLinkFile);
 //end;
 
-procedure TfrmSuperHip.initDB;
-begin
-  Stopwatch := TStopwatch.StartNew;
-  mmoTest.Lines.BeginUpdate;
-  if Fdm = nil then
-  begin
-    Fdm := TDUNzis.Create(nil);
-  end;
-  mmoTest.Lines.Add('FDbName =' + FDbName);
-  if FDbName = '' then
-    exit;
-  Fdm.InitDb(FDbName);
-  if (Fdm.FGuidDB.Count > 0) then
-  begin
-    FindADB(Fdm.FGuidDB);
-  end;
-  Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
-  if Adb_DM.AdbMain = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
-  begin
-    mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
-    RolPnlDoktorOPL.Enabled := False;
-    RolPnlDoktorOPL.Repaint;
-  end
-  else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
-  begin
-    mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
-    if AspectsNomFile = nil then
-      OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
-    OpenADB(Adb_DM.AdbMain);
-    OpenCmd(Adb_DM.AdbMain);
-    FindLNK(Adb_DM.AdbMain.GUID);
-    if AspectsLinkPatPregFile <> nil then
-      OpenLinkPatPreg(AspectsLinkPatPregFile);
-     // AspectsLinkPatPregFile.OpenLinkFile;
-    StartHistoryThread(FDbName);
-    StartCertThread;
-    if chkAspectDistr.Checked then
-    begin
-      StartAspectPerformerThread;
-    end;
-
-  end;
-  mmoTest.Lines.EndUpdate;
-end;
+//procedure TfrmSuperHip.initDB;
+//begin
+//  Stopwatch := TStopwatch.StartNew;
+//  mmoTest.Lines.BeginUpdate;
+//  if Fdm = nil then
+//  begin
+//    Fdm := TDUNzis.Create(nil);
+//  end;
+//  mmoTest.Lines.Add('FDbName =' + FDbName);
+//  if FDbName = '' then
+//    exit;
+//  Fdm.InitDb(FDbName);
+//  if (Fdm.FGuidDB.Count > 0) then
+//  begin
+//    FindADB(Fdm.FGuidDB);
+//  end;
+//  Elapsed := Stopwatch.Elapsed;
+//  mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
+//  if Adb_DM.AdbMain = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
+//  begin
+//    mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
+//    RolPnlDoktorOPL.Enabled := False;
+//    RolPnlDoktorOPL.Repaint;
+//  end
+//  else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
+//  begin
+//    mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
+//    if AspectsNomFile = nil then
+//      OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
+//    OpenADB(Adb_DM.AdbMain);
+//    OpenCmd(Adb_DM.AdbMain);
+//    FindLNK(Adb_DM.AdbMain.GUID);
+//    if AspectsLinkPatPregFile <> nil then
+//      OpenLinkPatPreg(AspectsLinkPatPregFile);
+//     // AspectsLinkPatPregFile.OpenLinkFile;
+//    StartHistoryThread(FDbName);
+//    StartCertThread;
+//    if chkAspectDistr.Checked then
+//    begin
+//      StartAspectPerformerThread;
+//    end;
+//
+//  end;
+//  mmoTest.Lines.EndUpdate;
+//end;
 
 procedure TfrmSuperHip.InitExpression;
 begin
@@ -12597,86 +12601,11 @@ begin
   thrLoadDb := TLoadDBThread.Create(True, dbname);
   thrLoadDb.Buf := Adb_DM.AdbMain.Buf;
   thrLoadDb.FNasMesto := FNasMesto;
-  //CollDoctor.Buf := AspectsHipFile.Buf;
-//  CollDoctor.posData := AspectsHipFile.FPosData;
-//  CollOtherDoctor.Buf := AspectsHipFile.Buf;
-//  CollOtherDoctor.posData := AspectsHipFile.FPosData;
-//  CollMkb.Buf := AspectsHipFile.Buf;
-//  CollMkb.posData := AspectsHipFile.FPosData;
-//  CollPatient.Buf := AspectsHipFile.Buf;
-//  CollPatient.posData := AspectsHipFile.FPosData;
-//  CollMDN.Buf := AspectsHipFile.Buf;
-//  CollMDN.posData := AspectsHipFile.FPosData;
-//  CollPregled.Buf := AspectsHipFile.Buf;
-//  CollPregled.posData := AspectsHipFile.FPosData;
-//  CollDiag.Buf := AspectsHipFile.Buf;
-//  CollDiag.posData := AspectsHipFile.FPosData;
-//  CollDiag.cmdFile := streamCmdFile;
-//  CollPregled.FCollDiag := CollDiag;
-//  Collmdn.FCollDiag := CollDiag;
-//  CollUnfav.Buf := AspectsHipFile.Buf;
-//  CollUnfav.posData := AspectsHipFile.FPosData;
-//  CollPractica.Buf :=  AspectsHipFile.Buf;
-//  CollPractica.posData := AspectsHipFile.FPosData;
-//  CollEBL.Buf :=  AspectsHipFile.Buf;
-//  CollEBL.posData := AspectsHipFile.FPosData;
-//  CollExamAnal.Buf :=  AspectsHipFile.Buf;
-//  CollExamAnal.posData := AspectsHipFile.FPosData;
-//  CollExamImun.Buf :=  AspectsHipFile.Buf;
-//  CollExamImun.posData := AspectsHipFile.FPosData;
-//  CollProceduresNomen.Buf :=  AspectsHipFile.Buf;
-//  CollProceduresNomen.posData := AspectsHipFile.FPosData;
-//  CollCardProf.Buf :=  AspectsHipFile.Buf;
-//  CollCardProf.posData := AspectsHipFile.FPosData;
-//  CollMedNapr.Buf :=  AspectsHipFile.Buf;
-//  CollMedNapr.posData := AspectsHipFile.FPosData;
-//  CollMedNapr.FCollDiag := CollDiag;
-//  CollMedNapr3A.Buf :=  AspectsHipFile.Buf;
-//  CollMedNapr3A.posData := AspectsHipFile.FPosData;
-//  CollMedNapr3A.FCollDiag := CollDiag;
-//  CollMedNaprHosp.Buf :=  AspectsHipFile.Buf;
-//  CollMedNaprHosp.posData := AspectsHipFile.FPosData;
-//  CollMedNaprHosp.FCollDiag := CollDiag;
-//  CollMedNaprLkk.Buf :=  AspectsHipFile.Buf;
-//  CollMedNaprLkk.posData := AspectsHipFile.FPosData;
-//  CollMedNaprLkk.FCollDiag := CollDiag;
-//  CollIncMdn.Buf :=  AspectsHipFile.Buf;
-//  CollIncMdn.posData := AspectsHipFile.FPosData;
-//  CollIncMdn.FCollDiag := CollDiag;
-//  CollIncMN.Buf :=  AspectsHipFile.Buf;
-//  CollIncMN.posData := AspectsHipFile.FPosData;
-//  CollIncMN.FCollDiag := CollDiag;
-
   thrLoadDb.FDBHelper := FDBHelper;
 
 
-  //thrLoadDb.MKBColl := CollMkb;
-//  thrLoadDb.PatientColl := CollPatient;
-//  thrLoadDb.DoctorColl := CollDoctor;
-//  thrLoadDb.PregledNewColl := CollPregled;
-//  thrLoadDb.DiagColl := CollDiag;
-//  thrLoadDb.UnFavColl := CollUnfav;
-//  thrLoadDb.MDNColl := CollMDN;
-//  thrLoadDb.PracticaColl := CollPractica;
-//  thrLoadDb.EBLColl := CollEBL;
-//  thrLoadDb.ExamAnalColl := CollExamAnal;
-//  thrLoadDb.ExamImunColl := CollExamImun;
-//  thrLoadDb.ProcCollNomen := CollProceduresNomen;
-//  thrLoadDb.ProcCollPreg := CollProceduresPreg;
-//  thrLoadDb.AdbNomen := AspectsNomFile;
-//  thrLoadDb.Cl142Coll := CL142Coll;
-//  thrLoadDb.KARTA_PROFILAKTIKA2017Coll := CollCardProf;
-//  thrLoadDb.MedNaprColl := CollMedNapr;
-//  thrLoadDb.MedNapr3AColl := CollMedNapr3A;
-//  thrLoadDb.MedNaprHospColl := CollMedNaprHosp;
-//  thrLoadDb.MedNaprLkkColl := CollMedNaprLkk;
-//  thrLoadDb.IncMdnColl := CollIncMdn;
-//  thrLoadDb.IncMNColl := CollIncMN;
-//  thrLoadDb.OtherDoctorColl := CollOtherDoctor;
   thrLoadDb.LinkAnals := AspectsLinkNomenHipAnalFile;
 
-  //thrLoadDb.FCollPregVtor := CollPregledVtor;
-  //thrLoadDb.FCollMedNapr := CollMedNapr;
   thrLoadDb.FreeOnTerminate := True;
   thrLoadDb.OnTerminate := TerminateLoadDB;
   thrLoadDb.OnProgres := LoadDbOnProgres;
@@ -13936,7 +13865,7 @@ begin
   begin
     //LoadVtrNomenNzis1;
 //    OpenBufNomenNzis('c:\temp\NzisNomen.adb');
-    OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
     profGR := TProfGraph.create;
 
@@ -14285,6 +14214,7 @@ procedure TfrmSuperHip.mniNzisNomenClick(Sender: TObject);
 begin
   pgcTree.ActivePage := tsNomenNzis;
   //OpenBufNomenNzis('NzisNomen.adb');
+  Adb_DM.OpenADBNomenNzis('NzisNomen.adb');
   if vRootNzisBiznes.ChildCount = 0 then
   begin
 
@@ -15626,7 +15556,8 @@ begin  // FmxTokensForm: TfrmFmxTokens
     FmxTokensForm := TfrmFmxTokens.Create(nil);
     FmxTokensForm.Option := Option;
     FmxTokensForm.thrCert := thrCert;
-    FmxTokensForm.collDoctor := Adb_dm.CollDoctor;
+    FmxTokensForm.Adb_dm := Adb_DM;
+    //FmxTokensForm.collDoctor := Adb_dm.CollDoctor;
     FmxTokensForm.FillTokens;
     //FmxTokensForm.OnShow := OnShowFindFprm;
   end
@@ -16139,7 +16070,8 @@ procedure TfrmSuperHip.HipNomenAnalsClick(Sender: TObject);
 begin
   pnlRoleView.ForceClose;
   OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
-  OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
+  Adb_DM.OpenADBNomenHip(paramstr(2) + 'HipNomen.adb');
+  //OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
   OpenLinkNomenHipAnals;
   pnlTree.Width := 580;
   pgcTree.ActivePage := tsNomenAnal;
@@ -18510,8 +18442,9 @@ begin
   usb.OnUSBRemove := DoUSBRemove;
   thrCert := TCertThread.Create(true);
   thrCert.StorageFilename := option.LibTokenDll;
-  thrCert.CollDoctor := ADB_DM.CollDoctor;
-  thrCert.CollCert := ADB_DM.CollCertificates;
+  thrCert.Adb_dm := Adb_DM;
+  //thrCert.CollDoctor := ADB_DM.CollDoctor;
+  //thrCert.CollCert := ADB_DM.CollCertificates;
   thrCert.FreeOnTerminate := True;
   thrCert.OnStorageUpdate := CertStorageUpdate;
   thrCert.Resume;
@@ -18535,96 +18468,6 @@ var
 begin
   InternalChangeTreePage(tsVtrSearch);
   Exit;
-
-  if FmxFinderFrm = nil then
-  begin
-    FmxFinderFrm := TfrmFinder.Create(nil);
-    ADB_DM.CollPatient.AddItemForSearch;
-    ADB_DM.CollPregled.AddItemForSearch;
-    FmxFinderFrm.CollPatient := ADB_DM.CollPatient;
-    FmxFinderFrm.CollPregled := ADB_DM.CollPregled;
-
-    FmxFinderFrm.ArrCondition := ADB_DM.CollPregled.ListForFinder.Items[0].ArrCondition;
-    FmxFinderFrm.AddExpanderPat1(0, nil);
-    FmxFinderFrm.AddExpanderPreg1(0, nil);
-    FmxFinderFrm.RecalcBlanka;
-
-    FmxFinderFrm.OnShow := OnShowFindFprm;
-  end;
-  //if vtrSearch.RootNodeCount < 1 then
-//    LoadVtrSearch;
-//  CollPatient.ListForFinder.Clear;
-
-  InternalChangeWorkPage(tsFMXForm);
-
-
-  fmxCntrDyn.ChangeActiveForm(FmxFinderFrm);
-  FmxFinderFrm.WindowState := wsMaximized;
-  //FmxFinderFrm.Height := 10000;
-  if not Assigned(thrSearch) then
-  begin
-
-    //CollPregled.IndexValue(PregledNew_ANAMN); // за забързване на търсенето (предизвиква операционната система да кешира ...)
-    //CollPregled.Clear;
-
-    //CollPregled.ArrPropSearch := [PregledNew_AMB_LISTN, PregledNew_NRN, PregledNew_ANAMN];
-
-    thrSearch := TSearchThread.Create(true);
-    FmxFinderFrm.thrSearch := thrSearch;
-    thrSearch.CollForFind := ADB_DM.CollPregled;
-
-    thrSearch.vtr := vtrPregledPat;
-    thrSearch.bufLink := AspectsLinkPatPregFile.Buf;
-    //thrSearch.BufADB := Adb_DM.AdbMain;
-    pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
-    FPosLinkData := pCardinalData^;
-    //thrSearch.FPosData := FPosLinkData;
-    //thrSearch.BufADB := AspectsHipFile.Buf;
-
-
-    thrSearch.grdSearch := grdSearch;
-    thrSearch.OnShowGrid := OnShowGridSearch;
-    grdSearch.Tag := cardinal(ADB_DM.CollPregled);
-
-
-
-    thrSearch.CntPregInPat := -1;
-    if vtrSearch.GetFirstSelected() <> nil then
-    begin
-      thrSearch.AdbRoot := vtrPregledPat.RootNode.FirstChild;
-      thrSearch.FilterRoot := vtrSearch.GetFirstSelected();
-    end
-    else
-    begin
-      InternalChangeTreePage(tsVtrSearch);
-      Exit;
-    end;
-    thrSearch.Resume;
-    thrSearch.Start;
-
-  end
-  else
-  begin
-    if vtrSearch.GetFirstSelected() <> nil then
-    begin
-      thrSearch.AdbRoot := vtrPregledPat.RootNode.FirstChild;
-      thrSearch.FilterRoot := vtrSearch.GetFirstSelected();
-    end
-    else
-    begin
-
-      InternalChangeTreePage(tsVtrSearch);
-      Exit;
-    end;
-    thrSearch.Start;
-  end;
-  FmxFinderFrm.IsFinding := True;
-  //btnPull.Top := pnlGridSearch.Top - 7 - btnPull.Height;
-  if pnlGridSearch.height = 1 then
-    pnlGridSearch.height := 150;
- //pgcWork.ActivePage := tsFMXForm;
-   tlb1.Realign;
-
 end;
 
 procedure TfrmSuperHip.StartHistoryThread(dbName: string);
@@ -18633,16 +18476,10 @@ procedure TfrmSuperHip.StartHistoryThread(dbName: string);
 begin
   //Exit;
   thrHistPerf := THistoryThread.Create(True, FdbName);
-  thrHistPerf.FCollPatient.NasMesto := FNasMesto;
   thrHistPerf.FreeOnTerminate := True;
   thrHistPerf.Buf := Adb_DM.AdbMain.Buf;
   thrHistPerf.BufLink := AspectsLinkPatPregFile.Buf;
   thrHistPerf.DataPos := Adb_DM.AdbMain.FPosData;
-  thrHistPerf.FCollUnfav := ADB_DM.CollUnfav;
-  thrHistPerf.FCollPregled := ADB_DM.CollPregled;
-  thrHistPerf.FCollDoctor := ADB_DM.CollDoctor;
-  //thrHistPerf.FCollPatient := CollPatient;
-  thrHistPerf.FCollDiag := ADB_DM.CollDiag;
   thrHistPerf.GUID := Adb_DM.AdbMain.GUID;
   thrHistPerf.FVTR := vtrPregledPat;
   thrHistPerf.OnEventAlert := RefreshEvent;
@@ -21762,8 +21599,8 @@ begin
         '4': ;
       end;
       begin
-        if AspectsNomHipFile = nil then
-          OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
+        //if AspectsNomHipFile = nil then
+//          OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
 //        if AspectsNomFile = nil then
 //          OpenBufNomenNzis('NzisNomen.adb');
         InternalChangeWorkPage(tsFMXForm);
@@ -22946,16 +22783,13 @@ begin
       case Column of
         0:
         begin
-          //AnalTemp.DataPos := data.DataPos;
           CellText := ADB_DM.CollAnalsNew.getAnsiStringMap(data.DataPos, word(AnalsNew_AnalName));
         end;
         1:
         begin
-          AnalTemp.DataPos := data.DataPos;
-          posCl22 := AnalTemp.getcardMap(ADB_DM.CollAnalsNew.Buf, ADB_DM.CollAnalsNew.posData, word(AnalsNew_CL022_pos));
+          posCl22 := ADB_DM.CollAnalsNew.getcardMap(data.DataPos, word(AnalsNew_CL022_pos));
           if posCl22 > 0 then
           begin
-            //Cl022temp.DataPos := posCl22;
             CellText := ADB_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_Key));
             CellText := CellText + ' / ' + ADB_DM.CL022Coll.getAnsiStringMap(posCl22, word(CL022_nhif_code))
           end;
@@ -22999,17 +22833,17 @@ var
   data: PAspRec;
 
 begin
-  if ActiveSubButton = nil then
-  begin
-    AddCl('CL1000');
-  end
-  else
-  if ActiveSubButton.Description = 'Ексел' then
-  begin
-    ImportPR001(ADB_DM.PR001Coll);
-  end
-  else
-  if ActiveSubButton.Description = 'XML' then
+  //if ActiveSubButton = nil then
+//  begin
+//    AddCl('CL1000');
+//  end
+//  else
+//  if ActiveSubButton.Description = 'Ексел' then
+//  begin
+//    ImportPR001(ADB_DM.PR001Coll);
+//  end
+//  else
+  if True then // ActiveSubButton.Description = 'XML' then
   begin
     data := vtrNomenNzis.GetNodeData(node);
 
@@ -23192,24 +23026,24 @@ begin
   //if numButton > 0 then Exit;
   data := sender.GetNodeData(node);
 
-  if ActiveSubButton = nil then
-  begin
-    case numButton of
-      0:
-      begin
-        ButonVisible := True;
-        imageIndex := 0;
-      end;
-    end;
-  end
-  else
-  if ActiveSubButton.Description = 'Ексел' then
-  begin
-    ButonVisible := True;
-    imageIndex := 57;
-  end
-  else
-  if ActiveSubButton.Description = 'XML' then
+  //if ActiveSubButton = nil then
+//  begin
+//    case numButton of
+//      0:
+//      begin
+//        ButonVisible := True;
+//        imageIndex := 0;
+//      end;
+//    end;
+//  end
+//  else
+//  if ActiveSubButton.Description = 'Ексел' then
+//  begin
+//    ButonVisible := True;
+//    imageIndex := 57;
+//  end
+//  else
+  if True then //ActiveSubButton.Description = 'XML' then
   begin
     case numButton of
       0:
@@ -25552,7 +25386,6 @@ var
   node: PVirtualNode;
   Aguid: TGUID;
 begin
-
   Stopwatch := TStopwatch.StartNew;
 
   if AspectsLinkPatPregFile <> nil then
