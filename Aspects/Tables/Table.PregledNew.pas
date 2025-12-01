@@ -432,7 +432,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexPregledNew);
-      dataCmdProp.vid := vvPregled;
+      dataCmdProp.vid := vvPregledNew;
     end;
     self.FillPropPregledNew(propindexPregledNew, stream);
   end;
@@ -2402,5 +2402,6 @@ begin
       PregledNew_VSD_TYPE: SortByIndexWord;
   end;
 end;
+
 
 end.

@@ -4,7 +4,7 @@ interface
 uses
   System.Generics.Collections, system.SysUtils, system.Classes,
   Aspects.Types, VirtualTrees,
-  Table.CL024,
+  Table.CL024, Table.CL011, table.CL009,
   table.CL132, table.CL134, Table.PR001, table.CL050, table.cl142,
   table.cl088, Table.CL139, Table.CL144, Table.CL038, Table.CL037,
   Table.CL022, table.cl006,
@@ -69,6 +69,38 @@ TRealCl006Item = class(TCL006Item)
  public
    function GetDataPosFromKey(key: string): Cardinal;
    property Items[Index: Integer]: TRealCL006Item read GetItem write SetItem;
+
+ end;
+
+ TRealCl011Item = class(TCL011Item)
+  private
+ public
+ end;
+
+ TRealCL011Coll = class(TCL011Coll)
+ private
+    function GetItem(Index: Integer): TRealCL011Item;
+    procedure SetItem(Index: Integer; const Value: TRealCL011Item);
+
+ public
+   function GetDataPosFromKey(key: string): Cardinal;
+   property Items[Index: Integer]: TRealCL011Item read GetItem write SetItem;
+
+ end;
+
+ TRealCl009Item = class(TCL009Item)
+  private
+ public
+ end;
+
+ TRealCL009Coll = class(TCL009Coll)
+ private
+    function GetItem(Index: Integer): TRealCL009Item;
+    procedure SetItem(Index: Integer; const Value: TRealCL009Item);
+
+ public
+   function GetDataPosFromKey(key: string): Cardinal;
+   property Items[Index: Integer]: TRealCL009Item read GetItem write SetItem;
 
  end;
 
@@ -1246,5 +1278,59 @@ begin
 end;
 
 
+
+{ TRealCL011Coll }
+
+function TRealCL011Coll.GetDataPosFromKey(key: string): Cardinal;
+var
+  i: Integer;
+begin
+  Result := 0;
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].getAnsiStringMap(Self.Buf, Self.posData, Word(CL011_Key)) = key then
+    begin
+      Result := Items[i].DataPos;
+      Exit;
+    end;
+  end;
+end;
+
+function TRealCL011Coll.GetItem(Index: Integer): TRealCL011Item;
+begin
+  Result := TRealCl011Item(inherited GetItem(Index));
+end;
+
+procedure TRealCL011Coll.SetItem(Index: Integer; const Value: TRealCL011Item);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+{ TRealCL009Coll }
+
+function TRealCL009Coll.GetDataPosFromKey(key: string): Cardinal;
+var
+  i: Integer;
+begin
+  Result := 0;
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].getAnsiStringMap(Self.Buf, Self.posData, Word(CL009_Key)) = key then
+    begin
+      Result := Items[i].DataPos;
+      Exit;
+    end;
+  end;
+end;
+
+function TRealCL009Coll.GetItem(Index: Integer): TRealCL009Item;
+begin
+  Result := TRealCl009Item(inherited GetItem(Index));
+end;
+
+procedure TRealCL009Coll.SetItem(Index: Integer; const Value: TRealCL009Item);
+begin
+  inherited SetItem(Index, Value);
+end;
 
 end.

@@ -8173,6 +8173,8 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrNomenNzisDrawButton
           OnButtonClick = vtrNomenNzisButtonClick
+          ExplicitLeft = -2
+          ExplicitTop = 40
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -10428,7 +10430,7 @@ object frmSuperHip: TfrmSuperHip
       Top = 42
       Width = 1080
       Height = 325
-      ActivePage = tsMemo
+      ActivePage = tsGrid
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -15986,6 +15988,7 @@ object frmSuperHip: TfrmSuperHip
     Top = 160
     Width = 1589
     Height = 2
+    UseSystemFont = False
     Caption = 'actmmb1'
     Color = clMenuBar
     ColorMap.DisabledFontColor = 7171437
@@ -15993,7 +15996,7 @@ object frmSuperHip: TfrmSuperHip
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
+    Font.Color = clBlack
     Font.Height = -13
     Font.Name = 'Segoe UI'
     Font.Style = []

@@ -390,7 +390,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexKARTA_PROFILAKTIKA2017);
-      dataCmdProp.vid := vvPregled;
+      dataCmdProp.vid := vvPregledNew;
     end;
     self.FillPropKARTA_PROFILAKTIKA2017(propindexKARTA_PROFILAKTIKA2017, stream);
   end;

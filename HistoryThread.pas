@@ -277,7 +277,7 @@ begin
     begin
       //ATempItem.DataPos := data.DataPos;
       case VV of
-        vvPregled:
+        vvPregledNew:
         begin
           if FCollPregledHist.getIntMap(Data.DataPos, word(PregledNew_ID)) = id then
           begin
@@ -434,7 +434,7 @@ var
   ibsqlPregledNew: TIBSQL;
 
 begin
-  TempPregItem := TRealPregledNewItem(FindItemADB(id, Buf, BufLink, vvPregled));
+  TempPregItem := TRealPregledNewItem(FindItemADB(id, Buf, BufLink, vvPregledNew));
   if TempPregItem <> nil then
   begin
     pCardinalData := pointer(PByte(FBuf) + 32);
@@ -492,7 +492,7 @@ begin
   TreeLink := pointer(PByte(FBufLink) + linkpos);
   data := pointer(PByte(FBufLink) + linkpos + lenNode);
   data.index := -1;
-  data.vid := vvPregled;
+  data.vid := vvPregledNew;
   data.DataPos := TempPregItem.DataPos;
   TreeLink.Index := 0;
   inc(linkpos, LenData);
@@ -760,7 +760,7 @@ var
   ibsqlPregledNew: TIBSQL;
 begin
   exit;    // да стане като при пациента. ис√ѕ...
-  TempItem := TRealPregledNewItem(FindItemADB(id, Buf, BufLink, vvPregled));
+  TempItem := TRealPregledNewItem(FindItemADB(id, Buf, BufLink, vvPregledNew));
   if TempItem <> nil then
   begin
     if Fdm.IsGP then

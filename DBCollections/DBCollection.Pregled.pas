@@ -582,7 +582,7 @@ var
 begin
   data := Sender.GetNodeData(node);
   case data.vid of
-    vvPregled: //pregled
+    vvPregledNew: //pregled
     begin
       preg := ListPregledForFilter[data.index];
       case Column of

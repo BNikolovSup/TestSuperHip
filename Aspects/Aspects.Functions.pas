@@ -43,7 +43,7 @@ begin
 
     vvPatientNewRoot:               CellText := 'Пациенти';
     vvPatient:                      CellText := 'Пациент';
-    vvPregled:                      CellText := 'Прегледи';
+    vvPregledNew:                      CellText := 'Прегледи';
 
     vvNomenNzis:                    CellText := 'Номенклатура НЗИС';
     vvCl132:                        CellText := 'CL132';

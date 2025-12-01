@@ -370,7 +370,7 @@ begin
 
     vDiagPreg := FVtr.AddChild(nil, nil);
     data := FVtr.GetNodeData(vDiagPreg);
-    data.vid := vvPregled;
+    data.vid := vvPregledNew;
     data.DataPos := CurrentPregled.DataPos;
     data.index := -1;
 
@@ -864,7 +864,7 @@ begin
   begin
     dataRun := pointer(PByte(run) + lenNode);
     case dataRun.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         if run = linkPreg  then
         begin
@@ -1718,7 +1718,7 @@ begin
   data := Sender.GetNodeData(node);
   Acol := 1;
   case data.vid of
-    vvPatient, vvPregled:
+    vvPatient, vvPregledNew:
     begin
       Acol := 0;
     end;
@@ -1859,7 +1859,7 @@ begin
         end;
       end;
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       case Column of
         0:

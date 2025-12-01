@@ -316,7 +316,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexCL022);
-      dataCmdProp.vid := vvPregled;
+      dataCmdProp.vid := vvPregledNew;
     end;
     self.FillPropCL022(propindexCL022, stream);
   end;

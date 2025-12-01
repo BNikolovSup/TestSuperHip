@@ -325,7 +325,7 @@ begin
       TempDateLabel.captTxt.Text := Adb_dm.CollPatient.DisplayName(field);
       //TempDateCot.TextPrompt := CollPatient.DisplayName(field);
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       TempDateLabel.captTxt.Text := Adb_dm.CollPregled.DisplayName(field);
       //TempDateCot.TextPrompt := CollPregled.DisplayName(field);
@@ -379,7 +379,7 @@ begin
       TempEditLabel.captTxt.Text := Adb_dm.CollPatient.DisplayName(field);
       TempEditCot.TextPrompt := Adb_dm.CollPatient.DisplayName(field);
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       TempEditLabel.captTxt.Text := Adb_dm.CollPregled.DisplayName(field);
       TempEditCot.TextPrompt := Adb_dm.CollPregled.DisplayName(field);
@@ -608,12 +608,12 @@ begin
     case act of
       actAnsiString:
       begin
-        AddEditCot(idxEditsCot, TempExpIn, i, vvPregled);
+        AddEditCot(idxEditsCot, TempExpIn, i, vvPregledNew);
         inc(idxEditsCot)
       end;
       actTDate:
       begin
-        AddDateCot(idxDatesCot, TempExpIn, i, vvPregled);
+        AddDateCot(idxDatesCot, TempExpIn, i, vvPregledNew);
         inc(idxDatesCot)
       end;
     end;
@@ -875,7 +875,7 @@ begin
       Adb_dm.CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       Adb_dm.CollPregled.OnSetDateSearchEDT(dat, field, Condition);
       Adb_dm.CollPregled.ListForFinder[0].ArrCondition[field] := Condition;
@@ -894,7 +894,7 @@ begin
       Adb_dm.CollPatient.ListForFinder[0].ArrCondition[field] := Condition;
       thrSearch.start;
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       Adb_dm.CollPregled.OnSetTextSearchEDT(Text, field, Condition);
       Adb_dm.CollPregled.ListForFinder[0].ArrCondition[field] := Condition;

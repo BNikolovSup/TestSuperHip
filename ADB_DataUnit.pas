@@ -206,6 +206,8 @@ uses
     CollAnalsNew: TAnalsNewColl;
 
     CL006Coll: TRealCL006Coll;
+    CL009Coll: TRealCL009Coll;
+    CL011Coll: TRealCL011Coll;
     CL022Coll: TRealCL022Coll;
     CL024Coll: TRealCL024Coll;
     CL037Coll: TRealCL037Coll;
@@ -563,7 +565,7 @@ begin
   Dispose(newPreg.PRecord);
   newPreg.PRecord := nil;
   OldPreg.DataPos := newPreg.DataPos;
-  AdbLink.AddNewNode(vvPregled, newPreg.DataPos, ParentNode, amAddChildFirst, pregNode, linkPos);
+  AdbLink.AddNewNode(vvPregledNew, newPreg.DataPos, ParentNode, amAddChildFirst, pregNode, linkPos);
   AdbLink.AddNewNode(vvPerformer, newPreg.FDoctor.DataPos, pregNode, amAddChildFirst, treeLink, linkPos);
 
   for i := 0 to OldPreg.FDiagnosis.Count - 1 do
@@ -2133,7 +2135,7 @@ begin
       begin
         Result.addresses.Add(run);
       end;
-      vvPregled:
+      vvPregledNew:
       begin
         Result.pregs.Add(run);
         runMDN := run.FirstChild;
@@ -2305,7 +2307,7 @@ begin
 //      begin
 //        Result.evnts.Add(run);
 //      end;
-      vvPregled: // за сега само диагнозите ще търся
+      vvPregledNew: // за сега само диагнозите ще търся
       begin
         runPregled := run.FirstChild;
         while runPregled <> nil do
@@ -2746,7 +2748,7 @@ begin
 //            Cl050.DataPos := aspPos;
             Inc(aspPos, (CL050Coll.FieldCount) * 4);
           end;
-          ctCL006:
+          ctCL006, ctCl011, ctCL009:
           begin
             lstColl[ord(collType)].OpenAdbFull(aspPos);
           end;
@@ -3486,6 +3488,12 @@ begin
   CL006Coll := TRealCL006Coll.Create(TRealCl006Item);
   lstColl[Ord(CL006Coll.GetCollType)] := CL006Coll;
 
+  CL009Coll := TRealCL009Coll.Create(TRealCl009Item);
+  lstColl[Ord(CL009Coll.GetCollType)] := CL009Coll;
+
+  CL011Coll := TRealCL011Coll.Create(TRealCl011Item);
+  lstColl[Ord(CL011Coll.GetCollType)] := CL011Coll;
+
   CL022Coll := TRealCL022Coll.Create(TRealCl022Item);
   lstColl[Ord(CL022Coll.GetCollType)] := CL022Coll;
 
@@ -3632,8 +3640,8 @@ begin
 
       // collections that live in AdbNomenNzis (example list)
       // replace with real ct values for NZIS nomenclature collections
-      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038,
-      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139,
+      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038, ctCL011,
+      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139, ctCL009,
       ctCL142, ctCL144, ctPR001, ctNomenNzis:
       begin
         if Assigned(AdbNomenNzis) then
@@ -3858,8 +3866,8 @@ begin
         end;
       end;
 
-      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038,
-      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139,
+      ctCL006, ctCL022, ctCL024, ctCL037, ctCL038, ctCL011,
+      ctCL050, ctCL088, ctCL132, ctCL134, ctCL139, ctCL009,
       ctCL142, ctCL144, ctPR001, ctNomenNzis:
       begin
         if Assigned(streamCmdFileNomenNzis) then

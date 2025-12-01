@@ -89,6 +89,7 @@ type
     currentType: TCL000Vid;
     TV: TVirtualStringTree;
     FieldsNames: TStringList;
+    DDL: TStringList;
 
     constructor Create(AOwner : TComponent);
     destructor destroy; override;
@@ -176,12 +177,14 @@ constructor TCL000EntryCollection.Create(AOwner: TComponent);
 begin
   inherited Create(TCL000EntryItem);
   FieldsNames := TStringList.Create;
+  DDL := TStringList.Create;
 
 end;
 
 destructor TCL000EntryCollection.destroy;
 begin
   FieldsNames.Free;
+  DDL.Free;
   inherited;
 end;
 
@@ -250,6 +253,12 @@ begin
       Items[i].FMetaDataFields[meta.Column] := meta;
     end;
   end;
+  DDL.Assign(FieldsNames);
+  for i := 0 to DDL.Count - 1 do
+  begin
+    DDL[i] := DDL[i] + '=AnsiString'
+  end;
+  DDL.Add('Logical=tLogicalSet:Is_');
   Result := FieldsNames.Text;
 end;
 

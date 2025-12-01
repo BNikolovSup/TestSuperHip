@@ -9657,7 +9657,7 @@ begin
   begin
     data := Pointer(PByte(TempMemoLabel.node) + lenNode);
     case data.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         if FPregled.PRecord = nil then
         begin

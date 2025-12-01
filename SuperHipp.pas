@@ -1425,7 +1425,7 @@ begin
         RunNode := pointer(PByte(bufLink) + linkpos);
         data := pointer(PByte(RunNode) + lenNode);
         case data.vid of
-          vvPregled:
+          vvPregledNew:
           begin
             if RunNode.Index > 1 then
             begin
@@ -1602,7 +1602,7 @@ begin
   begin
     node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
     data := Pointer(PByte(node)+ lenNode);
-    if data.vid = vvPregled then
+    if data.vid = vvPregledNew then
     begin
       Adb_DM.CollPregled.getIntMap(data.DataPos, Word(PregledNew_ID));
       //if CollPregled.getIntMap(data.DataPos, Word(PregledNew_ID)) = 736130 then
@@ -2590,7 +2590,7 @@ begin
 
   TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
   data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
-  data.index := word(vvPregled);
+  data.index := word(vvPregledNew);
   data.vid := vvNone;
   data.DataPos := 0;
   TreeLink.Index := 0;
@@ -2669,9 +2669,15 @@ begin //'47F8E3CF78FA0DBF'
 end;
 
 procedure TfrmSuperHip.btnUpdateNomenClick(Sender: TObject);
+
 begin
-  vtrNomenNzis.AddWaitNode(vtrNomenNzis.GetFirstSelected());
-  vtrNomenNzis.UpdateWaitNode(vtrNomenNzis.GetFirstSelected(), true, true);
+  Stopwatch := TStopwatch.StartNew;
+  Adb_DM.CL006Coll.BuildKeyDict(Ord(CL006_Key));
+  Elapsed := Stopwatch.Elapsed;
+//  Panel1.Caption := FloatToStr(Elapsed.TotalMilliseconds);
+  grdNom.Selected.Row := Adb_DM.CL006Coll.KeyDict['1001'];
+  //vtrNomenNzis.AddWaitNode(vtrNomenNzis.GetFirstSelected());
+//  vtrNomenNzis.UpdateWaitNode(vtrNomenNzis.GetFirstSelected(), true, true);
 
   //LoadFromNzisNewNomen(22);
 end;
@@ -2945,7 +2951,9 @@ begin
       FRoot._Release;
 
       Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
-      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+
+     // mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.DDL);
       Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
       node.Dummy := 78;
       vtrNomenNzis.RepaintNode(node);
@@ -2954,7 +2962,10 @@ begin
     begin
       idnom := data.index;
       case idNom of
-        6:  Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(Adb_DM.CL006Coll);
+        6:  Adb_DM.CL006Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        9:  Adb_DM.CL009Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        11: Adb_DM.CL011Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        //6:  Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(Adb_DM.CL006Coll);
         22: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl022(Adb_DM.CL022Coll);
         24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
         37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
@@ -3214,7 +3225,7 @@ begin
     RunNode := pointer(PByte(bufLink) + linkpos);
     data := pointer(PByte(RunNode) + lenNode);
     dataPreg := pointer(PByte(RunNode.Parent) + lenNode);
-    if (data.vid = vvDiag) and (dataPreg.vid = vvPregled) then
+    if (data.vid = vvDiag) and (dataPreg.vid = vvPregledNew) then
     begin
       inc(i);
       Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, Adb_DM.CollDiag, Adb_DM.CollPregled);
@@ -3529,7 +3540,7 @@ begin
         begin
           dataRunPreg := Pointer(PByte(runPreg) + lenNode);
           prId[cnt360] := Adb_DM.CollPregled.getIntMap(dataRunPreg.DataPos, word(PregledNew_ID));
-          if dataRunPreg.vid = vvPregled then
+          if dataRunPreg.vid = vvPregledNew then
             inc(cnt360);
 
           runPreg := runPreg.NextSibling;
@@ -3884,7 +3895,7 @@ var
   data: PAspRec;
 
 begin
-  pregLink := Adb_DM.CollPregled.GetNodeFromID(AspectsLinkPatPregFile.Buf, vvPregled, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
+  pregLink := Adb_DM.CollPregled.GetNodeFromID(AspectsLinkPatPregFile.Buf, vvPregledNew, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
   if pregLink = nil then Exit;
 
   vtrPregledPat.InternalDisconnectNode(pregLink, false);
@@ -5478,7 +5489,7 @@ begin
                 break;
               end;
             end;
-            vvPregled:
+            vvPregledNew:
             begin
               preg := TRealPregledNewItem.Create(nil);
               preg.DataPos := dataChild.DataPos;
@@ -6284,7 +6295,7 @@ begin
           preg := cloning.FPregledi[j];
           vPreg := vtrTemp.AddChild(vCloning, nil);
           data := vtrTemp.GetNodeData(vPreg);
-          data.vid := vvPregled;
+          data.vid := vvPregledNew;
           data.DataPos := preg.DataPos;
           data.index := j;
         end;
@@ -6294,7 +6305,7 @@ begin
         preg := pat.FPregledi[i];
         vPreg := vtrTemp.AddChild(v, nil);
         data := vtrTemp.GetNodeData(vPreg);
-        data.vid := vvPregled;
+        data.vid := vvPregledNew;
         data.DataPos := preg.DataPos;
         data.index := i;
       end;
@@ -6333,7 +6344,7 @@ begin
             preg := cloning.FPregledi[j];
             vPreg := vtrTemp.AddChild(vCloning, nil);
             data := vtrTemp.GetNodeData(vPreg);
-            data.vid := vvPregled;
+            data.vid := vvPregledNew;
             data.DataPos := preg.DataPos;
             data.index := j;
           end;
@@ -6343,7 +6354,7 @@ begin
           preg := pat.FPregledi[i];
           vPreg := vtrTemp.AddChild(v, nil);
           data := vtrTemp.GetNodeData(vPreg);
-          data.vid := vvPregled;
+          data.vid := vvPregledNew;
           data.DataPos := preg.DataPos;
           data.index := i;
         end;
@@ -6886,7 +6897,7 @@ begin
           pat.PatEGN := Adb_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_EGN));
           pat.FNode := RunNode;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           if Adb_DM.CollPregled.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
           begin
@@ -7554,7 +7565,7 @@ var
               end;
             end;
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             case ACol of
               1:
@@ -7909,7 +7920,7 @@ begin
     end;
     data := pointer(PByte(RunNode) + lenNode);
     case data.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         if Adb_DM.CollPregled.getIntMap(data.DataPos, word(PregledNew_ID)) = 0 then
         begin
@@ -8590,7 +8601,7 @@ Exit;
       Adb_DM.CollPatient.OnSetTextSearchEDT(Text, field, Condition);
       thrSearch.start;
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       if Text = '' then
       begin
@@ -9163,6 +9174,7 @@ begin
 
   streamCmdFileNomenNzis.Position := streamCmdFileNomenNzis.Size;
   Adb_DM.CL006Coll.cmdFile := streamCmdFileNomenNzis;
+
   Adb_DM.CL022Coll.cmdFile := streamCmdFileNomenNzis;
   Adb_DM.CL024Coll.cmdFile := streamCmdFileNomenNzis;
   Adb_DM.CL037Coll.cmdFile := streamCmdFileNomenNzis;
@@ -10033,7 +10045,7 @@ begin
   if not chkLockNzisMess.Checked then Exit;
   data := pointer(PByte(node) + lenNode);
   case data.vid of
-    vvPregled:
+    vvPregledNew:
     begin
       //Adb_DM.CollPrac := CollPractica;
 //      Adb_DM.CollDoc := CollDoctor;
@@ -10775,7 +10787,7 @@ begin
   data := pointer(PByte(nodeList) + lenNode);
   case data.vid of
 
-    vvPregled:
+    vvPregledNew:
     begin
       Stopwatch := TStopwatch.StartNew;
       vtrPregledPat.BeginUpdate;
@@ -11751,7 +11763,7 @@ begin
 
     vImportNzisPregled := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregled;
+    data.vid := vvPregledNew;
     data.index := -1;
     vImportNzisNapr := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisNapr);
@@ -11899,7 +11911,7 @@ begin
 
     vImportNzisPregled := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisPregled);
-    data.vid := vvPregled;
+    data.vid := vvPregledNew;
     data.index := -1;
     vImportNzisNapr := vtrTemp.AddChild(vImportNzis, nil);
     data := vtrTemp.GetNodeData(vImportNzisNapr);
@@ -12155,7 +12167,7 @@ begin
             begin
               vPreg := vtrTemp.AddChild(vpat, nil);
               data := vtrTemp.GetNodeData(vPreg);
-              data.vid := vvPregled;
+              data.vid := vvPregledNew;
               data.DataPos := msg.Preg.DataPos;
               data.index := -1;
 
@@ -12297,7 +12309,7 @@ begin
           msg := TNzisReqRespItem(pat.FLstMsgImportNzis[j]);
           vPreg := vtrTemp.AddChild(vpat, nil);
           data := vtrTemp.GetNodeData(vPreg);
-          data.vid := vvPregled;
+          data.vid := vvPregledNew;
           data.DataPos := 0;//msg.Preg.DataPos;
           data.index := -1;
 
@@ -12369,7 +12381,7 @@ begin
             begin
               vPreg := vtrTemp.AddChild(vpat, nil);
               data := vtrTemp.GetNodeData(vPreg);
-              data.vid := vvPregled;
+              data.vid := vvPregledNew;
               data.DataPos := msg.Preg.DataPos;
               data.index := -1;
 
@@ -12544,7 +12556,7 @@ begin
         vPreg := vtrTemp.AddChild(vPat, nil);
       end;
       data := vtrTemp.GetNodeData(vPreg);
-      data.vid := vvPregled;
+      data.vid := vvPregledNew;
       data.DataPos := Preg.DataPos;
       data.index := j;
 
@@ -12727,13 +12739,13 @@ begin
   begin
     dataNode := pointer(PByte(vPregNode) + lenNode);
     case datanode.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         vPreg := vtrMinaliPregledi.AddChild(nil, nil);
         data := vtrMinaliPregledi.GetNodeData(vPreg);
         data.index := integer(vPregNode);
         data.DataPos := dataNode.DataPos;
-        data.vid := vvPregled;
+        data.vid := vvPregledNew;
       end;
       vvIncMN:
       begin
@@ -12742,13 +12754,13 @@ begin
         begin
           dataPregInMN := pointer(PByte(run) + lenNode);
           case dataPregInMN.vid of
-            vvPregled:
+            vvPregledNew:
             begin
               vPreg := vtrMinaliPregledi.AddChild(nil, nil);
               data := vtrMinaliPregledi.GetNodeData(vPreg);
               data.index := integer(run);
               data.DataPos := dataPregInMN.DataPos;
-              data.vid := vvPregled;
+              data.vid := vvPregledNew;
             end;
           end;
           run := run.NextSibling;
@@ -12908,6 +12920,22 @@ begin
         if Adb_dm.CL006Coll.Count > 0 then
         begin
           Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL006Coll;
+          v.Dummy := 80;
+        end;
+      end;
+      009:
+      begin
+        if Adb_dm.CL009Coll.Count > 0 then
+        begin
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL009Coll;
+          v.Dummy := 80;
+        end;
+      end;
+      011:
+      begin
+        if Adb_dm.CL011Coll.Count > 0 then
+        begin
+          Adb_DM.ListNomenNzisNames[i].AspColl := Adb_dm.CL011Coll;
           v.Dummy := 80;
         end;
       end;
@@ -13216,7 +13244,7 @@ begin
       TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
       data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
       data.DataPos := preg.DataPos;
-      data.vid := vvPregled;
+      data.vid := vvPregledNew;
       data.index := -1;
       inc(linkpos, LenData);
 
@@ -13717,7 +13745,7 @@ begin
       begin
         AdataPreg := pointer(PByte(pregNode) + lenNode);
         case AdataPreg.vid of
-          vvPregled:   // ако е преглед
+          vvPregledNew:   // ако е преглед
           begin
             PregIsProf := False;
             temppreg.FDiagnosis.Clear;
@@ -14621,7 +14649,7 @@ begin
   begin
     dataInIncMn := Pointer(PByte(RunNodeInIncMN)+ lenNode);
     case dataInIncMn.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         preg := TRealPregledNewItem(Adb_dm.CollPregled.Add);
         preg.DataPos := dataInIncMn.DataPos;
@@ -14693,7 +14721,7 @@ begin
           RunInIncMN(incMN, false);
         end;
       end;
-      vvPregled:
+      vvPregledNew:
       begin
         preg := TRealPregledNewItem(Adb_dm.CollPregled.Add);
         preg.DataPos := dataInPat.DataPos;
@@ -15206,7 +15234,7 @@ begin
   begin
     dataRun := pointer(PByte(run) + lenNode);
     case dataRun.vid of
-      vvPregled:
+      vvPregledNew:
       begin
         if run = linkPreg  then
         begin
@@ -17417,7 +17445,7 @@ begin
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
-  AspectsLinkPatPregFile.AddNewNode(vvPregled, TempItem.DataPos, nodePat, amAddChildFirst, TreeLink, linkpos);
+  AspectsLinkPatPregFile.AddNewNode(vvPregledNew, TempItem.DataPos, nodePat, amAddChildFirst, TreeLink, linkpos);
   vPreg := TreeLink;
 
   // zzzzzzzzzzzzzzzzzzzzzzzzzzzzz AutoNzis  тука слагам 2-рия доктор замества 1-вия
@@ -18013,7 +18041,7 @@ procedure TfrmSuperHip.AddToListNodes(data: PAspRec);
 begin
   Exit;
   case data.vid of
-    vvPregled: ADB_DM.CollPregled.ListNodes.Add(data);
+    vvPregledNew: ADB_DM.CollPregled.ListNodes.Add(data);
     vvPatient: ADB_DM.CollPatient.ListNodes.Add(data);
     vvDoctor: ADB_DM.CollDoctor.ListNodes.Add(data);
     vvMDN: ADB_DM.CollMDN.ListNodes.Add(data);
@@ -18063,7 +18091,7 @@ begin
   TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
   data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
   data.index := -1;
-  data.vid := vvPregled;
+  data.vid := vvPregledNew;
   data.DataPos := preg.DataPos;
   TreeLink.Index := 0;
   inc(linkpos, LenData);
@@ -19392,7 +19420,7 @@ begin
       FmxFinderFrm.AddExpanderPat1(0, nil);
 
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       FmxFinderFrm.ArrCondition := ADB_DM.CollPregled.ListForFinder.Items[0].ArrCondition;
       FmxFinderFrm.AddExpanderPreg(0, nil);
@@ -19587,7 +19615,7 @@ begin
         end;
       end;
     end;
-    vvPregled:
+    vvPregledNew:
     begin
       DataParent := Sender.GetNodeData(node.Parent);
       case Column of
@@ -20468,7 +20496,7 @@ begin
             ImageIndex := 108;
           end;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           if data.DataPos > 0 then
           begin
@@ -20530,7 +20558,7 @@ begin
           begin
             CellText := 'ЕГН ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             //preg := msgColl.CollPreg.Items[data.index];
             if Data.DataPos > 0 then
@@ -20585,7 +20613,7 @@ begin
               end;
             end;
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             dataPat := vtrTemp.GetNodeData(node.parent);
             if dataPat = nil then Exit;
@@ -20662,7 +20690,7 @@ begin
           begin
             DataParent := vtrTemp.GetNodeData(node.parent);
             case DataParent.vid of
-              vvpregled:
+              vvPregledNew:
               begin
                 dataPat := vtrTemp.GetNodeData(node.parent.parent);
                 if dataPat = nil then Exit;
@@ -20764,7 +20792,7 @@ begin
             begin
               msg := ADB_DM.AmsgColl.items[data.index];
             end;
-            vvpregled:
+            vvPregledNew:
             begin
               //dataPat := vtrTemp.GetNodeData(node.parent.parent);
 //              pat := msgColl.CollPat.Items[dataPat.index];
@@ -20813,7 +20841,7 @@ begin
           begin
             CellText := 'ЕГН ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             //preg := msgColl.CollPreg.Items[data.index];
             if Data.DataPos > 0 then
@@ -20873,7 +20901,7 @@ begin
                   32: CellText := Format('C%.3d', [node.Dummy]);
                 end;
               end;
-              vvpregled:
+              vvPregledNew:
               begin
                 //dataPat := vtrTemp.GetNodeData(node.parent.parent);
                 pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
@@ -20942,7 +20970,7 @@ begin
             begin
               msg := ADB_DM.AmsgColl.items[data.index];
             end;
-            vvpregled:
+            vvPregledNew:
             begin
               dataPat := vtrTemp.GetNodeData(node.parent.parent);
               pat := ADB_DM.AmsgColl.CollPat.Items[dataPat.index];
@@ -21312,7 +21340,7 @@ begin
     PREGLED:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregled);
+      ADB_DM.CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregledNew);
       ADB_DM.CollPregled.ShowListNodesGrid(grdNom);
     end;
     PRACTICA:
@@ -22531,7 +22559,7 @@ begin
           CellText := FNasMesto.nasMestoColl.getAnsiStringMap(Data.DataPos, word(NasMesto_NasMestoName));
           CellText := CellText + ' ' + FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(NasMesto_RCZR));
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           //if CollPregled <> nil then
 
@@ -22676,7 +22704,7 @@ begin
         //4: CellText := preg.MedNaprStr;
       end;
     end;
-    vvPregled: //pregled
+    vvPregledNew: //pregled
     begin
       case Column of
 
@@ -23554,7 +23582,7 @@ begin
       mmoTest.Lines.Add('Minali za ' + FloatToStr(Elapsed.TotalMilliseconds));
     end;
 
-    vvPregled: //pregled  FMX
+    vvPregledNew: //pregled  FMX
     begin
       if not Sender.Focused then  Exit;
 
@@ -23637,7 +23665,7 @@ begin
 //      LoadVtrMinaliPregledi(pat, data.index);
 //      pgcWork.ActivePage := tsMinaliPregledi;
 //    end;
-    vvPregled: //pregled
+    vvPregledNew: //pregled
     begin
       //ShowDynPregled(Node.Parent, node, [36]);
       //btn1Click(nil);
@@ -23915,7 +23943,7 @@ begin
         end;
         vvDoctor: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
         vvPerformer: vtrPregledPat.Header.Columns[Column].Text := 'УИН ';
-        vvPregled:
+        vvPregledNew:
         begin
           vtrPregledPat.Header.Columns[Column].Text := 'НРН ';
           vtrPregledPat.Header.Columns[Column].Tag := 4;
@@ -23962,7 +23990,7 @@ begin
     end;
     spStartPreg:
     begin
-      if data1.vid <> vvPregled then
+      if data1.vid <> vvPregledNew then
       begin
         Exit;
       end;
@@ -24257,7 +24285,7 @@ begin
         begin
           ImageIndex := 3;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           ImageIndex := 58;
         end;
@@ -24290,7 +24318,7 @@ begin
             end;
           end;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           nzisStatus := ADB_DM.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
           ImageIndex := nzisStatus;
@@ -24313,7 +24341,7 @@ begin
     2:
     begin
       case Data.vid of
-        vvPregled:
+        vvPregledNew:
         begin
           if (Node.NextSibling <> nil) and (not(Sender.IsVisible[Node.NextSibling])) then
             ImageIndex := 99;
@@ -24336,7 +24364,7 @@ begin
        vtrPregledPat.Selected[Node] := True;
        PopupMenu := pmActionPat;
      end;
-     vvPregled:
+     vvPregledNew:
      begin
        vtrPregledPat.Selected[Node] := True;
        PopupMenu := pmActionPreg;
@@ -24467,7 +24495,7 @@ begin
         begin
           CellText := 'Изпр. ' + ADB_DM.CollOtherDoctor.getAnsiStringMap(Data.DataPos, word(OtherDoctor_UIN));
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           //if data.index <> -1 then
 //          begin
@@ -24734,7 +24762,7 @@ begin
           CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME))
                       + ' ' + PatAgeStr;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           //p := pointer(PByte(CollPregled.buf) + (Data.DataPos  + 4*word(PregledNew_ID)));
           //ofset := p^ + CollPatient.posData;
@@ -25081,7 +25109,7 @@ begin
             CellText := 'ЕГН ' + ADB_DM.CollPatient.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           if data.index <> -1 then
           begin
@@ -25156,7 +25184,7 @@ begin
           CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_SNAME));
           CellText := CellText + ' ' + ADB_DM.CollPatient.getAnsiStringMap(Data.DataPos, word(PatientNew_LNAME));
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           CellText := 'от ' + DateToStr(ADB_DM.CollPregled.getDateMap(Data.DataPos, word(PregledNew_START_DATE)));
         end;
@@ -25665,7 +25693,7 @@ begin
       begin
         dataPreg := pointer(PByte(runPreg) + lenNode);
         case dataPreg.vid of
-          vvPregled:
+          vvPregledNew:
           begin
             FindedCl132 := False;// свалям флага за намерено цл132
             cl132 := '';
@@ -25768,7 +25796,7 @@ begin
     FmxProfForm.edtAmbList.Repaint;
   end;
   case data.vid of
-    vvPregled:
+    vvPregledNew:
     begin
       status := ADB_DM.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
     end;

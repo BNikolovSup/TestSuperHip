@@ -9,6 +9,27 @@ uses
   Vcl.Graphics, InterruptibleSort, System.StrUtils, System.Math, uKeyThrottle, uVSTSyncHelper,
   Vcl.ExtCtrls, Vcl.Menus;
 type
+  TBaseItem = class;
+  TDiffKind = (dkSame, dkChanged, dkNew, dkDeleted);
+
+  TDiffField = record
+    FieldIndex: Integer;
+    OldValue: string;
+    NewValue: string;
+  end;
+
+  TDiffItem = class
+    Key: string;
+    Kind: TDiffKind;
+    Fields: TList<TDiffField>;
+    OldItem: TBaseItem;
+    NewItem: TBaseItem;
+  end;
+
+  TDiffResult = class
+    Items: TObjectList<TDiffItem>;
+  end;
+
 
   TParamProp = 0..255;
   TParamSetProp = set of TParamProp;
@@ -554,6 +575,7 @@ TCollectionForSort = class(TPersistent)
     ListAnsi: TList<AnsiString>;
     FSortFields: TSortFields;
     ArrayPropOrderSearchOptions: TArray<integer>;
+    KeyDict: TDictionary<string,Integer>;
 
 
     constructor Create(ItemClass: TCollectionItemClass);virtual;
@@ -634,6 +656,7 @@ TCollectionForSort = class(TPersistent)
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode); virtual;
     procedure ScrollTimerTimer(sender: tobject);
     function GetAllowedOperators(propIndex: Integer): TConditionTypeSet;
+    procedure BuildKeyDict(PropIndex: Word); virtual;
 
     property CmdList: TList<TCmdRec> read FCmdList write FCmdList;
     property ForLaterSave: TList<TForLaterSave> read FForLaterSave write FForLaterSave;
@@ -3052,6 +3075,14 @@ begin
   Result := ctAspect;
 end;
 
+procedure TBaseCollection.BuildKeyDict(PropIndex: Word);
+begin
+  if not Assigned(KeyDict) then
+    KeyDict := TDictionary<string,Integer>.create
+  else
+    KeyDict.Clear;
+end;
+
 constructor TBaseCollection.Create(ItemClass: TCollectionItemClass);
 begin
   inherited Create(ItemClass);
@@ -3074,6 +3105,7 @@ begin
   ScrollTimer.OnTimer := ScrollTimerTimer;
   ScrollTimer.Enabled := false;
   ScrollDirection := 0;
+  KeyDict := nil;
 end;
 
 destructor TBaseCollection.destroy;
@@ -3087,6 +3119,8 @@ begin
   StreamCommTemp.Free;
   ScrollTimer.Enabled := False;
   FreeAndNil(ScrollTimer);
+  if Assigned(KeyDict) then
+    FreeAndNil(KeyDict);
 
   inherited;
 end;

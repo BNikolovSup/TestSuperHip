@@ -315,7 +315,7 @@ begin
             begin
               dataRunPregInIncNapr := pointer(PByte(pregInIncNaprNode) + lenNode);
               case dataRunPregInIncNapr.vid of
-                vvPregled:
+                vvPregledNew:
                 begin
                   FindedPregNode := pregInIncNaprNode;
                   if FCollPat.Tag < 0 then
@@ -339,7 +339,7 @@ begin
               pregInIncNaprNode := pregInIncNaprNode.NextSibling;
             end;
           end;
-          vvPregled:   // ако е преглед
+          vvPregledNew:   // ако е преглед
           begin
             FindedPregNode := pregNode;
             if FCollPat.Tag < 0 then
@@ -372,7 +372,7 @@ begin
             FcollPreg.ListDataPos.Add(FindedPregNode);
             inc(testCnt);
             dataTest := Pointer(pbyte(FindedPregNode) + lenNode);
-            if dataTest.vid <> vvPregled then
+            if dataTest.vid <> vvPregledNew then
               uin := 'ddd';
             inc(AcntPregInPat);
           end;

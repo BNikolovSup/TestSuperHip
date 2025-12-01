@@ -1685,7 +1685,7 @@ begin
   Fdm.ibsqlCommandUdost.Next;
   FCntPregled := Fdm.ibsqlCommandUdost.Fields[1].AsInteger;
   if Assigned(FOnCnt) then
-    FOnCnt(Self, Integer(vvPregled), FCntPregled);
+    FOnCnt(Self, Integer(vvPregledNew), FCntPregled);
 end;
 
 procedure TLoadDBThread.GetNewID;

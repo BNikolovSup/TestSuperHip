@@ -297,7 +297,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexNomenNzis);
-      dataCmdProp.vid := vvPregled;
+      dataCmdProp.vid := vvPregledNew;
     end;
     self.FillPropNomenNzis(propindexNomenNzis, stream);
   end;

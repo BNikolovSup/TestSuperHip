@@ -683,7 +683,7 @@ begin
           addr.DataPos := Data.DataPos;
           //pat.FAdresi.Add(addr);
         end;
-        vvPregled:
+        vvPregledNew:
         begin
           if msgColl.CollPreg.getAnsiStringMap(Data.DataPos, word(PregledNew_NRN_LRN)) <> '' then
           begin
@@ -1453,7 +1453,7 @@ begin
         vPreg := VtrImport.AddChild(vPat, nil);
       end;
       data := VtrImport.GetNodeData(vPreg);
-      data.vid := vvPregled;
+      data.vid := vvPregledNew;
       data.DataPos := Preg.DataPos;
       data.index := j;
 
@@ -1638,7 +1638,7 @@ begin
     begin
       dataInPat := VtrImport.GetNodeData(runInPat);
       case dataInPat.vid of
-        vvPregled:
+        vvPregledNew:
         begin
           preg := pat.FPregledi[dataInPat.index];
           dataPreg := VtrImport.GetNodeData(runInPat);
@@ -1795,7 +1795,7 @@ begin
           begin
             dataInIncMN := VtrImport.GetNodeData(runInIncMN);
             case dataInIncMN.vid of
-              vvPregled:
+              vvPregledNew:
               begin
                 preg := pat.FPregledi[dataInIncMN.index];
                 dataPreg := VtrImport.GetNodeData(runInIncMN);
@@ -2387,7 +2387,7 @@ begin
   data := sender.GetNodeData(node);
 
   case data.vid of
-    vvPregled:
+    vvPregledNew:
     begin
       Stopwatch := TStopwatch.StartNew;
       if FmxImportNzisFrm = nil then
@@ -2446,7 +2446,7 @@ begin
     begin
       dataParent := sender.GetNodeData(node.parent);
       case dataParent.vid of
-        vvPregled:
+        vvPregledNew:
         begin
           dataPat := sender.GetNodeData(node.Parent.parent);
           if dataPat.vid = vvIncMN then
@@ -2570,7 +2570,7 @@ begin
           begin
             CellText := 'ÅÃÍ ' + msgColl.CollPat.getAnsiStringMap(data.DataPos, word(PatientNew_EGN));
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             //preg := msgColl.CollPreg.Items[data.index];
             if Data.DataPos > 0 then
@@ -2777,7 +2777,7 @@ begin
               end;
             end;
           end;
-          vvPregled:
+          vvPregledNew:
           begin
             dataPat := sender.GetNodeData(node.parent);
             if dataPat = nil then Exit;
@@ -2874,7 +2874,7 @@ begin
           begin
             DataParent := sender.GetNodeData(node.parent);
             case DataParent.vid of
-              vvpregled:
+              vvPregledNew:
               begin
                 dataPat := sender.GetNodeData(node.parent.parent);
                 if dataPat = nil then Exit;
@@ -3092,7 +3092,7 @@ begin
             begin
               msg := msgColl.items[data.index];
             end;
-            vvpregled:
+            vvPregledNew:
             begin
               //dataPat := vtrTemp.GetNodeData(node.parent.parent);
 //              pat := msgColl.CollPat.Items[dataPat.index];

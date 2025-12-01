@@ -1,4 +1,4 @@
-unit Table.CL006;
+﻿unit Table.CL006;
 
 interface
 uses
@@ -149,9 +149,13 @@ TCL006Item = class(TBaseItem)
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
 	function GetCollDelType: TCollectionsType; override;
+	procedure ImportXMLNzis(cl000: TObject);
+  procedure BuildKeyDict(PropIndex: Word);
   end;
 
 implementation
+uses
+  Nzis.Nomen.baseCL000, System.Rtti;
 
 { TCL006Item }
 
@@ -300,7 +304,7 @@ begin
   stream.Position := stream.Position + delta;
   New(self.PRecord);
 
-  self.PRecord.setProp := TCL006Item.TSetProp(flds08);// ���� �� ������� ����� ��� ���� ������
+  self.PRecord.setProp := TCL006Item.TSetProp(flds08);// тука се записва какво има като полета
 
 
   for propindexCL006 := Low(TCL006Item.TPropertyIndex) to High(TCL006Item.TPropertyIndex) do
@@ -312,7 +316,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexCL006);
-      dataCmdProp.vid := vvPregled;
+      dataCmdProp.vid := vvPregledNew;
     end;
     self.FillPropCL006(propindexCL006, stream);
   end;
@@ -467,7 +471,7 @@ function TCL006Coll.AddItem(ver: word): TCL006Item;
 begin
   Result := TCL006Item(add);
   Result.Version := ver;
-  case ver of // � ���������� �� �������� �� ������
+  case ver of // в зависимост от версията на записа
     0:
     begin
     end;
@@ -533,7 +537,7 @@ begin
   end
   else
   begin
-    // ��� ���������� �������� �������...
+    // при евентуално добавена колонка...
   end;  
 end;
 
@@ -547,7 +551,7 @@ begin
     tempItem := Items[i];
     if tempItem.PRecord <> nil then
     begin
-	  // === �������� �� ��������� (CheckForSave) ===
+	  // === проверки за запазване (CheckForSave) ===
 
   if (CL006_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL006_Key))) then
   begin
@@ -824,7 +828,7 @@ begin
   end
   else
   begin
-    // ��� ���������� �������� �������...
+    // при евентуално добавена колонка...
   end;
 end;
 
@@ -1434,7 +1438,7 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := '���';
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCell;
   TVirtualModeData(Grid.Data).OnSetValue:=self.SetCell;
@@ -1462,7 +1466,7 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := '���';
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := 'Ред';
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellList;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -1489,7 +1493,7 @@ begin
   begin
     TVirtualModeData(Grid.Data).Headers[i] := self.DisplayName(i);
   end;
-  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('���/%d ��.', [self.ListCL006Search.Count]);
+  TVirtualModeData(Grid.Data).Headers[self.FieldCount] := Format('Ред/%d бр.', [self.ListCL006Search.Count]);
 
   TVirtualModeData(Grid.Data).OnGetValue:=self.GetCellSearch;
   TVirtualModeData(Grid.Data).OnSetValue:=nil;
@@ -1638,5 +1642,327 @@ begin
       CL006_role: SortByIndexAnsiString;
   end;
 end;
+
+procedure TCL006Coll.ImportXMLNzis(cl000: TObject);
+var
+  Acl000 : TCL000EntryCollection;
+  entry  : TCL000EntryItem;
+  item   : TCL006Item;
+  i, idxOld, j: Integer;
+  idx    : array of Integer;
+  propIdx: TCL006Item.TPropertyIndex;
+  propName, xmlName, oldValue, newValue: string;
+  kindDiff: TDiffKind;
+  pCardinalData: PCardinal;
+  dataPosition: Cardinal;
+begin
+  Acl000 := TCL000EntryCollection(cl000);
+
+  // === 1) Build dictionary from ADB data ===
+  BuildKeyDict(Ord(CL006_Key));   // old data
+
+  // === 2) Build XML→Property index map ===
+  j := 0;
+  SetLength(idx, 0);
+
+  for propIdx := Low(TCL006Item.TPropertyIndex) to High(TCL006Item.TPropertyIndex) do
+  begin
+    propName := TRttiEnumerationType.GetName(propIdx);
+
+    // skip internal
+    if SameText(propName, 'CL006_Key') then Continue;
+    if SameText(propName, 'CL006_Description') then Continue;
+    if SameText(propName, 'CL006_Logical') then Continue;
+
+    xmlName := propName.Substring(Length('CL006_'));   // remove prefix
+    xmlName := xmlName.Replace('_', ' ');              // convert to XML naming
+
+    for i := 0 to Acl000.FieldsNames.Count - 1 do
+      if SameText(Acl000.FieldsNames[i], xmlName)
+         or SameText(Acl000.FieldsNames[i], xmlName.Replace(' ', '_')) then
+      begin
+        SetLength(idx, Length(idx)+1);
+        idx[High(idx)] := i;
+        Break;
+      end;
+  end;
+
+  // === 3) Process XML entries ===
+  for i := 0 to Acl000.Count - 1 do
+  begin
+    entry := Acl000.Items[i];
+
+    // --- 3.1: try to find existing record ---
+    if KeyDict.TryGetValue(entry.Key, idxOld) then
+    begin
+      item := Items[idxOld];         // UPDATE
+      kindDiff := dkChanged;
+    end
+    else
+    begin
+      item := TCL006Item(Add);      // INSERT
+      kindDiff := dkNew;
+    end;
+
+    // allocate fresh record for NEW or UPDATED data
+    if item.PRecord <> nil then
+      Dispose(item.PRecord);
+    New(item.PRecord);
+    item.PRecord.setProp := [];
+
+    // --- 3.2: Key / Description (always updated) ---
+    newValue := entry.Key;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_Key));
+    item.PRecord.Key := newValue;
+    if oldValue <> newValue then
+      Include(item.PRecord.setProp, CL006_Key);
+
+    newValue := entry.Descr;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_Description));
+    item.PRecord.Description := newValue;
+    if oldValue <> newValue then
+      Include(item.PRecord.setProp, CL006_Description);
+
+    // --- 3.3: meta fields ---
+    j := 0;
+    if Length(idx) > 0 then
+    begin
+      // DescriptionEn, nhif_code, clinical_speciality, nhif_name, role
+      if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+      begin
+        newValue := entry.FMetaDataFields[idx[j]].Value;
+        oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_DescriptionEn));
+        item.PRecord.DescriptionEn := newValue;
+        if oldValue <> newValue then
+          Include(item.PRecord.setProp, CL006_DescriptionEn);
+      end;
+      Inc(j);
+
+      if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+      begin
+        newValue := entry.FMetaDataFields[idx[j]].Value;
+        oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_nhif_code));
+        item.PRecord.nhif_code := newValue;
+        if oldValue <> newValue then
+          Include(item.PRecord.setProp, CL006_nhif_code);
+      end;
+      Inc(j);
+
+      if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+      begin
+        newValue := entry.FMetaDataFields[idx[j]].Value;
+        oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_clinical_speciality));
+        item.PRecord.clinical_speciality := newValue;
+        if oldValue <> newValue then
+          Include(item.PRecord.setProp, CL006_clinical_speciality);
+      end;
+      Inc(j);
+
+      if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+      begin
+        newValue := entry.FMetaDataFields[idx[j]].Value;
+        oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_nhif_name));
+        item.PRecord.nhif_name := newValue;
+        if oldValue <> newValue then
+          Include(item.PRecord.setProp, CL006_nhif_name);
+      end;
+      Inc(j);
+
+      if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+      begin
+        newValue := entry.FMetaDataFields[idx[j]].Value;
+        oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_role));
+        item.PRecord.role := newValue;
+        if oldValue <> newValue then
+          Include(item.PRecord.setProp, CL006_role);
+      end;
+      Inc(j);
+    end;
+
+    // после Save/Insert ще се извърши чрез командите
+    if kindDiff = dkNew then
+    begin
+      item.InsertCL006;
+      Self.streamComm.Len := Self.streamComm.Size;
+      Self.cmdFile.CopyFrom(Self.streamComm, 0);
+      Dispose(item.PRecord);
+      item.PRecord := nil;
+    end
+    else
+    begin
+      pCardinalData := pointer(PByte(self.Buf) + 12);
+      dataPosition := pCardinalData^ + self.PosData;
+      item.SaveCL006(dataPosition);
+    end;
+
+
+
+  end;
+end;
+
+
+//procedure TCL006Coll.ImportXMLNzis(cl000: TObject);
+//var
+//  Acl000: TCL000EntryCollection;
+//  i, j: integer;
+//  TempItem: TCL006Item;
+//  entry: TCL000EntryItem;
+//  idx: array of integer;
+//  propIdx: TCL006Item.TPropertyIndex;
+//  xmlName: string;
+//begin
+//  Acl000 := TCL000EntryCollection(cl000);
+//
+//  // --- Build index mapping between XML meta fields and DDL properties ---
+//  SetLength(idx, 0);
+//  j := 0;
+//
+//  for propIdx := Low(TCL006Item.TPropertyIndex) to High(TCL006Item.TPropertyIndex) do
+//  begin
+//    propName := TRttiEnumerationType.GetName(propIdx);
+//
+//    // Skip technical
+//    if SameText(propName, 'CL006_Key') then Continue;
+//    if SameText(propName, 'CL006_Description') then Continue;
+//    if SameText(propName, 'CL006_Logical') then Continue;
+//
+//    // Remove prefix e.g. "CL000_"
+//    xmlName := propName.Substring(6);
+//
+//    // Convert property name to XML name (replace "_" with " ")
+//    xmlName := xmlName.Replace('_', ' ');
+//
+//    // Find matching meta-field index
+//    for i := 0 to Acl000.FieldsNames.Count - 1 do
+//    begin
+//      if SameText(Acl000.FieldsNames[i], xmlName) or SameText(Acl000.FieldsNames[i], propName.Substring(6)) then
+//      begin
+//        SetLength(idx, Length(idx)+1);
+//        idx[High(idx)] := i;
+//        Break;
+//      end;
+//    end;
+//  end;
+//
+//  // --- Insert rows from XML into the generated collection ---
+//  for i := 0 to Acl000.Count - 1 do
+//  begin
+//    entry := Acl000.Items[i];
+//    TempItem := TCL006Item(Self.Add);
+//    New(TempItem.PRecord);
+//    TempItem.PRecord.setProp := [];
+//
+//    // Key
+//    TempItem.PRecord.Key := entry.Key;
+//    Include(TempItem.PRecord.setProp, CL006_Key);
+//
+//    // Description
+//    TempItem.PRecord.Description := entry.Descr;
+//    Include(TempItem.PRecord.setProp, CL006_Description);
+//
+//    j := 0;
+//
+//    // DescriptionEn
+//    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+//    begin
+//      TempItem.PRecord.DescriptionEn := entry.FMetaDataFields[idx[j]].Value;
+//      Include(TempItem.PRecord.setProp, CL006_DescriptionEn);
+//    end;
+//    Inc(j);
+//
+//    // nhif_code
+//    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+//    begin
+//      TempItem.PRecord.nhif_code := entry.FMetaDataFields[idx[j]].Value;
+//      Include(TempItem.PRecord.setProp, CL006_nhif_code);
+//    end;
+//    Inc(j);
+//
+//    // clinical_speciality
+//    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+//    begin
+//      TempItem.PRecord.clinical_speciality := entry.FMetaDataFields[idx[j]].Value;
+//      Include(TempItem.PRecord.setProp, CL006_clinical_speciality);
+//    end;
+//    Inc(j);
+//
+//    // nhif_name
+//    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+//    begin
+//      TempItem.PRecord.nhif_name := entry.FMetaDataFields[idx[j]].Value;
+//      Include(TempItem.PRecord.setProp, CL006_nhif_name);
+//    end;
+//    Inc(j);
+//
+//    // role
+//    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+//    begin
+//      TempItem.PRecord.role := entry.FMetaDataFields[idx[j]].Value;
+//      Include(TempItem.PRecord.setProp, CL006_role);
+//    end;
+//    Inc(j);
+//
+//    TempItem.InsertCL006;
+//    Self.streamComm.Len := Self.streamComm.Size;
+//    Self.cmdFile.CopyFrom(Self.streamComm, 0);
+//    Dispose(TempItem.PRecord);
+//    TempItem.PRecord := nil;
+//  end;
+//end;
+
+procedure TCL006Coll.BuildKeyDict(PropIndex: Word);
+var
+  i      : Integer;
+  item   : TCL006Item;
+  keyStr : string;
+  pIdx   : TCL006Item.TPropertyIndex;
+begin
+  // общата част – алокация / чистене на речника
+  inherited BuildKeyDict(PropIndex);
+
+  // кастваме Word → enum на генерирания клас
+  pIdx := TCL006Item.TPropertyIndex(PropIndex);
+
+  for i := 0 to Count - 1 do
+  begin
+    item := Items[i];
+    keyStr := self.getAnsiStringMap(item.datapos,PropIndex);
+
+    // В NZIS-номенклатурите всички полета са AnsiString, така че спокойно
+    // можем да четем директно от PRecord-а.
+    //case pIdx of
+//      CL006_Key:
+//        keyStr := item.PRecord.Key;
+//
+//      CL006_Description:
+//        keyStr := item.PRecord.Description;
+//
+//      CL006_DescriptionEn:
+//        keyStr := item.PRecord.DescriptionEn;
+//
+//      CL006_nhif_code:
+//        keyStr := item.PRecord.nhif_code;
+//
+//      CL006_clinical_speciality:
+//        keyStr := item.PRecord.clinical_speciality;
+//
+//      CL006_nhif_name:
+//        keyStr := item.PRecord.nhif_name;
+//
+//      CL006_role:
+//        keyStr := item.PRecord.role;
+//    else
+//      // защитен fallback – ако утре добавиш поле и забравиш да го сложиш в case-а
+//      //keyStr := item.ValueToString(PropIndex);
+//    end;
+
+    if keyStr <> '' then
+    begin
+      // ако има дубликати – последният печели (полезно за "последна версия")
+      KeyDict.AddOrSetValue(keyStr, i);
+    end;
+  end;
+end;
+
 
 end.
