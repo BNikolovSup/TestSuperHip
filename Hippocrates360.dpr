@@ -37,6 +37,7 @@ uses
   Table.CL022 in 'Aspects\Tables\Table.CL022.pas',
   Table.CL024 in 'Aspects\Tables\Table.CL024.pas',
   Table.CL038 in 'Aspects\Tables\Table.CL038.pas',
+  Table.CL006 in 'Aspects\Tables\Table.CL006.pas',
   Table.Role in 'Aspects\Tables\Table.Role.pas',
   Table.Unfav in 'Aspects\Tables\Table.Unfav.pas',
   Table.Diagnosis in 'Aspects\Tables\Table.Diagnosis.pas',

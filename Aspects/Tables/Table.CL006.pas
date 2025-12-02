@@ -316,7 +316,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexCL006);
-      dataCmdProp.vid := vvPregledNew;
+      dataCmdProp.vid := vvCL006;
     end;
     self.FillPropCL006(propindexCL006, stream);
   end;
@@ -1658,6 +1658,11 @@ var
 begin
   Acl000 := TCL000EntryCollection(cl000);
 
+  for i := 0 to count - 1 do
+  begin
+    Pword(PByte(Buf) + items[i].DataPos +  - 4)^ := ord(ctCL006Old);
+  end;
+
   // === 1) Build dictionary from ADB data ===
   BuildKeyDict(Ord(CL006_Key));   // old data
 
@@ -1783,20 +1788,27 @@ begin
     if kindDiff = dkNew then
     begin
       item.InsertCL006;
+      Pword(PByte(Buf) + item.DataPos +  - 4)^ := ord(ctCL006);
       Self.streamComm.Len := Self.streamComm.Size;
       Self.cmdFile.CopyFrom(Self.streamComm, 0);
       Dispose(item.PRecord);
       item.PRecord := nil;
+
     end
     else
     begin
-      pCardinalData := pointer(PByte(self.Buf) + 12);
-      dataPosition := pCardinalData^ + self.PosData;
-      item.SaveCL006(dataPosition);
+      if item.PRecord.setProp <> [] then
+      begin
+        pCardinalData := pointer(PByte(self.Buf) + 12);
+        dataPosition := pCardinalData^ + self.PosData;
+        item.SaveCL006(dataPosition);
+        Pword(PByte(Buf) + item.DataPos +  - 4)^ := ord(ctCL006);
+        self.streamComm.Len := self.streamComm.Size;
+        Self.CmdFile.CopyFrom(self.streamComm, 0);
+        pCardinalData := pointer(PByte(Buf) + 12);
+        pCardinalData^  := dataPosition - self.PosData;
+      end;
     end;
-
-
-
   end;
 end;
 

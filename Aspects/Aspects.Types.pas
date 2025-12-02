@@ -58,7 +58,7 @@ type
                       ctINC_MDNDel, ctINC_NAPRDel, ctNZIS_PLANNED_TYPEDel, ctNZIS_QUESTIONNAIRE_RESPONSEDel,
                       ctNZIS_QUESTIONNAIRE_ANSWERDel, ctNZIS_ANSWER_VALUEDel, ctMkbDel, ctOtherDoctorDel,
                       ctCL142Del, ctPregledNewDel, ctCL006Del, ctCL022Del, ctCL024Del, ctNomenNzisDel,
-                      ctCL011, ctCL011Del, ctCL009, ctCL009Del);
+                      ctCL011, ctCL011Del, ctCL009, ctCL009Del, ctCL006Old);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -237,7 +237,8 @@ type
              vvCL011Root,
              vvCL011,
              vvCL009,
-             vvCL009Root
+             vvCL009Root,
+             vvCL006
              );
 
 

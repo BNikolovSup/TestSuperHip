@@ -21,9 +21,10 @@ interface
   HistoryThread, SearchThread, AspectPerformerThread, CertThread,
   System.Zip, frxRichEditor, frxRichEdit,
   HistoryNav, Nzis.types, FILE_SUBM_PL, Tee.GridData.Strings, Tee.Grid.CSV,
-
+  Vcl.Grids,
   Xml.XMLIntf, Xml.XMLDoc, ansistrings,
   RTTI, IBX.IBSQL, Tee.Grid.Ticker, Tee.Grid.Columns, tee.grid.Rows,
+  //tee.grid.
   ProfGraph, Options,Vcl.Clipbrd,
 
 
@@ -955,6 +956,8 @@ type
     procedure BtnSendToNzisNomenUpdate(node: PVirtualNode);
     procedure BtnXMLtoCL000(node: PVirtualNode);
     procedure BtnXMLtoCL000ForUpdate(node: PVirtualNode);
+    procedure GridPaintCell(Sender: TObject; ACol, ARow: Integer;
+        const R: TRect; const AState: TGridDrawState);
     procedure LoadFromNzisNewNomen(nomenId: integer);
     procedure RemontCl142;
     procedure OnProcess(streamSize, streamPos: integer);
@@ -2945,7 +2948,8 @@ begin
       data := vtrNomenNzis.GetNodeData(node);
       if data.index< 0 then exit;
 
-      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      //FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      FRoot := XMLParseFile('d:\cl006Old.xml', true, nil, OnProcess);
       UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
@@ -2960,6 +2964,7 @@ begin
     end;
     78:
     begin
+      data := vtrNomenNzis.GetNodeData(node);
       idnom := data.index;
       case idNom of
         6:  Adb_DM.CL006Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
@@ -2982,10 +2987,120 @@ begin
       //ListNomenNzisNames[data.index].ArrStr[1];
 //      ListNomenNzisNames[data.index].Cl000Coll;
     end;
+    80:
+    begin
+
+      data := vtrNomenNzis.GetNodeData(node);
+      if data.index< 0 then exit;
+      idnom := data.index;
+
+      FRoot := XMLParseFile('d:\cl006New.xml', true, nil, OnProcess);
+      UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+
+      FRoot._Release;
+
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.GetColNames;
+
+     // mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.FieldsNames);
+      mmoTest.Lines.Assign( Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.DDL);
+      Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ShowGrid(grdNom);
+      vtrNomenNzis.RepaintNode(node);
+      Stopwatch := TStopwatch.StartNew;
+      case idNom of
+        6:  Adb_DM.CL006Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        9:  Adb_DM.CL009Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        11: Adb_DM.CL011Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+        //6:  Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(Adb_DM.CL006Coll);
+        22: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl022(Adb_DM.CL022Coll);
+        24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
+        37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
+        38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
+        88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
+        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
+        139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
+        142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
+        144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
+
+      end;
+      Elapsed := Stopwatch.Elapsed;
+      mmoTest.lines.add(Format('Adb_DM.CL006Coll.ImportXMLNzis: за %f', [Elapsed.TotalMilliseconds]));
+      Adb_DM.ListNomenNzisNames[data.index].AspColl.ShowGrid(grdNom);
+    end;
   end;
 
   //Cl000Coll.GetColNames
 end;
+
+procedure TfrmSuperHip.GridPaintCell(Sender: TObject; ACol, ARow: Integer;
+  const R: TRect; const AState: TGridDrawState);
+var
+  G: TTeeGrid;
+  Item: TCL006Item;
+  Col:  Tee.Grid.Columns.TColumn;
+  fldIndex: TCL006Item.TPropertyIndex;
+  sOld, sNew: string;
+begin
+  G := TTeeGrid(Sender);
+
+  // безопасност
+  if (ARow < 0) or (ARow >= G.Data.Count) then
+    Exit;
+
+  //Item := TCL006Item(G.Data.AsObjects[ARow]);
+  Item := Adb_DM.CL006Coll.Items[ARow];
+  if Item = nil then Exit;
+
+  Col := G.Columns[ACol];
+
+  // колоната трябва да има Tag == PropertyIndex (генераторът вече го прави)
+  fldIndex := TCL006Item.TPropertyIndex(Col.Tag);
+
+  // -------------------------------
+  // 1) ОЦВЕТЯВАНЕ НА ЦЕЛИЯ РЕД
+  // -------------------------------
+
+  //if Item.DataPos = 0 then        // чисто нов ред
+//    G.Canvas.Brush.Color := $CCFFCC   // светло зелено
+//  else if Item.CollType = ctCL006Old then
+//    G.Canvas.Brush.Color := $EEEEEE   // сиво
+//  else if Item.CollType = ctCL006Del then
+//    G.Canvas.Brush.Color := $DDCCCC   // розово/червеникаво
+//  else
+    G.Canvas.Brush.Color := clWhite;  // нормален ред
+
+  G.Canvas.FillRect(R);
+
+  // -------------------------------
+  // 2) ОЦВЕТЯВАНЕ НА ПРОМЕНЕНИ КЛЕТКИ
+  // -------------------------------
+
+  if (Item.PRecord <> nil)
+  and (fldIndex in Item.PRecord.setProp) then
+  //and (fldIndex >= 0) then
+  begin
+    // променената клетка – жълта
+    G.Canvas.Brush.Color := $FFFFCC;
+    G.Canvas.FillRect(R);
+
+    // ХИНТ — оригинална стойност
+    //if Assigned(G.Hint) then
+//    begin
+//      sOld := TBaseCollection(Item.Collection).getAnsiStringMap(Item.DataPos, fldIndex);
+//      sNew := (Item.PRecord^).Key; // после генераторът ще вмъкне правилно поле
+//
+//      G.Hint := Format('Стара стойност: %s'#13'Нова стойност: %s', [sOld, sNew]);
+//    end;
+  end;
+
+  // -------------------------------
+  // 3) ИЗПИСВАНЕ НА ТЕКСТА
+  // -------------------------------
+
+  G.Canvas.Font.Color := clBlack;
+  //G.DefaultDrawCell(ACol, ARow, R);
+end;
+
 
 procedure TfrmSuperHip.BtnXMLtoCL000ForUpdate(node: PVirtualNode);
 var
@@ -22911,7 +23026,8 @@ begin
         2:
         begin
           begin
-            BtnSendToNzisNomenUpdate(node);
+            BtnXMLtoCL000(node);
+            //BtnSendToNzisNomenUpdate(node);
             //BtnXMLtoCL000ForUpdate(node);
           end;
         end;

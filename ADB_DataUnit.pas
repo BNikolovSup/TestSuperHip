@@ -2748,10 +2748,15 @@ begin
 //            Cl050.DataPos := aspPos;
             Inc(aspPos, (CL050Coll.FieldCount) * 4);
           end;
-          ctCL006, ctCl011, ctCL009:
+          ctCL006, ctCL006Del, ctCL006Old:
+          begin
+            lstColl[ord(ctCL006)].OpenAdbFull(aspPos);
+          end;
+          ctCl011, ctCL009:
           begin
             lstColl[ord(collType)].OpenAdbFull(aspPos);
           end;
+
           ctCL022:
           begin
             //Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
