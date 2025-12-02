@@ -9839,6 +9839,7 @@ begin
   Visible := False;
   edt1.Parent := grdSearch;
   edt1.SetBounds(0,0,1, 1);
+  //TTeeGRD(grdNom).renOnPaintCell := GridPaintCell;
 
   vtrPregledPat.TakeFocus := False;
   grdSearch.Header.Hover.OnChange := HoverChange;

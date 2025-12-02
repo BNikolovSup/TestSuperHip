@@ -5,9 +5,11 @@ uses
   Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults, Tee.Renders,
+  uGridHelpers  ;
 
 type
+
 TCollectionForSort = class(TPersistent)
   private
     FItemClass: TCollectionItemClass;
@@ -20,6 +22,8 @@ TFindedResult = record
 end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
+
+
 
 TLogicalCL006 = (
     Is_);
@@ -1431,7 +1435,7 @@ end;
 procedure TCL006Coll.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
-
+  clls: TDiffCellRenderer;
 begin
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
   for i := 0 to self.FieldCount - 1 do
@@ -1447,7 +1451,10 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
+  clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
+  clls.FGrid := Grid;
 
+  Grid.Cells := clls;
   Grid.Columns[self.FieldCount].Width.Value := 50;
   Grid.Columns[self.FieldCount].Index := 0;
   TTeeGRD(Grid).Width  := TTeeGRD(Grid).Width + 1;
@@ -1975,6 +1982,47 @@ begin
     end;
   end;
 end;
+
+
+
+
+//procedure TDiffCellRenderer.Paint(const ACol, ARow: Integer; R: TRect);
+//var
+//  oldText, newText: String;
+//  isModified: Boolean;
+//  //grid: TTeeGrid;
+//begin
+//  //grid := TTeeGrid(Owner.Owner);
+//
+//  // вземаме стойността от базовия CellData
+//  newText := grid.Columns[ACol].AsString(ARow);
+//
+//  // вземаме старата стойност от номенклатурата (по адб)
+//  oldText := LookupOldValue(ACol, ARow);   // <--- това си го пишеш ти
+//
+//  isModified := (oldText <> newText);
+//
+//  // фон
+//  if isModified then
+//  begin
+//    Canvas.Brush.Color := $00D0FFD0;  // светло зелено
+//    Canvas.FillRect(R);
+//  end;
+//
+//  // стандартно рисуване
+//  inherited;
+//
+//  // подчертай клетката
+//  if isModified then
+//  begin
+//    Canvas.Pen.Color := clRed;
+//    Canvas.Rectangle(R);
+//  end;
+//end;
+
+
+
+
 
 
 end.

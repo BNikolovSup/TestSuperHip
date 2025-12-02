@@ -13,6 +13,12 @@ uses
 
 type
 
+  TDiffCellRenderer = class(TCellRender)
+  public
+    FGrid: TTeeGrid;
+    procedure Paint(var AData:TRenderData); override;
+  end;
+
   TMultiSortableHeader = class(TSortableHeader)
   private
     FGrid: TTeeGrid;
@@ -164,6 +170,41 @@ end;
 procedure TMultiSortableHeader.SetHoverColumn(const Value: Integer);
 begin
   FHoverColumn := Value;
+end;
+
+{ TDiffCellRenderer }
+
+procedure TDiffCellRenderer.Paint(var AData: TRenderData);
+var
+  RCell: TRectF;
+  Column: TColumn;
+  CellText: string;
+  painter: TPainter;
+  MousePos: TPoint;
+begin
+  inherited;
+
+  if (FGrid = nil)  then
+    Exit;
+  MousePos := FGrid.ScreenToClient(Mouse.CursorPos);
+  Column := FGrid.Columns.FindAt(AData.Bounds.Left, AData.Bounds.Right);
+  CellText := AData.Data;
+  RCell := AData.Bounds;
+  painter := AData.Painter;
+  if AData.Row = 3 then
+  begin
+    if Column.Index = 4 then
+    begin
+      painter.Fill(RCell, $00BCB7BF);
+    end
+    else
+    begin
+      painter.Fill(RCell, $00EF9C87);
+    end;
+    painter.SetHorizontalAlign(THorizontalAlign.Left);
+    painter.SetVerticalAlign(TVerticalAlign.Center);
+    painter.TextOut(RCell, CellText);
+  end;
 end;
 
 end.

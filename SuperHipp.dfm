@@ -11859,8 +11859,16 @@ object frmSuperHip: TfrmSuperHip
           Top = 44
           Width = 1066
           Height = 250
-          Columns = <>
+          Cells.Format.Brush.Color = x000000FF
+          Columns = <
+            item
+              LoadOrder = 0
+            end
+            item
+              LoadOrder = 1
+            end>
           ReadOnly = False
+          Rows.Format.Brush.Color = x000000FF
           Selected.FullRow = True
           OnCellEditing = grdNomCellEditing
           OnCellEdited = grdNomCellEdited
