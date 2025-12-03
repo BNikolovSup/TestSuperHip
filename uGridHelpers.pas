@@ -16,6 +16,7 @@ type
   TDiffCellRenderer = class(TCellRender)
   public
     FGrid: TTeeGrid;
+    FCollAdb: TBaseCollection;
     procedure Paint(var AData:TRenderData); override;
   end;
 
@@ -176,36 +177,101 @@ end;
 
 procedure TDiffCellRenderer.Paint(var AData: TRenderData);
 var
-  RCell: TRectF;
+  RCell : TRectF;
   Column: TColumn;
   CellText: string;
-  painter: TPainter;
-  MousePos: TPoint;
+  Painter: TPainter;
+  //Coll   : TBaseCollection;
+  Diff   : TDiffKind;
 begin
   inherited;
 
-  if (FGrid = nil)  then
+  if (FGrid = nil) then
     Exit;
-  MousePos := FGrid.ScreenToClient(Mouse.CursorPos);
+
+  // Колекцията, която стои зад грида – задаваме я в ShowGrid: Grid.TagObject := Self;
+  if (FCollAdb = nil) then
+    Exit;
+
+
+
+  // Коя колона рисуваме?
   Column := FGrid.Columns.FindAt(AData.Bounds.Left, AData.Bounds.Right);
-  CellText := AData.Data;
-  RCell := AData.Bounds;
-  painter := AData.Painter;
-  if AData.Row = 3 then
-  begin
-    if Column.Index = 4 then
-    begin
-      painter.Fill(RCell, $00BCB7BF);
-    end
-    else
-    begin
-      painter.Fill(RCell, $00EF9C87);
-    end;
-    painter.SetHorizontalAlign(THorizontalAlign.Left);
-    painter.SetVerticalAlign(TVerticalAlign.Center);
-    painter.TextOut(RCell, CellText);
+  if Column = nil then
+    Exit;
+
+  // Индекси за колекцията
+  // AData.Row е 1-based от грида, ако записите ти са 0-based – извади 1
+  Diff := FCollAdb.CellDiffKind(Column.Index, AData.Row);
+
+  RCell   := AData.Bounds;
+  Painter := AData.Painter;
+  CellText := AData.Data; // текстът от OnGetValue
+
+  // Фон според типа разлика
+  case Diff of
+    dkNone:
+      begin
+        Exit;
+        // стандартен фон – оставяме TeeGrid да си го е нарисувал (или леко тонираме)
+        // Painter.Fill(RCell, $00FFFFFF); // ако искаш бяло
+      end;
+
+    dkNew:
+      Painter.Fill(RCell, $00C8FFC8);   // светло зелено
+
+    dkChanged:
+      Painter.Fill(RCell, $0056E3EF);   // светло жълто
+
+    dkForDeleted:
+      Painter.Fill(RCell, $0089BCFA);   // светло червено
+
+    dkDeleted:
+      Painter.Fill(RCell, $002020FF);   // светло червено
   end;
+
+  // Подравняване на текста – да не стои “избутан”
+  Painter.SetHorizontalAlign(THorizontalAlign.Left);
+  Painter.SetVerticalAlign(TVerticalAlign.Center);
+
+  // Малък отстъп вляво
+  RCell.Left := RCell.Left + 4;
+
+  Painter.TextOut(RCell, CellText);
 end;
+
+//procedure TDiffCellRenderer.Paint(var AData: TRenderData);
+//var
+//  RCell: TRectF;
+//  Column: TColumn;
+//  CellText: string;
+//  painter: TPainter;
+//  MousePos: TPoint;
+//begin
+//  inherited;
+//
+//  if (FGrid = nil)  then
+//    Exit;
+//  MousePos := FGrid.ScreenToClient(Mouse.CursorPos);
+//  Column := FGrid.Columns.FindAt(AData.Bounds.Left, AData.Bounds.Right);
+//  CellText := AData.Data;
+//  RCell := AData.Bounds;
+//  painter := AData.Painter;
+//  if AData.Row = 3 then
+//  begin
+//    if Column.Index = 4 then
+//    begin
+//      painter.Fill(RCell, $00BCB7BF);
+//    end
+//    else
+//    begin
+//      painter.Fill(RCell, $00EF9C87);
+//    end;
+//    painter.SetHorizontalAlign(THorizontalAlign.Left);
+//    painter.SetVerticalAlign(TVerticalAlign.Center);
+//    painter.TextOut(RCell, CellText);
+//  end;
+//end;
 
 end.
 

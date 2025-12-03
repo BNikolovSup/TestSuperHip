@@ -955,6 +955,7 @@ type
     procedure BtnSendToNzisNomen(node: PVirtualNode);
     procedure BtnSendToNzisNomenUpdate(node: PVirtualNode);
     procedure BtnXMLtoCL000(node: PVirtualNode);
+
     procedure BtnXMLtoCL000ForUpdate(node: PVirtualNode);
     procedure GridPaintCell(Sender: TObject; ACol, ARow: Integer;
         const R: TRect; const AState: TGridDrawState);
@@ -2353,7 +2354,7 @@ var
 begin
   if node.Dummy > 70 then
   begin
-    ActiveSubButton.MaxValue := ActiveSubButton.MaxValue - 1;
+    //ActiveSubButton.MaxValue := ActiveSubButton.MaxValue - 1;
     Exit;
   end;
 
@@ -22975,18 +22976,9 @@ procedure TfrmSuperHip.vtrNomenNzisButtonClick(sender: TVirtualStringTreeHipp; n
 var
   IsTestNZIS: Boolean;
   data: PAspRec;
-
+  cnt: Integer;
 begin
-  //if ActiveSubButton = nil then
-//  begin
-//    AddCl('CL1000');
-//  end
-//  else
-//  if ActiveSubButton.Description = 'Ексел' then
-//  begin
-//    ImportPR001(ADB_DM.PR001Coll);
-//  end
-//  else
+
   if True then // ActiveSubButton.Description = 'XML' then
   begin
     data := vtrNomenNzis.GetNodeData(node);
@@ -23027,7 +23019,17 @@ begin
         2:
         begin
           begin
-            BtnXMLtoCL000(node);
+            cnt := 0;
+            Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
+            if cnt = 0 then
+            begin
+              BtnXMLtoCL000(node);
+            end
+            else
+            begin
+              Adb_DM.ListNomenNzisNames[data.index].AspColl.UpdateXMLNzis;
+            end;
+            sender.RepaintNode(node);
             //BtnSendToNzisNomenUpdate(node);
             //BtnXMLtoCL000ForUpdate(node);
           end;
@@ -23167,27 +23169,12 @@ procedure TfrmSuperHip.vtrNomenNzisDrawButton(sender: TVirtualStringTreeHipp; no
   var ButonVisible: Boolean; const numButton: Integer;  var imageIndex: Integer);
 var
   data: PAspRec;
+  cnt: Integer;
 begin
   //if numButton > 0 then Exit;
   data := sender.GetNodeData(node);
 
-  //if ActiveSubButton = nil then
-//  begin
-//    case numButton of
-//      0:
-//      begin
-//        ButonVisible := True;
-//        imageIndex := 0;
-//      end;
-//    end;
-//  end
-//  else
-//  if ActiveSubButton.Description = 'Ексел' then
-//  begin
-//    ButonVisible := True;
-//    imageIndex := 57;
-//  end
-//  else
+
   if True then //ActiveSubButton.Description = 'XML' then
   begin
     case numButton of
@@ -23234,7 +23221,16 @@ begin
           80:
           begin
             ButonVisible := True;
-            imageIndex := 31;
+            cnt := 0;
+            Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
+            if cnt = 0 then
+            begin
+              imageIndex := 31;
+            end
+            else
+            begin
+              imageIndex := 79;
+            end;
           end;
         end;
       end;
@@ -26013,6 +26009,7 @@ begin
         FillCl088Update;
         mmoTest.Lines.Add('CL088Coll.FCL088New.Count= ' + IntToStr(ADB_DM.CL088Coll.FCL088New.Count));
       end;
+      //vvNomenNzis
     end;
   end
   else

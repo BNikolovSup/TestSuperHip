@@ -10,26 +10,7 @@ uses
   Vcl.ExtCtrls, Vcl.Menus;
 type
   TBaseItem = class;
-  TDiffKind = (dkSame, dkChanged, dkNew, dkDeleted);
-
-  TDiffField = record
-    FieldIndex: Integer;
-    OldValue: string;
-    NewValue: string;
-  end;
-
-  TDiffItem = class
-    Key: string;
-    Kind: TDiffKind;
-    Fields: TList<TDiffField>;
-    OldItem: TBaseItem;
-    NewItem: TBaseItem;
-  end;
-
-  TDiffResult = class
-    Items: TObjectList<TDiffItem>;
-  end;
-
+  TDiffKind = (dkNone, dkChanged, dkNew, dkForDeleted, dkDeleted);
 
   TParamProp = 0..255;
   TParamSetProp = set of TParamProp;
@@ -585,7 +566,11 @@ TCollectionForSort = class(TPersistent)
     class function GetStaticCollType: TCollectionsType; virtual; abstract;
     procedure SortListDataPos;
     procedure SortListNodes;
+    procedure CheckForSave(var cnt: Integer); virtual;
     function FindRootCollOptionNode(): PVirtualNode; virtual;
+    procedure ImportXMLNzis(cl000: TObject); virtual;
+    procedure UpdateXMLNzis; virtual;
+    function CellDiffKind(ACol, ARow: Integer): TDiffKind; virtual;
     procedure UpdateOrderArrayFromTree(Root: PVirtualNode);
     function getAnsiStringMap(dataPos: cardinal; propIndex: word): AnsiString;
     function getAnsiStringMap4(dataPos: cardinal; propIndex4: word): AnsiString;
@@ -3083,6 +3068,16 @@ begin
     KeyDict.Clear;
 end;
 
+function TBaseCollection.CellDiffKind(ACol, ARow: Integer): TDiffKind;
+begin
+  Result := dkNone; // базовата не знае нищо, наследниците (CL006...) ще override-нат
+end;
+
+procedure TBaseCollection.CheckForSave(var cnt: Integer);
+begin
+  cnt := 0;
+end;
+
 constructor TBaseCollection.Create(ItemClass: TCollectionItemClass);
 begin
   inherited Create(ItemClass);
@@ -3755,6 +3750,11 @@ begin
   end;
 end;
 
+procedure TBaseCollection.ImportXMLNzis(cl000: TObject);
+begin
+
+end;
+
 procedure TBaseCollection.IncCntInADB;
 begin
   inc(FCntInADB);
@@ -4352,6 +4352,11 @@ begin
     ArrayPropOrderSearchOptions[run.Index + 1] := run.Dummy - 1;
     run := run.NextSibling;
   end;
+end;
+
+procedure TBaseCollection.UpdateXMLNzis;
+begin
+
 end;
 
 procedure TBaseCollection.SortAnsiListPropIndexCollNew(propIndex: word;

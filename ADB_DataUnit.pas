@@ -3492,6 +3492,8 @@ begin
 
   CL006Coll := TRealCL006Coll.Create(TRealCl006Item);
   lstColl[Ord(CL006Coll.GetCollType)] := CL006Coll;
+  lstColl[Ord(ctCL006Del)] := CL006Coll;
+  lstColl[Ord(ctCL006Old)] := CL006Coll;
 
   CL009Coll := TRealCL009Coll.Create(TRealCl009Item);
   lstColl[Ord(CL009Coll.GetCollType)] := CL009Coll;
