@@ -37,6 +37,7 @@ type
   TServerResponse = (srNone, srWhoAreYou, srCmdSizes, srCmdUpload, srYouAre);
   TAspectRole = (arNone, arNomenNzis, arDoctorOPL, arNomenNzisUpload);
 
+  PCollectionsType = ^TCollectionsType;
   TCollectionsType = (ctAspect, ctConnection, ctIncMdnAnal, ctNewTable,
                       ctCommands, ctClients, ctPacket, ctPacketPacket,
                       ctFuncPacket, ctTreeLinkPacket, ctTreeLink, ctPregled, ctPregledNew,

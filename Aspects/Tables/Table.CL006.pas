@@ -402,7 +402,7 @@ var
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctCL006;
+  CollType := PCollectionsType(PByte(Buf) + DataPos - 4)^;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -546,45 +546,6 @@ begin
   begin
     // при евентуално добавена колонка...
   end;  
-end;
-
-function TCL006Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
-begin
-  if (ARow > count) or (ARow < 0) then
-    Exit;
-
-
-  if items[ARow].DataPos = 0 then
-  begin
-    Result := dkNew;
-    Exit;
-  end;
-
-  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Old)) then
-  begin
-    Result := dkForDeleted;
-    Exit;
-  end;
-
-  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Del)) then
-  begin
-    Result := dkDeleted;
-    Exit;
-  end;
-
-  if Items[ARow].PRecord = nil then
-  begin
-    Result := dkNone;
-    Exit;
-  end;
-
-  if TCL006Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
-  begin
-    Result := dkChanged;
-    Exit;
-  end;
-  //test
-
 end;
 
 procedure TCL006Coll.CheckForSave(var cnt: Integer);
@@ -1487,7 +1448,7 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
-
+  
   clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
   clls.FGrid := Grid;
   clls.FCollAdb := Self;
@@ -1928,6 +1889,45 @@ begin
       KeyDict.AddOrSetValue(keyStr, i);
     end;
   end;
+end;
+
+function TCL006Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
+begin
+  if (ARow > count) or (ARow < 0) then
+    Exit;
+
+
+  if items[ARow].DataPos = 0 then
+  begin
+    Result := dkNew;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Old)) then
+  begin
+    Result := dkForDeleted;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Del)) then
+  begin
+    Result := dkDeleted;
+    Exit;
+  end;
+
+  if Items[ARow].PRecord = nil then
+  begin
+    Result := dkNone;
+    Exit;
+  end;
+
+  if TCL006Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
+  begin
+    Result := dkChanged;
+    Exit;
+  end;
+  //test
+
 end;
 
 {NZIS_END}

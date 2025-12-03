@@ -545,47 +545,10 @@ begin
   else
   begin
     // при евентуално добавена колонка...
-  end;  
+  end;
 end;
 
-function TCL006Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
-begin
-  if (ARow > count) or (ARow < 0) then
-    Exit;
 
-
-  if items[ARow].DataPos = 0 then
-  begin
-    Result := dkNew;
-    Exit;
-  end;
-
-  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Old)) then
-  begin
-    Result := dkForDeleted;
-    Exit;
-  end;
-
-  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Del)) then
-  begin
-    Result := dkDeleted;
-    Exit;
-  end;
-
-  if Items[ARow].PRecord = nil then
-  begin
-    Result := dkNone;
-    Exit;
-  end;
-
-  if TCL006Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
-  begin
-    Result := dkChanged;
-    Exit;
-  end;
-  //test
-
-end;
 
 procedure TCL006Coll.CheckForSave(var cnt: Integer);
 var
@@ -1487,7 +1450,7 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
-
+  
   clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
   clls.FGrid := Grid;
   clls.FCollAdb := Self;
@@ -1774,7 +1737,7 @@ begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
       oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_DescriptionEn));
 
-      TempItem.PRecord.DescriptionEn := entry.FMetaDataFields[idx[j]].Value;
+      Item.PRecord.DescriptionEn := entry.FMetaDataFields[idx[j]].Value;
       if (oldValue <> newValue) then Include(item.PRecord.setProp, CL006_DescriptionEn);
     end;
     Inc(j);
@@ -1785,7 +1748,7 @@ begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
       oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_nhif_code));
 
-      TempItem.PRecord.nhif_code := entry.FMetaDataFields[idx[j]].Value;
+      Item.PRecord.nhif_code := entry.FMetaDataFields[idx[j]].Value;
       if (oldValue <> newValue) then Include(item.PRecord.setProp, CL006_nhif_code);
     end;
     Inc(j);
@@ -1796,7 +1759,7 @@ begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
       oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_clinical_speciality));
 
-      TempItem.PRecord.clinical_speciality := entry.FMetaDataFields[idx[j]].Value;
+      Item.PRecord.clinical_speciality := entry.FMetaDataFields[idx[j]].Value;
       if (oldValue <> newValue) then Include(item.PRecord.setProp, CL006_clinical_speciality);
     end;
     Inc(j);
@@ -1807,7 +1770,7 @@ begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
       oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_nhif_name));
 
-      TempItem.PRecord.nhif_name := entry.FMetaDataFields[idx[j]].Value;
+      Item.PRecord.nhif_name := entry.FMetaDataFields[idx[j]].Value;
       if (oldValue <> newValue) then Include(item.PRecord.setProp, CL006_nhif_name);
     end;
     Inc(j);
@@ -1818,7 +1781,7 @@ begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
       oldValue := getAnsiStringMap(item.DataPos, Ord(CL006_role));
 
-      TempItem.PRecord.role := entry.FMetaDataFields[idx[j]].Value;
+      Item.PRecord.role := entry.FMetaDataFields[idx[j]].Value;
       if (oldValue <> newValue) then Include(item.PRecord.setProp, CL006_role);
     end;
     Inc(j);
@@ -1928,6 +1891,45 @@ begin
       KeyDict.AddOrSetValue(keyStr, i);
     end;
   end;
+end;
+
+function TCL006Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
+begin
+  if (ARow > count) or (ARow < 0) then
+    Exit;
+
+
+  if items[ARow].DataPos = 0 then
+  begin
+    Result := dkNew;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Old)) then
+  begin
+    Result := dkForDeleted;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL006Del)) then
+  begin
+    Result := dkDeleted;
+    Exit;
+  end;
+
+  if Items[ARow].PRecord = nil then
+  begin
+    Result := dkNone;
+    Exit;
+  end;
+
+  if TCL006Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
+  begin
+    Result := dkChanged;
+    Exit;
+  end;
+  //test
+
 end;
 
 {NZIS_END}
