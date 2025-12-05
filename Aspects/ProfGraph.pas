@@ -48,7 +48,7 @@ type
 
     collPat: TCollection;
     Adb_DM: TObject;
-    //NzisPregNotPreg: string; // прегледи според нзис, ама не са (Божинката)
+    //NzisPregNotPreg: string; // РїСЂРµРіР»РµРґРё СЃРїРѕСЂРµРґ РЅР·РёСЃ, Р°РјР° РЅРµ СЃР° (Р‘РѕР¶РёРЅРєР°С‚Р°)
 //    RL090: string;
 
     constructor create;
@@ -84,47 +84,47 @@ begin
   
   lstValid := TStringList.Create;
   lstValid.Text :=
-        'B010-1 месец' + #13#10 +
-        'B020-1 месец' + #13#10 +
-        'B11-2 месец' + #13#10 +
-        'B22-3 месец' + #13#10 +
-        'B33-4 месец' + #13#10 +
-        'B44-5 месец' + #13#10 +
-        'B55-6 месец' + #13#10 +
-        'B6Около 6 месец' + #13#10 +
-        'B77-9 месец' + #13#10 +
-        'B87-9 месец' + #13#10 +
-        'B97-9 месец' + #13#10 +
-        'B1010-12 месец' + #13#10 +
-        'B1110-12 месец' + #13#10 +
-        'B1210-12 месец' + #13#10 +
-        'C1112-15 месец' + #13#10 +
-        'C1113-18 месец' + #13#10 +
-        'C1119-24 месец' + #13#10 +
-        'C1212-15 месец' + #13#10 +
-        'C1213-18 месец' + #13#10 +
-        'C1219-24 месец' + #13#10 +
-        'C1312-15 месец' + #13#10 +
-        'C1313-18 месец' + #13#10 +
-        'C1319-24 месец' + #13#10 +
-        'C1412-15 месец' + #13#10 +
-        'C1413-18 месец' + #13#10 +
-        'C1419-24 месец' + #13#10 +
-        'C2112-15 месец' + #13#10 +
-        'C2113-18 месец' + #13#10 +
-        'C2119-24 месец' + #13#10 +
-        'C2212-15 месец' + #13#10 +
-        'C2213-18 месец' + #13#10 +
-        'C2219-24 месец' + #13#10 +
-        'C2312-15 месец' + #13#10 +
-        'C2313-18 месец' + #13#10 +
-        'C2319-24 месец' + #13#10 +
-        'C2412-15 месец' + #13#10 +
-        'C2413-18 месец' + #13#10 +
-        'C2419-24 месец' + #13#10 +
-        'C3125-36 месец' + #13#10 +
-        'C3225-36 месец' + #13#10 +
-        'C3325-36 месец';
+        'B010-1 РјРµСЃРµС†' + #13#10 +
+        'B020-1 РјРµСЃРµС†' + #13#10 +
+        'B11-2 РјРµСЃРµС†' + #13#10 +
+        'B22-3 РјРµСЃРµС†' + #13#10 +
+        'B33-4 РјРµСЃРµС†' + #13#10 +
+        'B44-5 РјРµСЃРµС†' + #13#10 +
+        'B55-6 РјРµСЃРµС†' + #13#10 +
+        'B6РћРєРѕР»Рѕ 6 РјРµСЃРµС†' + #13#10 +
+        'B77-9 РјРµСЃРµС†' + #13#10 +
+        'B87-9 РјРµСЃРµС†' + #13#10 +
+        'B97-9 РјРµСЃРµС†' + #13#10 +
+        'B1010-12 РјРµСЃРµС†' + #13#10 +
+        'B1110-12 РјРµСЃРµС†' + #13#10 +
+        'B1210-12 РјРµСЃРµС†' + #13#10 +
+        'C1112-15 РјРµСЃРµС†' + #13#10 +
+        'C1113-18 РјРµСЃРµС†' + #13#10 +
+        'C1119-24 РјРµСЃРµС†' + #13#10 +
+        'C1212-15 РјРµСЃРµС†' + #13#10 +
+        'C1213-18 РјРµСЃРµС†' + #13#10 +
+        'C1219-24 РјРµСЃРµС†' + #13#10 +
+        'C1312-15 РјРµСЃРµС†' + #13#10 +
+        'C1313-18 РјРµСЃРµС†' + #13#10 +
+        'C1319-24 РјРµСЃРµС†' + #13#10 +
+        'C1412-15 РјРµСЃРµС†' + #13#10 +
+        'C1413-18 РјРµСЃРµС†' + #13#10 +
+        'C1419-24 РјРµСЃРµС†' + #13#10 +
+        'C2112-15 РјРµСЃРµС†' + #13#10 +
+        'C2113-18 РјРµСЃРµС†' + #13#10 +
+        'C2119-24 РјРµСЃРµС†' + #13#10 +
+        'C2212-15 РјРµСЃРµС†' + #13#10 +
+        'C2213-18 РјРµСЃРµС†' + #13#10 +
+        'C2219-24 РјРµСЃРµС†' + #13#10 +
+        'C2312-15 РјРµСЃРµС†' + #13#10 +
+        'C2313-18 РјРµСЃРµС†' + #13#10 +
+        'C2319-24 РјРµСЃРµС†' + #13#10 +
+        'C2412-15 РјРµСЃРµС†' + #13#10 +
+        'C2413-18 РјРµСЃРµС†' + #13#10 +
+        'C2419-24 РјРµСЃРµС†' + #13#10 +
+        'C3125-36 РјРµСЃРµС†' + #13#10 +
+        'C3225-36 РјРµСЃРµС†' + #13#10 +
+        'C3325-36 РјРµСЃРµС†';
 
 
 end;
@@ -311,14 +311,14 @@ begin
   PR001Coll :=  TADBDataModule(Adb_DM).PR001Coll;
 
   CL134Coll.IndexValue(CL134_CL133);
-  CL134Coll.SortByIndexValue(CL134_CL133); // сортирам по цл133 (1, 2, 3...)
+  CL134Coll.SortByIndexValue(CL134_CL133); // СЃРѕСЂС‚РёСЂР°Рј РїРѕ С†Р»133 (1, 2, 3...)
 
 
   for i := 0 to CL132Coll.Count - 1 do
   begin
     Cl132 := CL132Coll.Items[i];
     lstPR001 := Cl132.FListPr001;
-    PR001Coll.SortListByActId(lstPR001);// сортирам списъка с дейности по ActId (там е 65-226 за антропометрията)
+    PR001Coll.SortListByActId(lstPR001);// СЃРѕСЂС‚РёСЂР°Рј СЃРїРёСЃСЉРєР° СЃ РґРµР№РЅРѕСЃС‚Рё РїРѕ ActId (С‚Р°Рј Рµ 65-226 Р·Р° Р°РЅС‚СЂРѕРїРѕРјРµС‚СЂРёСЏС‚Р°)
     iCL134 := 0;
     iPR001 := 0;
     while (iCL134 < TADBDataModule(Adb_DM).CL134Coll.Count) and (iPR001 < lstPR001.Count) do
@@ -527,12 +527,12 @@ begin
       end;
     end;
 
-    datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_min_age)); //измислили са датите да са в някаква странна форма
+    datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_min_age)); //РёР·РјРёСЃР»РёР»Рё СЃР° РґР°С‚РёС‚Рµ РґР° СЃР° РІ РЅСЏРєР°РєРІР° СЃС‚СЂР°РЅРЅР° С„РѕСЂРјР°
     Graph :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Description));
     Key :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Key));
     egn := patColl.getAnsiStringMap(pat.DataPos, word(PatientNew_EGN));
     if (egn = '0052120125') and (Key = 'V17') then
-      egn := '0052120125';  // за тестови цели. спирам си тук да видя какво става при такаова нещо
+      egn := '0052120125';  // Р·Р° С‚РµСЃС‚РѕРІРё С†РµР»Рё. СЃРїРёСЂР°Рј СЃРё С‚СѓРє РґР° РІРёРґСЏ РєР°РєРІРѕ СЃС‚Р°РІР° РїСЂРё С‚Р°РєР°РѕРІР° РЅРµС‰Рѕ
 
     currentMin := cl132i.StartDate;
     if currentMin = 0 then
@@ -540,29 +540,29 @@ begin
       currentMin := DatStrToDays(CurrDate, datStr);
     end;
 
-    if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then  //при настъпване на 01.01. в годината, на която навършва възрастта
+    if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then  //РїСЂРё РЅР°СЃС‚СЉРїРІР°РЅРµ РЅР° 01.01. РІ РіРѕРґРёРЅР°С‚Р°, РЅР° РєРѕСЏС‚Рѕ РЅР°РІСЉСЂС€РІР° РІСЉР·СЂР°СЃС‚С‚Р°
     begin
       currentMin := StartOfAYear(YearOf(currentMin));
     end;
     datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Max_Age));
-    if (datStr <> '') and (Key <> 'V16') then  //  има крайна дата и не е V16. V16  е различно от другите, защото може да се направи във всеки момент от 17 до 25-тата година
+    if (datStr <> '') and (Key <> 'V16') then  //  РёРјР° РєСЂР°Р№РЅР° РґР°С‚Р° Рё РЅРµ Рµ V16. V16  Рµ СЂР°Р·Р»РёС‡РЅРѕ РѕС‚ РґСЂСѓРіРёС‚Рµ, Р·Р°С‰РѕС‚Рѕ РјРѕР¶Рµ РґР° СЃРµ РЅР°РїСЂР°РІРё РІСЉРІ РІСЃРµРєРё РјРѕРјРµРЅС‚ РѕС‚ 17 РґРѕ 25-С‚Р°С‚Р° РіРѕРґРёРЅР°
     begin
       repStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_repeat_years));
-      if repStr <> '' then  // има повторение
+      if repStr <> '' then  // РёРјР° РїРѕРІС‚РѕСЂРµРЅРёРµ
       begin
         rep := StrToInt(repStr);
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // да не е ваксина.
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // РґР° РЅРµ Рµ РІР°РєСЃРёРЅР°.
         begin
           currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), rep)));
         end
         else
         begin
-          currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), 1))); // за ваксините, без V16  правилото е "само в годината на настъпване.."
+          currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), 1))); // Р·Р° РІР°РєСЃРёРЅРёС‚Рµ, Р±РµР· V16  РїСЂР°РІРёР»РѕС‚Рѕ Рµ "СЃР°РјРѕ РІ РіРѕРґРёРЅР°С‚Р° РЅР° РЅР°СЃС‚СЉРїРІР°РЅРµ.."
         end;
         maxYear := DatStrToDays(CurrDate, datStr)- 1;
 
         gr.startDate := currentMin;
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           gr.endDate := currentMax;
         end
@@ -575,7 +575,7 @@ begin
         if gr.startDate >= StartNzisData then
           pat.lstGraph.Add(gr);
 
-        while currentMax < maxYear do // до максималните години по номенклатурата JM1
+        while currentMax < maxYear do // РґРѕ РјР°РєСЃРёРјР°Р»РЅРёС‚Рµ РіРѕРґРёРЅРё РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°С‚Р° JM1
         begin
           currentMin := IncYear(currentMin, rep);
           currentMax := IncYear(currentMax, rep);
@@ -583,13 +583,13 @@ begin
           gr.endDate := currentMax;
           gr.repNumber := gr.repNumber + 1;
 
-          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
           begin
             currentMax := EndOfAYear(YearOf(currentMax - 1) );
           end;
 
           gr.startDate := currentMin;
-          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
           begin
             gr.endDate := currentMax;
           end
@@ -604,10 +604,10 @@ begin
         end;
 
       end
-      else  // не се повтарят
+      else  // РЅРµ СЃРµ РїРѕРІС‚Р°СЂСЏС‚
       begin
         currentMax := DatStrToDays(BrthDate, datStr);
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           currentMax := EndOfAYear(YearOf(currentMax - 1) );
           if Key = 'J17' then
@@ -617,7 +617,7 @@ begin
         end;
 
         gr.startDate := currentMin;
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           gr.endDate := currentMax;
         end
@@ -631,13 +631,13 @@ begin
           pat.lstGraph.Add(gr);
       end;
     end
-    else // няма крайна дата, но може да има, а да е ваксина V16
+    else // РЅСЏРјР° РєСЂР°Р№РЅР° РґР°С‚Р°, РЅРѕ РјРѕР¶Рµ РґР° РёРјР°, Р° РґР° Рµ РІР°РєСЃРёРЅР° V16
     begin
       repStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_repeat_years));
       if repStr <> '' then
       begin
         rep := StrToInt(repStr);
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // да не е ваксина.
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // РґР° РЅРµ Рµ РІР°РєСЃРёРЅР°.
         begin
           currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), rep)));
         end
@@ -645,7 +645,7 @@ begin
         begin
           if Key <> 'V16' then
           begin
-            currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), 1))); // за ваксините, без V16  правилото е "само в годината на настъпване.."
+            currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), 1))); // Р·Р° РІР°РєСЃРёРЅРёС‚Рµ, Р±РµР· V16  РїСЂР°РІРёР»РѕС‚Рѕ Рµ "СЃР°РјРѕ РІ РіРѕРґРёРЅР°С‚Р° РЅР° РЅР°СЃС‚СЉРїРІР°РЅРµ.."
           end
           else
           begin
@@ -653,7 +653,7 @@ begin
           end;
         end;
         gr.startDate := currentMin;
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           gr.endDate := currentMax;
         end
@@ -673,7 +673,7 @@ begin
       end
       else
       begin
-        //assert(repStr = '', Format('План %s, е без крайна дата и няма повторяемост. ', [Key]))
+        //assert(repStr = '', Format('РџР»Р°РЅ %s, Рµ Р±РµР· РєСЂР°Р№РЅР° РґР°С‚Р° Рё РЅСЏРјР° РїРѕРІС‚РѕСЂСЏРµРјРѕСЃС‚. ', [Key]))
       end;
       
 
@@ -684,7 +684,7 @@ begin
           currentMin := IncYear(currentMin, rep);
           currentMax := IncYear(currentMax, rep);
           gr.startDate := currentMin;
-          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
           begin
             gr.endDate := currentMax;
           end
@@ -694,7 +694,7 @@ begin
           end;
           gr.repNumber := gr.repNumber + 1;
           case CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136))[1] of
-            '1': // преглед
+            '1': // РїСЂРµРіР»РµРґ
             begin
               for k := 0 to pat.FPregledi.Count - 1 do
               begin
@@ -714,20 +714,20 @@ begin
           gr.Cl132 := cl132i;
           if gr.startDate >= StartNzisData then
           begin
-            pat.lstGraph.Add(gr); // няма крайна дата и се повтаря до края на живота
+            pat.lstGraph.Add(gr); // РЅСЏРјР° РєСЂР°Р№РЅР° РґР°С‚Р° Рё СЃРµ РїРѕРІС‚Р°СЂСЏ РґРѕ РєСЂР°СЏ РЅР° Р¶РёРІРѕС‚Р°
           end;
         end;
       end
       else
       begin
         currentMax := DatStrToDays(BrthDate, '24 years');
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           currentMax := EndOfAYear(YearOf(currentMax - 1) );
         end;
 
         gr.startDate := currentMin;
-        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'Рї' then
         begin
           gr.endDate := currentMax;
         end
@@ -780,7 +780,7 @@ begin
   IsPregForPerform := False;
   pat := TRealPatientNewItem(Apat);
   PatNodes := adbDM.GetPatNodes(pat.FNode);
-  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
+  pat.NoteProf := 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.';
  // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
   vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
   data := vtrGraph.GetNodeData(vPat);
@@ -839,14 +839,14 @@ begin
       data.index := i;
     end
     else
-    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // С‚РµРєСѓС‰Рё
     begin
       vCl132 := vtrGraph.AddChild(vNast, nil);
       data := vtrGraph.GetNodeData(vCl132);
 
-      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
+      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // Р°РєРѕ Рµ С‚РёРї РїСЂРµРіР»РµРґ
       case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
-        '1': //ако е тип преглед
+        '1': //Р°РєРѕ Рµ С‚РёРї РїСЂРµРіР»РµРґ
         begin
           gr.Cl132.FPregled := nil;
           Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
@@ -865,7 +865,7 @@ begin
               end;
             end;
           end;
-          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          if gr.Cl132.FPregled = nil then // Р°РєРѕ РЅРµ Рµ РЅР°РјРµСЂРµРЅ РЅР°РїСЂР°РІРµРЅ РїСЂРµРіР»РµРґ
           begin
             if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
             begin
@@ -898,20 +898,20 @@ begin
                 end
                 else
                 begin
-                  ShowMessage('Има повече от един преглед');
+                  ShowMessage('РРјР° РїРѕРІРµС‡Рµ РѕС‚ РµРґРёРЅ РїСЂРµРіР»РµРґ');
                 end;
               end;
             end;
           end
-          else  // намерен е преглед
+          else  // РЅР°РјРµСЂРµРЅ Рµ РїСЂРµРіР»РµРґ
           begin
             vCl132.CheckType := ctNone;
             //Include(vcl132.States, vsDisabled);
             //vCl132.CheckState := csUncheckedNormal;
-            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
+            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz РґР°Р»Рё ...
           end;
         end;
-        '2': // изследвания
+        '2': // РёР·СЃР»РµРґРІР°РЅРёСЏ
         begin
           pat.ListCurrentProf.Add(gr);
           //vCl132.CheckType := ctCheckBox;
@@ -946,7 +946,7 @@ begin
             end;
           end;
         end;
-        '3': // имунизации
+        '3': // РёРјСѓРЅРёР·Р°С†РёРё
         begin
           pat.ListCurrentProf.Add(gr);
         end
@@ -956,7 +956,7 @@ begin
 
 
      // begin
-//        if gr.endDate = AEndDate then // ако другата дейност е със същия краен срок като прегледа
+//        if gr.endDate = AEndDate then // Р°РєРѕ РґСЂСѓРіР°С‚Р° РґРµР№РЅРѕСЃС‚ Рµ СЃСЉСЃ СЃСЉС‰РёСЏ РєСЂР°РµРЅ СЃСЂРѕРє РєР°С‚Рѕ РїСЂРµРіР»РµРґР°
 //        begin
 //          vCl132.CheckType := ctCheckBox;
 //          vCl132.CheckState := csCheckedDisabled;
@@ -1059,7 +1059,7 @@ begin
   end
   else
   begin
-    ShowMessage('Няма никакъв план');
+    ShowMessage('РќСЏРјР° РЅРёРєР°РєСЉРІ РїР»Р°РЅ');
   end;
 
   //vtrGraph.FocusedNode := vtrGraph.RootNode.FirstChild;
@@ -1101,7 +1101,7 @@ begin
   IsPregForPerform := False;
   pat := TRealPatientNewItem(Apat);
   PatNodes := adbDM.GetPatNodes(pat.FNode);
-  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
+  pat.NoteProf := 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.';
  // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
   vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
   data := vtrGraph.GetNodeData(vPat);
@@ -1159,14 +1159,14 @@ begin
       data.index := i;
     end
     else
-    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // С‚РµРєСѓС‰Рё
     begin
       vCl132 := vtrGraph.AddChild(vNast, nil);
       data := vtrGraph.GetNodeData(vCl132);
 
-      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
+      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // Р°РєРѕ Рµ С‚РёРї РїСЂРµРіР»РµРґ
       case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
-        '1': //ако е тип преглед
+        '1': //Р°РєРѕ Рµ С‚РёРї РїСЂРµРіР»РµРґ
         begin
           gr.Cl132.FPregled := nil;
           Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
@@ -1185,7 +1185,7 @@ begin
               end;
             end;
           end;
-          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          if gr.Cl132.FPregled = nil then // Р°РєРѕ РЅРµ Рµ РЅР°РјРµСЂРµРЅ РЅР°РїСЂР°РІРµРЅ РїСЂРµРіР»РµРґ
           begin
             if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
             begin
@@ -1218,20 +1218,20 @@ begin
                 end
                 else
                 begin
-                  ShowMessage('Има повече от един преглед');
+                  ShowMessage('РРјР° РїРѕРІРµС‡Рµ РѕС‚ РµРґРёРЅ РїСЂРµРіР»РµРґ');
                 end;
               end;
             end;
           end
-          else  // намерен е преглед
+          else  // РЅР°РјРµСЂРµРЅ Рµ РїСЂРµРіР»РµРґ
           begin
             vCl132.CheckType := ctNone;
             //Include(vcl132.States, vsDisabled);
             //vCl132.CheckState := csUncheckedNormal;
-            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
+            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz РґР°Р»Рё ...
           end;
         end;
-        '2': // изследвания
+        '2': // РёР·СЃР»РµРґРІР°РЅРёСЏ
         begin
           //pat.ListCurrentProf.Add(gr);
           //vCl132.CheckType := ctCheckBox;
@@ -1267,7 +1267,7 @@ begin
             FreeAndNil(examAnal);
           end;
         end;
-        '3': // имунизации
+        '3': // РёРјСѓРЅРёР·Р°С†РёРё
         begin
           //pat.ListCurrentProf.Add(gr);
         end
@@ -1277,7 +1277,7 @@ begin
 
 
      // begin
-//        if gr.endDate = AEndDate then // ако другата дейност е със същия краен срок като прегледа
+//        if gr.endDate = AEndDate then // Р°РєРѕ РґСЂСѓРіР°С‚Р° РґРµР№РЅРѕСЃС‚ Рµ СЃСЉСЃ СЃСЉС‰РёСЏ РєСЂР°РµРЅ СЃСЂРѕРє РєР°С‚Рѕ РїСЂРµРіР»РµРґР°
 //        begin
 //          vCl132.CheckType := ctCheckBox;
 //          vCl132.CheckState := csCheckedDisabled;
@@ -1380,7 +1380,7 @@ begin
   end
   else
   begin
-    //ShowMessage('Няма никакъв план');
+    //ShowMessage('РќСЏРјР° РЅРёРєР°РєСЉРІ РїР»Р°РЅ');
   end;
   PatNodes.Destroy;
   pat.ListCurrentProf.Clear;
@@ -1424,7 +1424,7 @@ begin
   IsPregForPerform := False;
   pat := TRealPatientNewItem(Apat);
   PatNodes := adbDM.GetPatNodes(pat.FNode);
-  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
+  pat.NoteProf := 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.';
  // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
   //vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
   //data := vtrGraph.GetNodeData(vPat);
@@ -1481,13 +1481,13 @@ begin
 //      data.index := i;
     end
     else
-    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
+    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // С‚РµРєСѓС‰Рё
     begin
       //vCl132 := vtrGraph.AddChild(vNast, nil);
       //data := vtrGraph.GetNodeData(vCl132);
 
       case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
-        '1': //ако е тип преглед
+        '1': //Р°РєРѕ Рµ С‚РёРї РїСЂРµРіР»РµРґ
         begin
           gr.Cl132.FPregled := nil;
           Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
@@ -1506,7 +1506,7 @@ begin
               end;
             end;
           end;
-          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          if gr.Cl132.FPregled = nil then // Р°РєРѕ РЅРµ Рµ РЅР°РјРµСЂРµРЅ РЅР°РїСЂР°РІРµРЅ РїСЂРµРіР»РµРґ
           begin
             if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
             begin
@@ -1537,18 +1537,18 @@ begin
                 end
                 else
                 begin
-                  ShowMessage('Има повече от един преглед');
+                  ShowMessage('РРјР° РїРѕРІРµС‡Рµ РѕС‚ РµРґРёРЅ РїСЂРµРіР»РµРґ');
                 end;
               end;
             end;
           end
-          else  // намерен е преглед
+          else  // РЅР°РјРµСЂРµРЅ Рµ РїСЂРµРіР»РµРґ
           begin
             //vCl132.CheckType := ctNone;
-            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
+            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz РґР°Р»Рё ...
           end;
         end;
-        '2': // изследвания
+        '2': // РёР·СЃР»РµРґРІР°РЅРёСЏ
         begin
           pat.ListCurrentProf.Add(gr);
           for k := 0 to PatNodes.ExamAnals.Count - 1 do
@@ -1581,7 +1581,7 @@ begin
             end;
           end;
         end;
-        '3': // имунизации
+        '3': // РёРјСѓРЅРёР·Р°С†РёРё
         begin
           pat.ListCurrentProf.Add(gr);
         end
@@ -1679,7 +1679,7 @@ begin
 //  end
 //  else
 //  begin
-//    ShowMessage('Няма никакъв план');
+//    ShowMessage('РќСЏРјР° РЅРёРєР°РєСЉРІ РїР»Р°РЅ');
 //  end;
 
   //vtrGraph.EndUpdate;
