@@ -1,2 +1,24 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# --- Pascal / Delphi source code ---
+*.pas text linguist-language=Pascal diff
+*.pp  text linguist-language=Pascal diff
+*.p   text linguist-language=Pascal diff
+*.dpr text linguist-language=Pascal diff
+*.lpr text linguist-language=Pascal diff
+
+# --- Delphi form files ---
+*.dfm text linguist-language=Pascal diff
+*.fmx text linguist-language=Pascal diff
+
+# --- Packages / Projects ---
+*.dproj text
+*.groupproj text
+*.dpk text linguist-language=Pascal diff
+*.bpl text
+
+# --- Unicode & encoding normalization ---
+*.pas working-tree-encoding=UTF-8
+*.dfm working-tree-encoding=UTF-8
+*.dpr working-tree-encoding=UTF-8
+
+# --- Treat everything in Aspects as text ---
+Aspects/* text linguist-language=Pascal diff
