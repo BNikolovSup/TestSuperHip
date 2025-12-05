@@ -477,7 +477,7 @@ begin
   end
   else
   begin
-    Result := Self.getAnsiStringMap(TRealCL132Coll(Collection).Buf, TRealCL132Coll(Collection).posData, word(CL132_CL136_Mapping));
+    Result := Self.getAnsiStringMap(TRealCL132Coll(Collection).Buf, TRealCL132Coll(Collection).posData, word(CL132_cl136));
   end;
 end;
 

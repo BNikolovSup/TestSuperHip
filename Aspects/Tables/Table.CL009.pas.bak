@@ -5,7 +5,8 @@ uses
   Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults, Tee.Renders,
+  uGridHelpers  ;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -156,21 +157,24 @@ TCL009Item = class(TBaseItem)
     procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
     procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalCL009Set);
-	procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer); override;
 	function IsCollVisible(PropIndex: Word): Boolean; override;
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
 	function GetCollDelType: TCollectionsType; override;
-	[NZIS_START]
-	procedure ImportXMLNzis(cl000: TObject);
-	[NZIS_END]
+	{NZIS_START}
+	procedure ImportXMLNzis(cl000: TObject); override;
+	procedure UpdateXMLNzis; override;
+	function CellDiffKind(ACol, ARow: Integer): TDiffKind; override;
+	procedure BuildKeyDict(PropIndex: Word);
+	{NZIS_END}
   end;
 
 implementation
-[NZIS_START]
+{NZIS_START}
 uses
   Nzis.Nomen.baseCL000, System.Rtti;
-[NZIS_END]  
+{NZIS_END}  
 
 { TCL009Item }
 
@@ -454,11 +458,11 @@ end;
 
 procedure TCL009Item.SaveCL009(var dataPosition: Cardinal);
 var
-  CollType: TCollectionsType;
+  CollType: PCollectionsType;
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctCL009;
+  CollType := PCollectionsType(PByte(Buf) + DataPos - 4)^;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -628,89 +632,89 @@ begin
     begin
 	  // === проверки за запазване (CheckForSave) ===
 
-  if (CL009_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_Key))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_Key))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_Description))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_Description))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_units in tempItem.PRecord.setProp) and (tempItem.PRecord.units <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_units))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_units in tempItem.PRecord.setProp) and (tempItem.PRecord.units <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_units))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_inn_code in tempItem.PRecord.setProp) and (tempItem.PRecord.inn_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_inn_code))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_inn_code in tempItem.PRecord.setProp) and (tempItem.PRecord.inn_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_inn_code))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_form_id in tempItem.PRecord.setProp) and (tempItem.PRecord.form_id <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_form_id))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_form_id in tempItem.PRecord.setProp) and (tempItem.PRecord.form_id <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_form_id))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_package in tempItem.PRecord.setProp) and (tempItem.PRecord.package <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_package))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_package in tempItem.PRecord.setProp) and (tempItem.PRecord.package <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_package))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_permit_owner in tempItem.PRecord.setProp) and (tempItem.PRecord.permit_owner <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_permit_owner))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_permit_owner in tempItem.PRecord.setProp) and (tempItem.PRecord.permit_owner <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_permit_owner))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_form in tempItem.PRecord.setProp) and (tempItem.PRecord.form <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_form))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_form in tempItem.PRecord.setProp) and (tempItem.PRecord.form <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_form))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_permit_number in tempItem.PRecord.setProp) and (tempItem.PRecord.permit_number <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_permit_number))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_permit_number in tempItem.PRecord.setProp) and (tempItem.PRecord.permit_number <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_permit_number))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_quantity in tempItem.PRecord.setProp) and (tempItem.PRecord.quantity <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_quantity))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_quantity in tempItem.PRecord.setProp) and (tempItem.PRecord.quantity <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_quantity))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_atc in tempItem.PRecord.setProp) and (tempItem.PRecord.atc <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_atc))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_atc in tempItem.PRecord.setProp) and (tempItem.PRecord.atc <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_atc))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_is_narcotic in tempItem.PRecord.setProp) and (tempItem.PRecord.is_narcotic <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_is_narcotic))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_is_narcotic in tempItem.PRecord.setProp) and (tempItem.PRecord.is_narcotic <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_is_narcotic))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_inn in tempItem.PRecord.setProp) and (tempItem.PRecord.inn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_inn))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_inn in tempItem.PRecord.setProp) and (tempItem.PRecord.inn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL009_inn))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL009_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL009_Logical))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL009_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL009_Logical))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
     end;
   end;
 end;
@@ -1692,7 +1696,7 @@ end;
 procedure TCL009Coll.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
-
+  clls: TDiffCellRenderer;
 begin
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
   for i := 0 to self.FieldCount - 1 do
@@ -1708,6 +1712,11 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
+  
+  clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
+  clls.FGrid := Grid;
+  clls.FCollAdb := Self;
+  Grid.Cells := clls;
 
   Grid.Columns[self.FieldCount].Width.Value := 50;
   Grid.Columns[self.FieldCount].Index := 0;
@@ -1910,163 +1919,353 @@ begin
   end;
 end;
 
-[NZIS_START]
+{NZIS_START}
 procedure TCL009Coll.ImportXMLNzis(cl000: TObject);
 var
-  Acl000: TCL000EntryCollection;
-  i, j: integer;
-  TempItem: TCL009Item;
-  entry: TCL000EntryItem;
-  idx: array of integer;
-  propIdx: TCL009Item.TPropertyIndex;
-  xmlName: string;
+ Acl000 : TCL000EntryCollection;
+ entry : TCL000EntryItem;
+ item : TCL009Item;
+ i, idxOld, j: Integer;
+ idx : array of Integer;
+ propIdx: TCL009Item.TPropertyIndex;
+ propName, xmlName, oldValue, newValue: string;
+ kindDiff: TDiffKind; pCardinalData: PCardinal;
+ dataPosition: Cardinal; IsNew: Boolean;
 begin
   Acl000 := TCL000EntryCollection(cl000);
+  IsNew := Count = 0;
 
-  // --- Build index mapping between XML meta fields and DDL properties ---
-  SetLength(idx, 0);
+  for i := 0 to Count - 1 do
+  begin
+    if PWord(PByte(Buf) + Items[i].DataPos - 4)^ = Ord(ctCL009Del) then
+      Continue;
+    PWord(PByte(Buf) + Items[i].DataPos - 4)^ := Ord(ctCL009Old);
+  end;
+
+  BuildKeyDict(Ord(CL009_Key));
+
   j := 0;
+  SetLength(idx, 0);
 
   for propIdx := Low(TCL009Item.TPropertyIndex) to High(TCL009Item.TPropertyIndex) do
   begin
     propName := TRttiEnumerationType.GetName(propIdx);
 
-    // Skip technical
     if SameText(propName, 'CL009_Key') then Continue;
     if SameText(propName, 'CL009_Description') then Continue;
     if SameText(propName, 'CL009_Logical') then Continue;
 
-    // Remove prefix e.g. "CL000_"
-    xmlName := propName.Substring(6);
-
-    // Convert property name to XML name (replace "_" with " ")
+    xmlName := propName.Substring(Length('CL009_'));
     xmlName := xmlName.Replace('_', ' ');
 
-    // Find matching meta-field index
     for i := 0 to Acl000.FieldsNames.Count - 1 do
-    begin
-      if SameText(Acl000.FieldsNames[i], xmlName) or SameText(Acl000.FieldsNames[i], propName.Substring(6)) then
+      if SameText(Acl000.FieldsNames[i], xmlName) or
+         SameText(Acl000.FieldsNames[i], xmlName.Replace(' ', '_')) then
       begin
         SetLength(idx, Length(idx)+1);
         idx[High(idx)] := i;
         Break;
       end;
-    end;
   end;
 
-  // --- Insert rows from XML into the generated collection ---
   for i := 0 to Acl000.Count - 1 do
   begin
     entry := Acl000.Items[i];
-    TempItem := TCL009Item(Self.Add);
-    New(TempItem.PRecord);
-    TempItem.PRecord.setProp := [];
 
-    // Key
-    TempItem.PRecord.Key := entry.Key;
-    Include(TempItem.PRecord.setProp, CL009_Key);
+    if KeyDict.TryGetValue(entry.Key, idxOld) then
+    begin
+      item := Items[idxOld];
+      kindDiff := dkChanged;
+    end
+    else
+    begin
+      item := TCL009Item(Add);
+      kindDiff := dkNew;
+    end;
 
-    // Description
-    TempItem.PRecord.Description := entry.Descr;
-    Include(TempItem.PRecord.setProp, CL009_Description);
+    if item.PRecord <> nil then
+      Dispose(item.PRecord);
+    New(item.PRecord);
+    item.PRecord.setProp := [];
+
+    newValue := entry.Key;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_Key));
+    item.PRecord.Key := newValue;
+    if oldValue <> newValue then Include(item.PRecord.setProp, CL009_Key);
+
+    newValue := entry.Descr;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_Description));
+    item.PRecord.Description := newValue;
+    if oldValue <> newValue then Include(item.PRecord.setProp, CL009_Description);
 
     j := 0;
-
     // units
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.units := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_units);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_units));
+
+      Item.PRecord.units := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_units);
     end;
     Inc(j);
 
     // inn_code
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.inn_code := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_inn_code);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_inn_code));
+
+      Item.PRecord.inn_code := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_inn_code);
     end;
     Inc(j);
 
     // form_id
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.form_id := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_form_id);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_form_id));
+
+      Item.PRecord.form_id := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_form_id);
     end;
     Inc(j);
 
     // package
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.package := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_package);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_package));
+
+      Item.PRecord.package := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_package);
     end;
     Inc(j);
 
     // permit_owner
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.permit_owner := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_permit_owner);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_permit_owner));
+
+      Item.PRecord.permit_owner := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_permit_owner);
     end;
     Inc(j);
 
     // form
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.form := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_form);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_form));
+
+      Item.PRecord.form := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_form);
     end;
     Inc(j);
 
     // permit_number
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.permit_number := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_permit_number);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_permit_number));
+
+      Item.PRecord.permit_number := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_permit_number);
     end;
     Inc(j);
 
     // quantity
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.quantity := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_quantity);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_quantity));
+
+      Item.PRecord.quantity := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_quantity);
     end;
     Inc(j);
 
     // atc
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.atc := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_atc);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_atc));
+
+      Item.PRecord.atc := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_atc);
     end;
     Inc(j);
 
     // is_narcotic
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.is_narcotic := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_is_narcotic);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_is_narcotic));
+
+      Item.PRecord.is_narcotic := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_is_narcotic);
     end;
     Inc(j);
 
     // inn
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
-      TempItem.PRecord.inn := entry.FMetaDataFields[idx[j]].Value;
-      Include(TempItem.PRecord.setProp, CL009_inn);
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL009_inn));
+
+      Item.PRecord.inn := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL009_inn);
     end;
     Inc(j);
 
-    TempItem.InsertCL009;
-    Self.streamComm.Len := Self.streamComm.Size;
-    Self.cmdFile.CopyFrom(Self.streamComm, 0);
-    Dispose(TempItem.PRecord);
-    TempItem.PRecord := nil;
+    // NEW
+    if kindDiff = dkNew then
+    begin
+      if IsNew then
+      begin
+        item.InsertCL009;
+        PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL009);
+        Self.streamComm.Len := Self.streamComm.Size;
+        Self.cmdFile.CopyFrom(Self.streamComm, 0);
+        Dispose(item.PRecord);
+        item.PRecord := nil;
+      end;
+    end
+    else
+    begin
+      // UPDATE
+      if item.PRecord.setProp <> [] then
+      begin
+        if IsNew then
+        begin
+          pCardinalData := pointer(PByte(Buf) + 12);
+          dataPosition := pCardinalData^ + PosData;
+          item.SaveCL009(dataPosition);
+          PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL009);
+          Self.streamComm.Len := Self.streamComm.Size;
+          Self.cmdFile.CopyFrom(Self.streamComm, 0);
+          pCardinalData^ := dataPosition - PosData;
+        end
+        else
+          PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL009);
+      end
+      else
+      begin
+        Dispose(item.PRecord);
+        item.PRecord := nil;
+        PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL009);
+      end;
+    end;
   end;
 end;
-[NZIS_END]
+
+procedure TCL009Coll.UpdateXMLNzis;
+var
+  i: Integer;
+  pCardinalData: PCardinal;
+  dataPosition: Cardinal;
+begin
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].PRecord = nil then
+    begin
+      if Pword(PByte(Buf) + Items[i].DataPos +  - 4)^ = ord(ctCL009Old) then
+        Pword(PByte(Buf) + Items[i].DataPos +  - 4)^ := ord(ctCL009Del);
+        Continue;
+    end;
+
+
+    if Items[i].DataPos = 0 then
+    begin
+      Items[i].InsertCL009;
+      Self.streamComm.Len := Self.streamComm.Size;
+      Self.cmdFile.CopyFrom(Self.streamComm, 0);
+      Dispose(Items[i].PRecord);
+      Items[i].PRecord := nil;
+    end
+    else
+    begin
+      pCardinalData := pointer(PByte(self.Buf) + 12);
+      dataPosition := pCardinalData^ + self.PosData;
+      Items[i].SaveCL009(dataPosition);
+      self.streamComm.Len := self.streamComm.Size;
+      Self.CmdFile.CopyFrom(self.streamComm, 0);
+      pCardinalData := pointer(PByte(Buf) + 12);
+      pCardinalData^  := dataPosition - self.PosData;
+    end;
+
+  end;
+end;
+
+procedure TCL009Coll.BuildKeyDict(PropIndex: Word);
+var
+  i      : Integer;
+  item   : TCL009Item;
+  keyStr : string;
+  pIdx   : TCL009Item.TPropertyIndex;
+begin
+  // общата част – алокация / чистене на речника
+  inherited BuildKeyDict(PropIndex);
+
+  // кастваме Word > enum на генерирания клас
+  pIdx := TCL009Item.TPropertyIndex(PropIndex);
+
+  for i := 0 to Count - 1 do
+  begin
+    item := Items[i];
+    if Pword(PByte(Buf) + item.DataPos +  - 4)^ = ord(ctCL009Del) then
+      Continue;
+    keyStr := self.getAnsiStringMap(item.datapos,PropIndex);
+
+    if keyStr <> '' then
+    begin
+      // ако има дубликати – последният печели (полезно за "последна версия")
+      KeyDict.AddOrSetValue(keyStr, i);
+    end;
+  end;
+end;
+
+function TCL009Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
+begin
+  if (ARow > count) or (ARow < 0) then
+    Exit;
+
+
+  if items[ARow].DataPos = 0 then
+  begin
+    Result := dkNew;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL009Old)) then
+  begin
+    Result := dkForDeleted;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL009Del)) then
+  begin
+    Result := dkDeleted;
+    Exit;
+  end;
+
+  if Items[ARow].PRecord = nil then
+  begin
+    Result := dkNone;
+    Exit;
+  end;
+
+  if TCL009Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
+  begin
+    Result := dkChanged;
+    Exit;
+  end;
+  //test
+
+end;
+
+{NZIS_END}
 
 end.

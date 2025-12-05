@@ -970,8 +970,8 @@ type
     preg1, preg2: TPregledNewItem;
 
     //DiagTemp: TDiagnosisItem;
-    MDNTemp: TMDNItem;
-    MNTemp: TBLANKA_MED_NAPRItem;
+    //MDNTemp: TMDNItem;
+   // MNTemp: TBLANKA_MED_NAPRItem;
     MnLkkTemp: TRealEXAM_LKKItem;
 
     //ProfCardTemp: t
@@ -1129,10 +1129,10 @@ type
     currentType: TCL000Vid;
     currentIndex: Integer;
 
-    AspectsNomFile : TMappedFile;
+    //AspectsNomFile : TMappedFile;
     AspectsNomHipFile : TMappedFile;
     //AspectsHipFile : TMappedFile;
-    AspectsLinkPatPregFile : TMappedLinkFile;
+    //AspectsLinkPatPregFile : TMappedLinkFile;
     AspectsLinkNomenHipAnalFile : TMappedFile;
     AspectsOptionsLinkFile: TMappedLinkFile;
     AspectsFilterLinkFile: TMappedLinkFile;
@@ -1143,7 +1143,7 @@ type
     streamCmdFileTemp: TFileCmdStream;
     streamCmdFileNomenNzis: TFileCmdStream;
     FDBHelper: TDbHelper;
-    FNasMesto: TRealNasMestoAspects;
+
     //nzisXml: TNzisXMLHelper;
     Adb_DM: TADBDataModule;
     ResultNzisToken: TStringList;
@@ -1185,7 +1185,6 @@ type
 
     procedure unzipRTFHelp(zipFile: string);
 
-    procedure LoadVtrNomenNzis(NomenNamesFile: string);
     procedure LoadVtrNomenNzis1;
     procedure LoadVtrNomenNzis2;
     procedure LoadVtrFDB;
@@ -1198,7 +1197,7 @@ type
     procedure FillXmlC001(NomenID: string);//номенклатура
     procedure NzisOnSended(Sender: TObject);
     procedure OpenExcels;
-    procedure OpenBufNomenNzis(FileName: string);
+    //procedure OpenBufNomenNzis(FileName: string);
     //procedure OpenBufNomenHip(FileName: string);
     procedure ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode );
     procedure ShowTokensFMX();
@@ -1412,7 +1411,7 @@ var
 begin
 
   //if (GetKeyState(VK_CONTROL) >= 0) then Exit;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   //node := vtrPregledPat.GetFirst();
   //dataAction := pointer(PByte(node) + lenNode);
   //if dataAction.vid = vvPatientRoot then  Exit;
@@ -1600,11 +1599,11 @@ begin
   Exit;
   Stopwatch := TStopwatch.StartNew;
   linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   while linkPos < FPosLinkData do
   begin
-    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
     data := Pointer(PByte(node)+ lenNode);
     if data.vid = vvPregledNew then
     begin
@@ -1682,7 +1681,7 @@ begin
 
   grdNom.Selected.Range.FromRow := 0;
   grdNom.Selected.Range.FromColumn := grdNom.Columns[0];
-  grdNom.Selected.Range.ToRow := 200; // TVirtualModeData(grdNom.Data).Rows - 1;
+  grdNom.Selected.Range.ToRow :=  TVirtualModeData(grdNom.Data).Rows - 1;
   grdNom.Selected.Range.ToColumn := grdNom.Columns[grdNom.Columns.Count - 1];
   grdNom.SetFocus;
 
@@ -1889,8 +1888,8 @@ begin
   thrSearch.CollForFind := Adb_DM.CollPregled;
 
   thrSearch.vtr := vtrPregledPat;
-  thrSearch.bufLink := AspectsLinkPatPregFile.Buf;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  thrSearch.bufLink := Adb_DM.AdbMainLink.Buf;
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   //thrSearch.FPosData := FPosLinkData;
   //thrSearch.BufADB := AspectsHipFile.Buf;
@@ -1911,16 +1910,16 @@ begin
   Stopwatch := TStopwatch.StartNew;
   Adb_DM.CollPregled.ListDataPos.Clear;
   linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
-  node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+  node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
 
   data := pointer(PByte(node) + lenNode);
   PAnsFind := PAnsiChar(edtFilter.Text);
   while linkPos <= FPosLinkData do
   begin
     Inc(linkPos, LenData);
-    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
     data := pointer(PByte(node) + lenNode);
     //if data.vid = vvPregled then
 //    begin
@@ -2589,11 +2588,11 @@ var
   data: PAspRec;
 begin
   vtrPregledPat.BeginUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   linkpos := pCardinalData^;
 
-  TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-  data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+  TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+  data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
   data.index := word(vvPregledNew);
   data.vid := vvNone;
   data.DataPos := 0;
@@ -2615,7 +2614,7 @@ begin
   vtrPregledPat.EndUpdate;
   vtrPregledPat.Selected[TreeLink] := True;
   vtrPregledPat.FocusedNode := TreeLink;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   pCardinalData^ := linkpos;
 end;
 
@@ -2836,7 +2835,7 @@ begin
   Dispose(newPat.PRecord);
   newPat.PRecord := nil;
 
-  AspectsLinkPatPregFile.AddNewNode(vvPatient, newPat.DataPos, vtrPregledPat.RootNode.FirstChild, amAddChildFirst, treeLink, linkPos);
+  Adb_DM.AdbMainLink.AddNewNode(vvPatient, newPat.DataPos, vtrPregledPat.RootNode.FirstChild, amAddChildFirst, treeLink, linkPos);
 
   Caption := 'ddd';
 
@@ -2879,7 +2878,7 @@ var
 begin
   //Adb_DM.AmsgColl.CollPat.posData := AspectsHipFile.FPosData;
   //Adb_DM.AmsgColl.CollPat.buf := AspectsHipFile.Buf;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   begin
     linkPos := 100;
     pCardinalData := pointer(PByte(bufLink));
@@ -2949,8 +2948,8 @@ begin
       data := vtrNomenNzis.GetNodeData(node);
       if data.index< 0 then exit;
 
-      //FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
-      FRoot := XMLParseFile('d:\cl006Old.xml', true, nil, OnProcess);
+      FRoot := XMLParseStream(Adb_DM.ListNomenNzisNames[data.index].xmlStream, true, nil, OnProcess);
+      //FRoot := XMLParseFile('d:\cl006Old.xml', true, nil, OnProcess);
       UpdateRoot(FRoot, Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
 
       FRoot._Release;
@@ -2977,7 +2976,7 @@ begin
         37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
         38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
         88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
-        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
         134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
         139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
         142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
@@ -3017,7 +3016,8 @@ begin
         37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
         38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
         88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
-        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        //132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
         134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
         139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
         142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
@@ -3140,7 +3140,7 @@ begin
         24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
         38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
         88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(Adb_DM.CL088Coll);
-        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
         134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
         139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
         142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
@@ -3167,7 +3167,7 @@ begin
         24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
         38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
         88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088Local(Adb_DM.CL088Coll);
-        132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
+        132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
         134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
         139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
         142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
@@ -3268,12 +3268,12 @@ begin
   begin
     //LoadVtrNomenNzis1;
 //    OpenBufNomenNzis('c:\temp\NzisNomen.adb');
-    OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+    Adb_DM.OpenADBNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
     profGR := TProfGraph.create;
 
     profGR := TProfGraph.create;
-    profGR.BufNomen := AspectsNomFile.Buf;
+    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
     //profGR.BufADB := AspectsHipFile.Buf;
     //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
@@ -3289,7 +3289,7 @@ begin
     dataGraph.vid := vvNone;
     dataGraph.index := 0;
   Adb_DM.ACollPatGR.Clear;
-  Adb_DM.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+  Adb_DM.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
 
   for i := 0 to Adb_DM.CollPatient.ListNodes.Count - 1 do
   begin
@@ -3331,7 +3331,7 @@ var
   buflink: Pointer;
   data, dataPat, dataPreg: PAspRec;
 begin
-  buflink := AspectsLinkPatPregFile.Buf;
+  buflink := Adb_DM.AdbMainLink.Buf;
   linkPos := 100;
   i := 0;
   pCardinalData := pointer(PByte(buflink));
@@ -3368,7 +3368,7 @@ begin
   Button2.Tag := 1;
   Exit;
   Caption := DateToStr(UserDate);
-  TCL000EntryCollection.ImportNomenList(AspectsNomFile);
+  TCL000EntryCollection.ImportNomenList(Adb_DM.AdbNomenNzis);
   //vtrPregledPat.FullExpand();
  // for i := 1 to CL132Coll.Count - 1 do
 //  begin
@@ -4011,7 +4011,7 @@ var
   data: PAspRec;
 
 begin
-  pregLink := Adb_DM.CollPregled.GetNodeFromID(AspectsLinkPatPregFile.Buf, vvPregledNew, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
+  pregLink := Adb_DM.CollPregled.GetNodeFromID(Adb_DM.AdbMainLink.Buf, vvPregledNew, Word(PregledNew_ID), TRealPregledNewItem(sender).PregledID);
   if pregLink = nil then Exit;
 
   vtrPregledPat.InternalDisconnectNode(pregLink, false);
@@ -4988,11 +4988,11 @@ begin
   end;
   Stopwatch := TStopwatch.StartNew;
   linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   while linkPos < FPosLinkData do
   begin
-    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
     data := Pointer(PByte(node)+ lenNode);
     if data.vid = vvPatient then
     begin
@@ -5566,18 +5566,18 @@ var
   preg, lastPreg: TRealPregledNewItem;
 begin
   linkpos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   pCardinalData := pointer(PByte(Adb_DM.AdbMain.buf) + 8);
   FPosDataADB := pCardinalData^;
-  node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+  node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
   data := pointer(PByte(node) + lenNode);
 
 
   while linkPos <= FPosLinkData do
   begin
     Inc(linkPos, LenData);
-    node := pointer(PByte(AspectsLinkPatPregFile.buf) + linkpos);
+    node := pointer(PByte(Adb_DM.AdbMainLink.buf) + linkpos);
     data := pointer(PByte(node) + lenNode);
     case data.vid of
       vvPatient:
@@ -5672,17 +5672,17 @@ var
 begin
   collPat.FUin := uin;
   linkpos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   pCardinalData := pointer(PByte(Adb_DM.AdbMain.buf) + 8);
   FPosDataADB := pCardinalData^;
-  node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+  node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
   data := pointer(PByte(node) + lenNode);
   //Doc := TDoctorItem.Create(nil);
   while linkPos <= FPosLinkData do
   begin
     Inc(linkPos, LenData);
-    node := pointer(PByte(AspectsLinkPatPregFile.buf) + linkpos);
+    node := pointer(PByte(Adb_DM.AdbMainLink.buf) + linkpos);
     data := pointer(PByte(node) + lenNode);
     case data.vid of
       vvPatient:
@@ -6996,7 +6996,7 @@ begin
   Adb_DM.AmsgColl.CollIncMN.buf := Adb_DM.AdbMain.Buf;
   Adb_DM.AmsgColl.CollIncDoc.posData := Adb_DM.AdbMain.FPosData;
   Adb_DM.AmsgColl.CollIncDoc.buf := Adb_DM.AdbMain.Buf;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   begin
     linkPos := 100;
     pCardinalData := pointer(PByte(bufLink));
@@ -7361,7 +7361,7 @@ var
   cnt: Integer;
 begin
   Stopwatch := TStopwatch.StartNew;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   linkPos := 100;
   cnt := 0;
   pCardinalData := pointer(PByte(bufLink));
@@ -7468,10 +7468,10 @@ begin
     dirAdb := '.\';
   for S in TDirectory.GetFiles(dirAdb, '*Hip*.lnk', TSearchOption.soAllDirectories) do
   begin
-    if AspectsLinkPatPregFile <> nil then
-      AspectsLinkPatPregFile.Free;
-    AspectsLinkPatPregFile := TMappedLinkFile.Create(s, false, TGUID.Empty);
-    if AspectsLinkPatPregFile.Buf <> nil then
+    if Adb_DM.AdbMainLink <> nil then
+      Adb_DM.AdbMainLink.Free;
+    Adb_DM.AdbMainLink := TMappedLinkFile.Create(s, false, TGUID.Empty);
+    if Adb_DM.AdbMainLink.Buf <> nil then
     begin
       //pCardinalData := pointer(PByte(AspectsHipFile.Buf));
 //      FPosMetaData := pCardinalData^;
@@ -7481,7 +7481,7 @@ begin
 //      FPosData := pCardinalData^;
 //      pCardinalData := pointer(PByte(AspectsHipFile.Buf) + 12);
 //      FLenData := pCardinalData^;
-      Pg := pointer(PByte(AspectsLinkPatPregFile.Buf) + 16 );
+      Pg := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 16 );
       if AGUID <> TGUID.Empty then
         begin
           if AGUID = pg^ then
@@ -7490,8 +7490,8 @@ begin
           end;
         end;
 
-      AspectsLinkPatPregFile.Free;
-      AspectsLinkPatPregFile := nil;
+      Adb_DM.AdbMainLink.Free;
+      Adb_DM.AdbMainLink := nil;
     end;
   end;
 
@@ -8022,7 +8022,7 @@ var
   RunNode: PVirtualNode;
 
 begin
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(bufLink));
   FPosLinkData := pCardinalData^;
@@ -8062,7 +8062,7 @@ var
   dataPat: PAspRec;
 begin
   Result := nil;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   BufADB := Adb_DM.AdbMain.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(bufLink));
@@ -9041,182 +9041,182 @@ end;
 //  end;
 //end;
 
-procedure TfrmSuperHip.OpenBufNomenNzis(FileName: string);
-var
-  i, j: Integer;
-  collType: TCollectionsType;
-  aspVersion: Word;
-  b: Byte;
-  pByteData: ^Byte;
-  pCardinalData: ^Cardinal;
-  aspPos: Cardinal;
-  p: Pointer;
-  //FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
-  Cl132: TCL132Item;
-  CL050: TCL050Item;
-  CL006: TCL006Item;
-  CL022: TCL022Item;
-  CL024: TCL024Item;
-  Cl037: TCL037Item;
-  CL038: TCL038Item;
-  CL088: TCL088Item;
-  CL134: TCL134Item;
-  CL139: TCL139Item;
-  CL142: TCL142Item;
-  CL144: TCL144Item;
-  PR001: TPR001Item;
-  NomenNzis: TNomenNzisItem;
-  fileStr: TFileStream;
-
-  AInt64: Int64;
-begin
-  Stopwatch := TStopwatch.StartNew;
-  if AspectsNomFile <> nil then
-    Exit;
-    //AspectsNomFile.Free;
-  try
-    AspectsNomFile := TMappedFile.Create(FileName, false, TGUID.Empty);
-
-  except
-
-  end;
-
-
-  if (AspectsNomFile <> nil) and (AspectsNomFile.Buf <> nil) then
-  begin
-
-    pCardinalData := pointer(PByte(AspectsNomFile.Buf));
-    AspectsNomFile.FPosMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 4);
-    AspectsNomFile.FLenMetaData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 8);
-    AspectsNomFile.FPosData := pCardinalData^;
-    pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 12);
-    AspectsNomFile.FLenData := pCardinalData^;
-    aspPos := AspectsNomFile.FPosMetaData;
-    begin
-      while aspPos < (AspectsNomFile.FPosMetaData + AspectsNomFile.FLenMetaData) do
-      begin
-        p := Pointer(pbyte(AspectsNomFile.Buf) + aspPos);
-        collType := TCollectionsType(p^);
-        inc(aspPos, 2);
-
-        p := Pointer(pbyte(AspectsNomFile.Buf) + aspPos);
-        aspVersion := word(p^);
-        inc(aspPos, 2);
-
-        case collType of
-          ctCL132:
-          begin
-            Cl132 := TCL132Item(Adb_DM.CL132Coll.Add);
-            Cl132.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL132Coll.FieldCount) * 4);
-          end;
-          ctCL050:
-          begin
-            Cl050 := TCL050Item(Adb_DM.CL050Coll.Add);
-            Cl050.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL050Coll.FieldCount) * 4);
-          end;
-          ctCL006:
-          begin
-            Cl006 := TCL006Item(Adb_DM.CL006Coll.Add);
-            Cl006.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL006Coll.FieldCount) * 4);
-          end;
-          ctCL022:
-          begin
-            Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
-            Cl022.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL022Coll.FieldCount) * 4);
-          end;
-          ctCL024:
-          begin
-            Cl024 := TCL024Item(Adb_DM.CL024Coll.Add);
-            Cl024.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL024Coll.FieldCount) * 4);
-          end;
-          ctCL037:
-          begin
-            Cl037 := TCL037Item(Adb_DM.CL037Coll.Add);
-            Cl037.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL037Coll.FieldCount) * 4);
-          end;
-          ctCL038:
-          begin
-            Cl038 := TCL038Item(Adb_DM.CL038Coll.Add);
-            Cl038.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL038Coll.FieldCount) * 4);
-          end;
-          ctCL088:
-          begin
-            Cl088 := TCL088Item(Adb_DM.CL088Coll.Add);
-            Cl088.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.CL088Coll.FieldCount) * 4);
-          end;
-
-
-          ctCL134:
-          begin
-            Cl134 := TCl134Item(Adb_DM.Cl134Coll.Add);
-            Cl134.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.Cl134Coll.FieldCount) * 4);
-          end;
-          ctCL139:
-          begin
-            Cl139 := TCl139Item(Adb_DM.Cl139Coll.Add);
-            Cl139.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.Cl139Coll.FieldCount) * 4);
-          end;
-          ctCL142:
-          begin
-            Cl142 := TCl142Item(Adb_DM.Cl142Coll.Add);
-            Cl142.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.Cl142Coll.FieldCount) * 4);
-          end;
-          ctCL144:
-          begin
-            Cl144 := TRealCl144Item(Adb_DM.Cl144Coll.Add);
-            Cl144.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.Cl144Coll.FieldCount) * 4);
-          end;
-
-          ctPR001:
-          begin
-            PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
-            PR001.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.PR001Coll.FieldCount) * 4);
-          end;
-
-          ctNomenNzis:
-          begin
-            //NomenNzis := TNomenNzisItem(NomenNzisColl.Add);
-            //NomenNzis.DataPos := aspPos;
-            Inc(aspPos, (Adb_DM.NomenNzisColl.FieldCount) * 4);
-          end;
-        end;
-      end;
-    end;
-  end
-  else
-  begin
-    fileStr := TFileStream.Create(FileName, fmCreate);
-    fileStr.Size := 20000000;
-    fileStr.Free;
-    AspectsNomFile := TMappedFile.Create(FileName, True, TGUID.Empty);
-  end;
-
-
-
-  Adb_DM.AdbNomenNzis := AspectsNomFile;
-  FDBHelper.AdbNomenNzis := AspectsNomFile;
-
-
-  OpenCmdNomenNzis(AspectsNomFile);
-
-  Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
-end;
+//procedure TfrmSuperHip.OpenBufNomenNzis(FileName: string);
+//var
+//  i, j: Integer;
+//  collType: TCollectionsType;
+//  aspVersion: Word;
+//  b: Byte;
+//  pByteData: ^Byte;
+//  pCardinalData: ^Cardinal;
+//  aspPos: Cardinal;
+//  p: Pointer;
+//  //FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+//  Cl132: TCL132Item;
+//  CL050: TCL050Item;
+//  CL006: TCL006Item;
+//  CL022: TCL022Item;
+//  CL024: TCL024Item;
+//  Cl037: TCL037Item;
+//  CL038: TCL038Item;
+//  CL088: TCL088Item;
+//  CL134: TCL134Item;
+//  CL139: TCL139Item;
+//  CL142: TCL142Item;
+//  CL144: TCL144Item;
+//  PR001: TPR001Item;
+//  NomenNzis: TNomenNzisItem;
+//  fileStr: TFileStream;
+//
+//  AInt64: Int64;
+//begin
+//  Stopwatch := TStopwatch.StartNew;
+//  if Adb_DM.AdbNomenNzis <> nil then
+//    Exit;
+//    //AspectsNomFile.Free;
+//  try
+//    Adb_DM.AdbNomenNzis := TMappedFile.Create(FileName, false, TGUID.Empty);
+//
+//  except
+//
+//  end;
+//
+//
+//  if (Adb_DM.AdbNomenNzis <> nil) and (Adb_DM.AdbNomenNzis.Buf <> nil) then
+//  begin
+//
+//    pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf));
+//    Adb_DM.AdbNomenNzis.FPosMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 4);
+//    Adb_DM.AdbNomenNzis.FLenMetaData := pCardinalData^;
+//    pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 8);
+//    Adb_DM.AdbNomenNzis.FPosData := pCardinalData^;
+//    pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 12);
+//    Adb_DM.AdbNomenNzis.FLenData := pCardinalData^;
+//    aspPos := Adb_DM.AdbNomenNzis.FPosMetaData;
+//    begin
+//      while aspPos < (Adb_DM.AdbNomenNzis.FPosMetaData + Adb_DM.AdbNomenNzis.FLenMetaData) do
+//      begin
+//        p := Pointer(pbyte(Adb_DM.AdbNomenNzis.Buf) + aspPos);
+//        collType := TCollectionsType(p^);
+//        inc(aspPos, 2);
+//
+//        p := Pointer(pbyte(Adb_DM.AdbNomenNzis.Buf) + aspPos);
+//        aspVersion := word(p^);
+//        inc(aspPos, 2);
+//
+//        case collType of
+//          ctCL132:
+//          begin
+//            Cl132 := TCL132Item(Adb_DM.CL132Coll.Add);
+//            Cl132.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL132Coll.FieldCount) * 4);
+//          end;
+//          ctCL050:
+//          begin
+//            Cl050 := TCL050Item(Adb_DM.CL050Coll.Add);
+//            Cl050.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL050Coll.FieldCount) * 4);
+//          end;
+//          ctCL006:
+//          begin
+//            Cl006 := TCL006Item(Adb_DM.CL006Coll.Add);
+//            Cl006.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL006Coll.FieldCount) * 4);
+//          end;
+//          ctCL022:
+//          begin
+//            Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
+//            Cl022.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL022Coll.FieldCount) * 4);
+//          end;
+//          ctCL024:
+//          begin
+//            Cl024 := TCL024Item(Adb_DM.CL024Coll.Add);
+//            Cl024.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL024Coll.FieldCount) * 4);
+//          end;
+//          ctCL037:
+//          begin
+//            Cl037 := TCL037Item(Adb_DM.CL037Coll.Add);
+//            Cl037.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL037Coll.FieldCount) * 4);
+//          end;
+//          ctCL038:
+//          begin
+//            Cl038 := TCL038Item(Adb_DM.CL038Coll.Add);
+//            Cl038.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL038Coll.FieldCount) * 4);
+//          end;
+//          ctCL088:
+//          begin
+//            Cl088 := TCL088Item(Adb_DM.CL088Coll.Add);
+//            Cl088.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.CL088Coll.FieldCount) * 4);
+//          end;
+//
+//
+//          ctCL134:
+//          begin
+//            Cl134 := TCl134Item(Adb_DM.Cl134Coll.Add);
+//            Cl134.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.Cl134Coll.FieldCount) * 4);
+//          end;
+//          ctCL139:
+//          begin
+//            Cl139 := TCl139Item(Adb_DM.Cl139Coll.Add);
+//            Cl139.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.Cl139Coll.FieldCount) * 4);
+//          end;
+//          ctCL142:
+//          begin
+//            Cl142 := TCl142Item(Adb_DM.Cl142Coll.Add);
+//            Cl142.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.Cl142Coll.FieldCount) * 4);
+//          end;
+//          ctCL144:
+//          begin
+//            Cl144 := TRealCl144Item(Adb_DM.Cl144Coll.Add);
+//            Cl144.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.Cl144Coll.FieldCount) * 4);
+//          end;
+//
+//          ctPR001:
+//          begin
+//            PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
+//            PR001.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.PR001Coll.FieldCount) * 4);
+//          end;
+//
+//          ctNomenNzis:
+//          begin
+//            //NomenNzis := TNomenNzisItem(NomenNzisColl.Add);
+//            //NomenNzis.DataPos := aspPos;
+//            Inc(aspPos, (Adb_DM.NomenNzisColl.FieldCount) * 4);
+//          end;
+//        end;
+//      end;
+//    end;
+//  end
+//  else
+//  begin
+//    fileStr := TFileStream.Create(FileName, fmCreate);
+//    fileStr.Size := 20000000;
+//    fileStr.Free;
+//    Adb_DM.AdbNomenNzis := TMappedFile.Create(FileName, True, TGUID.Empty);
+//  end;
+//
+//
+//
+//  Adb_DM.AdbNomenNzis := Adb_DM.AdbNomenNzis;
+//  FDBHelper.AdbNomenNzis := Adb_DM.AdbNomenNzis;
+//
+//
+//  OpenCmdNomenNzis(Adb_DM.AdbNomenNzis);
+//
+//  Elapsed := Stopwatch.Elapsed;
+//  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
+//end;
 
 procedure TfrmSuperHip.OpenCmd(ADB: TMappedFile);
 var
@@ -9322,7 +9322,10 @@ begin
       FFDbName := ParamStr(3);
     end;
   end;
+  Adb_DM.AdbMainLink := Adb_DM.AdbMainLink;
   Adb_DM.OpenDB(FFDbName);
+  if FmxProfForm = nil then
+    InitFMXDyn;
 //
 //  if Assigned(Adb_DM.AdbMain) then
 //    begin
@@ -9394,30 +9397,8 @@ begin
   //xlsHipp.OnCellChanged := XLSSpreadSheet1CellChanged;
   //LoadVtrNomen;
 
-  //if xlsHippPregled = nil then
-//  begin
-//    xlsHippPregled := TXLSSpreadSheet.Create(Self);
-//    pgcWork.ActivePage := Self.tsExcelPregled;
-//    with xlsHippPregled do
-//    begin
-//      Name := 'xlsHippPregled';
-//      Parent := Self.tsExcelPregled;
-//      Cursor := crCross;
-//      ComponentVersion := '3.00.10';
-//      ReadOnly := False;
-//      Align := alClient;
-//      UseDockManager := False;
-//      TabOrder := 0;
-//      TabStop := True;
-//    end;
-//  end;
-//  xlsHippPregled.Refresh;
-//  xlsHippPregled.Filename := 'D:\Nzis\НЗИС Е-Преглед - API Спецификация v1.3.1.xlsx';
-//  xlsHippPregled.Read;
-//  //xlsHippNomen.OnCellChanged := XLSSpreadSheet1CellChanged;
-//  LoadVtrPregled;
-//
-//  if xlsHippPR001 = nil then
+
+  //if xlsHippPR001 = nil then
 //  begin
 //    xlsHippPR001 := TXLSSpreadSheet.Create(Self);
 //    pgcWork.ActivePage := Self.tsExcelPR001;
@@ -9637,27 +9618,27 @@ begin
   //ListNodes.Clear;
   vtrPregledPat.BeginUpdate;
 
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 4);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 4);
   oldBuf := pCardinalData^;
-  if Cardinal(AspectsLinkPatPregFile.Buf) >= oldBuf then
+  if Cardinal(Adb_DM.AdbMainLink.Buf) >= oldBuf then
   begin
-    deltaBuf := Cardinal(AspectsLinkPatPregFile.Buf) - oldBuf;
+    deltaBuf := Cardinal(Adb_DM.AdbMainLink.Buf) - oldBuf;
   end
   else
   begin
-    deltaBuf := oldBuf - Cardinal(AspectsLinkPatPregFile.Buf);
+    deltaBuf := oldBuf - Cardinal(Adb_DM.AdbMainLink.Buf);
   end;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 4);
-  pCardinalData^ := Cardinal(AspectsLinkPatPregFile.Buf);
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 8);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 4);
+  pCardinalData^ := Cardinal(Adb_DM.AdbMainLink.Buf);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 8);
   oldRoot := pCardinalData^;
 
   //mmotest.Lines.Add(Format('BufLink  = %d', [cardinal(AspectsLinkPatPregFile.Buf)]));
 
   linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
-  node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+  node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
   //node.NodeHeight := 27;
 
   Exclude(node.States, vsSelected);
@@ -9666,7 +9647,7 @@ begin
     data.index := -1;
   AddToListNodes(data);
   i := 0;
-  if Cardinal(AspectsLinkPatPregFile.Buf) > oldBuf then
+  if Cardinal(Adb_DM.AdbMainLink.Buf) > oldBuf then
   begin
     while linkPos <= FPosLinkData do
     begin
@@ -9690,7 +9671,7 @@ begin
       end;
       Inc(linkPos, LenData);
 
-      node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+      node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
       //node.NodeHeight := 27;
       Exclude(node.States, vsSelected);
       //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
@@ -9729,7 +9710,7 @@ begin
           node.Parent := nil;
         end;
         Inc(linkPos, LenData);
-        node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+        node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
         Exclude(node.States, vsSelected);
         //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
         data := pointer(PByte(node) + lenNode);
@@ -9750,7 +9731,7 @@ begin
       while linkPos <= FPosLinkData do
       begin
         Inc(linkPos, LenData);
-        node := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+        node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
         Exclude(node.States, vsSelected);
         //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
         //Exclude(node.States, vsInitialized);
@@ -9767,26 +9748,26 @@ begin
 
   //pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
 //  pCardinalData^ := linkpos;
-  node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+  node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 100);
    //node.NodeHeight := 27;
 
   vtrPregledPat.InternalConnectNode_cmd(node, vtrPregledPat.RootNode, vtrPregledPat, amAddChildFirst);
-  vtrPregledPat.BufLink := AspectsLinkPatPregFile.Buf;
+  vtrPregledPat.BufLink := Adb_DM.AdbMainLink.Buf;
   //node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
   //vtrPregledPat.InternalDisconnectNode(node, false);
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 8);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 8);
   pCardinalData^ := Cardinal(vtrPregledPat.RootNode);
   vtrPregledPat.UpdateVerticalScrollBar(true);
   vtrPregledPat.EndUpdate;
   Stopwatch.StartNew;
   //vtrPregledPat.Sort(vtrPregledPat.RootNode.FirstChild, 0, sdAscending, false);
   Elapsed := Stopwatch.Elapsed;
-  AspectsLinkPatPregFile.FVTR := vtrPregledPat;
-  AspectsLinkPatPregFile.FStreamCmdFile := streamCmdFile;
-  FDBHelper.AdbLink := AspectsLinkPatPregFile;
-  FmxProfForm.AspLink := AspectsLinkPatPregFile;
+  Adb_DM.AdbMainLink.FVTR := vtrPregledPat;
+  Adb_DM.AdbMainLink.FStreamCmdFile := streamCmdFile;
+  FDBHelper.AdbLink := Adb_DM.AdbMainLink;
+  FmxProfForm.AspLink := Adb_DM.AdbMainLink;
   //Adb_DM.AdbMain := AspectsHipFile;
-  Adb_DM.AdbLink := AspectsLinkPatPregFile;
+  Adb_DM.AdbLink := Adb_DM.AdbMainLink;
 
   //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
 
@@ -9925,14 +9906,12 @@ begin
   Screen.HintFont.Size := 8;
 
   Stopwatch := TStopwatch.StartNew;
-  FNasMesto := TRealNasMestoAspects.Create(vtrLinkNasMesta);
-  FNasMesto.memotest := mmotest;
-  Adb_dm.CollPatient.NasMesto := FNasMesto;
+
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('TRealNasMestoAspects.Create  за %f',[ Elapsed.TotalMilliseconds]));
 
   Stopwatch := TStopwatch.StartNew;
-  FNasMesto.LinkToColl;
+
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
   //sgctl1.Licence :=
@@ -9978,8 +9957,8 @@ begin
   DownloadedStream.Free;
   if Adb_DM.AdbMain <> nil then
     Adb_DM.AdbMain.Free;
-  if AspectsLinkPatPregFile <> nil then
-    AspectsLinkPatPregFile.Free;
+  if Adb_DM.AdbMainLink <> nil then
+    Adb_DM.AdbMainLink.Free;
   //FreeAndNil(ListNodes);
   if Fdm <> nil then
   begin
@@ -9993,7 +9972,7 @@ begin
   FreeAndNil(InXmlStream);
   FreeAndNil(streamRes);
   FreeAndNil(tmpVtr);
-  FreeAndNil(FNasMesto);
+
 end;
 
 procedure TfrmSuperHip.FormFMXMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
@@ -10255,7 +10234,7 @@ begin
 
     profGR := TProfGraph.create;
 
-    profGR.BufNomen := AspectsNomFile.Buf;
+    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
     //profGR.BufADB := AspectsHipFile.Buf;
     //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
@@ -10361,7 +10340,7 @@ begin
 
     profGR := TProfGraph.create;
 
-    profGR.BufNomen := AspectsNomFile.Buf;
+    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
     //profGR.BufADB := AspectsHipFile.Buf;
     //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
@@ -11109,7 +11088,7 @@ end;
 
 procedure TfrmSuperHip.InitAdbDM;
 begin
-  Adb_DM := TADBDataModule.Create;
+  Adb_DM := TADBDataModule.Create(vtrLinkNasMesta, vtrPregledPat);
   Adb_DM.FDM := Fdm;
   Adb_DM.mmoTest := mmoTest;
   Adb_DM.AdbMainFileName := '';
@@ -11292,7 +11271,6 @@ begin
 
 
    FmxProfForm.Adb_dm := Adb_DM;
-   FmxProfForm.NasMesto := FNasMesto;
    FmxProfForm.profGR := profGR;
    FmxProfForm.mmotest := mmotest;
    FmxProfForm.fmxCntrDyn := fmxCntrDyn;
@@ -12724,12 +12702,10 @@ procedure TfrmSuperHip.LoadThreadDB(dbName: string);
 var
   thrLoadDb: TLoadDBThread;
 begin
-  FNasMesto.addresColl.Buf := Adb_DM.AdbMain.Buf;
-  FNasMesto.addresColl.posData := Adb_DM.AdbMain.FPosData;
+  
 
   thrLoadDb := TLoadDBThread.Create(True, dbname);
   thrLoadDb.Buf := Adb_DM.AdbMain.Buf;
-  thrLoadDb.FNasMesto := FNasMesto;
   thrLoadDb.FDBHelper := FDBHelper;
 
 
@@ -12893,14 +12869,14 @@ begin
     data.DataPos := 0;
     data.vid := vvCl132;
   end;
-  if (not Fdm.IsGP) and (Apat <> nil) then
-  begin
-    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
-
-    data := vtrMinaliPregledi.GetNodeData(vPreg);
-    data.DataPos := 0;
-    data.vid := vvIncMN;
-  end;
+  //if (not Fdm.IsGP) and (Apat <> nil) then
+//  begin
+//    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+//
+//    data := vtrMinaliPregledi.GetNodeData(vPreg);
+//    data.DataPos := 0;
+//    data.vid := vvIncMN;
+//  end;
 
   vtrMinaliPregledi.EndUpdate;
   vtrMinaliPregledi.Sort(vtrMinaliPregledi.RootNode, 0, sdDescending, false);
@@ -12910,62 +12886,6 @@ begin
 
   //Elapsed := Stopwatch.Elapsed;
   //mmoTest.Lines.Add('Minali za ' + FloatToStr(Elapsed.TotalMilliseconds));
-end;
-
-procedure TfrmSuperHip.LoadVtrNomenNzis(NomenNamesFile: string);
-var
-  data: PAspRec;
-  i: Integer;
-  v: PVirtualNode;
-  str: string;
-  NomenID: integer;
-  MaxCntNomen: Integer;
-begin
-  //MaxCntNomen := 150;
-//  if vRootNomenNzis.ChildCount > 0  then Exit;
-//  vtrNomenNzis.BeginUpdate;
-//  //LSNomenNzisNames.LoadFromFile(NomenNamesFile, TEncoding.UTF8);
-//  //ListNomenNzisNames.Count := LSNomenNzisNames.Count;
-//
-//  for i := 0 to MaxCntNomen - 1 do
-//  begin
-//    ListNomenNzisNames[i] := TNomenNzisRec.Create;
-//    //str := LSNomenNzisNames[i];
-//    //ListNomenNzisNames[i].ArrStr := str.Split([#9]);
-//
-//    v := vtrNomenNzis.AddChild(vRootNomenNzis, nil);
-//    if Length(ListNomenNzisNames[i].ArrStr) = 5 then
-//    begin
-//      case ListNomenNzisNames[i].ArrStr[4][1] of
-//        'E': v.Dummy := 79;
-//        'X': v.Dummy := 80;
-//      end;
-//      NomenID := StrToInt(Copy(ListNomenNzisNames[i].ArrStr[1], 3, 3));
-//      case NomenID of
-//        022: ListNomenNzisNames[i].AspColl := CL022Coll;
-//        024: ListNomenNzisNames[i].AspColl := CL024Coll;
-//        038: ListNomenNzisNames[i].AspColl := CL038Coll;
-//        050: ListNomenNzisNames[i].AspColl := CL050Coll;
-//        132: ListNomenNzisNames[i].AspColl := CL132Coll;
-//        134: ListNomenNzisNames[i].AspColl := CL134Coll;
-//      end;
-//    end;
-//    data := vtrNomenNzis.GetNodeData(v);
-//    data.vid := vvNomenNzis;
-//    data.index := i;
-//    vtrNomenNzis.AddWaitNode(v);
-//  end;
-//
-//  v := vtrNomenNzis.AddChild(vRootNzisBiznes, nil);
-//
-//  data := vtrNomenNzis.GetNodeData(v);
-//  data.vid := vvPR001;
-//  data.index := 0;
-//  vtrNomenNzis.AddWaitNode(v);
-//
-//  vtrNomenNzis.FullExpand();
-//  vtrNomenNzis.EndUpdate;
-
 end;
 
 procedure TfrmSuperHip.LoadVtrNomenNzis1;
@@ -13204,8 +13124,8 @@ begin
   linkpos := 100;
   Run := vtr.RootNode;
 
-  TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-  data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+  TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+  data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
   data.index := MAXDWORD;
   data.vid := vvPatientNewRoot;
   data.DataPos := 0;
@@ -13229,8 +13149,8 @@ begin
     pat := Adb_dm.CollPatient.Items[i];
     if pat.PatID = 85386 then
         Caption := 'ddd';
-    TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-    data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+    TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+    data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
     data.DataPos := pat.DataPos;
     data.vid := vvPatient;
     data.index := i;
@@ -13249,8 +13169,8 @@ begin
     vPat := TreeLink;
     if pat.FDoctor <> nil then
     begin
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := pat.FDoctor.DataPos;
       data.vid := vvDoctor;
       data.index := -1;
@@ -13267,8 +13187,8 @@ begin
     end;
     if pat.FAdresi.Count > 0 then
     begin
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := pat.FAdresi[0].DataPos;
       data.vid := vvAddres;
       data.index := -1;
@@ -13287,8 +13207,8 @@ begin
     for j := 0 to pat.FMDDs.Count - 1 do
     begin
       MDD := TRealINC_MDNItem(pat.FMDDs[j]);
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := MDD.DataPos;
       data.vid := vvIncMdn;
       data.index := -1;
@@ -13312,8 +13232,8 @@ begin
       if pat.FIncMNs[j].NRN = '2418760164D8' then
         Caption := 'ddd';
       IncMn := TRealINC_NAPRItem(pat.FIncMNs[j]);
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := IncMn.DataPos;
       data.vid := vvIncMN;
       data.index := -1;
@@ -13330,8 +13250,8 @@ begin
                       vtr, amAddChildFirst, streamCmdFile);
 
       vIncMN := TreeLink;
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := IncMn.FIncDoctor.DataPos;
       data.vid := vvOtherDoctor;
       data.index := -1;
@@ -13358,8 +13278,8 @@ begin
       preg := TRealPregledNewItem(pat.FPregledi[j]);
       if preg.PatID = 85386 then
         Caption := 'ddd';
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.DataPos := preg.DataPos;
       data.vid := vvPregledNew;
       data.index := -1;
@@ -13407,8 +13327,8 @@ begin
 
       if performer <> nil then
       begin
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := performer.DataPos;
         data.vid := vvPerformer;
         data.index := -1;
@@ -13428,8 +13348,8 @@ begin
         if preg.FDeput <> nil then
         begin
           deput := preg.FDeput;
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := deput.DataPos;
           data.vid := vvDeput;
           data.index := -1;
@@ -13453,8 +13373,8 @@ begin
       for k := 0 to preg.FDiagnosis.Count -1 do
       begin
         diag := preg.FDiagnosis[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := diag.DataPos;
         data.vid := vvDiag;
         data.index := -1;
@@ -13473,8 +13393,8 @@ begin
       for k := 0 to preg.FProcedures.Count -1 do
       begin
         proc := preg.FProcedures[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := proc.DataPos;
         data.vid := vvProcedures;
         data.index := -1;
@@ -13492,8 +13412,8 @@ begin
       for k := 0 to preg.FMdns.Count -1 do
       begin
         mdn := preg.FMdns[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := mdn.DataPos;
         data.vid := vvMDN;
         data.index := -1;
@@ -13519,8 +13439,8 @@ begin
 //            Continue;// zzzzzzzzzzzzzzzzzz  да се сложи коя диагноза от прегледа е...
 //          end;
           mdn.AddNewDiag(m, Adb_dm.CollDiag);
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
           data.vid := vvDiag;
           data.index := -1;
@@ -13538,8 +13458,8 @@ begin
         for m := 0 to mdn.FExamAnals.Count -1 do
         begin
           examAnal := mdn.FExamAnals[m];
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := examAnal.DataPos;
           data.vid := vvExamAnal;
           data.index := -1;
@@ -13557,8 +13477,8 @@ begin
       for k := 0 to preg.FMNs.Count -1 do
       begin
         mn := preg.FMNs[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := mn.DataPos;
         data.vid := vvMedNapr;
         data.index := -1;
@@ -13577,8 +13497,8 @@ begin
         for m := 0 to mn.FDiagnosis2.Count -1 do
         begin
           diag := mn.FDiagnosis2[m];
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
           data.vid := vvDiag;
           data.index := -1;
@@ -13597,8 +13517,8 @@ begin
       for k := 0 to preg.FMNs3A.Count -1 do
       begin
         mn3A := preg.FMNs3A[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := mn3A.DataPos;
         data.vid := vvMedNapr3A;
         data.index := -1;
@@ -13617,8 +13537,8 @@ begin
         for m := 0 to mn3A.FDiagnosis2.Count -1 do
         begin
           diag := mn3A.FDiagnosis2[m];
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
           data.vid := vvDiag;
           data.index := -1;
@@ -13637,8 +13557,8 @@ begin
       for k := 0 to preg.FMNsHosp.Count -1 do
       begin
         mnHosp := preg.FMNsHosp[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := mnHosp.DataPos;
         data.vid := vvMedNaprHosp;
         data.index := -1;
@@ -13657,8 +13577,8 @@ begin
         for m := 0 to mnHosp.FDiagnosis2.Count -1 do
         begin
           diag := mnHosp.FDiagnosis2[m];
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
           data.vid := vvDiag;
           data.index := -1;
@@ -13677,8 +13597,8 @@ begin
       for k := 0 to preg.FMNsLKK.Count -1 do
       begin
         mnLkk := preg.FMNsLKK[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := mnLkk.DataPos;
         data.vid := vvMedNaprLkk;
         data.index := -1;
@@ -13697,8 +13617,8 @@ begin
         for m := 0 to mnLkk.FDiagnosis2.Count -1 do
         begin
           diag := mnLkk.FDiagnosis2[m];
-          TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-          data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+          TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+          data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
           data.DataPos := diag.DataPos;
           data.vid := vvDiag;
           data.index := -1;
@@ -13717,8 +13637,8 @@ begin
       for k := 0 to preg.FImmuns.Count -1 do
       begin
         immun := preg.FImmuns[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := immun.DataPos;
         data.vid := vvExamImun;
         data.index := -1;
@@ -13736,8 +13656,8 @@ begin
       for k := 0 to preg.FProfCards.Count -1 do
       begin
         profCard := preg.FProfCards[k];
-        TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-        data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+        TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+        data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
         data.DataPos := profCard.DataPos;
         data.vid := vvProfCard;
         data.index := -1;
@@ -13755,13 +13675,13 @@ begin
     end;
   end;
 
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   pCardinalData^ := linkpos;
 
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 4);
-  pCardinalData^ := Cardinal(AspectsLinkPatPregFile.Buf);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 4);
+  pCardinalData^ := Cardinal(Adb_DM.AdbMainLink.Buf);
 
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf) + 8);
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 8);
   pCardinalData^ := Cardinal(vtr.RootNode);
 
   vtr.EndUpdate;
@@ -13784,7 +13704,7 @@ var
   data, dataPat: PAspRec;
 begin
   vtrProfReg.BeginUpdate;
-  buflink := AspectsLinkPatPregFile.Buf;
+  buflink := Adb_DM.AdbMainLink.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(buflink));
   FPosLinkData := pCardinalData^;
@@ -13828,7 +13748,7 @@ var
   PregIsProf: Boolean;
 begin
   vtrProfReg.BeginUpdate;
-  buflink := AspectsLinkPatPregFile.Buf;
+  buflink := Adb_DM.AdbMainLink.Buf;
   BufADB := Adb_DM.AdbMain.Buf;
   linkPos := 100;
   pCardinalData := pointer(PByte(bufLink));
@@ -14016,7 +13936,7 @@ begin
 
     profGR := TProfGraph.create;
 
-    profGR.BufNomen := AspectsNomFile.Buf;
+    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
     //profGR.BufADB := AspectsHipFile.Buf;
     //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
@@ -14032,7 +13952,7 @@ begin
     dataGraph.vid := vvNone;
     dataGraph.index := 0;
   Adb_dm.ACollPatGR.Clear;
-  Adb_dm.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+  Adb_dm.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
   vtrGraph.OnCompareNodes := nil;
   //vtrGraph.OnGetText := nil;
   vtrGraph.OnGetImageIndexEx := nil;
@@ -14246,12 +14166,12 @@ var
 begin
   ParentNode := PVirtualNode(pmActionPreg.tag);
   linkPos := 100;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
 
   while linkPos <= FPosLinkData do
   begin
-    run := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
+    run := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
     if (run.Parent = ParentNode) and (vsDeleting in Run.States) then
     begin
       mmoTest.Lines.add(IntToStr(Integer(run)));
@@ -14311,7 +14231,7 @@ var
 begin
   Stopwatch := TStopwatch.StartNew;
   FmxTitleBar.p1.IsOpen := False;
-  FNasMesto.LoadVtrSelf;
+  Adb_dm.FNasMesto.LoadVtrSelf;
   //if True then
 
   //OblColl := TRealOblastColl.Create(TRealOblastItem);
@@ -14978,9 +14898,9 @@ begin
   Stopwatch := TStopwatch.StartNew;
   node := vtrSearch.GetFirstSelected();
   data := Pointer(PByte(node)+ lenNode);
-  for i := 0 to AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count - 1 do
+  for i := 0 to Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList.Count - 1 do
   begin
-    run := AspectsLinkPatPregFile.JoinResult[Data.index].AdbList[i];
+    run := Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList[i];
     dataRun := Pointer(PByte(run)+ lenNode);
 
     // вземаме PAnsiChar и length директно от ADB буфера
@@ -15032,9 +14952,9 @@ begin
   node := vtrSearch.GetFirstSelected();
   data := Pointer(PByte(node) + lenNode);
 
-  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  for i := 0 to Adb_DM.AdbMainLink.JoinResult[data.index].AdbList.Count - 1 do
   begin
-    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    run := Adb_DM.AdbMainLink.JoinResult[data.index].AdbList[i];
     dataRun := Pointer(PByte(run) + lenNode);
 
     p := Adb_DM.CollPregled.getPAnsiStringMap(
@@ -15083,9 +15003,9 @@ begin
   node := vtrSearch.GetFirstSelected();
   data := Pointer(PByte(node) + lenNode);
 
-  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  for i := 0 to Adb_DM.AdbMainLink.JoinResult[data.index].AdbList.Count - 1 do
   begin
-    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    run := Adb_DM.AdbMainLink.JoinResult[data.index].AdbList[i];
     dataRun := Pointer(PByte(run) + lenNode);
 
     p := Adb_DM.CollPregled.getPAnsiStringMap(
@@ -15136,9 +15056,9 @@ begin
   node := vtrSearch.GetFirstSelected();
   data := Pointer(PByte(node) + lenNode);
 
-  for i := 0 to AspectsLinkPatPregFile.JoinResult[data.index].AdbList.Count - 1 do
+  for i := 0 to Adb_DM.AdbMainLink.JoinResult[data.index].AdbList.Count - 1 do
   begin
-    run := AspectsLinkPatPregFile.JoinResult[data.index].AdbList[i];
+    run := Adb_DM.AdbMainLink.JoinResult[data.index].AdbList[i];
     dataRun := Pointer(PByte(run) + lenNode);
 
     // get pointer to string in the ADB buffer
@@ -15195,9 +15115,9 @@ begin
   node := vtrSearch.GetFirstSelected();
   data := Pointer(PByte(node)+ lenNode);
 
-  for i := 0 to  AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count - 1 do
+  for i := 0 to  Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList.Count - 1 do
   begin
-    run := AspectsLinkPatPregFile.JoinResult[Data.index].AdbList[i];
+    run := Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList[i];
     dataRun := Pointer(PByte(run) + lenNode);
 
     p := Adb_DM.CollPregled.getPAnsiStringMap(dataRun.DataPos, Word(PregledNew_NRN_LRN), len);
@@ -15324,10 +15244,10 @@ var
   TempMns: TList<TRealBLANKA_MED_NAPRItem>;
 begin
 
-  if AspectsNomFile = nil then
-    OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
-  FmxProfForm.AspNomenBuf := AspectsNomFile.Buf;
-  FmxProfForm.AspNomenPosData := AspectsNomFile.FPosData;
+  if Adb_DM.AdbNomenNzis = nil then
+    Adb_DM.OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
+  FmxProfForm.AspNomenBuf := Adb_DM.AdbNomenNzis.Buf;
+  FmxProfForm.AspNomenPosData := Adb_DM.AdbNomenNzis.FPosData;
 
   Stopwatch := TStopwatch.StartNew;
   //FmxProfForm.scldlyt1.BeginUpdate;
@@ -15431,7 +15351,7 @@ begin
         cl132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         prNomen := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         cl132pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+        cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
         if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
         begin
           mdn := Adb_dm.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
@@ -15494,7 +15414,7 @@ begin
           cl132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           prNomen := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           cl132pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl136Key := Adb_dm.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
           runAnal := run.FirstChild;
           while runAnal <> nil do
           begin
@@ -16214,7 +16134,7 @@ end;
 procedure TfrmSuperHip.HipNomenAnalsClick(Sender: TObject);
 begin
   pnlRoleView.ForceClose;
-  OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
+  Adb_DM.OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
   Adb_DM.OpenADBNomenHip(paramstr(2) + 'HipNomen.adb');
   //OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
   OpenLinkNomenHipAnals;
@@ -16437,10 +16357,10 @@ begin
           New(cl142.PRecord);
           cl142.PRecord.setProp := [CL142_nhif_code];
           cl142.PRecord.nhif_code := ArrNhifCode[j];
-          datPos := AspectsNomFile.FPosData + AspectsNomFile.FLenData;
+          datPos := Adb_DM.AdbNomenNzis.FPosData + Adb_DM.AdbNomenNzis.FLenData;
           cl142.SaveCL142(datPos);
-          pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 12);
-          pCardinalData^  := datPos - self.AspectsNomFile.FPosData;
+          pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 12);
+          pCardinalData^  := datPos - self.Adb_DM.AdbNomenNzis.FPosData;
         end
         else
         begin
@@ -16587,7 +16507,7 @@ begin
     begin
       if diagDataPos = Data.DataPos then
       begin
-        AspectsLinkPatPregFile.MarkDeletedNode(RunNode);
+        Adb_DM.AdbMainLink.MarkDeletedNode(RunNode);
         dataPreg := Pointer(PByte(vPreg) + lenNode);
         dataPat :=  Pointer(PByte(vPreg.Parent) + lenNode);
         tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -16652,7 +16572,7 @@ begin
     begin
       if diag.DataPos = Data.DataPos then
       begin
-        AspectsLinkPatPregFile.MarkDeletedNode(RunNode);
+        Adb_DM.AdbMainLink.MarkDeletedNode(RunNode);
         dataPreg := Pointer(PByte(vPreg) + lenNode);
         dataPat :=  Pointer(PByte(vPreg.Parent) + lenNode);
         tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -16925,7 +16845,7 @@ begin
   end;
 
 
-  pCardinalData := pointer(PByte(AspectsNomFile));
+  pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis));
   FPosMetaData := pCardinalData^;
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add('insert PR001 ' + FloatToStr(Elapsed.TotalMilliseconds));
@@ -16976,8 +16896,8 @@ begin
 //  fileStr.Free;
 //
 //  AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, AspectsHipFile.GUID);
-  if AspectsNomFile = nil then
-    OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
+  if Adb_DM.AdbNomenNzis = nil then
+    Adb_DM.OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
   OpenLinkNomenHipAnals;
 
   //CollPractica.Clear;
@@ -17053,11 +16973,11 @@ begin
   vtrPregledPat.BeginUpdate;
   try
     try
-      pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+      pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
       linkpos := pCardinalData^;
 
-      TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-      data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+      TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+      data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
       data.index := -1;
       data.vid := vvExamAnal;
       data.DataPos := TempItem.DataPos;
@@ -17076,7 +16996,7 @@ begin
                         vtrPregledPat, amAddChildLast);
 
       AnalLink := TreeLink;
-      pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+      pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
       pCardinalData^ := linkpos;
     except
 
@@ -17159,11 +17079,11 @@ begin
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   linkpos := pCardinalData^;
 
-  TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-  data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+  TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+  data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
   data.index := -1;
   data.vid := vvMDN;
   data.DataPos := TempItem.DataPos;
@@ -17184,7 +17104,7 @@ begin
   MdnLink := TreeLink;
   vtrPregledPat.TreeStates := vtrPregledPat.TreeStates - [tsChangePending];
   vtrPregledPat.EndUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   pCardinalData^ := linkpos;
 end;
 
@@ -17223,11 +17143,11 @@ begin
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   linkpos := pCardinalData^;
 
-  TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-  data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+  TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+  data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
   data.index := -1;
   data.vid := vvMedNapr;
   data.DataPos := TempItem.DataPos;
@@ -17248,7 +17168,7 @@ begin
   MnLink := TreeLink;
   vtrPregledPat.TreeStates := vtrPregledPat.TreeStates - [tsChangePending];
   vtrPregledPat.EndUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   pCardinalData^ := linkpos;
 end;
 
@@ -17315,11 +17235,11 @@ begin
 
   if vPrevDiag = nil then
   begin
-    AspectsLinkPatPregFile.AddNewNode(vvDiag, diag.DataPos, vPreg, amAddChildLast, vDiag, linkpos);
+    Adb_DM.AdbMainLink.AddNewNode(vvDiag, diag.DataPos, vPreg, amAddChildLast, vDiag, linkpos);
   end
   else
   begin
-    AspectsLinkPatPregFile.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
+    Adb_DM.AdbMainLink.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
   end;
 end;
 
@@ -17410,7 +17330,7 @@ begin
      NZIS_PLANNED_TYPE_StartDate, NZIS_PLANNED_TYPE_EndDate, NZIS_PLANNED_TYPE_CL132_DataPos, NZIS_PLANNED_TYPE_NumberRep];
   NZIS_PLANNED_TYPE.PRecord.ID := 0;
   NZIS_PLANNED_TYPE.PRecord.PREGLED_ID := 0;
-  NZIS_PLANNED_TYPE.PRecord.CL132_KEY := gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_Key));
+  NZIS_PLANNED_TYPE.PRecord.CL132_KEY := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_Key));
   NZIS_PLANNED_TYPE.PRecord.StartDate := gr.startDate;
   if RL090Prev.Contains('|' + NZIS_PLANNED_TYPE.PRecord.CL132_KEY + '|') then
   begin
@@ -17434,7 +17354,7 @@ begin
   pCardinalData := pointer(Adb_DM.AdbMain.Buf);
   FPosMetaData := pCardinalData^;
   ADB_DM.CollNZIS_PLANNED_TYPE.IncCntInADB;
-  AspectsLinkPatPregFile.AddNewNode(vvNZIS_PLANNED_TYPE, NZIS_PLANNED_TYPE.DataPos, vPreg, amAddChildLast, TreeLinkPlan, linkpos);
+  Adb_DM.AdbMainLink.AddNewNode(vvNZIS_PLANNED_TYPE, NZIS_PLANNED_TYPE.DataPos, vPreg, amAddChildLast, TreeLinkPlan, linkpos);
 
   TreeLinkPlan.CheckType := ctCheckBox;
   TreeLinkPlan.CheckState := csCheckedNormal;
@@ -17562,28 +17482,28 @@ begin
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
-  AspectsLinkPatPregFile.AddNewNode(vvPregledNew, TempItem.DataPos, nodePat, amAddChildFirst, TreeLink, linkpos);
+  Adb_DM.AdbMainLink.AddNewNode(vvPregledNew, TempItem.DataPos, nodePat, amAddChildFirst, TreeLink, linkpos);
   vPreg := TreeLink;
 
   // zzzzzzzzzzzzzzzzzzzzzzzzzzzzz AutoNzis  тука слагам 2-рия доктор замества 1-вия
-  AspectsLinkPatPregFile.AddNewNode(vvPerformer, ADB_DM.CollDoctor.Items[0].DataPos, vPreg, amAddChildLast, vPerf, linkpos);
-  AspectsLinkPatPregFile.AddNewNode(vvDeput, ADB_DM.CollDoctor.Items[1].DataPos, vPerf, amAddChildLast, vDeput, linkpos);
+  Adb_DM.AdbMainLink.AddNewNode(vvPerformer, ADB_DM.CollDoctor.Items[0].DataPos, vPreg, amAddChildLast, vPerf, linkpos);
+  Adb_DM.AdbMainLink.AddNewNode(vvDeput, ADB_DM.CollDoctor.Items[1].DataPos, vPerf, amAddChildLast, vDeput, linkpos);
   mkb_s := '';
   ADB_DM.ListPregledLinkForInsert.Add(vPreg);
   for i := 0 to TempItem.Fpatient.ListCurrentProf.Count - 1 do
   begin
     gr := TempItem.Fpatient.ListCurrentProf[i];
     begin
-      if gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_CL136_Mapping)) = '1' then
+      if gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_cl136)) = '1' then
       begin
-        mkb := gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_CL011_Mapping));
+        mkb := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_cl011));
         if not mkb_s.Contains(mkb) then
         begin
           AddNewDiag(vPreg, mkb, '', 0, 100);
           mkb_s := mkb_s + mkb;
         end;
       end;
-      Cl132Key := gr.Cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(CL132_Key));
+      Cl132Key := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_Key));
       for j := 0 to TempItem.Fpatient.FPregledi.Count - 1 do
       begin
         preg := TempItem.Fpatient.FPregledi[j];
@@ -17607,7 +17527,7 @@ begin
       for j := 0 to gr.Cl132.FListPr001.Count - 1 do
       begin
         pr001 := gr.Cl132.FListPr001[j];
-        if pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) = 'CL133'  then
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL133'  then
         begin
           NZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEItem(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.Add);
           New(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
@@ -17619,10 +17539,10 @@ begin
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord.ID := 0;
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord.PLANNED_TYPE_ID := 0;
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord.CL133_QUEST_RESPONSE_CODE :=
-             pr001.getWordMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
+             pr001.getWordMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord.PR001_KEY :=
-             pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) + '|' +
-             pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
+             pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) + '|' +
+             pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
           NZIS_QUESTIONNAIRE_RESPONSE.InsertNZIS_QUESTIONNAIRE_RESPONSE;
 
           ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Size;
@@ -17633,7 +17553,7 @@ begin
           pCardinalData := pointer(Adb_DM.AdbMain.Buf);
           FPosMetaData := pCardinalData^;
           ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
-          AspectsLinkPatPregFile.AddNewNode(vvNZIS_QUESTIONNAIRE_RESPONSE, NZIS_QUESTIONNAIRE_RESPONSE.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+          Adb_DM.AdbMainLink.AddNewNode(vvNZIS_QUESTIONNAIRE_RESPONSE, NZIS_QUESTIONNAIRE_RESPONSE.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           if True then
           begin
 
@@ -17641,7 +17561,7 @@ begin
 
         end
         else
-        if pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) = 'CL022'  then
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL022'  then
         begin
           ArrPR001ActivityID := string(ADB_DM.PR001Coll.getAnsiStringMap(pr001.DataPos, Word(PR001_Activity_ID))).Split([';']);
           for k := 0 to Length(ArrPR001ActivityID) - 1 do
@@ -17672,14 +17592,14 @@ begin
             pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
             ADB_DM.CollExamAnal.IncCntInADB;
-            AspectsLinkPatPregFile.AddNewNode(vvExamAnal, examAnal.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+            Adb_DM.AdbMainLink.AddNewNode(vvExamAnal, examAnal.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           end;
 
         end
         else
-        if pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Nomenclature)) = 'CL014'  then
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL014'  then
         begin
-          if  pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID)) = 'R2' then
+          if  pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID)) = 'R2' then
           begin
             MedNapr := TRealBLANKA_MED_NAPRItem(ADB_DM.CollMedNapr.Add);
             New(MedNapr.PRecord);
@@ -17693,7 +17613,7 @@ begin
 
 
             MedNapr.InsertBLANKA_MED_NAPR;
-            AspectsLinkPatPregFile.AddNewNode(vvMedNapr, MedNapr.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+            Adb_DM.AdbMainLink.AddNewNode(vvMedNapr, MedNapr.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           end;
 
         end
@@ -17713,7 +17633,7 @@ begin
             NZIS_DIAGNOSTIC_REPORT.PRecord.PREGLED_ID := 0;
             NZIS_DIAGNOSTIC_REPORT.PRecord.CL083_STATUS := 10;// registriran
             NZIS_DIAGNOSTIC_REPORT.PRecord.CL142_CODE :=
-               pr001.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
+               pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
             NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := pr001.CL142.DataPos;
             NZIS_DIAGNOSTIC_REPORT.InsertNZIS_DIAGNOSTIC_REPORT;
 
@@ -17725,13 +17645,13 @@ begin
             pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
             ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
-            AspectsLinkPatPregFile.AddNewNode(vvNZIS_DIAGNOSTIC_REPORT, NZIS_DIAGNOSTIC_REPORT.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+            Adb_DM.AdbMainLink.AddNewNode(vvNZIS_DIAGNOSTIC_REPORT, NZIS_DIAGNOSTIC_REPORT.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
           end;
         end;
         vPr001 := TreeLink;
         if pr001.CL142 <> nil  then
         begin
-          Rule88 := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Notes));
+          Rule88 := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Notes));
 
           if pr001.CL142.FListCL144.Count > 1 then // дейности
           begin
@@ -17740,7 +17660,7 @@ begin
               Cl144 := pr001.CL142.FListCL144[k];
               if Trim(Rule88) <> '' then
               begin
-                ACL144_key := Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
+                ACL144_key := Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
                 if Pos(ACL144_key, Rule88) = 0 then Continue;
               end;
               /////////AspectsLinkPatPregFile.AddNewNode(vvCL144, Cl144.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
@@ -17756,8 +17676,8 @@ begin
                  ];
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.ID := 0;
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.DIAGNOSTIC_REPORT_ID := 0;
-              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL144_CODE := Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
-              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL028_VALUE_SCALE := StrToInt(Cl144.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL144_cl028)));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL144_CODE := Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL028_VALUE_SCALE := StrToInt(Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_cl028)));
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := Cl144.DataPos;
 
               NZIS_RESULT_DIAGNOSTIC_REPORT.InsertNZIS_RESULT_DIAGNOSTIC_REPORT;
@@ -17770,7 +17690,7 @@ begin
               pCardinalData := pointer(Adb_DM.AdbMain.Buf);
               FPosMetaData := pCardinalData^;
               ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
-              AspectsLinkPatPregFile.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, NZIS_RESULT_DIAGNOSTIC_REPORT.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
+              Adb_DM.AdbMainLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, NZIS_RESULT_DIAGNOSTIC_REPORT.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
             end;
           end;
         end;
@@ -17778,13 +17698,13 @@ begin
         for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do  // отговори
         begin
           cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
-          note := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
-          Field_cl133 := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_CL133));
-          cl028Key := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_CL028));
+          note := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
+          Field_cl133 := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_CL133));
+          cl028Key := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_CL028));
           if (note <> '') and (Field_cl133[1] in ['5', '6']) then
           begin
-            test := gr.Cl132.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) +
-                     cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
+            test := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) +
+                     cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
           end
           else
           begin
@@ -17801,7 +17721,7 @@ begin
                 NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS];
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID := 0;
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID := 0;
-            NZIS_QUESTIONNAIRE_ANSWER.PRecord.CL134_QUESTION_CODE := cl134.getAnsiStringMap(AspectsNomFile.buf, ADB_DM.CL132Coll.posData, word(CL134_Key));;
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.CL134_QUESTION_CODE := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Key));;
             NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS := cl134.DataPos;
                //pr001.getWordMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
 
@@ -17815,7 +17735,7 @@ begin
             pCardinalData := pointer(Adb_DM.AdbMain.Buf);
             FPosMetaData := pCardinalData^;
             ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
-            AspectsLinkPatPregFile.AddNewNode(vvNZIS_QUESTIONNAIRE_ANSWER, NZIS_QUESTIONNAIRE_ANSWER.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
+            Adb_DM.AdbMainLink.AddNewNode(vvNZIS_QUESTIONNAIRE_ANSWER, NZIS_QUESTIONNAIRE_ANSWER.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
             //case cl028Key[1] of
 //              '1':// едиторчета
 //              begin
@@ -18202,11 +18122,11 @@ begin
   Elapsed := Stopwatch.Elapsed;
   /////////////////////////////////////////////
   vtrPregledPat.BeginUpdate;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   linkpos := pCardinalData^;
 
-  TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-  data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+  TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+  data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
   data.index := -1;
   data.vid := vvPregledNew;
   data.DataPos := preg.DataPos;
@@ -18230,8 +18150,8 @@ begin
   for k := 0 to preg.FDiagnosis.Count -1 do
   begin
     diag := preg.FDiagnosis[k];
-    TreeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos);
-    data := pointer(PByte(AspectsLinkPatPregFile.Buf) + linkpos + lenNode);
+    TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
+    data := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos + lenNode);
     data.DataPos := diag.DataPos;
     data.vid := vvDiag;
     data.index := -1;
@@ -18251,7 +18171,7 @@ begin
   vtrPregledPat.EndUpdate;
   vtrPregledPat.Selected[TreeLink] := True;
   vtrPregledPat.FocusedNode := TreeLink;
-  pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
+  pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   pCardinalData^ := linkpos;
 end;
 
@@ -18525,6 +18445,7 @@ begin
     InternalChangeWorkPage(tsExcel);
     ActiveSubButton := TRoleButton(Sender);
     OpenExcels;
+
   end
   else
   begin
@@ -18573,7 +18494,7 @@ begin
   thrAspPerf.FreeOnTerminate := True;
   thrAspPerf.FCmdADB := streamCmdFile;
   thrAspPerf.FCmdNzisNomen := streamCmdFileNomenNzis;
-  thrAspPerf.AspectsNomFile := AspectsNomFile;
+  thrAspPerf.AspectsNomFile := Adb_DM.AdbNomenNzis;
   thrAspPerf.Resume;
 end;
 
@@ -18623,7 +18544,7 @@ begin
   thrHistPerf := THistoryThread.Create(True, FdbName);
   thrHistPerf.FreeOnTerminate := True;
   thrHistPerf.Buf := Adb_DM.AdbMain.Buf;
-  thrHistPerf.BufLink := AspectsLinkPatPregFile.Buf;
+  thrHistPerf.BufLink := Adb_DM.AdbMainLink.Buf;
   thrHistPerf.DataPos := Adb_DM.AdbMain.FPosData;
   thrHistPerf.GUID := Adb_DM.AdbMain.GUID;
   thrHistPerf.FVTR := vtrPregledPat;
@@ -18980,13 +18901,13 @@ var
 begin
   mmoTest.Lines.BeginUpdate;
   try
-    Keys := AspectsLinkPatPregFile.PathIndex.Keys.ToArray;
+    Keys := Adb_DM.AdbMainLink.PathIndex.Keys.ToArray;
 
     mmoTest.Lines.Add('--- Dump PathIndex ---');
     for i := 0 to High(Keys) do
     begin
       Key := Keys[i];
-      if AspectsLinkPatPregFile.PathIndex.TryGetValue(Key, Bucket) then
+      if Adb_DM.AdbMainLink.PathIndex.TryGetValue(Key, Bucket) then
       begin
         mmoTest.Lines.Add(Format('Sig %d -> %d nodes', [Key, Bucket.Count]));
         if mmoTest.Lines.Count > 10000 then  Exit;
@@ -19024,9 +18945,9 @@ var
    key: UInt64;
 begin
   Stopwatch := TStopwatch.StartNew;
-  AspectsLinkPatPregFile.BuildPathIndex;
+  Adb_DM.AdbMainLink.BuildPathIndex;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[AspectsLinkPatPregFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[Adb_DM.AdbMainLink.PathIndex.count,  Elapsed.TotalMilliseconds]));
   //DumpAdbPathIndex;
 
   Stopwatch := TStopwatch.StartNew;
@@ -19034,7 +18955,7 @@ begin
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[AspectsFilterLinkFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
 
-  for key in AspectsLinkPatPregFile.PathIndex.Keys do
+  for key in Adb_DM.AdbMainLink.PathIndex.Keys do
     mmoTest.Lines.Add(Format('ADB KEY = %d', [key]));
 
   for key in AspectsFilterLinkFile.PathIndex.Keys do
@@ -19051,9 +18972,9 @@ begin
   LoadLinkFilter;
 
   Stopwatch := TStopwatch.StartNew;
-  AspectsLinkPatPregFile.BuildPathIndex;
+  Adb_DM.AdbMainLink.BuildPathIndex;
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[AspectsLinkPatPregFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
+  mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[Adb_DM.AdbMainLink.PathIndex.count,  Elapsed.TotalMilliseconds]));
   //DumpAdbPathIndex;
 
   Stopwatch := TStopwatch.StartNew;
@@ -19061,14 +18982,14 @@ begin
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format(' BuildPathIndex  %d за %f',[AspectsFilterLinkFile.PathIndex.count,  Elapsed.TotalMilliseconds]));
 
-  for key in AspectsLinkPatPregFile.PathIndex.Keys do
+  for key in Adb_DM.AdbMainLink.PathIndex.Keys do
     mmoTest.Lines.Add(Format('ADB KEY = %d', [key]));
 
   for key in AspectsFilterLinkFile.PathIndex.Keys do
     mmoTest.Lines.Add(Format('FILTER KEY = %d', [key]));
 
-  AspectsLinkPatPregFile.FFilterLink := AspectsFilterLinkFile;
-  AspectsLinkPatPregFile.JoinWith(AspectsFilterLinkFile);
+  Adb_DM.AdbMainLink.FFilterLink := AspectsFilterLinkFile;
+  Adb_DM.AdbMainLink.JoinWith(AspectsFilterLinkFile);
 end;
 
 
@@ -19085,7 +19006,7 @@ begin
     impNzis.mmoTest := mmoTest;
     impNzis.FmxRoleBar := FmxRoleBar;
     impNzis.AspectsHipFile := Adb_DM.AdbMain;
-    impNzis.AspectsLinkPatPregFile := AspectsLinkPatPregFile;
+    impNzis.AspectsLinkPatPregFile := Adb_DM.AdbMainLink;
     impNzis.CollOtherDoctor := ADB_DM.CollOtherDoctor;
     impNzis.syndtNzisReq := syndtNzisReq;
     impNzis.syndtNzisResp := syndtNzisResp;
@@ -19094,7 +19015,7 @@ begin
     impNzis.tsFMXForm := tsFMXForm;
     impNzis.ProcChangeWorkTS := InternalChangeWorkPage;
     impNzis.ProcAddNewPat := Adb_DM.AddNewImportNzisPat;
-    impNzis.NasMesto := FNasMesto;
+    //impNzis.NasMesto := FNasMesto;
     impNzis.CollPractica := ADB_DM.CollPractica;
     impNzis.CollDoctor := ADB_DM.CollDoctor;
     impNzis.Adb_DM := Adb_DM;
@@ -19650,7 +19571,7 @@ begin
         if Data.index > -1 then
         begin
           CellText := TRttiEnumerationType.GetName(data.CollType) + ' br. = ' +
-             inttostr(AspectsLinkPatPregFile.JoinResult[Data.index].AdbList.Count);
+             inttostr(Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList.Count);
         end;
     end;
   end;
@@ -21393,26 +21314,26 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.Collebl.FillListNodes(AspectsLinkPatPregFile, vvEbl);
+      ADB_DM.Collebl.FillListNodes(Adb_DM.AdbMainLink, vvEbl);
       ADB_DM.Collebl.ShowListNodesGrid(grdNom);
       //grdNom.Tag := Integer(@CollEbl);
     end;
     EXAM_ANALYSIS:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollExamAnal.FillListNodes(AspectsLinkPatPregFile, vvExamAnal);
+      ADB_DM.CollExamAnal.FillListNodes(Adb_DM.AdbMainLink, vvExamAnal);
       ADB_DM.CollExamAnal.ShowListNodesGrid(grdNom);
     end;
     EXAM_IMMUNIZATION:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollExamImun.FillListNodes(AspectsLinkPatPregFile, vvExamImun);
+      ADB_DM.CollExamImun.FillListNodes(Adb_DM.AdbMainLink, vvExamImun);
       ADB_DM.CollExamImun.ShowListNodesGrid(grdNom);
     end;
     KARTA_PROFILAKTIKA2017:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollCardProf.FillListNodes(AspectsLinkPatPregFile, vvProfCard);
+      ADB_DM.CollCardProf.FillListNodes(Adb_DM.AdbMainLink, vvProfCard);
       ADB_DM.CollCardProf.ShowListNodesGrid(grdNom);
     end;
 
@@ -21420,7 +21341,7 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMDN.FillListNodes(AspectsLinkPatPregFile, vvMDN);
+      ADB_DM.CollMDN.FillListNodes(Adb_DM.AdbMainLink, vvMDN);
 
       ADB_DM.CollMDN.ShowListNodesGrid(grdNom);
     end;
@@ -21444,20 +21365,20 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMkb.FillListNodes(AspectsLinkPatPregFile, vvMKB);
+      ADB_DM.CollMkb.FillListNodes(Adb_DM.AdbMainLink, vvMKB);
       ADB_DM.CollMkb.ShowGrid(grdNom);
     end;
     PACIENT:
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollPatient.FillListNodes(AspectsLinkPatPregFile, vvPatient);
+      ADB_DM.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
       ADB_DM.CollPatient.ShowListNodesGrid(grdNom);
     end;
     PREGLED:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollPregled.FillListNodes(AspectsLinkPatPregFile, vvPregledNew);
+      ADB_DM.CollPregled.FillListNodes(Adb_DM.AdbMainLink, vvPregledNew);
       ADB_DM.CollPregled.ShowListNodesGrid(grdNom);
     end;
     PRACTICA:
@@ -21480,7 +21401,7 @@ begin
     begin
       //pgcWork.ActivePage := tsGrid;
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollDiag.FillListNodes(AspectsLinkPatPregFile, vvDiag);
+      ADB_DM.CollDiag.FillListNodes(Adb_DM.AdbMainLink, vvDiag);
       ADB_DM.CollDiag.ShowListNodesGrid(grdNom);
     end;
     Asp_PL_NZOK:
@@ -21499,73 +21420,73 @@ begin
     BLANKA_MED_NAPR:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMedNapr.FillListNodes(AspectsLinkPatPregFile, vvMedNapr);
+      ADB_DM.CollMedNapr.FillListNodes(Adb_DM.AdbMainLink, vvMedNapr);
       ADB_DM.CollMedNapr.ShowListNodesGrid(grdNom);
     end;
     BLANKA_MED_NAPR_3A:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMedNapr3A.FillListNodes(AspectsLinkPatPregFile, vvMedNapr3A);
+      ADB_DM.CollMedNapr3A.FillListNodes(Adb_DM.AdbMainLink, vvMedNapr3A);
       ADB_DM.CollMedNapr3A.ShowListNodesGrid(grdNom);
     end;
     HOSPITALIZATION:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMedNaprHosp.FillListNodes(AspectsLinkPatPregFile, vvMedNaprHosp);
+      ADB_DM.CollMedNaprHosp.FillListNodes(Adb_DM.AdbMainLink, vvMedNaprHosp);
       ADB_DM.CollMedNaprHosp.ShowListNodesGrid(grdNom);
     end;
     EXAM_LKK:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollMedNaprLkk.FillListNodes(AspectsLinkPatPregFile, vvMedNaprLkk);
+      ADB_DM.CollMedNaprLkk.FillListNodes(Adb_DM.AdbMainLink, vvMedNaprLkk);
       ADB_DM.CollMedNaprLkk.ShowListNodesGrid(grdNom);
     end;
     INC_MDN:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollIncMdn.FillListNodes(AspectsLinkPatPregFile, vvIncMdn);
+      ADB_DM.CollIncMdn.FillListNodes(Adb_DM.AdbMainLink, vvIncMdn);
       ADB_DM.CollIncMdn.ShowListNodesGrid(grdNom);
     end;
     INC_NAPR:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollIncMN.FillListNodes(AspectsLinkPatPregFile, vvIncMN);
+      ADB_DM.CollIncMN.FillListNodes(Adb_DM.AdbMainLink, vvIncMN);
       ADB_DM.CollIncMN.ShowListNodesGrid(grdNom);
     end;
     NZIS_PLANNED_TYPE:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNZIS_PLANNED_TYPE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_PLANNED_TYPE);
+      ADB_DM.CollNZIS_PLANNED_TYPE.FillListNodes(Adb_DM.AdbMainLink, vvNZIS_PLANNED_TYPE);
       ADB_DM.CollNZIS_PLANNED_TYPE.ShowListNodesGrid(grdNom);
     end;
     NZIS_QUESTIONNAIRE_RESPONSE:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_RESPONSE);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.FillListNodes(Adb_DM.AdbMainLink, vvNZIS_QUESTIONNAIRE_RESPONSE);
       ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.ShowListNodesGrid(grdNom);
     end;
     NZIS_QUESTIONNAIRE_ANSWER:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FillListNodes(AspectsLinkPatPregFile, vvNZIS_QUESTIONNAIRE_ANSWER);
+      ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.FillListNodes(Adb_DM.AdbMainLink, vvNZIS_QUESTIONNAIRE_ANSWER);
       ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.ShowListNodesGrid(grdNom);
     end;
     NZIS_DIAGNOSTIC_REPORT:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNZIS_DIAGNOSTIC_REPORT);
+      ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.FillListNodes(Adb_DM.AdbMainLink, vvNZIS_DIAGNOSTIC_REPORT);
       ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
     end;
     NZIS_RESULT_DIAGNOSTIC_REPORT:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.FillListNodes(AspectsLinkPatPregFile, vvNzis_RESULT_DIAGNOSTIC_REPORT);
+      ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.FillListNodes(Adb_DM.AdbMainLink, vvNzis_RESULT_DIAGNOSTIC_REPORT);
       ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.ShowListNodesGrid(grdNom);
     end;
     NZIS_ANSWER_VALUE:
     begin
       InternalChangeWorkPage(tsGrid);
-      ADB_DM.CollNZIS_ANSWER_VALUE.FillListNodes(AspectsLinkPatPregFile, vvNZIS_ANSWER_VALUE);
+      ADB_DM.CollNZIS_ANSWER_VALUE.FillListNodes(Adb_DM.AdbMainLink, vvNZIS_ANSWER_VALUE);
       ADB_DM.CollNZIS_ANSWER_VALUE.ShowListNodesGrid(grdNom);
     end;
     Asp_Addres:
@@ -21684,7 +21605,7 @@ begin
             NZIS_ANSWER_VALUE: CellText := IntToStr(ADB_DM.CollNZIS_ANSWER_VALUE.CntInADB);
             NzisToken: CellText := IntToStr(ADB_DM.CollNzisToken.count);
             Certificates: CellText := IntToStr(ADB_DM.CollCertificates.count);
-            Asp_Addres: CellText := IntToStr(FNasMesto.addresColl.CntInADB);
+            Asp_Addres: CellText := IntToStr(Adb_dm.FNasMesto.addresColl.CntInADB);
             Asp_OtherDoctor: CellText := IntToStr(ADB_DM.CollOtherDoctor.CntInADB);
           end;
         end
@@ -21725,8 +21646,8 @@ begin
     vvCl132:// може да е преглед, мдн, ваксина
     begin
       cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-      cl136Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping));
-      cl132Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_Key));
+      cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+      cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
       case cl136Key[1] of
         '1':
         begin // ако няма преглед, значи трябва да го заплануваме
@@ -21750,8 +21671,8 @@ begin
 //          OpenBufNomenNzis('NzisNomen.adb');
         InternalChangeWorkPage(tsFMXForm);
         fmxCntrDyn.ChangeActiveForm(FmxProfForm);
-        FmxProfForm.AspNomenBuf := AspectsNomFile.Buf;
-        FmxProfForm.AspNomenPosData := AspectsNomFile.FPosData;
+        FmxProfForm.AspNomenBuf := Adb_DM.AdbNomenNzis.Buf;
+        FmxProfForm.AspNomenPosData := Adb_DM.AdbNomenNzis.FPosData;
         FmxProfForm.AspNomenHipBuf := AspectsNomHipFile.Buf;
         FmxProfForm.AspNomenHipPosData := AspectsNomHipFile.FPosData;
         FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
@@ -21820,8 +21741,8 @@ begin
           //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
           //pat := lstPatGraph[dataPat.index];
           cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-          cl136Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping));
-          cl132Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_Key));
+          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
           case cl136Key[1] of
             '1':
             begin
@@ -21849,8 +21770,8 @@ begin
           //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
           //pat := lstPatGraph[dataPat.index];
           cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-          cl136Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping));
-          cl132Key := cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_Key));
+          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
           case cl136Key[1] of
             '1':
             begin
@@ -21885,7 +21806,7 @@ var
   preg: TRealPregledNewItem;
   pat: TRealPatientNewItem;
   i: integer;
-  cl132_CL136: string;
+  cl132_CL136Str: string;
   strtDate: TDate;
 begin
   if node = nil then Exit;
@@ -21910,8 +21831,8 @@ begin
             dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
             pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
           end;
           vvPr001:
           begin
@@ -21925,11 +21846,11 @@ begin
             pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
+            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
             if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
             begin
               cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
             end;
           end;
           vvCL088:
@@ -21942,7 +21863,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -21953,7 +21874,7 @@ begin
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
+            CellText := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
           end;
           vvPatient:
           begin
@@ -21976,8 +21897,8 @@ begin
             dataPat := vtrGraph.GetNodeData(node.Parent);
             pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
           end;
         end;
         -3: ;//CellText := 'бъдещи';
@@ -22000,8 +21921,8 @@ begin
             pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             CellText := DateToStr(pat.lstGraph[data.index].startDate) + ' - ' + DateToStr(pat.lstGraph[data.index].endDate);
             cl132 := pat.lstGraph[data.index].Cl132;
-            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL132_CL136_Mapping));
-            case cl132_CL136[1] of
+            cl132_CL136Str := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(cl132_CL136));
+            case cl132_CL136Str[1] of
               '1':
               begin
                 if cl132.FPregled <> nil then
@@ -22013,7 +21934,7 @@ begin
             else
               begin
                 pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
+                CellText := CellText + #13#10 + pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
               end;
             end;
           end;
@@ -22029,11 +21950,11 @@ begin
             pat := ADB_DM.ACollPatGR.Items[dataPat.index];
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
+            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
 
             if pr001.CL142 <> nil then
             begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
+              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
             end;
             if pr001.FExamAnal <> nil then
             begin
@@ -22051,7 +21972,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -22062,7 +21983,7 @@ begin
             cl132 := pat.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
+            case cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
               '1': CellText := 'Количествено представяне';
               '2': CellText := 'Категоризация по номенклатура';
               '3': CellText := 'Описателен метод';
@@ -22093,7 +22014,7 @@ begin
           pr001 := cl132.FListPr001[dataPr001.index];
           CL142 := pr001.CL142;
           cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+          CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
         end;
         vvPr001:
         begin
@@ -22108,7 +22029,7 @@ begin
           cl132 := pat.lstGraph[dataCL132.index].Cl132;
           pr001 := cl132.FListPr001[data.index];
           begin
-            case pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
+            case pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
               '2': CellText := 'Изследвания';
               '0': CellText := 'Дейност по профилактика';
               '3': CellText := 'Въпроси';
@@ -22156,7 +22077,7 @@ var
   //pat: TRealPatientNewItem;
   preg: TRealPregledNewItem;
   i: integer;
-  cl132_CL136: string;
+  cl132_CL136Str: string;
   strtDate: TDate;
 begin
   if node = nil then Exit;
@@ -22182,8 +22103,8 @@ begin
             //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
             //pat := lstPatGraph[dataPat.index];
             cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
           end;
           vvPr001:
           begin
@@ -22198,11 +22119,11 @@ begin
             dataCL132 := vtrGraph.GetNodeData(node.Parent);
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
+            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
             if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
             begin
               cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
             end;
             //else  if pr001.CL133 <> TCL133.CL133_none  then
 //            begin
@@ -22225,7 +22146,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -22236,7 +22157,7 @@ begin
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
+            CellText := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
           end;
           vvPatient:
           begin
@@ -22257,8 +22178,8 @@ begin
           if data.DataPos <> MaxInt then
           begin
             cl132 := FmxProfForm.Patient.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
+            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
           end;
         end;
         -3: ;//CellText := 'бъдещи';
@@ -22276,9 +22197,9 @@ begin
             //pat := lstPatGraph[dataPat.index];
             CellText := DateToStr(FmxProfForm.Patient.lstGraph[data.index].startDate) + ' - ' + DateToStr(FmxProfForm.Patient.lstGraph[data.index].endDate);
             cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            cl132_CL136 := cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL132_CL136_Mapping));
+            cl132_CL136Str := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(cl132_CL136));
             //if cl132_CL136 = '1' then
-            case cl132_CL136[1] of
+            case cl132_CL136Str[1] of
               '1':
               begin
                 if cl132.FPregled <> nil then
@@ -22298,7 +22219,7 @@ begin
             else
               begin
                 pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
+                CellText := CellText + #13#10 + pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
               end;
             end;
           end;
@@ -22316,11 +22237,11 @@ begin
             pr001 := cl132.FListPr001[data.index];
             //if pr001.FExamAnal <> nil then
 //              Exit;
-            CellText := pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
+            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
 
             if pr001.CL142 <> nil then
             begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
+              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
             end;
             if pr001.FExamAnal <> nil then
             begin
@@ -22338,7 +22259,7 @@ begin
             pr001 := cl132.FListPr001[dataPr001.index];
             CL142 := pr001.CL142;
             cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
           end;
           vvCl134:
           begin
@@ -22349,7 +22270,7 @@ begin
             cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
             pr001 := cl132.FListPr001[dataPr001.index];
             cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
+            case cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
               '1': CellText := 'Количествено представяне';
               '2': CellText := 'Категоризация по номенклатура';
               '3': CellText := 'Описателен метод';
@@ -22378,7 +22299,7 @@ begin
           pr001 := cl132.FListPr001[dataPr001.index];
           CL142 := pr001.CL142;
           cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+          CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
         end;
         vvPr001:
         begin
@@ -22395,7 +22316,7 @@ begin
           //if pr001.CL050 <> nil then
           begin
             //CellText := pr001.getAnsiStringMap(bufNom, PR001Coll.posData, word(PR001_Nomenclature));
-            case pr001.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
+            case pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
               '2': CellText := 'Изследвания';
               '0': CellText := 'Дейност по профилактика';
               '3': CellText := 'Въпроси';
@@ -22663,18 +22584,18 @@ begin
       case data.vid of
         vvOblast:
         begin
-          CellText := FNasMesto.OblColl.getAnsiStringMap(Data.DataPos, word(Oblast_OblastName))
-           + ' ' + IntToStr(FNasMesto.OblColl.getwordMap(Data.DataPos, word(Oblast_OblastID)))
+          CellText := Adb_dm.FNasMesto.OblColl.getAnsiStringMap(Data.DataPos, word(Oblast_OblastName))
+           + ' ' + IntToStr(Adb_dm.FNasMesto.OblColl.getwordMap(Data.DataPos, word(Oblast_OblastID)))
         end;
         vvObshtina:
         begin
-          CellText := FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(Obshtina_ObshtinaName));
-          CellText := CellText + ' ' + IntToStr(FNasMesto.obshtColl.getWordMap(Data.DataPos, word(Obshtina_RZOKR)));
+          CellText := Adb_dm.FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(Obshtina_ObshtinaName));
+          CellText := CellText + ' ' + IntToStr(Adb_dm.FNasMesto.obshtColl.getWordMap(Data.DataPos, word(Obshtina_RZOKR)));
         end;
         vvNasMesto:
         begin
-          CellText := FNasMesto.nasMestoColl.getAnsiStringMap(Data.DataPos, word(NasMesto_NasMestoName));
-          CellText := CellText + ' ' + FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(NasMesto_RCZR));
+          CellText := Adb_dm.FNasMesto.nasMestoColl.getAnsiStringMap(Data.DataPos, word(NasMesto_NasMestoName));
+          CellText := CellText + ' ' + Adb_dm.FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(NasMesto_RCZR));
         end;
         vvPregledNew:
         begin
@@ -22756,10 +22677,8 @@ begin
     Exit;
   end;
 
-  preg1.DataPos := data1.DataPos;
-  preg2.DataPos := data2.DataPos;
-  date1 := preg1.getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
-  date2 := preg2.getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
+  date1 := Adb_DM.CollPregled.getDateMap(data1.DataPos, word(PregledNew_START_DATE));
+  date2 := Adb_DM.CollPregled.getDateMap(data2.DataPos, word(PregledNew_START_DATE));
   Result := floor(date1) - floor(date2);
 end;
 
@@ -22797,7 +22716,7 @@ begin
           if FmxProfForm.Patient.CurrentGraphIndex < 0 then Exit;
           if FmxProfForm.Patient.CurrentGraphIndex > FmxProfForm.Patient.lstGraph.Count - 1 then  Exit;
 
-          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
           CellText := CellText + '   ' + 'има да се правят толкова неща';
           //for i := 0 to FmxProfForm.Patient.lstGraph.Count - 1 do
 //          begin
@@ -22985,57 +22904,112 @@ begin
 
     case data.vid of
       vvNomenNzis:
-      case numButton of
-        0:
-        begin
-          try
+      begin
+        case numButton of
+          0:
+          begin
+            try
+              if data.index < 0 then
+              begin
+                ActiveSubButton.MinValue := 0;
+                ActiveSubButton.Position := 0;
+                ActiveSubButton.MaxValue := vRootNomenNzis.ChildCount;
+
+                vtrNomenNzis.IterateSubtree(vRootNomenNzis, IterateSendedNzisNomen, nil);
+              end
+              else
+              begin
+                BtnSendToNzisNomen(node);
+              end;
+            finally
+
+            end;
+          end;
+          1:
+          begin
             if data.index < 0 then
             begin
-              ActiveSubButton.MinValue := 0;
-              ActiveSubButton.Position := 0;
-              ActiveSubButton.MaxValue := vRootNomenNzis.ChildCount;
-
               vtrNomenNzis.IterateSubtree(vRootNomenNzis, IterateSendedNzisNomen, nil);
             end
             else
             begin
-              BtnSendToNzisNomen(node);
-            end;
-          finally
-
-          end;
-        end;
-        1:
-        begin
-          if data.index < 0 then
-          begin
-            vtrNomenNzis.IterateSubtree(vRootNomenNzis, IterateSendedNzisNomen, nil);
-          end
-          else
-          begin
-            BtnXMLtoCL000(node);
-          end;
-        end;
-        2:
-        begin
-          begin
-            cnt := 0;
-            Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
-            if cnt = 0 then
-            begin
               BtnXMLtoCL000(node);
-            end
-            else
-            begin
-              Adb_DM.ListNomenNzisNames[data.index].AspColl.UpdateXMLNzis;
             end;
-            sender.RepaintNode(node);
-            //BtnSendToNzisNomenUpdate(node);
-            //BtnXMLtoCL000ForUpdate(node);
+          end;
+          2:
+          begin
+            begin
+              cnt := 0;
+              Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
+              if cnt = 0 then
+              begin
+                BtnXMLtoCL000(node);
+              end
+              else
+              begin
+                Adb_DM.ListNomenNzisNames[data.index].AspColl.UpdateXMLNzis;
+              end;
+              sender.RepaintNode(node);
+              //BtnSendToNzisNomenUpdate(node);
+              //BtnXMLtoCL000ForUpdate(node);
+            end;
           end;
         end;
       end;
+      vvPR001:
+      begin
+        case numButton of
+          0:
+          begin
+            try
+              if data.index < 0 then
+              begin
+                //vtrNomenNzis.IterateSubtree(vRootNomenNzis, IterateSendedNzisNomen, nil);
+              end
+              else
+              begin
+                InternalChangeWorkPage(tsExcel);
+                OpenExcels;
+                Adb_DM.PR001Coll.Buf := Adb_DM.AdbNomenNzis.Buf;
+                Adb_DM.PR001Coll.posData := Adb_DM.AdbNomenNzis.FPosData;
+                Adb_DM.PR001Coll.cmdFile := Adb_DM.streamCmdFileNomenNzis;
+                ImportPR001(Adb_DM.PR001Coll);
+              end;
+            finally
 
+            end;
+          end;
+          1:
+          begin
+            if data.index < 0 then
+            begin
+              vtrNomenNzis.IterateSubtree(vRootNomenNzis, IterateSendedNzisNomen, nil);
+            end
+            else
+            begin
+              BtnXMLtoCL000(node);
+            end;
+          end;
+          2:
+          begin
+            begin
+              cnt := 0;
+              Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
+              if cnt = 0 then
+              begin
+                BtnXMLtoCL000(node);
+              end
+              else
+              begin
+                Adb_DM.ListNomenNzisNames[data.index].AspColl.UpdateXMLNzis;
+              end;
+              sender.RepaintNode(node);
+              //BtnSendToNzisNomenUpdate(node);
+              //BtnXMLtoCL000ForUpdate(node);
+            end;
+          end;
+        end;
+      end;
     end;
 
 
@@ -23175,7 +23149,7 @@ begin
   data := sender.GetNodeData(node);
 
 
-  if True then //ActiveSubButton.Description = 'XML' then
+  if data.vid = vvNomenNzis then //ActiveSubButton.Description = 'XML' then
   begin
     case numButton of
       0:
@@ -23235,8 +23209,70 @@ begin
         end;
       end;
     end;
-    
+
+  end
+  else
+  begin
+    case numButton of
+      0:
+      begin
+
+        case node.Dummy of
+          0:
+          begin
+            ButonVisible := True;
+            imageIndex := 57;
+          end;
+          77:
+          begin
+          end;
+          78:
+          begin
+          end;
+        end;
+      end;
+      1:
+      begin
+        if data.index < 0 then
+        begin
+          ButonVisible := True;
+          imageIndex := 58;
+        end;
+        case node.Dummy of
+          77:
+          begin
+            ButonVisible := True;
+            imageIndex := 58;
+          end;
+          78:
+          begin
+            ButonVisible := True;
+            imageIndex := 20;
+          end;
+        end;
+      end;
+      2:
+      begin
+        case node.Dummy of
+          80:
+          begin
+            ButonVisible := True;
+            cnt := 0;
+            Adb_DM.ListNomenNzisNames[data.index].AspColl.CheckForSave(cnt);
+            if cnt = 0 then
+            begin
+              imageIndex := 31;
+            end
+            else
+            begin
+              imageIndex := 79;
+            end;
+          end;
+        end;
+      end;
+    end;
   end;
+
 
 end;
 
@@ -23253,9 +23289,9 @@ begin
   case data.vid of
     vvNomenNzis:
     begin
-      pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 8);
+      pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 8);
       FPosData := pCardinalData^;
-      pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 12);
+      pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 12);
       FLenData := pCardinalData^;
       dataPosition :=  FPosData + FLenData;
       //for i := 0 to NomenNzisColl.Count - 1 do
@@ -23275,7 +23311,7 @@ begin
       TempItem.PRecord.NomenID := 'CL143';
       TempItem.SaveNomenNzis(dataPosition);
 
-      pCardinalData := pointer(PByte(AspectsNomFile.Buf) + 12);
+      pCardinalData := pointer(PByte(Adb_DM.AdbNomenNzis.Buf) + 12);
       pCardinalData^  := dataPosition - FPosData;
     end;
   end;
@@ -23664,7 +23700,7 @@ begin
       Stopwatch := TStopwatch.StartNew;
       vtrMinaliPregledi.Tag := Cardinal(Node);
       //Adb_DM.AdbMain := AspectsHipFile;
-      Adb_DM.AdbLink := AspectsLinkPatPregFile;
+      Adb_DM.AdbLink := Adb_DM.AdbMainLink;
       XmlStream := TXmlStream.Create;
       //if Fdm.IsGP then
       begin
@@ -23934,7 +23970,7 @@ begin
   if not Sender.Focused  then Exit;
   if (GetKeyState(VK_CONTROL) >= 0) then Exit;
 
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   dataAction := pointer(PByte(node) + lenNode);
   if dataAction.vid = vvPatientNewRoot then Exit;
   vtrPregledPat.OnCollapsed := nil;
@@ -24309,7 +24345,7 @@ begin
   if not Sender.Focused  then Exit;
 
   if (GetKeyState(VK_CONTROL) >= 0) then Exit;
-  bufLink := AspectsLinkPatPregFile.Buf;
+  bufLink := Adb_DM.AdbMainLink.Buf;
   dataAction := pointer(PByte(node) + lenNode);
   if dataAction.vid = vvPatientNewRoot then  Exit;
 
@@ -24363,7 +24399,7 @@ begin
         begin
           cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
           case cl136Key[1] of
             '1':
             begin
@@ -24420,7 +24456,7 @@ begin
         begin
           cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(data.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl136Key := ADB_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
           planStatus := TPlanedStatusSet(Node.Dummy);
           for planStat in  planStatus do
           begin
@@ -24523,7 +24559,7 @@ begin
   if node = nil then  Exit;
   if Adb_DM.AdbMain = nil then Exit;
   if Adb_DM.AdbMain.Buf = nil then  Exit;
-  if AspectsLinkPatPregFile = nil then Exit;
+  if Adb_DM.AdbMainLink = nil then Exit;
 
 
   //Exit;
@@ -24659,8 +24695,8 @@ begin
         vvCl132:
         begin
           CL132Temp.DataPos := data.DataPos;
-          CellText := CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-          CellText := CellText + '  ' + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Display_Value_BG));
+          CellText := CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+          CellText := CellText + '  ' + CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
         end;
         vvNZIS_PLANNED_TYPE:
         begin
@@ -24675,7 +24711,7 @@ begin
             exit;
           end;
           PR001Temp.DataPos := data.DataPos;
-          CellText := PR001Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
+          CellText := PR001Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
         end;
         vvNZIS_QUESTIONNAIRE_RESPONSE:
         begin
@@ -24777,7 +24813,7 @@ begin
         vvCL088:
         begin
           CL088Temp.DataPos := data.DataPos;
-          CellText := CL088Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+          CellText := CL088Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
         end;
         vvdiag:
         begin
@@ -24786,13 +24822,12 @@ begin
         end;
         vvMDN:
         begin
-          MDNTemp.DataPos := Data.DataPos;
-          CellText := 'МДН ' + inttostr(MDNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NUMBER)));
+          //MDNTemp.DataPos := Data.DataPos;
+          CellText := 'МДН ' + inttostr(ADB_DM.CollMDN.getIntMap(Data.DataPos, word(MDN_NUMBER)));
         end;
         vvMedNapr:
         begin
-          MNTemp.DataPos := Data.DataPos;
-          CellText := 'МН ' + inttostr(MNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(BLANKA_MED_NAPR_NUMBER)));
+          CellText := 'МН ' + inttostr(ADB_DM.CollMedNapr.getIntMap(Data.DataPos, word(BLANKA_MED_NAPR_NUMBER)));
         end;
         vvMedNaprLkk:
         begin
@@ -24830,7 +24865,7 @@ begin
         end;
         vvAddres:
         begin
-          CellText := 'Адрес: ' + FNasMesto.addresColl.GetFullAddres(data.DataPos);
+          CellText := 'Адрес: ' + Adb_dm.FNasMesto.addresColl.GetFullAddres(data.DataPos);
         end;
       end;
     end;
@@ -25006,13 +25041,11 @@ begin
         end;
         vvMDN:
         begin
-          MDNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MDNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NRN)));
+          CellText := 'НРН ' + (ADB_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN)));
         end;
         vvMedNapr:
         begin
-          MNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(BLANKA_MED_NAPR_NRN)));
+          CellText := 'НРН ' + (ADB_DM.CollMedNapr.getAnsiStringMap(Data.DataPos, word(BLANKA_MED_NAPR_NRN)));
         end;
 
         vvExamAnal:
@@ -25029,8 +25062,8 @@ begin
 
         vvAddres:
         begin
-          nasMestoPos := FNasMesto.addresColl.getCardMap(data.DataPos, word(Addres_LinkPos));
-          CellText := 'EKATTE: ' + FNasMesto.nasMestoColl.getAnsiStringMap(nasMestoPos, word(NasMesto_EKATTE));
+          nasMestoPos := Adb_dm.FNasMesto.addresColl.getCardMap(data.DataPos, word(Addres_LinkPos));
+          CellText := 'EKATTE: ' + Adb_dm.FNasMesto.nasMestoColl.getAnsiStringMap(nasMestoPos, word(NasMesto_EKATTE));
         end;
 
         vvIncMN:
@@ -25271,8 +25304,7 @@ begin
         end;
         vvMDN:
         begin
-          MDNTemp.DataPos := Data.DataPos;
-          CellText := 'МДН ' + inttostr(MDNTemp.getIntMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NUMBER)));
+          CellText := 'МДН ' + inttostr(ADB_DM.CollMDN.getIntMap( Data.DataPos, word(MDN_NUMBER)));
         end;
         vvDoctor:
         begin
@@ -25311,8 +25343,7 @@ begin
         end;
         vvMDN:
         begin
-          MDNTemp.DataPos := Data.DataPos;
-          CellText := 'НРН ' + (MDNTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(MDN_NRN)));
+          CellText := 'НРН ' + (ADB_DM.CollMDN.getAnsiStringMap(Data.DataPos, word(MDN_NRN)));
         end;
         
       end;
@@ -25529,15 +25560,15 @@ var
 begin
   Stopwatch := TStopwatch.StartNew;
 
-  if AspectsLinkPatPregFile <> nil then
+  if Adb_DM.AdbMainLink <> nil then
   begin
-    node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
+    node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 100);
     vtrPregledPat.InternalDisconnectNode(node, false);
-    UnmapViewOfFile(AspectsLinkPatPregFile.Buf);
+    UnmapViewOfFile(Adb_DM.AdbMainLink.Buf);
   end;
 
-  mmoTest.Lines.Add(Format('Addresi: %d', [FNasMesto.addresColl.Count]));
-  FNasMesto.FillLinkNasMestoInAddres;
+  mmoTest.Lines.Add(Format('Addresi: %d', [Adb_dm.FNasMesto.addresColl.Count]));
+  Adb_dm.FNasMesto.FillLinkNasMestoInAddres;
   //FNasMesto.FindMach;//NasMesto;
   FillPatInDoctor;
   FillPregledInPat;
@@ -25627,7 +25658,7 @@ begin
     UnmapViewOfFile(ADB_DM.AdbMain.Buf);
     //FreeAndNil(ADB_DM.AdbMain);
   end;
-  AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, Aguid);// AspectsHipFile.GUID);
+  Adb_DM.AdbMainLink := TMappedLinkFile.Create(LnkFilename, true, Aguid);// AspectsHipFile.GUID);
 
   LoadVtrPregledOnPat;
   //LoadVtrPregled;
@@ -25826,7 +25857,7 @@ begin
                     PlanedPreg.IsDone := True;
                   end;
                   PlanedPreg.Cl132 :=
-                       cl132 + CL132Temp.getAnsiStringMap(AspectsNomFile.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) + '; ';
+                       cl132 + CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) + '; ';
                 end;
               end;
               runCl132 := runCl132.NextSibling;
@@ -26212,7 +26243,7 @@ begin
       Result := ADB_DM.CollCertificates;
 
     ctAddres:
-      Result := FNasMesto.addresColl;
+      Result := Adb_dm.FNasMesto.addresColl;
 
   else
     //raise Exception.Create('Unknown collection type: ' +

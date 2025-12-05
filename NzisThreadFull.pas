@@ -191,14 +191,14 @@ begin
   inherited Create(CreateSuspended);
   XMLStream := TXmlStream.Create('', TEncoding.UTF8);
   IsPKCS11 := False;
-  if dm = nil then
-  begin
-    Dm_adb := TADBDataModule.Create;
-  end
-  else
-  begin
-    Dm_adb := dm;
-  end;
+  //if dm = nil then
+//  begin
+//    Dm_adb := TADBDataModule.Create(vtr);
+//  end
+//  else
+//  begin
+//    Dm_adb := dm;
+//  end;
   indexInListSended := -1;
 end;
 

@@ -155,7 +155,7 @@ uses
     ver: string;
     streamCmdFile: TFileCmdStream;
     StreamCmdFileTemp: TFileCmdStream;
-    streamCmdFileNomenNzis: TFileCmdStream;
+
     procedure AddTagToStream(XmlStream: TXmlStream;NameTag, ValueTag :string; amp: Boolean = true; Node: PVirtualNode = nil);
 
     procedure FillXmlStreamHeader(XmlStream: TXmlStream; msgType: TNzisMsgType; SenderID: string);
@@ -228,6 +228,7 @@ uses
     AcollpatFromDoctor: TRealPatientNewColl;
     ACollPatFDB: TRealPatientNewColl;
     ACollNovozapisani: TRealPatientNewColl;
+    FNasMesto: TRealNasMestoAspects;
 
 
 
@@ -245,6 +246,7 @@ uses
   public
     listLog: TStringList;
     lstColl: TList<TBaseCollection>;
+    streamCmdFileNomenNzis: TFileCmdStream;
 
     //AdbMain: TMappedFile;
     AdbLink: TMappedLinkFile;
@@ -262,7 +264,7 @@ uses
     procedure AddNewImportNzisPat(Pat: TRealPatientNewItem; treeLink: PVirtualNode);
 
     //XmlStream: TXmlStream;
-    constructor Create();
+    constructor Create(AvtrNasMesto, AvtrAdb: TVirtualStringTreeAspect);
     destructor Destroy; override;
     function GetPatNodes(PatNode: PVirtualNode): TPatNodes;
     function GetPregNodes(PregNode: PVirtualNode): TPregledNodes;
@@ -710,14 +712,10 @@ begin
 
 end;
 
-constructor TADBDataModule.Create();
+constructor TADBDataModule.Create(AvtrNasMesto, AvtrAdb: TVirtualStringTreeAspect);
 begin
-  inherited;
-  //FPatNodes.evnts := TList<PVirtualNode>.Create;
-//  FPatNodes.ExamAnals := TList<PVirtualNode>.Create;
-  //XMLStream := TXmlStream.Create('', TEncoding.UTF8);
-
-  //NasMesto := TRealNasMestoAspects.Create();
+  VtrNasMesta := AvtrNasMesto;
+  VtrMain := AvtrAdb;
 
   lstColl := TList<TBaseCollection>.Create;
   LstNodeSended := TList<TNodesSendedToNzis>.Create;
@@ -725,6 +723,13 @@ begin
   ListPrimDocuments := TList<TBaseCollection>.create;
 
   InitColl;
+
+  FNasMesto := TRealNasMestoAspects.Create(VtrNasMesta);
+  FNasMesto.memotest := mmotest;
+  CollPatient.NasMesto := FNasMesto;
+  FNasMesto.LinkToColl;
+  FNasMesto.addresColl := TRealAddresColl.Create(TRealAddresItem);
+  
 end;
 
 destructor TADBDataModule.Destroy;
@@ -734,6 +739,7 @@ begin
   FreeAndNil(listLog);
   FreeAndNil(ListPrimDocuments);
   FreeColl;
+  FreeAndNil(FNasMesto);
   inherited;
 end;
 
@@ -806,7 +812,7 @@ begin
   AddTagToStream(XmlStream, 'nhis:sender', 'value="1"', false);
 
   AddTagToStream(XmlStream, 'nhis:senderId', Format('value="%s"',[senderID]) , false);
-  AddTagToStream(XmlStream, 'nhis:senderISName', Format('value="Hippocrates%s"',[ver]), false);
+  AddTagToStream(XmlStream, 'nhis:senderISName', Format('value="Hippocrates%s"',['']), false);
   AddTagToStream(XmlStream, 'nhis:recipient', 'value="4"', false);
   AddTagToStream(XmlStream, 'nhis:recipientId', 'value="NHIS"', false);
 
@@ -2581,11 +2587,11 @@ begin
           Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
         end;
 
-        //ctAddres:
-//        begin
-//          //Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
-////          FNasMesto.addresColl.IncCntInADB;
-//        end;
+        ctAddres:
+        begin
+          Inc(aspPos, (FNasMesto.addresColl.FieldCount) * 4);
+          FNasMesto.addresColl.IncCntInADB;
+        end;
       else
         Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
         //raise Exception.Create('Непознат : collType' + TRttiEnumerationType.GetName(collType));
@@ -2736,11 +2742,9 @@ begin
 //        end;
 
         case collType of
-          ctCL132:
+          ctCL132, ctCL132Del, ctCL132Old:
           begin
-            //Cl132 := TCL132Item(CL132Coll.Add);
-            //Cl132.DataPos := aspPos;
-            Inc(aspPos, (CL132Coll.FieldCount) * 4);
+            lstColl[ord(ctCL132)].OpenAdbFull(aspPos);
           end;
           ctCL050:
           begin
@@ -2751,6 +2755,10 @@ begin
           ctCL006, ctCL006Del, ctCL006Old:
           begin
             lstColl[ord(ctCL006)].OpenAdbFull(aspPos);
+          end;
+          ctPR001://, ctCL006Del, ctCL006Old:
+          begin
+            lstColl[ord(ctPR001)].OpenAdbFull(aspPos);
           end;
           ctCl011, ctCL009:
           begin
@@ -2814,12 +2822,12 @@ begin
             Inc(aspPos, (Cl144Coll.FieldCount) * 4);
           end;
 
-          ctPR001:
-          begin
-            //PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
-//            PR001.DataPos := aspPos;
-            Inc(aspPos, (PR001Coll.FieldCount) * 4);
-          end;
+          //ctPR001:
+//          begin
+//            //PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
+////            PR001.DataPos := aspPos;
+//            Inc(aspPos, (PR001Coll.FieldCount) * 4);
+//          end;
 
           ctNomenNzis:
           begin
@@ -2979,6 +2987,7 @@ var
 begin
   Stopwatch := TStopwatch.StartNew;
   //ListNodes.Clear;
+  LNK.FVTR := VtrMain;
   LNK.FVTR.BeginUpdate;
 
   pCardinalData := pointer(PByte(LNK.Buf) + 4);
@@ -3616,6 +3625,12 @@ var
 begin
   // Rebind buffers and posData according to which ADB file holds the collection.
   // Adapt mapping if you move collections between ADBs.
+  if FAdbMain <> nil then
+  begin
+    FNasMesto.addresColl.Buf := FAdbMain.Buf;
+    FNasMesto.addresColl.posData := FAdbMain.FPosData;
+  end;
+
   for coll in lstColl do
   begin
     if coll = nil then Continue;
@@ -3795,6 +3810,7 @@ begin
   // setter for AdbMain property: store value and re-bind buffers
   FAdbMain := Value;
   ReInitColl;
+
   // Optionally: if ADB is loaded, build indexes
   //if Assigned(FAdbMain) and (FAdbMain is TMappedLinkFile) then
 //    TMappedLinkFile(FAdbMain).BuildPathIndex;

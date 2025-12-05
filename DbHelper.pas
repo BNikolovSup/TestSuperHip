@@ -186,7 +186,7 @@ begin
   TempItem.PRecord.Logical := [];
 
   gr := TempItem.Fpatient.lstGraph[TempItem.Fpatient.CurrentGraphIndex];
-  case gr.Cl132.getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL132_CL047_Mapping))[1] of
+  case gr.Cl132.getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL132_cl047))[1] of
     '3': //Детско здраве
     begin
       Include(TempItem.PRecord.Logical, TLogicalPregledNew.IS_PREVENTIVE_Childrens);

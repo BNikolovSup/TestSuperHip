@@ -943,7 +943,7 @@ begin
         cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
         cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+        cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
         if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
         begin
           mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
@@ -1006,7 +1006,7 @@ begin
           cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
           cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+          cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
           runAnal := run.FirstChild;
           while runAnal <> nil do
           begin

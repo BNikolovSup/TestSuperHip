@@ -33,20 +33,22 @@ TCL132Item = class(TBaseItem)
       TPropertyIndex = (
        CL132_Key
        , CL132_Description
-       , CL132_DescriptionEn
-       , CL132_group
-       , CL132_cl047
-       , CL132_cl136
-       , CL132_cl011
-       , CL132_event_trigger
-       , CL132_common_index
-       , CL132_repeat_years
-       , CL132_gender
-       , CL132_min_interval
-       , CL132_max_interval
-       , CL132_min_age
-       , CL132_max_age
-       , CL132_recurring
+       , CL132_Display_Value_BG
+       , CL132_Display_Value_EN
+       , CL132_CL047_Mapping
+       , CL132_CL136_Mapping
+       , CL132_CL011_Mapping
+       , CL132_Event_Trigger
+       , CL132_Common_index
+       , CL132_Min_interval_from_common_index
+       , CL132_Max_interval_from_common_index
+       , CL132_Age
+       , CL132_Max_Age
+       , CL132_Recurring
+       , CL132_Repeat_Every_x_Years
+       , CL132_Gender
+       , CL132_Group
+       , CL132_Valid_Until
        , CL132_Logical
        );
 	  
@@ -56,20 +58,22 @@ TCL132Item = class(TBaseItem)
       TRecCL132 = record
         Key: AnsiString;
         Description: AnsiString;
-        DescriptionEn: AnsiString;
-        group: AnsiString;
-        cl047: AnsiString;
-        cl136: AnsiString;
-        cl011: AnsiString;
-        event_trigger: AnsiString;
-        common_index: AnsiString;
-        repeat_years: AnsiString;
-        gender: AnsiString;
-        min_interval: AnsiString;
-        max_interval: AnsiString;
-        min_age: AnsiString;
-        max_age: AnsiString;
-        recurring: AnsiString;
+        Display_Value_BG: AnsiString;
+        Display_Value_EN: AnsiString;
+        CL047_Mapping: AnsiString;
+        CL136_Mapping: AnsiString;
+        CL011_Mapping: AnsiString;
+        Event_Trigger: AnsiString;
+        Common_index: AnsiString;
+        Min_interval_from_common_index: AnsiString;
+        Max_interval_from_common_index: AnsiString;
+        Age: AnsiString;
+        Max_Age: AnsiString;
+        Recurring: AnsiString;
+        Repeat_Every_x_Years: AnsiString;
+        Gender: AnsiString;
+        Group: AnsiString;
+        Valid_Until: AnsiString;
         Logical: TlogicalCL132Set;
         setProp: TSetProp;
       end;
@@ -264,20 +268,22 @@ begin
           case propIndx of
             CL132_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
             CL132_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL132_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL132_group: SaveData(PRecord.group, PropPosition, metaPosition, dataPosition);
-            CL132_cl047: SaveData(PRecord.cl047, PropPosition, metaPosition, dataPosition);
-            CL132_cl136: SaveData(PRecord.cl136, PropPosition, metaPosition, dataPosition);
-            CL132_cl011: SaveData(PRecord.cl011, PropPosition, metaPosition, dataPosition);
-            CL132_event_trigger: SaveData(PRecord.event_trigger, PropPosition, metaPosition, dataPosition);
-            CL132_common_index: SaveData(PRecord.common_index, PropPosition, metaPosition, dataPosition);
-            CL132_repeat_years: SaveData(PRecord.repeat_years, PropPosition, metaPosition, dataPosition);
-            CL132_gender: SaveData(PRecord.gender, PropPosition, metaPosition, dataPosition);
-            CL132_min_interval: SaveData(PRecord.min_interval, PropPosition, metaPosition, dataPosition);
-            CL132_max_interval: SaveData(PRecord.max_interval, PropPosition, metaPosition, dataPosition);
-            CL132_min_age: SaveData(PRecord.min_age, PropPosition, metaPosition, dataPosition);
-            CL132_max_age: SaveData(PRecord.max_age, PropPosition, metaPosition, dataPosition);
-            CL132_recurring: SaveData(PRecord.recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_BG: SaveData(PRecord.Display_Value_BG, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_EN: SaveData(PRecord.Display_Value_EN, PropPosition, metaPosition, dataPosition);
+            CL132_CL047_Mapping: SaveData(PRecord.CL047_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL136_Mapping: SaveData(PRecord.CL136_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL011_Mapping: SaveData(PRecord.CL011_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_Event_Trigger: SaveData(PRecord.Event_Trigger, PropPosition, metaPosition, dataPosition);
+            CL132_Common_index: SaveData(PRecord.Common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Min_interval_from_common_index: SaveData(PRecord.Min_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Max_interval_from_common_index: SaveData(PRecord.Max_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Age: SaveData(PRecord.Age, PropPosition, metaPosition, dataPosition);
+            CL132_Max_Age: SaveData(PRecord.Max_Age, PropPosition, metaPosition, dataPosition);
+            CL132_Recurring: SaveData(PRecord.Recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Repeat_Every_x_Years: SaveData(PRecord.Repeat_Every_x_Years, PropPosition, metaPosition, dataPosition);
+            CL132_Gender: SaveData(PRecord.Gender, PropPosition, metaPosition, dataPosition);
+            CL132_Group: SaveData(PRecord.Group, PropPosition, metaPosition, dataPosition);
+            CL132_Valid_Until: SaveData(PRecord.Valid_Until, PropPosition, metaPosition, dataPosition);
             CL132_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -313,20 +319,22 @@ begin
       case pidx of
         CL132_Key: Result := IsFinded(ATempItem.PRecord.Key, buf, FPosDataADB, word(CL132_Key), cot);
             CL132_Description: Result := IsFinded(ATempItem.PRecord.Description, buf, FPosDataADB, word(CL132_Description), cot);
-            CL132_DescriptionEn: Result := IsFinded(ATempItem.PRecord.DescriptionEn, buf, FPosDataADB, word(CL132_DescriptionEn), cot);
-            CL132_group: Result := IsFinded(ATempItem.PRecord.group, buf, FPosDataADB, word(CL132_group), cot);
-            CL132_cl047: Result := IsFinded(ATempItem.PRecord.cl047, buf, FPosDataADB, word(CL132_cl047), cot);
-            CL132_cl136: Result := IsFinded(ATempItem.PRecord.cl136, buf, FPosDataADB, word(CL132_cl136), cot);
-            CL132_cl011: Result := IsFinded(ATempItem.PRecord.cl011, buf, FPosDataADB, word(CL132_cl011), cot);
-            CL132_event_trigger: Result := IsFinded(ATempItem.PRecord.event_trigger, buf, FPosDataADB, word(CL132_event_trigger), cot);
-            CL132_common_index: Result := IsFinded(ATempItem.PRecord.common_index, buf, FPosDataADB, word(CL132_common_index), cot);
-            CL132_repeat_years: Result := IsFinded(ATempItem.PRecord.repeat_years, buf, FPosDataADB, word(CL132_repeat_years), cot);
-            CL132_gender: Result := IsFinded(ATempItem.PRecord.gender, buf, FPosDataADB, word(CL132_gender), cot);
-            CL132_min_interval: Result := IsFinded(ATempItem.PRecord.min_interval, buf, FPosDataADB, word(CL132_min_interval), cot);
-            CL132_max_interval: Result := IsFinded(ATempItem.PRecord.max_interval, buf, FPosDataADB, word(CL132_max_interval), cot);
-            CL132_min_age: Result := IsFinded(ATempItem.PRecord.min_age, buf, FPosDataADB, word(CL132_min_age), cot);
-            CL132_max_age: Result := IsFinded(ATempItem.PRecord.max_age, buf, FPosDataADB, word(CL132_max_age), cot);
-            CL132_recurring: Result := IsFinded(ATempItem.PRecord.recurring, buf, FPosDataADB, word(CL132_recurring), cot);
+            CL132_Display_Value_BG: Result := IsFinded(ATempItem.PRecord.Display_Value_BG, buf, FPosDataADB, word(CL132_Display_Value_BG), cot);
+            CL132_Display_Value_EN: Result := IsFinded(ATempItem.PRecord.Display_Value_EN, buf, FPosDataADB, word(CL132_Display_Value_EN), cot);
+            CL132_CL047_Mapping: Result := IsFinded(ATempItem.PRecord.CL047_Mapping, buf, FPosDataADB, word(CL132_CL047_Mapping), cot);
+            CL132_CL136_Mapping: Result := IsFinded(ATempItem.PRecord.CL136_Mapping, buf, FPosDataADB, word(CL132_CL136_Mapping), cot);
+            CL132_CL011_Mapping: Result := IsFinded(ATempItem.PRecord.CL011_Mapping, buf, FPosDataADB, word(CL132_CL011_Mapping), cot);
+            CL132_Event_Trigger: Result := IsFinded(ATempItem.PRecord.Event_Trigger, buf, FPosDataADB, word(CL132_Event_Trigger), cot);
+            CL132_Common_index: Result := IsFinded(ATempItem.PRecord.Common_index, buf, FPosDataADB, word(CL132_Common_index), cot);
+            CL132_Min_interval_from_common_index: Result := IsFinded(ATempItem.PRecord.Min_interval_from_common_index, buf, FPosDataADB, word(CL132_Min_interval_from_common_index), cot);
+            CL132_Max_interval_from_common_index: Result := IsFinded(ATempItem.PRecord.Max_interval_from_common_index, buf, FPosDataADB, word(CL132_Max_interval_from_common_index), cot);
+            CL132_Age: Result := IsFinded(ATempItem.PRecord.Age, buf, FPosDataADB, word(CL132_Age), cot);
+            CL132_Max_Age: Result := IsFinded(ATempItem.PRecord.Max_Age, buf, FPosDataADB, word(CL132_Max_Age), cot);
+            CL132_Recurring: Result := IsFinded(ATempItem.PRecord.Recurring, buf, FPosDataADB, word(CL132_Recurring), cot);
+            CL132_Repeat_Every_x_Years: Result := IsFinded(ATempItem.PRecord.Repeat_Every_x_Years, buf, FPosDataADB, word(CL132_Repeat_Every_x_Years), cot);
+            CL132_Gender: Result := IsFinded(ATempItem.PRecord.Gender, buf, FPosDataADB, word(CL132_Gender), cot);
+            CL132_Group: Result := IsFinded(ATempItem.PRecord.Group, buf, FPosDataADB, word(CL132_Group), cot);
+            CL132_Valid_Until: Result := IsFinded(ATempItem.PRecord.Valid_Until, buf, FPosDataADB, word(CL132_Valid_Until), cot);
             CL132_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(CL132_Logical), cot);
       end;
     end;
@@ -385,89 +393,101 @@ begin
               SetLength(Self.PRecord.Description, lenStr);
               stream.Read(Self.PRecord.Description[1], lenStr);
             end;
-            CL132_DescriptionEn:
+            CL132_Display_Value_BG:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.DescriptionEn, lenStr);
-              stream.Read(Self.PRecord.DescriptionEn[1], lenStr);
+              SetLength(Self.PRecord.Display_Value_BG, lenStr);
+              stream.Read(Self.PRecord.Display_Value_BG[1], lenStr);
             end;
-            CL132_group:
+            CL132_Display_Value_EN:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.group, lenStr);
-              stream.Read(Self.PRecord.group[1], lenStr);
+              SetLength(Self.PRecord.Display_Value_EN, lenStr);
+              stream.Read(Self.PRecord.Display_Value_EN[1], lenStr);
             end;
-            CL132_cl047:
+            CL132_CL047_Mapping:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.cl047, lenStr);
-              stream.Read(Self.PRecord.cl047[1], lenStr);
+              SetLength(Self.PRecord.CL047_Mapping, lenStr);
+              stream.Read(Self.PRecord.CL047_Mapping[1], lenStr);
             end;
-            CL132_cl136:
+            CL132_CL136_Mapping:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.cl136, lenStr);
-              stream.Read(Self.PRecord.cl136[1], lenStr);
+              SetLength(Self.PRecord.CL136_Mapping, lenStr);
+              stream.Read(Self.PRecord.CL136_Mapping[1], lenStr);
             end;
-            CL132_cl011:
+            CL132_CL011_Mapping:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.cl011, lenStr);
-              stream.Read(Self.PRecord.cl011[1], lenStr);
+              SetLength(Self.PRecord.CL011_Mapping, lenStr);
+              stream.Read(Self.PRecord.CL011_Mapping[1], lenStr);
             end;
-            CL132_event_trigger:
+            CL132_Event_Trigger:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.event_trigger, lenStr);
-              stream.Read(Self.PRecord.event_trigger[1], lenStr);
+              SetLength(Self.PRecord.Event_Trigger, lenStr);
+              stream.Read(Self.PRecord.Event_Trigger[1], lenStr);
             end;
-            CL132_common_index:
+            CL132_Common_index:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.common_index, lenStr);
-              stream.Read(Self.PRecord.common_index[1], lenStr);
+              SetLength(Self.PRecord.Common_index, lenStr);
+              stream.Read(Self.PRecord.Common_index[1], lenStr);
             end;
-            CL132_repeat_years:
+            CL132_Min_interval_from_common_index:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.repeat_years, lenStr);
-              stream.Read(Self.PRecord.repeat_years[1], lenStr);
+              SetLength(Self.PRecord.Min_interval_from_common_index, lenStr);
+              stream.Read(Self.PRecord.Min_interval_from_common_index[1], lenStr);
             end;
-            CL132_gender:
+            CL132_Max_interval_from_common_index:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.gender, lenStr);
-              stream.Read(Self.PRecord.gender[1], lenStr);
+              SetLength(Self.PRecord.Max_interval_from_common_index, lenStr);
+              stream.Read(Self.PRecord.Max_interval_from_common_index[1], lenStr);
             end;
-            CL132_min_interval:
+            CL132_Age:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.min_interval, lenStr);
-              stream.Read(Self.PRecord.min_interval[1], lenStr);
+              SetLength(Self.PRecord.Age, lenStr);
+              stream.Read(Self.PRecord.Age[1], lenStr);
             end;
-            CL132_max_interval:
+            CL132_Max_Age:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.max_interval, lenStr);
-              stream.Read(Self.PRecord.max_interval[1], lenStr);
+              SetLength(Self.PRecord.Max_Age, lenStr);
+              stream.Read(Self.PRecord.Max_Age[1], lenStr);
             end;
-            CL132_min_age:
+            CL132_Recurring:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.min_age, lenStr);
-              stream.Read(Self.PRecord.min_age[1], lenStr);
+              SetLength(Self.PRecord.Recurring, lenStr);
+              stream.Read(Self.PRecord.Recurring[1], lenStr);
             end;
-            CL132_max_age:
+            CL132_Repeat_Every_x_Years:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.max_age, lenStr);
-              stream.Read(Self.PRecord.max_age[1], lenStr);
+              SetLength(Self.PRecord.Repeat_Every_x_Years, lenStr);
+              stream.Read(Self.PRecord.Repeat_Every_x_Years[1], lenStr);
             end;
-            CL132_recurring:
+            CL132_Gender:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.recurring, lenStr);
-              stream.Read(Self.PRecord.recurring[1], lenStr);
+              SetLength(Self.PRecord.Gender, lenStr);
+              stream.Read(Self.PRecord.Gender[1], lenStr);
+            end;
+            CL132_Group:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.Group, lenStr);
+              stream.Read(Self.PRecord.Group[1], lenStr);
+            end;
+            CL132_Valid_Until:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.Valid_Until, lenStr);
+              stream.Read(Self.PRecord.Valid_Until[1], lenStr);
             end;
             CL132_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
   end;
@@ -506,20 +526,22 @@ begin
           case propIndx of
             CL132_Key: SaveData(PRecord.Key, PropPosition, metaPosition, dataPosition);
             CL132_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL132_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL132_group: SaveData(PRecord.group, PropPosition, metaPosition, dataPosition);
-            CL132_cl047: SaveData(PRecord.cl047, PropPosition, metaPosition, dataPosition);
-            CL132_cl136: SaveData(PRecord.cl136, PropPosition, metaPosition, dataPosition);
-            CL132_cl011: SaveData(PRecord.cl011, PropPosition, metaPosition, dataPosition);
-            CL132_event_trigger: SaveData(PRecord.event_trigger, PropPosition, metaPosition, dataPosition);
-            CL132_common_index: SaveData(PRecord.common_index, PropPosition, metaPosition, dataPosition);
-            CL132_repeat_years: SaveData(PRecord.repeat_years, PropPosition, metaPosition, dataPosition);
-            CL132_gender: SaveData(PRecord.gender, PropPosition, metaPosition, dataPosition);
-            CL132_min_interval: SaveData(PRecord.min_interval, PropPosition, metaPosition, dataPosition);
-            CL132_max_interval: SaveData(PRecord.max_interval, PropPosition, metaPosition, dataPosition);
-            CL132_min_age: SaveData(PRecord.min_age, PropPosition, metaPosition, dataPosition);
-            CL132_max_age: SaveData(PRecord.max_age, PropPosition, metaPosition, dataPosition);
-            CL132_recurring: SaveData(PRecord.recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_BG: SaveData(PRecord.Display_Value_BG, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_EN: SaveData(PRecord.Display_Value_EN, PropPosition, metaPosition, dataPosition);
+            CL132_CL047_Mapping: SaveData(PRecord.CL047_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL136_Mapping: SaveData(PRecord.CL136_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL011_Mapping: SaveData(PRecord.CL011_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_Event_Trigger: SaveData(PRecord.Event_Trigger, PropPosition, metaPosition, dataPosition);
+            CL132_Common_index: SaveData(PRecord.Common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Min_interval_from_common_index: SaveData(PRecord.Min_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Max_interval_from_common_index: SaveData(PRecord.Max_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Age: SaveData(PRecord.Age, PropPosition, metaPosition, dataPosition);
+            CL132_Max_Age: SaveData(PRecord.Max_Age, PropPosition, metaPosition, dataPosition);
+            CL132_Recurring: SaveData(PRecord.Recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Repeat_Every_x_Years: SaveData(PRecord.Repeat_Every_x_Years, PropPosition, metaPosition, dataPosition);
+            CL132_Gender: SaveData(PRecord.Gender, PropPosition, metaPosition, dataPosition);
+            CL132_Group: SaveData(PRecord.Group, PropPosition, metaPosition, dataPosition);
+            CL132_Valid_Until: SaveData(PRecord.Valid_Until, PropPosition, metaPosition, dataPosition);
             CL132_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -553,20 +575,22 @@ begin
           case propIndx of
             CL132_Key: UpdateData(PRecord.Key, PropPosition, metaPosition, dataPosition);
             CL132_Description: UpdateData(PRecord.Description, PropPosition, metaPosition, dataPosition);
-            CL132_DescriptionEn: UpdateData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
-            CL132_group: UpdateData(PRecord.group, PropPosition, metaPosition, dataPosition);
-            CL132_cl047: UpdateData(PRecord.cl047, PropPosition, metaPosition, dataPosition);
-            CL132_cl136: UpdateData(PRecord.cl136, PropPosition, metaPosition, dataPosition);
-            CL132_cl011: UpdateData(PRecord.cl011, PropPosition, metaPosition, dataPosition);
-            CL132_event_trigger: UpdateData(PRecord.event_trigger, PropPosition, metaPosition, dataPosition);
-            CL132_common_index: UpdateData(PRecord.common_index, PropPosition, metaPosition, dataPosition);
-            CL132_repeat_years: UpdateData(PRecord.repeat_years, PropPosition, metaPosition, dataPosition);
-            CL132_gender: UpdateData(PRecord.gender, PropPosition, metaPosition, dataPosition);
-            CL132_min_interval: UpdateData(PRecord.min_interval, PropPosition, metaPosition, dataPosition);
-            CL132_max_interval: UpdateData(PRecord.max_interval, PropPosition, metaPosition, dataPosition);
-            CL132_min_age: UpdateData(PRecord.min_age, PropPosition, metaPosition, dataPosition);
-            CL132_max_age: UpdateData(PRecord.max_age, PropPosition, metaPosition, dataPosition);
-            CL132_recurring: UpdateData(PRecord.recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_BG: UpdateData(PRecord.Display_Value_BG, PropPosition, metaPosition, dataPosition);
+            CL132_Display_Value_EN: UpdateData(PRecord.Display_Value_EN, PropPosition, metaPosition, dataPosition);
+            CL132_CL047_Mapping: UpdateData(PRecord.CL047_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL136_Mapping: UpdateData(PRecord.CL136_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_CL011_Mapping: UpdateData(PRecord.CL011_Mapping, PropPosition, metaPosition, dataPosition);
+            CL132_Event_Trigger: UpdateData(PRecord.Event_Trigger, PropPosition, metaPosition, dataPosition);
+            CL132_Common_index: UpdateData(PRecord.Common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Min_interval_from_common_index: UpdateData(PRecord.Min_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Max_interval_from_common_index: UpdateData(PRecord.Max_interval_from_common_index, PropPosition, metaPosition, dataPosition);
+            CL132_Age: UpdateData(PRecord.Age, PropPosition, metaPosition, dataPosition);
+            CL132_Max_Age: UpdateData(PRecord.Max_Age, PropPosition, metaPosition, dataPosition);
+            CL132_Recurring: UpdateData(PRecord.Recurring, PropPosition, metaPosition, dataPosition);
+            CL132_Repeat_Every_x_Years: UpdateData(PRecord.Repeat_Every_x_Years, PropPosition, metaPosition, dataPosition);
+            CL132_Gender: UpdateData(PRecord.Gender, PropPosition, metaPosition, dataPosition);
+            CL132_Group: UpdateData(PRecord.Group, PropPosition, metaPosition, dataPosition);
+            CL132_Valid_Until: UpdateData(PRecord.Valid_Until, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -680,85 +704,97 @@ begin
         exit;
       end;
 
-      if (CL132_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_DescriptionEn))) then
+      if (CL132_Display_Value_BG in tempItem.PRecord.setProp) and (tempItem.PRecord.Display_Value_BG <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Display_Value_BG))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_group in tempItem.PRecord.setProp) and (tempItem.PRecord.group <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_group))) then
+      if (CL132_Display_Value_EN in tempItem.PRecord.setProp) and (tempItem.PRecord.Display_Value_EN <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Display_Value_EN))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_cl047 in tempItem.PRecord.setProp) and (tempItem.PRecord.cl047 <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_cl047))) then
+      if (CL132_CL047_Mapping in tempItem.PRecord.setProp) and (tempItem.PRecord.CL047_Mapping <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_CL047_Mapping))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_cl136 in tempItem.PRecord.setProp) and (tempItem.PRecord.cl136 <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_cl136))) then
+      if (CL132_CL136_Mapping in tempItem.PRecord.setProp) and (tempItem.PRecord.CL136_Mapping <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_CL136_Mapping))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_cl011 in tempItem.PRecord.setProp) and (tempItem.PRecord.cl011 <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_cl011))) then
+      if (CL132_CL011_Mapping in tempItem.PRecord.setProp) and (tempItem.PRecord.CL011_Mapping <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_CL011_Mapping))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_event_trigger in tempItem.PRecord.setProp) and (tempItem.PRecord.event_trigger <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_event_trigger))) then
+      if (CL132_Event_Trigger in tempItem.PRecord.setProp) and (tempItem.PRecord.Event_Trigger <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Event_Trigger))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_common_index in tempItem.PRecord.setProp) and (tempItem.PRecord.common_index <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_common_index))) then
+      if (CL132_Common_index in tempItem.PRecord.setProp) and (tempItem.PRecord.Common_index <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Common_index))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_repeat_years in tempItem.PRecord.setProp) and (tempItem.PRecord.repeat_years <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_repeat_years))) then
+      if (CL132_Min_interval_from_common_index in tempItem.PRecord.setProp) and (tempItem.PRecord.Min_interval_from_common_index <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Min_interval_from_common_index))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_gender in tempItem.PRecord.setProp) and (tempItem.PRecord.gender <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_gender))) then
+      if (CL132_Max_interval_from_common_index in tempItem.PRecord.setProp) and (tempItem.PRecord.Max_interval_from_common_index <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Max_interval_from_common_index))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_min_interval in tempItem.PRecord.setProp) and (tempItem.PRecord.min_interval <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_min_interval))) then
+      if (CL132_Age in tempItem.PRecord.setProp) and (tempItem.PRecord.Age <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Age))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_max_interval in tempItem.PRecord.setProp) and (tempItem.PRecord.max_interval <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_max_interval))) then
+      if (CL132_Max_Age in tempItem.PRecord.setProp) and (tempItem.PRecord.Max_Age <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Max_Age))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_min_age in tempItem.PRecord.setProp) and (tempItem.PRecord.min_age <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_min_age))) then
+      if (CL132_Recurring in tempItem.PRecord.setProp) and (tempItem.PRecord.Recurring <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Recurring))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_max_age in tempItem.PRecord.setProp) and (tempItem.PRecord.max_age <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_max_age))) then
+      if (CL132_Repeat_Every_x_Years in tempItem.PRecord.setProp) and (tempItem.PRecord.Repeat_Every_x_Years <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Repeat_Every_x_Years))) then
       begin
         inc(cnt);
         exit;
       end;
 
-      if (CL132_recurring in tempItem.PRecord.setProp) and (tempItem.PRecord.recurring <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_recurring))) then
+      if (CL132_Gender in tempItem.PRecord.setProp) and (tempItem.PRecord.Gender <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Gender))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
+
+      if (CL132_Group in tempItem.PRecord.setProp) and (tempItem.PRecord.Group <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Group))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
+
+      if (CL132_Valid_Until in tempItem.PRecord.setProp) and (tempItem.PRecord.Valid_Until <> Self.getAnsiStringMap(tempItem.DataPos, word(CL132_Valid_Until))) then
       begin
         inc(cnt);
         exit;
@@ -809,20 +845,22 @@ begin
   case TCL132Item.TPropertyIndex(propIndex) of
     CL132_Key: Result := 'Key';
     CL132_Description: Result := 'Description';
-    CL132_DescriptionEn: Result := 'DescriptionEn';
-    CL132_group: Result := 'group';
-    CL132_cl047: Result := 'cl047';
-    CL132_cl136: Result := 'cl136';
-    CL132_cl011: Result := 'cl011';
-    CL132_event_trigger: Result := 'event_trigger';
-    CL132_common_index: Result := 'common_index';
-    CL132_repeat_years: Result := 'repeat_years';
-    CL132_gender: Result := 'gender';
-    CL132_min_interval: Result := 'min_interval';
-    CL132_max_interval: Result := 'max_interval';
-    CL132_min_age: Result := 'min_age';
-    CL132_max_age: Result := 'max_age';
-    CL132_recurring: Result := 'recurring';
+    CL132_Display_Value_BG: Result := 'Display_Value_BG';
+    CL132_Display_Value_EN: Result := 'Display_Value_EN';
+    CL132_CL047_Mapping: Result := 'CL047_Mapping';
+    CL132_CL136_Mapping: Result := 'CL136_Mapping';
+    CL132_CL011_Mapping: Result := 'CL011_Mapping';
+    CL132_Event_Trigger: Result := 'Event_Trigger';
+    CL132_Common_index: Result := 'Common_index';
+    CL132_Min_interval_from_common_index: Result := 'Min_interval_from_common_index';
+    CL132_Max_interval_from_common_index: Result := 'Max_interval_from_common_index';
+    CL132_Age: Result := 'Age';
+    CL132_Max_Age: Result := 'Max_Age';
+    CL132_Recurring: Result := 'Recurring';
+    CL132_Repeat_Every_x_Years: Result := 'Repeat_Every_x_Years';
+    CL132_Gender: Result := 'Gender';
+    CL132_Group: Result := 'Group';
+    CL132_Valid_Until: Result := 'Valid_Until';
     CL132_Logical: Result := 'Logical';
   end;
 end;
@@ -885,7 +923,7 @@ end;
 function TCL132Coll.FieldCount: Integer; 
 begin
   inherited;
-  Result := 17;
+  Result := 19;
 end;
 
 function TCL132Coll.FindRootCollOptionNode(): PVirtualNode;
@@ -1062,20 +1100,22 @@ begin
   case TCL132Item.TPropertyIndex(propIndex) of
     CL132_Key: str := (CL132.PRecord.Key);
     CL132_Description: str := (CL132.PRecord.Description);
-    CL132_DescriptionEn: str := (CL132.PRecord.DescriptionEn);
-    CL132_group: str := (CL132.PRecord.group);
-    CL132_cl047: str := (CL132.PRecord.cl047);
-    CL132_cl136: str := (CL132.PRecord.cl136);
-    CL132_cl011: str := (CL132.PRecord.cl011);
-    CL132_event_trigger: str := (CL132.PRecord.event_trigger);
-    CL132_common_index: str := (CL132.PRecord.common_index);
-    CL132_repeat_years: str := (CL132.PRecord.repeat_years);
-    CL132_gender: str := (CL132.PRecord.gender);
-    CL132_min_interval: str := (CL132.PRecord.min_interval);
-    CL132_max_interval: str := (CL132.PRecord.max_interval);
-    CL132_min_age: str := (CL132.PRecord.min_age);
-    CL132_max_age: str := (CL132.PRecord.max_age);
-    CL132_recurring: str := (CL132.PRecord.recurring);
+    CL132_Display_Value_BG: str := (CL132.PRecord.Display_Value_BG);
+    CL132_Display_Value_EN: str := (CL132.PRecord.Display_Value_EN);
+    CL132_CL047_Mapping: str := (CL132.PRecord.CL047_Mapping);
+    CL132_CL136_Mapping: str := (CL132.PRecord.CL136_Mapping);
+    CL132_CL011_Mapping: str := (CL132.PRecord.CL011_Mapping);
+    CL132_Event_Trigger: str := (CL132.PRecord.Event_Trigger);
+    CL132_Common_index: str := (CL132.PRecord.Common_index);
+    CL132_Min_interval_from_common_index: str := (CL132.PRecord.Min_interval_from_common_index);
+    CL132_Max_interval_from_common_index: str := (CL132.PRecord.Max_interval_from_common_index);
+    CL132_Age: str := (CL132.PRecord.Age);
+    CL132_Max_Age: str := (CL132.PRecord.Max_Age);
+    CL132_Recurring: str := (CL132.PRecord.Recurring);
+    CL132_Repeat_Every_x_Years: str := (CL132.PRecord.Repeat_Every_x_Years);
+    CL132_Gender: str := (CL132.PRecord.Gender);
+    CL132_Group: str := (CL132.PRecord.Group);
+    CL132_Valid_Until: str := (CL132.PRecord.Valid_Until);
     CL132_Logical: str := CL132.Logical08ToStr(TLogicalData08(CL132.PRecord.Logical));
   else
     begin
@@ -1184,20 +1224,22 @@ begin
   case TCL132Item.TPropertyIndex(propIndex) of
     CL132_Key: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL132_Description: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_DescriptionEn: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_group: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_cl047: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_cl136: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_cl011: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_event_trigger: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_common_index: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_repeat_years: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_gender: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_min_interval: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_max_interval: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_min_age: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_max_age: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL132_recurring: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Display_Value_BG: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Display_Value_EN: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_CL047_Mapping: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_CL136_Mapping: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_CL011_Mapping: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Event_Trigger: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Common_index: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Min_interval_from_common_index: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Max_interval_from_common_index: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Age: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Max_Age: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Recurring: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Repeat_Every_x_Years: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Gender: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Group: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL132_Valid_Until: str :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL132_Logical: str :=  CL132.Logical08ToStr(CL132.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
@@ -1243,7 +1285,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_DescriptionEn:
+      CL132_Display_Value_BG:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1253,7 +1295,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_group:
+      CL132_Display_Value_EN:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1263,7 +1305,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_cl047:
+      CL132_CL047_Mapping:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1273,7 +1315,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_cl136:
+      CL132_CL136_Mapping:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1283,7 +1325,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_cl011:
+      CL132_CL011_Mapping:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1293,7 +1335,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_event_trigger:
+      CL132_Event_Trigger:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1303,7 +1345,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_common_index:
+      CL132_Common_index:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1313,7 +1355,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_repeat_years:
+      CL132_Min_interval_from_common_index:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1323,7 +1365,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_gender:
+      CL132_Max_interval_from_common_index:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1333,7 +1375,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_min_interval:
+      CL132_Age:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1343,7 +1385,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_max_interval:
+      CL132_Max_Age:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1353,7 +1395,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_min_age:
+      CL132_Recurring:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1363,7 +1405,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_max_age:
+      CL132_Repeat_Every_x_Years:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1373,7 +1415,27 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL132_recurring:
+      CL132_Gender:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      CL132_Group:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      CL132_Valid_Until:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1447,20 +1509,22 @@ begin
   case TCL132Item.TPropertyIndex(Field) of
 CL132_Key: ListForFinder[0].PRecord.Key := AText;
     CL132_Description: ListForFinder[0].PRecord.Description := AText;
-    CL132_DescriptionEn: ListForFinder[0].PRecord.DescriptionEn := AText;
-    CL132_group: ListForFinder[0].PRecord.group := AText;
-    CL132_cl047: ListForFinder[0].PRecord.cl047 := AText;
-    CL132_cl136: ListForFinder[0].PRecord.cl136 := AText;
-    CL132_cl011: ListForFinder[0].PRecord.cl011 := AText;
-    CL132_event_trigger: ListForFinder[0].PRecord.event_trigger := AText;
-    CL132_common_index: ListForFinder[0].PRecord.common_index := AText;
-    CL132_repeat_years: ListForFinder[0].PRecord.repeat_years := AText;
-    CL132_gender: ListForFinder[0].PRecord.gender := AText;
-    CL132_min_interval: ListForFinder[0].PRecord.min_interval := AText;
-    CL132_max_interval: ListForFinder[0].PRecord.max_interval := AText;
-    CL132_min_age: ListForFinder[0].PRecord.min_age := AText;
-    CL132_max_age: ListForFinder[0].PRecord.max_age := AText;
-    CL132_recurring: ListForFinder[0].PRecord.recurring := AText;
+    CL132_Display_Value_BG: ListForFinder[0].PRecord.Display_Value_BG := AText;
+    CL132_Display_Value_EN: ListForFinder[0].PRecord.Display_Value_EN := AText;
+    CL132_CL047_Mapping: ListForFinder[0].PRecord.CL047_Mapping := AText;
+    CL132_CL136_Mapping: ListForFinder[0].PRecord.CL136_Mapping := AText;
+    CL132_CL011_Mapping: ListForFinder[0].PRecord.CL011_Mapping := AText;
+    CL132_Event_Trigger: ListForFinder[0].PRecord.Event_Trigger := AText;
+    CL132_Common_index: ListForFinder[0].PRecord.Common_index := AText;
+    CL132_Min_interval_from_common_index: ListForFinder[0].PRecord.Min_interval_from_common_index := AText;
+    CL132_Max_interval_from_common_index: ListForFinder[0].PRecord.Max_interval_from_common_index := AText;
+    CL132_Age: ListForFinder[0].PRecord.Age := AText;
+    CL132_Max_Age: ListForFinder[0].PRecord.Max_Age := AText;
+    CL132_Recurring: ListForFinder[0].PRecord.Recurring := AText;
+    CL132_Repeat_Every_x_Years: ListForFinder[0].PRecord.Repeat_Every_x_Years := AText;
+    CL132_Gender: ListForFinder[0].PRecord.Gender := AText;
+    CL132_Group: ListForFinder[0].PRecord.Group := AText;
+    CL132_Valid_Until: ListForFinder[0].PRecord.Valid_Until := AText;
   end;
 end;
 
@@ -1532,20 +1596,22 @@ begin
   case TCL132Item.TPropertyIndex(propIndex) of
     CL132_Key: Result := actAnsiString;
     CL132_Description: Result := actAnsiString;
-    CL132_DescriptionEn: Result := actAnsiString;
-    CL132_group: Result := actAnsiString;
-    CL132_cl047: Result := actAnsiString;
-    CL132_cl136: Result := actAnsiString;
-    CL132_cl011: Result := actAnsiString;
-    CL132_event_trigger: Result := actAnsiString;
-    CL132_common_index: Result := actAnsiString;
-    CL132_repeat_years: Result := actAnsiString;
-    CL132_gender: Result := actAnsiString;
-    CL132_min_interval: Result := actAnsiString;
-    CL132_max_interval: Result := actAnsiString;
-    CL132_min_age: Result := actAnsiString;
-    CL132_max_age: Result := actAnsiString;
-    CL132_recurring: Result := actAnsiString;
+    CL132_Display_Value_BG: Result := actAnsiString;
+    CL132_Display_Value_EN: Result := actAnsiString;
+    CL132_CL047_Mapping: Result := actAnsiString;
+    CL132_CL136_Mapping: Result := actAnsiString;
+    CL132_CL011_Mapping: Result := actAnsiString;
+    CL132_Event_Trigger: Result := actAnsiString;
+    CL132_Common_index: Result := actAnsiString;
+    CL132_Min_interval_from_common_index: Result := actAnsiString;
+    CL132_Max_interval_from_common_index: Result := actAnsiString;
+    CL132_Age: Result := actAnsiString;
+    CL132_Max_Age: Result := actAnsiString;
+    CL132_Recurring: Result := actAnsiString;
+    CL132_Repeat_Every_x_Years: Result := actAnsiString;
+    CL132_Gender: Result := actAnsiString;
+    CL132_Group: Result := actAnsiString;
+    CL132_Valid_Until: Result := actAnsiString;
     CL132_Logical: Result := actLogical;
   else
     Result := actNone;
@@ -1578,20 +1644,22 @@ begin
     case TCL132Item.TPropertyIndex(ACol) of
       CL132_Key: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     CL132_Description: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_DescriptionEn: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_group: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_cl047: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_cl136: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_cl011: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_event_trigger: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_repeat_years: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_gender: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_min_interval: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_max_interval: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_min_age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_max_age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL132_recurring: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Display_Value_BG: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Display_Value_EN: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_CL047_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_CL136_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_CL011_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Event_Trigger: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Min_interval_from_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Max_interval_from_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Max_Age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Recurring: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Repeat_Every_x_Years: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Gender: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Group: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL132_Valid_Until: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     end;
   end;
   if isOld then
@@ -1609,20 +1677,22 @@ begin
   case TCL132Item.TPropertyIndex(ACol) of
     CL132_Key: CL132.PRecord.Key := AValue;
     CL132_Description: CL132.PRecord.Description := AValue;
-    CL132_DescriptionEn: CL132.PRecord.DescriptionEn := AValue;
-    CL132_group: CL132.PRecord.group := AValue;
-    CL132_cl047: CL132.PRecord.cl047 := AValue;
-    CL132_cl136: CL132.PRecord.cl136 := AValue;
-    CL132_cl011: CL132.PRecord.cl011 := AValue;
-    CL132_event_trigger: CL132.PRecord.event_trigger := AValue;
-    CL132_common_index: CL132.PRecord.common_index := AValue;
-    CL132_repeat_years: CL132.PRecord.repeat_years := AValue;
-    CL132_gender: CL132.PRecord.gender := AValue;
-    CL132_min_interval: CL132.PRecord.min_interval := AValue;
-    CL132_max_interval: CL132.PRecord.max_interval := AValue;
-    CL132_min_age: CL132.PRecord.min_age := AValue;
-    CL132_max_age: CL132.PRecord.max_age := AValue;
-    CL132_recurring: CL132.PRecord.recurring := AValue;
+    CL132_Display_Value_BG: CL132.PRecord.Display_Value_BG := AValue;
+    CL132_Display_Value_EN: CL132.PRecord.Display_Value_EN := AValue;
+    CL132_CL047_Mapping: CL132.PRecord.CL047_Mapping := AValue;
+    CL132_CL136_Mapping: CL132.PRecord.CL136_Mapping := AValue;
+    CL132_CL011_Mapping: CL132.PRecord.CL011_Mapping := AValue;
+    CL132_Event_Trigger: CL132.PRecord.Event_Trigger := AValue;
+    CL132_Common_index: CL132.PRecord.Common_index := AValue;
+    CL132_Min_interval_from_common_index: CL132.PRecord.Min_interval_from_common_index := AValue;
+    CL132_Max_interval_from_common_index: CL132.PRecord.Max_interval_from_common_index := AValue;
+    CL132_Age: CL132.PRecord.Age := AValue;
+    CL132_Max_Age: CL132.PRecord.Max_Age := AValue;
+    CL132_Recurring: CL132.PRecord.Recurring := AValue;
+    CL132_Repeat_Every_x_Years: CL132.PRecord.Repeat_Every_x_Years := AValue;
+    CL132_Gender: CL132.PRecord.Gender := AValue;
+    CL132_Group: CL132.PRecord.Group := AValue;
+    CL132_Valid_Until: CL132.PRecord.Valid_Until := AValue;
     CL132_Logical: CL132.PRecord.Logical := tlogicalCL132Set(CL132.StrToLogical08(AValue));
   end;
 end;
@@ -1646,20 +1716,22 @@ begin
     case TCL132Item.TPropertyIndex(ACol) of
       CL132_Key: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     CL132_Description: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_DescriptionEn: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_group: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_cl047: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_cl136: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_cl011: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_event_trigger: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_repeat_years: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_gender: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_min_interval: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_max_interval: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_min_age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_max_age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL132_recurring: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Display_Value_BG: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Display_Value_EN: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_CL047_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_CL136_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_CL011_Mapping: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Event_Trigger: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Min_interval_from_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Max_interval_from_common_index: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Max_Age: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Recurring: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Repeat_Every_x_Years: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Gender: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Group: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL132_Valid_Until: isOld :=  CL132.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     end;
   end;
   if isOld then
@@ -1677,20 +1749,22 @@ begin
   case TCL132Item.TPropertyIndex(ACol) of
     CL132_Key: CL132.PRecord.Key := AFieldText;
     CL132_Description: CL132.PRecord.Description := AFieldText;
-    CL132_DescriptionEn: CL132.PRecord.DescriptionEn := AFieldText;
-    CL132_group: CL132.PRecord.group := AFieldText;
-    CL132_cl047: CL132.PRecord.cl047 := AFieldText;
-    CL132_cl136: CL132.PRecord.cl136 := AFieldText;
-    CL132_cl011: CL132.PRecord.cl011 := AFieldText;
-    CL132_event_trigger: CL132.PRecord.event_trigger := AFieldText;
-    CL132_common_index: CL132.PRecord.common_index := AFieldText;
-    CL132_repeat_years: CL132.PRecord.repeat_years := AFieldText;
-    CL132_gender: CL132.PRecord.gender := AFieldText;
-    CL132_min_interval: CL132.PRecord.min_interval := AFieldText;
-    CL132_max_interval: CL132.PRecord.max_interval := AFieldText;
-    CL132_min_age: CL132.PRecord.min_age := AFieldText;
-    CL132_max_age: CL132.PRecord.max_age := AFieldText;
-    CL132_recurring: CL132.PRecord.recurring := AFieldText;
+    CL132_Display_Value_BG: CL132.PRecord.Display_Value_BG := AFieldText;
+    CL132_Display_Value_EN: CL132.PRecord.Display_Value_EN := AFieldText;
+    CL132_CL047_Mapping: CL132.PRecord.CL047_Mapping := AFieldText;
+    CL132_CL136_Mapping: CL132.PRecord.CL136_Mapping := AFieldText;
+    CL132_CL011_Mapping: CL132.PRecord.CL011_Mapping := AFieldText;
+    CL132_Event_Trigger: CL132.PRecord.Event_Trigger := AFieldText;
+    CL132_Common_index: CL132.PRecord.Common_index := AFieldText;
+    CL132_Min_interval_from_common_index: CL132.PRecord.Min_interval_from_common_index := AFieldText;
+    CL132_Max_interval_from_common_index: CL132.PRecord.Max_interval_from_common_index := AFieldText;
+    CL132_Age: CL132.PRecord.Age := AFieldText;
+    CL132_Max_Age: CL132.PRecord.Max_Age := AFieldText;
+    CL132_Recurring: CL132.PRecord.Recurring := AFieldText;
+    CL132_Repeat_Every_x_Years: CL132.PRecord.Repeat_Every_x_Years := AFieldText;
+    CL132_Gender: CL132.PRecord.Gender := AFieldText;
+    CL132_Group: CL132.PRecord.Group := AFieldText;
+    CL132_Valid_Until: CL132.PRecord.Valid_Until := AFieldText;
     CL132_Logical: CL132.PRecord.Logical := tlogicalCL132Set(CL132.StrToLogical08(AFieldText));
   end;
 end;
@@ -1723,98 +1797,112 @@ end;
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_DescriptionEn:
+      CL132_Display_Value_BG:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_group:
+      CL132_Display_Value_EN:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_cl047:
+      CL132_CL047_Mapping:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_cl136:
+      CL132_CL136_Mapping:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_cl011:
+      CL132_CL011_Mapping:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_event_trigger:
+      CL132_Event_Trigger:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_common_index:
+      CL132_Common_index:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_repeat_years:
+      CL132_Min_interval_from_common_index:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_gender:
+      CL132_Max_interval_from_common_index:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_min_interval:
+      CL132_Age:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_max_interval:
+      CL132_Max_Age:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_min_age:
+      CL132_Recurring:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_max_age:
+      CL132_Repeat_Every_x_Years:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL132Search.Add(self.Items[i]);
         end;
       end;
-      CL132_recurring:
+      CL132_Gender:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListCL132Search.Add(self.Items[i]);
+        end;
+      end;
+      CL132_Group:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListCL132Search.Add(self.Items[i]);
+        end;
+      end;
+      CL132_Valid_Until:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
@@ -2037,20 +2125,22 @@ begin
   case propIndex of
     CL132_Key: SortByIndexAnsiString;
       CL132_Description: SortByIndexAnsiString;
-      CL132_DescriptionEn: SortByIndexAnsiString;
-      CL132_group: SortByIndexAnsiString;
-      CL132_cl047: SortByIndexAnsiString;
-      CL132_cl136: SortByIndexAnsiString;
-      CL132_cl011: SortByIndexAnsiString;
-      CL132_event_trigger: SortByIndexAnsiString;
-      CL132_common_index: SortByIndexAnsiString;
-      CL132_repeat_years: SortByIndexAnsiString;
-      CL132_gender: SortByIndexAnsiString;
-      CL132_min_interval: SortByIndexAnsiString;
-      CL132_max_interval: SortByIndexAnsiString;
-      CL132_min_age: SortByIndexAnsiString;
-      CL132_max_age: SortByIndexAnsiString;
-      CL132_recurring: SortByIndexAnsiString;
+      CL132_Display_Value_BG: SortByIndexAnsiString;
+      CL132_Display_Value_EN: SortByIndexAnsiString;
+      CL132_CL047_Mapping: SortByIndexAnsiString;
+      CL132_CL136_Mapping: SortByIndexAnsiString;
+      CL132_CL011_Mapping: SortByIndexAnsiString;
+      CL132_Event_Trigger: SortByIndexAnsiString;
+      CL132_Common_index: SortByIndexAnsiString;
+      CL132_Min_interval_from_common_index: SortByIndexAnsiString;
+      CL132_Max_interval_from_common_index: SortByIndexAnsiString;
+      CL132_Age: SortByIndexAnsiString;
+      CL132_Max_Age: SortByIndexAnsiString;
+      CL132_Recurring: SortByIndexAnsiString;
+      CL132_Repeat_Every_x_Years: SortByIndexAnsiString;
+      CL132_Gender: SortByIndexAnsiString;
+      CL132_Group: SortByIndexAnsiString;
+      CL132_Valid_Until: SortByIndexAnsiString;
   end;
 end;
 
@@ -2134,157 +2224,179 @@ begin
     if oldValue <> newValue then Include(item.PRecord.setProp, CL132_Description);
 
     j := 0;
-    // DescriptionEn
+    // Display_Value_BG
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_DescriptionEn));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Display_Value_BG));
 
-      Item.PRecord.DescriptionEn := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_DescriptionEn);
+      Item.PRecord.Display_Value_BG := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Display_Value_BG);
     end;
     Inc(j);
 
-    // group
+    // Display_Value_EN
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_group));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Display_Value_EN));
 
-      Item.PRecord.group := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_group);
+      Item.PRecord.Display_Value_EN := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Display_Value_EN);
     end;
     Inc(j);
 
-    // cl047
+    // CL047_Mapping
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_cl047));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_CL047_Mapping));
 
-      Item.PRecord.cl047 := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_cl047);
+      Item.PRecord.CL047_Mapping := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_CL047_Mapping);
     end;
     Inc(j);
 
-    // cl136
+    // CL136_Mapping
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_cl136));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_CL136_Mapping));
 
-      Item.PRecord.cl136 := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_cl136);
+      Item.PRecord.CL136_Mapping := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_CL136_Mapping);
     end;
     Inc(j);
 
-    // cl011
+    // CL011_Mapping
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_cl011));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_CL011_Mapping));
 
-      Item.PRecord.cl011 := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_cl011);
+      Item.PRecord.CL011_Mapping := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_CL011_Mapping);
     end;
     Inc(j);
 
-    // event_trigger
+    // Event_Trigger
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_event_trigger));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Event_Trigger));
 
-      Item.PRecord.event_trigger := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_event_trigger);
+      Item.PRecord.Event_Trigger := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Event_Trigger);
     end;
     Inc(j);
 
-    // common_index
+    // Common_index
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_common_index));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Common_index));
 
-      Item.PRecord.common_index := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_common_index);
+      Item.PRecord.Common_index := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Common_index);
     end;
     Inc(j);
 
-    // repeat_years
+    // Min_interval_from_common_index
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_repeat_years));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Min_interval_from_common_index));
 
-      Item.PRecord.repeat_years := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_repeat_years);
+      Item.PRecord.Min_interval_from_common_index := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Min_interval_from_common_index);
     end;
     Inc(j);
 
-    // gender
+    // Max_interval_from_common_index
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_gender));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Max_interval_from_common_index));
 
-      Item.PRecord.gender := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_gender);
+      Item.PRecord.Max_interval_from_common_index := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Max_interval_from_common_index);
     end;
     Inc(j);
 
-    // min_interval
+    // Age
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_min_interval));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Age));
 
-      Item.PRecord.min_interval := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_min_interval);
+      Item.PRecord.Age := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Age);
     end;
     Inc(j);
 
-    // max_interval
+    // Max_Age
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_max_interval));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Max_Age));
 
-      Item.PRecord.max_interval := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_max_interval);
+      Item.PRecord.Max_Age := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Max_Age);
     end;
     Inc(j);
 
-    // min_age
+    // Recurring
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_min_age));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Recurring));
 
-      Item.PRecord.min_age := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_min_age);
+      Item.PRecord.Recurring := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Recurring);
     end;
     Inc(j);
 
-    // max_age
+    // Repeat_Every_x_Years
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_max_age));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Repeat_Every_x_Years));
 
-      Item.PRecord.max_age := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_max_age);
+      Item.PRecord.Repeat_Every_x_Years := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Repeat_Every_x_Years);
     end;
     Inc(j);
 
-    // recurring
+    // Gender
     if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
     begin
       newValue := entry.FMetaDataFields[idx[j]].Value;
-      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_recurring));
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Gender));
 
-      Item.PRecord.recurring := entry.FMetaDataFields[idx[j]].Value;
-      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_recurring);
+      Item.PRecord.Gender := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Gender);
+    end;
+    Inc(j);
+
+    // Group
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Group));
+
+      Item.PRecord.Group := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Group);
+    end;
+    Inc(j);
+
+    // Valid_Until
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL132_Valid_Until));
+
+      Item.PRecord.Valid_Until := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL132_Valid_Until);
     end;
     Inc(j);
 

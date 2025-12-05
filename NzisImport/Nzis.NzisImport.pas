@@ -132,7 +132,7 @@ type
     property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
     //property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
     //property ProcAddNewPreg: TProc<TRealPregledNewItem, PVirtualNode> read FProcAddNewPreg write FProcAddNewPreg;
-    property NasMesto: TRealNasMestoAspects read FNasMesto write SetNasMesto;
+    //property NasMesto: TRealNasMestoAspects read FNasMesto write SetNasMesto;
     property CollPractica: TPracticaColl read FCollPractica write SetCollPractica;
     property CollDoctor: TRealDoctorColl read FCollDoctor write SetCollDoctor;
     property RCZSelf: string read FRCZSelf;

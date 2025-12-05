@@ -80,7 +80,7 @@ TLoadDBThread = class(TThread)
     Fdm: TDUNzis;
     cmdFile: TFileStream;
     FDBHelper: TDbHelper;
-    FNasMesto: TRealNasMestoAspects;
+    //FNasMesto: TRealNasMestoAspects;
     //колекции
     //PatientColl: TRealPatientNewColl;
 //    DoctorColl: TRealDoctorColl;
@@ -913,8 +913,8 @@ begin
     if TempItem.FAdresi.Count > 0 then
     begin
       TempItem.FAdresi[0].InsertAddres;
-      FNasMesto.addresColl.streamComm.Len := FNasMesto.addresColl.streamComm.Size;
-      CmdFile.CopyFrom(FNasMesto.addresColl.streamComm, 0);
+      Adb_dm.FNasMesto.addresColl.streamComm.Len := Adb_dm.FNasMesto.addresColl.streamComm.Size;
+      CmdFile.CopyFrom(Adb_dm.FNasMesto.addresColl.streamComm, 0);
       Dispose( TempItem.FAdresi[0].PRecord);
       TempItem.FAdresi[0].PRecord := nil;
     end;

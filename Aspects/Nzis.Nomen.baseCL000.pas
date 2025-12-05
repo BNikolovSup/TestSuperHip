@@ -105,7 +105,7 @@ type
     procedure ImportCl024(TempColl: TCL024Coll);
     procedure ImportCl037(TempColl: TCL037Coll);
     procedure ImportCl038(TempColl: TCL038Coll);
-    procedure ImportCl132(TempColl: TCL132Coll);
+    //procedure ImportCl132(TempColl: TCL132Coll);
     procedure ImportCl134(TempColl: TCL134Coll);
     procedure ImportCl139(TempColl: TCL139Coll);
     procedure ImportCl142(TempColl: TCL142Coll);
@@ -978,116 +978,116 @@ begin
   end;
 end;
 
-procedure TCL000EntryCollection.ImportCl132(TempColl: TCL132Coll);
-var
-  i: integer;
-  j: word;
-  TempItem: TCL132Item;
-  entry: TCL000EntryItem;
-  idx: array[0..13] of integer;
-begin
-
-  idx[0] := self.FieldsNames.IndexOf('DescriptionEn');
-  idx[1] := self.FieldsNames.IndexOf('group');
-  idx[2] := self.FieldsNames.IndexOf('cl047');
-  idx[3] := self.FieldsNames.IndexOf('cl136');
-  idx[4] := self.FieldsNames.IndexOf('cl011');
-  idx[5] := self.FieldsNames.IndexOf('event_trigger');
-  idx[6] := self.FieldsNames.IndexOf('common_index');
-  idx[7] := self.FieldsNames.IndexOf('min_interval');
-  idx[8] := self.FieldsNames.IndexOf('max_interval');
-  idx[9] := self.FieldsNames.IndexOf('min_age');
-  idx[10] := self.FieldsNames.IndexOf('max_age');
-  idx[11] := self.FieldsNames.IndexOf('recurring');
-  idx[12] := self.FieldsNames.IndexOf('repeat_years');
-  idx[13] := self.FieldsNames.IndexOf('gender');
-
-  for i := 0 to self.count - 1 do
-  begin
-    entry := self.Items[i];
-    TempItem := TCL132Item(TempColl.Add);
-    New(TempItem.PRecord);
-    TempItem.PRecord.setProp := [CL132_Key, CL132_Description];
-    TempItem.PRecord.Key := entry.FKey;
-    TempItem.PRecord.Description := entry.FDescr;
-    if Entry.FMetaDataFields[idx[0]] <> nil then
-    begin
-      TempItem.PRecord.Display_Value_EN := Entry.FMetaDataFields[idx[0]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Display_Value_EN);
-    end;
-    if Entry.FMetaDataFields[idx[1]] <> nil then
-    begin
-      TempItem.PRecord.Group := Entry.FMetaDataFields[idx[1]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Group);
-    end;
-    if Entry.FMetaDataFields[idx[2]] <> nil then
-    begin
-      TempItem.PRecord.CL047_Mapping := Entry.FMetaDataFields[idx[2]].FValue;
-      include(TempItem.PRecord.setProp, CL132_CL047_Mapping);
-    end;
-    if Entry.FMetaDataFields[idx[3]] <> nil then
-    begin
-      TempItem.PRecord.CL136_Mapping := Entry.FMetaDataFields[idx[3]].FValue;
-      include(TempItem.PRecord.setProp, CL132_CL136_Mapping);
-    end;
-    if Entry.FMetaDataFields[idx[4]] <> nil then
-    begin
-      TempItem.PRecord.CL011_Mapping := Entry.FMetaDataFields[idx[4]].FValue;
-      include(TempItem.PRecord.setProp, CL132_CL011_Mapping);
-    end;
-    if Entry.FMetaDataFields[idx[5]] <> nil then
-    begin
-      TempItem.PRecord.Event_Trigger := Entry.FMetaDataFields[idx[5]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Event_Trigger);
-    end;
-    if Entry.FMetaDataFields[idx[6]] <> nil then
-    begin
-      TempItem.PRecord.Common_index := Entry.FMetaDataFields[idx[6]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Common_index);
-    end;
-    if Entry.FMetaDataFields[idx[7]] <> nil then
-    begin
-      TempItem.PRecord.Min_interval_from_common_index := Entry.FMetaDataFields[idx[7]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Min_interval_from_common_index);
-    end;
-    if Entry.FMetaDataFields[idx[8]] <> nil then
-    begin
-      TempItem.PRecord.Max_interval_from_common_index := Entry.FMetaDataFields[idx[8]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Max_interval_from_common_index);
-    end;
-    if Entry.FMetaDataFields[idx[9]] <> nil then
-    begin
-      TempItem.PRecord.Age := Entry.FMetaDataFields[idx[9]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Age);
-    end;
-    if Entry.FMetaDataFields[idx[10]] <> nil then
-    begin
-      TempItem.PRecord.Max_Age := Entry.FMetaDataFields[idx[10]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Max_Age);
-    end;
-    if Entry.FMetaDataFields[idx[11]] <> nil then
-    begin
-      TempItem.PRecord.Recurring := Entry.FMetaDataFields[idx[11]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Recurring);
-    end;
-    if Entry.FMetaDataFields[idx[12]] <> nil then
-    begin
-      TempItem.PRecord.Repeat_Every_x_Years := Entry.FMetaDataFields[idx[12]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Repeat_Every_x_Years);
-    end;
-    if Entry.FMetaDataFields[idx[13]] <> nil then
-    begin
-      TempItem.PRecord.Gender := Entry.FMetaDataFields[idx[13]].FValue;
-      include(TempItem.PRecord.setProp, CL132_Gender);
-    end;
-
-    TempItem.InsertCL132;
-    TempColl.streamComm.Len := TempColl.streamComm.Size;
-    TempColl.cmdFile.CopyFrom(TempColl.streamComm, 0);
-    Dispose(TempItem.PRecord);
-    TempItem.PRecord := nil;
-  end;
-end;
+//procedure TCL000EntryCollection.ImportCl132(TempColl: TCL132Coll);
+//var
+//  i: integer;
+//  j: word;
+//  TempItem: TCL132Item;
+//  entry: TCL000EntryItem;
+//  idx: array[0..13] of integer;
+//begin
+//
+//  idx[0] := self.FieldsNames.IndexOf('DescriptionEn');
+//  idx[1] := self.FieldsNames.IndexOf('group');
+//  idx[2] := self.FieldsNames.IndexOf('cl047');
+//  idx[3] := self.FieldsNames.IndexOf('cl136');
+//  idx[4] := self.FieldsNames.IndexOf('cl011');
+//  idx[5] := self.FieldsNames.IndexOf('event_trigger');
+//  idx[6] := self.FieldsNames.IndexOf('common_index');
+//  idx[7] := self.FieldsNames.IndexOf('min_interval');
+//  idx[8] := self.FieldsNames.IndexOf('max_interval');
+//  idx[9] := self.FieldsNames.IndexOf('min_age');
+//  idx[10] := self.FieldsNames.IndexOf('max_age');
+//  idx[11] := self.FieldsNames.IndexOf('recurring');
+//  idx[12] := self.FieldsNames.IndexOf('repeat_years');
+//  idx[13] := self.FieldsNames.IndexOf('gender');
+//
+//  for i := 0 to self.count - 1 do
+//  begin
+//    entry := self.Items[i];
+//    TempItem := TCL132Item(TempColl.Add);
+//    New(TempItem.PRecord);
+//    TempItem.PRecord.setProp := [CL132_Key, CL132_Description];
+//    TempItem.PRecord.Key := entry.FKey;
+//    TempItem.PRecord.Description := entry.FDescr;
+//    if Entry.FMetaDataFields[idx[0]] <> nil then
+//    begin
+//      TempItem.PRecord.DescriptionEn := Entry.FMetaDataFields[idx[0]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_DescriptionEn);
+//    end;
+//    if Entry.FMetaDataFields[idx[1]] <> nil then
+//    begin
+//      TempItem.PRecord.Group := Entry.FMetaDataFields[idx[1]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Group);
+//    end;
+//    if Entry.FMetaDataFields[idx[2]] <> nil then
+//    begin
+//      TempItem.PRecord.CL047_Mapping := Entry.FMetaDataFields[idx[2]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_CL047_Mapping);
+//    end;
+//    if Entry.FMetaDataFields[idx[3]] <> nil then
+//    begin
+//      TempItem.PRecord.CL136_Mapping := Entry.FMetaDataFields[idx[3]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_CL136_Mapping);
+//    end;
+//    if Entry.FMetaDataFields[idx[4]] <> nil then
+//    begin
+//      TempItem.PRecord.CL011_Mapping := Entry.FMetaDataFields[idx[4]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_CL011_Mapping);
+//    end;
+//    if Entry.FMetaDataFields[idx[5]] <> nil then
+//    begin
+//      TempItem.PRecord.Event_Trigger := Entry.FMetaDataFields[idx[5]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Event_Trigger);
+//    end;
+//    if Entry.FMetaDataFields[idx[6]] <> nil then
+//    begin
+//      TempItem.PRecord.Common_index := Entry.FMetaDataFields[idx[6]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Common_index);
+//    end;
+//    if Entry.FMetaDataFields[idx[7]] <> nil then
+//    begin
+//      TempItem.PRecord.Min_interval_from_common_index := Entry.FMetaDataFields[idx[7]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Min_interval_from_common_index);
+//    end;
+//    if Entry.FMetaDataFields[idx[8]] <> nil then
+//    begin
+//      TempItem.PRecord.Max_interval_from_common_index := Entry.FMetaDataFields[idx[8]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Max_interval_from_common_index);
+//    end;
+//    if Entry.FMetaDataFields[idx[9]] <> nil then
+//    begin
+//      TempItem.PRecord.Age := Entry.FMetaDataFields[idx[9]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Age);
+//    end;
+//    if Entry.FMetaDataFields[idx[10]] <> nil then
+//    begin
+//      TempItem.PRecord.Max_Age := Entry.FMetaDataFields[idx[10]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Max_Age);
+//    end;
+//    if Entry.FMetaDataFields[idx[11]] <> nil then
+//    begin
+//      TempItem.PRecord.Recurring := Entry.FMetaDataFields[idx[11]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Recurring);
+//    end;
+//    if Entry.FMetaDataFields[idx[12]] <> nil then
+//    begin
+//      TempItem.PRecord.Repeat_Every_x_Years := Entry.FMetaDataFields[idx[12]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Repeat_Every_x_Years);
+//    end;
+//    if Entry.FMetaDataFields[idx[13]] <> nil then
+//    begin
+//      TempItem.PRecord.Gender := Entry.FMetaDataFields[idx[13]].FValue;
+//      include(TempItem.PRecord.setProp, CL132_Gender);
+//    end;
+//
+//    TempItem.InsertCL132;
+//    TempColl.streamComm.Len := TempColl.streamComm.Size;
+//    TempColl.cmdFile.CopyFrom(TempColl.streamComm, 0);
+//    Dispose(TempItem.PRecord);
+//    TempItem.PRecord := nil;
+//  end;
+//end;
 
 procedure TCL000EntryCollection.ImportCl134(TempColl: TCL134Coll);
 var

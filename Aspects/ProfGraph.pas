@@ -1,4 +1,4 @@
-unit ProfGraph;   //d:\ няма 01.01.2020 current   vtrGraph.AddChild(nil
+unit ProfGraph;
 
 interface
 uses
@@ -41,7 +41,7 @@ type
     procedure FillCl144InCL142;
   public
 
-    BufNomen: Pointer;
+    //BufNomen: Pointer;
     //BufADB: Pointer;
     //posDataADB: cardinal;
     vtrGraph: TVirtualStringTreeHipp;
@@ -53,7 +53,7 @@ type
 
     constructor create;
     procedure GeneratePeriod(Apat: TObject);
-    procedure GeneratePeriodOld(Apat: TObject);
+    //procedure GeneratePeriodOld(Apat: TObject);
     function RuleCl132_PR001(cl132, pr001: TObject): Boolean;
 
     procedure LoadVtrGraph1(Apat: TObject; patIndex: Integer);
@@ -171,77 +171,89 @@ procedure TProfGraph.FillCl050;
 var
   iCL050, iPR001: Integer;
   test: AnsiString;
-begin
-  TADBDataModule(Adb_DM).CL050Coll.IndexValue(CL050_Key);
-  TADBDataModule(Adb_DM).CL050Coll.SortByIndexValue(CL050_Key);
+  CL050Coll: TCL050Coll;
+  PR001Coll: TRealPR001Coll;
 
-  TADBDataModule(Adb_DM).PR001Coll.IndexValue(PR001_Activity_ID);
-  TADBDataModule(Adb_DM).PR001Coll.SortByIndexValue(PR001_Activity_ID);
+begin
+  CL050Coll := TADBDataModule(Adb_DM).CL050Coll;
+  PR001Coll := TADBDataModule(Adb_DM).PR001Coll;
+
+  CL050Coll.IndexValue(CL050_Key);
+  CL050Coll.SortByIndexValue(CL050_Key);
+
+  PR001Coll.IndexValue(PR001_Activity_ID);
+  PR001Coll.SortByIndexValue(PR001_Activity_ID);
 
   iCL050 := 0;
   iPR001 := 0;
-  while (iCL050 < TADBDataModule(Adb_DM).CL050Coll.Count) and (iPR001 < TADBDataModule(Adb_DM).PR001Coll.Count) do
-  begin
-    test := TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Nomenclature));
+  while (iCL050 < CL050Coll.Count) and (iPR001 <PR001Coll.Count) do
+  begin //Items[iPR001]
+    test := PR001Coll.getAnsiStringMap(PR001Coll.Items[iPR001].DataPos, word(PR001_Nomenclature));
     if test <> 'CL050' then
     begin
       inc(iPR001);
       continue;
     end;
 
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 = TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 = PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       //PR001Coll.Items[iPR001].CL050 := CL050Coll.Items[iCL050];
       inc(iPR001);
     end
     else
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 < TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 < PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       inc(iCL050);
     end
     else
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 > TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 > PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       inc(iPR001);
     end
   end;
-
 end;
 
 procedure TProfGraph.FillCl050_1;
 var
   iCL050, iPR001: Integer;
   test: AnsiString;
-begin
-  TADBDataModule(Adb_DM).CL050Coll.IndexValue(CL050_Key);
-  TADBDataModule(Adb_DM).CL050Coll.SortByIndexValue(CL050_Key);
+  CL050Coll: TCL050Coll;
+  PR001Coll: TRealPR001Coll;
 
-  TADBDataModule(Adb_DM).PR001Coll.IndexValue(PR001_Activity_ID);
-  TADBDataModule(Adb_DM).PR001Coll.SortByIndexValue(PR001_Activity_ID);
+begin
+  CL050Coll := TADBDataModule(Adb_DM).CL050Coll;
+  PR001Coll := TADBDataModule(Adb_DM).PR001Coll;
+
+  CL050Coll.IndexValue(CL050_Key);
+  CL050Coll.SortByIndexValue(CL050_Key);
+
+  PR001Coll.IndexValue(PR001_Activity_ID);
+  PR001Coll.SortByIndexValue(PR001_Activity_ID);
+
 
   iCL050 := 0;
   iPR001 := 0;
-  while (iCL050 < TADBDataModule(Adb_DM).CL050Coll.Count) and (iPR001 < TADBDataModule(Adb_DM).PR001Coll.Count) do
+  while (iCL050 < CL050Coll.Count) and (iPR001 < PR001Coll.Count) do
   begin
-    test := TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Nomenclature));
+    test := PR001Coll.getAnsiStringMap(PR001Coll.Items[iPR001].DataPos, word(PR001_Nomenclature));
     if test <> 'CL050' then
     begin
       inc(iPR001);
       continue;
     end;
 
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 = TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 = PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       //PR001Coll.Items[iPR001].CL050 := CL050Coll.Items[iCL050];
       inc(iPR001);
     end
     else
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 < TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 < PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       inc(iCL050);
     end
     else
-    if TADBDataModule(Adb_DM).CL050Coll.Items[iCL050].IndexAnsiStr1 > TADBDataModule(Adb_DM).PR001Coll.Items[iPR001].IndexAnsiStr1 then
+    if CL050Coll.Items[iCL050].IndexAnsiStr1 > PR001Coll.Items[iPR001].IndexAnsiStr1 then
     begin
       inc(iPR001);
     end
@@ -289,48 +301,51 @@ var
   cl133Str: AnsiString;
   lstPR001: TList<TRealPR001Item> ;
   Cl132: TRealCl132Item;
+  CL134Coll: TRealCL134Coll;
+  CL132Coll: TRealCL132Coll;
+  PR001Coll: TRealPR001Coll;
+
 begin
-  TADBDataModule(Adb_DM).CL134Coll.IndexValue(CL134_CL133);
-  TADBDataModule(Adb_DM).CL134Coll.SortByIndexValue(CL134_CL133); // сортирам по цл133 (1, 2, 3...)
+  CL134Coll :=  TADBDataModule(Adb_DM).CL134Coll;
+  CL132Coll :=  TADBDataModule(Adb_DM).CL132Coll;
+  PR001Coll :=  TADBDataModule(Adb_DM).PR001Coll;
+
+  CL134Coll.IndexValue(CL134_CL133);
+  CL134Coll.SortByIndexValue(CL134_CL133); // сортирам по цл133 (1, 2, 3...)
 
 
-  for i := 0 to TADBDataModule(Adb_DM).CL132Coll.Count - 1 do
+  for i := 0 to CL132Coll.Count - 1 do
   begin
-    Cl132 := TADBDataModule(Adb_DM).CL132Coll.Items[i];
+    Cl132 := CL132Coll.Items[i];
     lstPR001 := Cl132.FListPr001;
-    TADBDataModule(Adb_DM).PR001Coll.SortListByActId(lstPR001);// сортирам списъка с дейности по ActId (там е 65-226 за антропометрията)
+    PR001Coll.SortListByActId(lstPR001);// сортирам списъка с дейности по ActId (там е 65-226 за антропометрията)
     iCL134 := 0;
     iPR001 := 0;
     while (iCL134 < TADBDataModule(Adb_DM).CL134Coll.Count) and (iPR001 < lstPR001.Count) do
     begin
-      test := lstPR001[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Nomenclature));
+      test := PR001Coll.getAnsiStringMap(lstPR001[iPR001].DataPos, word(PR001_Nomenclature));
       if test <> 'CL133' then
       begin
         inc(iPR001);
         continue;
       end;
-      //if test = 'CL050'  then
-//      begin
-//        test := 'CL050';
-//      end;
-
-      if TADBDataModule(Adb_DM).CL134Coll.Items[iCL134].IndexAnsiStr1 = lstPR001[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Activity_ID)) then
+      if CL134Coll.Items[iCL134].IndexAnsiStr1 = PR001Coll.getAnsiStringMap(lstPR001[iPR001].DataPos, word(PR001_Activity_ID)) then
       begin
         //if Cl132. then
 
-        cl133Str := TADBDataModule(Adb_DM).CL134Coll.Items[iCL134].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(CL134_CL133));
+        cl133Str := CL134Coll.getAnsiStringMap(CL134Coll.Items[iCL134].DataPos, word(CL134_CL133));
         lstPR001[iPR001].CL133 := TCL133(StrToInt(cl133Str));
         lstPR001[iPR001].LstCl134.Add(TADBDataModule(Adb_DM).CL134Coll.Items[iCL134]);
 
         inc(iCL134);
       end
       else
-      if TADBDataModule(Adb_DM).CL134Coll.Items[iCL134].IndexAnsiStr1 < lstPR001[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Activity_ID)) then
+      if CL134Coll.Items[iCL134].IndexAnsiStr1 < PR001Coll.getAnsiStringMap(lstPR001[iPR001].DataPos, word(PR001_Activity_ID)) then
       begin
         inc(iCL134);
       end
       else
-      if TADBDataModule(Adb_DM).CL134Coll.Items[iCL134].IndexAnsiStr1 > lstPR001[iPR001].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Activity_ID)) then
+      if CL134Coll.Items[iCL134].IndexAnsiStr1 > PR001Coll.getAnsiStringMap(lstPR001[iPR001].DataPos, word(PR001_Activity_ID)) then
       begin
         inc(iPR001);
       end
@@ -457,9 +472,19 @@ var
   gr: TGraphPeriod132;
   pat: TRealPatientNewItem;
   preg: TRealPregledNewItem;
-  pr001, pr001Temp: TRealPR001Item;
+
+  CL132Coll: TRealCL132Coll;
+  PR001Coll: TRealPR001Coll;
+  CL134Coll: TRealCL134Coll;
+  patColl: TRealPatientNewColl;
 
 begin
+  CL132Coll := TADBDataModule(Adb_DM).CL132Coll;
+  PR001Coll := TADBDataModule(Adb_DM).PR001Coll;
+  CL134Coll := TADBDataModule(Adb_DM).CL134Coll;
+  patColl := TADBDataModule(Adb_DM).CollPatient;
+
+
   if not isFilled then
   begin
     FillCl144InCL142;
@@ -468,27 +493,26 @@ begin
     FillPr001InCl132;
     FillCL134;
     isFilled := True;
-    TADBDataModule(Adb_DM).CL132Coll.SortByDataPos;
-    TADBDataModule(Adb_DM).PR001Coll.sortByCl134(TADBDataModule(Adb_DM).CL134Coll);
+    CL132Coll.SortByDataPos;
+    PR001Coll.sortByCl134(CL134Coll);
   end;
   Stopwatch := TStopwatch.StartNew;
 
   pat := TRealPatientNewItem(Apat);
-  //gr := TGraphPeriod132.Create;
   startMin := 0;
   currentMin := 0;
   startMax := 0;
   currentMax := 0;
   maxYear := 120;
   StartNzisData := EncodeDate(1821, 01, 01);
-  BrthDate := pat.getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PatientNew_BIRTH_DATE));
+  BrthDate := patColl.getDateMap(pat.DataPos, word(PatientNew_BIRTH_DATE));
   maxLive := DatStrToDays(BrthDate, '120 year');
-  for i := 0 to TADBDataModule(Adb_DM).CL132Coll.Count - 1 do
+  for i := 0 to CL132Coll.Count - 1 do
   begin
-    cl132i := TADBDataModule(Adb_DM).CL132Coll.Items[i];
+    cl132i := CL132Coll.Items[i];
     if FSexMale then
     begin
-      if (cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Gender))[1]  = 'f') then
+      if (CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Gender))[1]  = 'f') then
       begin
         //Caption := 'ffff';
         Continue;
@@ -496,19 +520,17 @@ begin
     end
     else
     begin
-      if (cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Gender))[1]  = 'm') then
+      if (CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Gender))[1]  = 'm') then
       begin
         //Caption := 'mmmm';
         Continue;
       end;
     end;
 
-    datStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Age)); //измислили са датите да са в някаква странна форма
-    Graph :=  cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Description));
-    Key :=  cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
-
-    pr001 := cl132i.FListPr001[0];  //zzzzzzzzzzzzzz  защо па само първото
-    egn := pat.getAnsiStringMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PatientNew_EGN));
+    datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_min_age)); //измислили са датите да са в някаква странна форма
+    Graph :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Description));
+    Key :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Key));
+    egn := patColl.getAnsiStringMap(pat.DataPos, word(PatientNew_EGN));
     if (egn = '0052120125') and (Key = 'V17') then
       egn := '0052120125';  // за тестови цели. спирам си тук да видя какво става при такаова нещо
 
@@ -518,18 +540,18 @@ begin
       currentMin := DatStrToDays(CurrDate, datStr);
     end;
 
-    if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then  //при настъпване на 01.01. в годината, на която навършва възрастта
+    if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then  //при настъпване на 01.01. в годината, на която навършва възрастта
     begin
       currentMin := StartOfAYear(YearOf(currentMin));
     end;
-    datStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Max_Age));
+    datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Max_Age));
     if (datStr <> '') and (Key <> 'V16') then  //  има крайна дата и не е V16. V16  е различно от другите, защото може да се направи във всеки момент от 17 до 25-тата година
     begin
-      repStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Repeat_Every_x_Years));
+      repStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_repeat_years));
       if repStr <> '' then  // има повторение
       begin
         rep := StrToInt(repStr);
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping)) <> '3' then  // да не е ваксина.
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // да не е ваксина.
         begin
           currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), rep)));
         end
@@ -540,7 +562,7 @@ begin
         maxYear := DatStrToDays(CurrDate, datStr)- 1;
 
         gr.startDate := currentMin;
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           gr.endDate := currentMax;
         end
@@ -561,13 +583,13 @@ begin
           gr.endDate := currentMax;
           gr.repNumber := gr.repNumber + 1;
 
-          if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
           begin
             currentMax := EndOfAYear(YearOf(currentMax - 1) );
           end;
 
           gr.startDate := currentMin;
-          if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
           begin
             gr.endDate := currentMax;
           end
@@ -585,7 +607,7 @@ begin
       else  // не се повтарят
       begin
         currentMax := DatStrToDays(BrthDate, datStr);
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           currentMax := EndOfAYear(YearOf(currentMax - 1) );
           if Key = 'J17' then
@@ -595,7 +617,7 @@ begin
         end;
 
         gr.startDate := currentMin;
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           gr.endDate := currentMax;
         end
@@ -611,11 +633,11 @@ begin
     end
     else // няма крайна дата, но може да има, а да е ваксина V16
     begin
-      repStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Repeat_Every_x_Years));
+      repStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_repeat_years));
       if repStr <> '' then
       begin
         rep := StrToInt(repStr);
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping)) <> '3' then  // да не е ваксина.
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136)) <> '3' then  // да не е ваксина.
         begin
           currentMax := endOfAYear(YearOf(IncYear((currentMin - 1), rep)));
         end
@@ -631,7 +653,7 @@ begin
           end;
         end;
         gr.startDate := currentMin;
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           gr.endDate := currentMax;
         end
@@ -662,7 +684,7 @@ begin
           currentMin := IncYear(currentMin, rep);
           currentMax := IncYear(currentMax, rep);
           gr.startDate := currentMin;
-          if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+          if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
           begin
             gr.endDate := currentMax;
           end
@@ -671,7 +693,7 @@ begin
             gr.endDate := currentMax - 1;
           end;
           gr.repNumber := gr.repNumber + 1;
-          case cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping))[1] of
+          case CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136))[1] of
             '1': // преглед
             begin
               for k := 0 to pat.FPregledi.Count - 1 do
@@ -699,13 +721,13 @@ begin
       else
       begin
         currentMax := DatStrToDays(BrthDate, '24 years');
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           currentMax := EndOfAYear(YearOf(currentMax - 1) );
         end;
 
         gr.startDate := currentMin;
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
+        if CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Event_Trigger))[1] = 'п' then
         begin
           gr.endDate := currentMax;
         end
@@ -722,305 +744,6 @@ begin
   end;
   Elapsed := Stopwatch.Elapsed;
   gr.Cl132.test := ( 'rrrr ' + FloatToStr(Elapsed.TotalMilliseconds));
-end;
-
-procedure TProfGraph.GeneratePeriodOld(Apat: TObject);
-var
-  i, j, k, m: Integer;
-  cl132i: TRealCL132Item;
-
-  datStr, repStr: string;
-  datTemp: TDate;
-  startMin, startMax, currentMin, currentMax: TDate;
-  rep: Integer;
-  maxLive, maxYear: TDate;
-  Graph, Key, egn: string;
-  gr: TGraphPeriod132;
-  pat: TRealPatientNewItem;
-  preg: TRealPregledNewItem;
-  pr001, pr001Temp: TRealPR001Item;
-
-
-
-begin
-  if not isFilled then
-  begin
-    //FillCl050;
-    FillCl144InCL142;
-    FillCl088InCL142;
-    FillCl142InPr001;
-    FillPr001InCl132;
-    FillCL134;
-    isFilled := True;
-    TADBDataModule(Adb_DM).CL132Coll.SortByDataPos;
-    TADBDataModule(Adb_DM).PR001Coll.sortByCl134(TADBDataModule(Adb_DM).CL134Coll);
-  end;
-
-  pat := TRealPatientNewItem(Apat);
-  startMin := 0;
-  currentMin := 0;
-  startMax := 0;
-  currentMax := 0;
-  maxYear := 120;
-  //CurrDate := dtp1.Date; //EncodeDate(2024, 02, 24); //24.07.1985
-  maxLive := DatStrToDays(CurrDate, '120 year');
-
-  //examAnal := TRealExamAnalysisItem.Create(nil);
-
-  for i := 0 to TADBDataModule(Adb_DM).CL132Coll.Count - 1 do
-  begin
-    cl132i := TADBDataModule(Adb_DM).CL132Coll.Items[i];
-    if FSexMale then
-    begin
-      if (cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Gender))[1]  = 'f') then
-      begin
-        //Caption := 'ffff';
-        Continue;
-      end;
-    end
-    else
-    begin
-      if (cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Gender))[1]  = 'm') then
-      begin
-        //Caption := 'mmmm';
-        Continue;
-      end;
-    end;
-
-    datStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Age));
-    Graph :=  cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Description));
-
-    Key :=  cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
-
-    pr001 := cl132i.FListPr001[0];
-   // egn := pr001.getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Description));
-    egn := pat.getAnsiStringMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PatientNew_EGN));
-    if (egn = '0143070030') and (Key = 'V16') then
-      egn := '0143070030';
-
-    currentMin := cl132i.StartDate;
-    if currentMin = 0 then
-    begin
-      currentMin := DatStrToDays(CurrDate, datStr);
-    end;
-
-    if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
-    begin
-      currentMin := StartOfAYear(YearOf(currentMin));
-    end;
-    datStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Max_Age));
-    if (datStr <> '') and (datStr <> 'Recurring +1Y') then  //  има крайна дата
-    begin
-      repStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Repeat_Every_x_Years));
-      if repStr <> '' then
-      begin
-        rep := StrToInt(repStr);
-        currentMax := endOfAYear(YearOf(IncYear((currentMin - rep), 1)));
-        maxYear := DatStrToDays(CurrDate, datStr)- 1;
-        while currentMax < maxYear do // до максималните години по номенклатурата
-        begin
-          currentMin := IncYear(currentMin, rep);
-          currentMax := IncYear(currentMax, rep);
-          gr.startDate := currentMin;
-          gr.endDate := currentMax;
-          gr.repNumber := 0;
-          //case cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] of
-//            '1': // преглед
-//            begin
-//              for k := 0 to pat.FPregledi.Count - 1 do
-//              begin
-//                preg := pat.FPregledi[k];
-//                datTemp := preg.getDateMap(bufADB, posDataADB, word(PregledNew_START_DATE));
-//                if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-//                begin
-//                  if preg.Cl132 = nil then
-//                  begin
-//                    preg.Cl132 := cl132i;
-//                    break;
-//                  end;
-//                end;
-//              end;
-//            end;
-//
-//          end;
-          if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
-          begin
-            currentMax := EndOfAYear(YearOf(currentMax - 1) );
-          end;
-
-          gr.startDate := currentMin;
-          gr.endDate := currentMax;
-
-          //if not NzisPregNotPreg.Contains(Key) then
-//          begin
-//            if (cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] = '1') then
-//            begin
-//              for k := 0 to pat.FPregledi.Count - 1 do
-//              begin
-//                preg := pat.FPregledi[k];
-//                datTemp := preg.getDateMap(bufADB, posDataADB, word(PregledNew_START_DATE));
-//                if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-//                begin
-//                  if preg.Cl132 = nil then
-//                  begin
-//                    preg.Cl132 := cl132i;
-//                    break;
-//                  end;
-//                end;
-//              end;
-//            end;
-//          end;
-          gr.Cl132 := cl132i;
-          //if gr.startDate > EncodeDate(2021, 01, 01) then
-          pat.lstGraph.Add(gr);
-        end;
-
-      end  // ne se powtarqt
-      else
-      begin
-        currentMax := DatStrToDays(CurrDate, datStr)- 1;
-        if cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Event_Trigger))[1] = 'п' then
-        begin
-          currentMax := EndOfAYear(YearOf(currentMax - 1) );
-        end;
-
-        gr.startDate := currentMin;
-        gr.endDate := currentMax;
-        gr.repNumber := -1;
-        if not NzisPregNotPreg.Contains('|' + Key + '|') then
-        begin
-          //if (cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] = '1') then
-//          begin
-//            for k := 0 to pat.FPregledi.Count - 1 do
-//            begin
-//              preg := pat.FPregledi[k];
-//              datTemp := preg.getDateMap(bufADB, posDataADB, word(PregledNew_START_DATE));
-//              if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-//              begin
-//                if preg.Cl132 = nil then
-//                begin
-//                  preg.Cl132 := cl132i;
-//                  break;
-//                end;
-//              end;
-//            end;
-//          end;
-        end;
-        gr.Cl132 := cl132i;
-        //if gr.startDate > EncodeDate(2021, 01, 01) then
-        pat.lstGraph.Add(gr);
-      end;
-
-
-
-
-
-      //mmoDDL.Lines.Add(key + '  ' + DateToStr(currentMin) + ' - ' + DateToStr(currentMax) + ' : ' + Graph);
-    end
-    else // няма крайна дата
-    begin
-      repStr := cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Repeat_Every_x_Years));
-      if repStr <> '' then
-      begin
-        rep := StrToInt(repStr);
-      end
-      else
-      begin
-        rep := 10;
-      end;
-      currentMax := endOfAYear(YearOf(IncYear((currentMin - rep), 1))); //zzzzz
-
-      gr.startDate := currentMin;
-      gr.endDate := currentMax;
-      //if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] = '1' then
-      //for k := 0 to pat.FPregledi.Count - 1 do
-//      begin
-//        preg := pat.FPregledi[k];
-//        datTemp := preg.getDateMap(bufADB, posDataADB, word(PregledNew_START_DATE));
-//        if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-//        begin
-//          if preg.Cl132 = nil then
-//          begin
-//            preg.Cl132 := cl132i;
-//            break;
-//          end;
-//        end;
-//      end;
-      gr.Cl132 := cl132i;
-      //gr.startDate
-//      gr.endDate
-     //if gr.startDate > EncodeDate(2021, 01, 01) then
-        pat.lstGraph.Add(gr);
-      //mmoDDL.Lines.Add(key + '  ' + DateToStr(currentMin) + ' - ' + DateToStr(currentMax) + ' : ' + Graph);
-      while currentMax < maxLive do
-      begin
-        currentMin := IncYear(currentMin, rep);
-        currentMax := IncYear(currentMax, rep);
-        //currentMax := endOfAYear(YearOf(currentMin));
-        gr.startDate := currentMin;
-        gr.endDate := currentMax;
-        gr.repNumber := gr.repNumber + 1;
-       // if cl132i.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping))[1] = '1' then //
-        case cl132i.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping))[1] of
-          '1': // преглед
-          begin
-            for k := 0 to pat.FPregledi.Count - 1 do
-            begin
-              preg := pat.FPregledi[k];
-              datTemp := preg.getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PregledNew_START_DATE));
-              if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-              begin
-                if preg.Cl132 = nil then
-                begin
-                  preg.Cl132 := cl132i;
-                  break;
-                end;
-              end;
-            end;
-          end;
-          //'2': // изследване
-//          begin
-//            for k := 0 to adbDM.PatNodes.ExamAnals.Count - 1 do
-//            begin
-//              NodeExamAnal := adbDM.PatNodes.ExamAnals[k];
-//              dataExamAnal := pointer(PByte(NodeExamAnal) + lenNode);
-//              examAnal.DataPos := dataExamAnal.DataPos;
-//              cl22ExamAnal := examAnal.getAnsiStringMap(bufADB, posDataADB, word(ExamAnalysis_NZIS_CODE_CL22));
-//              datTemp := examAnal.getDateMap(bufADB, posDataADB, word(ExamAnalysis_DATA));
-//              for m := 0 to cl132i.FListPr001.Count - 1 do
-//              begin
-//                cl22Pr1 := cl132i.FListPr001[m].getAnsiStringMap(BufNomen, PR001Coll.posData, word(PR001_Activity_ID));
-//
-//                if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-//                begin
-//
-//
-//                  if cl22Pr1 = cl22ExamAnal then
-//                  begin
-//                    if examAnal.Cl132 = nil then
-//                    begin
-//                      examAnal.Cl132 := cl132i;
-//                    end;
-//                  end;
-//
-//                end;
-//              end;
-//
-//            end;
-//          end;
-        end;
-
-        gr.Cl132 := cl132i;
-        //if gr.startDate > EncodeDate(2021, 01, 01) then
-        pat.lstGraph.Add(gr); // няма крайна дата и се повтаря до края на живота
-        //mmoDDL.Lines.Add(key + '  ' + DateToStr(currentMin) + ' - ' + DateToStr(currentMax) + ' : ' + Graph);
-      end;
-    end;
-
-  end;
-  //Elapsed := Stopwatch.Elapsed;
-  //mmoDDL.Lines.Add( 'genGraph ' + FloatToStr(Elapsed.TotalMilliseconds));
-  //mmoDDL.Lines.EndUpdate;
 end;
 
 procedure TProfGraph.LoadVtrGraph(Apat: TObject; patIndex: Integer);
@@ -1047,8 +770,10 @@ var
   NodeExamAnal: PVirtualNode;
   cl22Pr1, cl22ExamAnal: string;
   PatNodes: TPatNodes;
+  BufNomen: Pointer;
 begin
   adbDM := TADBDataModule(Adb_DM);
+  BufNomen := adbDM.AdbNomenNzis.Buf;
 
 
   vtrGraph.BeginUpdate;
@@ -1120,7 +845,7 @@ begin
       data := vtrGraph.GetNodeData(vCl132);
 
       //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
-      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping))[1]  of
+      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
         '1': //ако е тип преглед
         begin
           gr.Cl132.FPregled := nil;
@@ -1366,9 +1091,11 @@ var
   NodeExamAnal: PVirtualNode;
   cl22Pr1, cl22ExamAnal: string;
   PatNodes: TPatNodes;
+  BufNomen: Pointer;
 begin
-
   adbDM := TADBDataModule(Adb_DM);
+  BufNomen := adbDM.AdbNomenNzis.Buf;
+
 
  // vtrGraph.BeginUpdate;
   IsPregForPerform := False;
@@ -1438,7 +1165,7 @@ begin
       data := vtrGraph.GetNodeData(vCl132);
 
       //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
-      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping))[1]  of
+      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
         '1': //ако е тип преглед
         begin
           gr.Cl132.FPregled := nil;
@@ -1687,8 +1414,10 @@ var
   cl22Pr1, cl22ExamAnal: string;
   PatNodes: TPatNodes;
   dataNast_DataPos: Cardinal;
+  BufNomen: Pointer;
 begin
   adbDM := TADBDataModule(Adb_DM);
+  BufNomen := adbDM.AdbNomenNzis.Buf;
 
 
   //vtrGraph.BeginUpdate;
@@ -1757,7 +1486,7 @@ begin
       //vCl132 := vtrGraph.AddChild(vNast, nil);
       //data := vtrGraph.GetNodeData(vCl132);
 
-      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_CL136_Mapping))[1]  of
+      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
         '1': //ако е тип преглед
         begin
           gr.Cl132.FPregled := nil;
@@ -1959,7 +1688,9 @@ end;
 function TProfGraph.RuleCl132_PR001(cl132, pr001: TObject): boolean;
 var
   pr1Nomen: string;
+  BufNomen: Pointer;
 begin
+  BufNomen := TADBDataModule(Adb_DM).AdbNomenNzis.Buf;
   Result := True;
   pr1Nomen := TRealPR001Item(pr001).getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Nomenclature));
   if (TRealCl132Item(cl132).IndexAnsiStr1 = 'C22') and (pr1Nomen = 'CL133')then

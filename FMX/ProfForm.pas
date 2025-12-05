@@ -1067,7 +1067,7 @@ type
   property profGR: TProfGraph read FprofGR write FprofGR;
 
 
-  property NasMesto: TRealNasMestoAspects read FNasMesto write FNasMesto;
+  //property NasMesto: TRealNasMestoAspects read FNasMesto write FNasMesto;
   //property ExHeightBlanka: Single read FExHeightBlanka write FExHeightBlanka;
   property MaxRightLytHeight: Single read FMaxRightLytHeight write FMaxRightLytHeight;
   property IsVtrPregled: Boolean read FIsVtrPregled write FIsVtrPregled;
@@ -2321,7 +2321,7 @@ begin
       TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минал е %d ден от края на плана)',[startDate, endDate, -delta]);
     end;
   end;
-  case Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_CL136_Mapping))[1] of
+  case Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_cl136))[1] of
     '1':
     begin//'|' + cl132Key + '|'
       if NzisPregNotPreg.Contains('|' + Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Key)) + '|') then
@@ -7019,7 +7019,7 @@ begin
         plan.StartDate := Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_StartDate));
         plan.CL132Pos := Adb_dm.CollNZIS_PLANNED_TYPE.getCardMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_DataPos));
         plan.CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataCL132.DataPos, Word(NZIS_PLANNED_TYPE_CL132_KEY));
-        plan.Cl136 := StrToInt(Adb_dm.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_CL136_Mapping)));
+        plan.Cl136 := StrToInt(Adb_dm.Cl132Coll.getAnsiStringMap(plan.CL132Pos, word(CL132_cl136)));
         plan.Node := RunPlanedType;
         ListPlaneds.Add(plan);
       end;
@@ -8073,11 +8073,11 @@ begin
   if patNodes.addresses.Count > 0 then
   begin
     data := Pointer(pbyte(patNodes.addresses[0]) + lenNode);
-    AddresLinkPos := NasMesto.addresColl.getIntMap(data.DataPos, word(Addres_LinkPos));
-    nasMest := NasMesto.FindNasMestFromDataPos(AddresLinkPos);
+    AddresLinkPos := adb_dm.NasMesto.addresColl.getIntMap(data.DataPos, word(Addres_LinkPos));
+    nasMest := adb_dm.NasMesto.FindNasMestFromDataPos(AddresLinkPos);
     if nasMest <> nil then
     begin
-      lblAddres.Text := NasMesto.OblColl.getAnsiStringMap(nasMest.FObl.DataPos, word(Oblast_OblastName))
+      lblAddres.Text := adb_dm.NasMesto.OblColl.getAnsiStringMap(nasMest.FObl.DataPos, word(Oblast_OblastName))
 
       //nasMest.Node := nil;
     end;
@@ -11558,7 +11558,7 @@ begin
   dataPlan := Pointer(PByte(nodePlan) + lenNode);
   cl132Key := ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
   cl132pos := ADB_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-  cl136Key := ADB_DM.Cl132Coll.getAnsiStringMap(cl132pos, word(CL132_CL136_Mapping));
+  cl136Key := ADB_DM.Cl132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
 
   if nodePlan.CheckState <> csUncheckedNormal then
   begin
@@ -12141,8 +12141,8 @@ begin
   if patNodes.addresses.Count > 0 then
   begin
     data := Pointer(pbyte(patNodes.addresses[0]) + lenNode);
-    AddresLinkPos := NasMesto.addresColl.getIntMap(data.DataPos, word(Addres_LinkPos));
-    txtRczR.Text := 'РЗОК №| здр. район ' + NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
+    AddresLinkPos := adb_dm.NasMesto.addresColl.getIntMap(data.DataPos, word(Addres_LinkPos));
+    txtRczR.Text := 'РЗОК №| здр. район ' + adb_dm.NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
 
   end
   else
