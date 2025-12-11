@@ -1,5 +1,5 @@
 unit ADB_DataUnit;
-        //plannedType  pregNodes   zzz
+        //plannedType  pregNodes   zzzz
 interface
 uses
   System.Classes, system.IniFiles, system.SysUtils, Winapi.Windows, Vcl.Forms,
