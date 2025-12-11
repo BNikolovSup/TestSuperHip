@@ -566,7 +566,7 @@ public
   FImmuns: TList<TRealExamImmunizationItem>;
   FProfCards: TList<TRealKARTA_PROFILAKTIKA2017Item>;
 
-  // нзис-ки работи
+  // РЅР·РёСЃ-РєРё СЂР°Р±РѕС‚Рё
   ListNZIS_PLANNED_TYPEs: TList<TRealNZIS_PLANNED_TYPEItem>;
 
   Fpatient: TRealPatientNewItem;
@@ -1511,30 +1511,30 @@ end;
 function TRealPregledNewColl.DisplayName(propIndex: Word): string;
 begin
   case TPregledNewItem.TPropertyIndex(propIndex) of
-    PregledNew_AMB_LISTN: Result := 'Номер на АЛ';
-    PregledNew_ANAMN: Result := 'Анамнеза';
+    PregledNew_AMB_LISTN: Result := 'РќРѕРјРµСЂ РЅР° РђР›';
+    PregledNew_ANAMN: Result := 'РђРЅР°РјРЅРµР·Р°';
     PregledNew_COPIED_FROM_NRN: Result := 'COPIED_FROM_NRN';
-    PregledNew_GS: Result := 'Гестационна седмица';
-    PregledNew_ID: Result := 'ID-пореден номер';
-    PregledNew_IZSL: Result := 'Изследвания';
+    PregledNew_GS: Result := 'Р“РµСЃС‚Р°С†РёРѕРЅРЅР° СЃРµРґРјРёС†Р°';
+    PregledNew_ID: Result := 'ID-РїРѕСЂРµРґРµРЅ РЅРѕРјРµСЂ';
+    PregledNew_IZSL: Result := 'РР·СЃР»РµРґРІР°РЅРёСЏ';
     PregledNew_MEDTRANSKM: Result := 'MEDTRANSKM';
-    PregledNew_NAPRAVLENIE_AMBL_NOMER: Result := 'Номер на АЛ в направлението';
-    PregledNew_NAPR_TYPE_ID: Result := 'Тип на направлението';
-    PregledNew_NOMERBELEGKA: Result := 'Номер на касова бележка';
-    PregledNew_NOMERKASHAPARAT: Result := 'Номер на касов апарат';
-    PregledNew_NRD: Result := 'НРД';
-    PregledNew_NRN_LRN: Result := 'НРН';
-    PregledNew_NZIS_STATUS: Result := 'Статус в НЗИС';
+    PregledNew_NAPRAVLENIE_AMBL_NOMER: Result := 'РќРѕРјРµСЂ РЅР° РђР› РІ РЅР°РїСЂР°РІР»РµРЅРёРµС‚Рѕ';
+    PregledNew_NAPR_TYPE_ID: Result := 'РўРёРї РЅР° РЅР°РїСЂР°РІР»РµРЅРёРµС‚Рѕ';
+    PregledNew_NOMERBELEGKA: Result := 'РќРѕРјРµСЂ РЅР° РєР°СЃРѕРІР° Р±РµР»РµР¶РєР°';
+    PregledNew_NOMERKASHAPARAT: Result := 'РќРѕРјРµСЂ РЅР° РєР°СЃРѕРІ Р°РїР°СЂР°С‚';
+    PregledNew_NRD: Result := 'РќР Р”';
+    PregledNew_NRN_LRN: Result := 'РќР Рќ';
+    PregledNew_NZIS_STATUS: Result := 'РЎС‚Р°С‚СѓСЃ РІ РќР—РРЎ';
     PregledNew_OBSHTAPR: Result := 'OBSHTAPR';
     PregledNew_PATIENTOF_NEOTL: Result := 'PATIENTOF_NEOTL';
     PregledNew_PATIENTOF_NEOTLID: Result := 'PATIENTOF_NEOTLID';
-    PregledNew_PREVENTIVE_TYPE: Result := 'Вид профилактика';
+    PregledNew_PREVENTIVE_TYPE: Result := 'Р’РёРґ РїСЂРѕС„РёР»Р°РєС‚РёРєР°';
     PregledNew_REH_FINISHED_AT: Result := 'REH_FINISHED_AT';
-    PregledNew_START_DATE: Result := 'Дата на прегледа';
-    PregledNew_START_TIME: Result := 'Час на прегледа';
-    PregledNew_SYST: Result := 'Обективно състояние';
+    PregledNew_START_DATE: Result := 'Р”Р°С‚Р° РЅР° РїСЂРµРіР»РµРґР°';
+    PregledNew_START_TIME: Result := 'Р§Р°СЃ РЅР° РїСЂРµРіР»РµРґР°';
+    PregledNew_SYST: Result := 'РћР±РµРєС‚РёРІРЅРѕ СЃСЉСЃС‚РѕСЏРЅРёРµ';
     PregledNew_TALON_LKK: Result := 'TALON_LKK';
-    PregledNew_TERAPY: Result := 'Терапия';
+    PregledNew_TERAPY: Result := 'РўРµСЂР°РїРёСЏ';
     PregledNew_THREAD_IDS: Result := 'THREAD_IDS';
     PregledNew_VISIT_ID: Result := 'VISIT_ID';
     PregledNew_VISIT_TYPE_ID: Result := 'VISIT_TYPE_ID';
@@ -2358,7 +2358,7 @@ begin
   FExamAnals := TList<TRealExamAnalysisItem>.Create;;
   FClonings := TList<TRealPatientNewItem>.Create;
   FIsAdded := False;
-  FNoteProf := 'Няма неизвършени дейности по профилактиката.';
+  FNoteProf := 'РќСЏРјР° РЅРµРёР·РІСЉСЂС€РµРЅРё РґРµР№РЅРѕСЃС‚Рё РїРѕ РїСЂРѕС„РёР»Р°РєС‚РёРєР°С‚Р°.';
   lstGraph := TList<TGraphPeriod132>.Create;
   FListCurrentProf := TList<TGraphPeriod132>.Create;
   CurrentGraphIndex := -1;
@@ -2472,7 +2472,7 @@ begin
   ;
 
   FclcFinancingSource := fsNHIF;
-  //if TLogicalPregledNew.pay in log then FclcFinancingSource := fsNHIF  // zzzzzzzzzzzzzzzzzz има още
+  //if TLogicalPregledNew.pay in log then FclcFinancingSource := fsNHIF  // zzzzzzzzzzzzzzzzzz РёРјР° РѕС‰Рµ
   //else FclcFinancingSource := fsPatient;
 
 end;
@@ -2626,13 +2626,13 @@ var
 begin
   if Value = '' then
     exit;
-  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Глобална колекция за процедурите
-  FPROCEDURE2_MKB := Value.Split(['|'])[0]; // само кода на процедурата
-  Proc := TRealProceduresItem(procColl.Add); // само го добавям без да се записва
+  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Р“Р»РѕР±Р°Р»РЅР° РєРѕР»РµРєС†РёСЏ Р·Р° РїСЂРѕС†РµРґСѓСЂРёС‚Рµ
+  FPROCEDURE2_MKB := Value.Split(['|'])[0]; // СЃР°РјРѕ РєРѕРґР° РЅР° РїСЂРѕС†РµРґСѓСЂР°С‚Р°
+  Proc := TRealProceduresItem(procColl.Add); // СЃР°РјРѕ РіРѕ РґРѕР±Р°РІСЏРј Р±РµР· РґР° СЃРµ Р·Р°РїРёСЃРІР°
   Proc.FPregled := Self;
- // Self.FProcedures.Add(Proc); //всеки преглед да си има списък с процедури
+ // Self.FProcedures.Add(Proc); //РІСЃРµРєРё РїСЂРµРіР»РµРґ РґР° СЃРё РёРјР° СЃРїРёСЃСЉРє СЃ РїСЂРѕС†РµРґСѓСЂРё
 
-  Proc.FCodeOpis := Value;// тука е и описанието за мапване
+  Proc.FCodeOpis := Value;// С‚СѓРєР° Рµ Рё РѕРїРёСЃР°РЅРёРµС‚Рѕ Р·Р° РјР°РїРІР°РЅРµ
 end;
 
 procedure TRealPregledNewItem.SetPROCEDURE3_MKB(const Value: string);
@@ -2642,13 +2642,13 @@ var
 begin
   if Value = '' then
     exit;
-  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Глобална колекция за процедурите
-  FPROCEDURE3_MKB := Value.Split(['|'])[0]; // само кода на процедурата
-  Proc := TRealProceduresItem(procColl.Add); // само го добавям без да се записва
+  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Р“Р»РѕР±Р°Р»РЅР° РєРѕР»РµРєС†РёСЏ Р·Р° РїСЂРѕС†РµРґСѓСЂРёС‚Рµ
+  FPROCEDURE3_MKB := Value.Split(['|'])[0]; // СЃР°РјРѕ РєРѕРґР° РЅР° РїСЂРѕС†РµРґСѓСЂР°С‚Р°
+  Proc := TRealProceduresItem(procColl.Add); // СЃР°РјРѕ РіРѕ РґРѕР±Р°РІСЏРј Р±РµР· РґР° СЃРµ Р·Р°РїРёСЃРІР°
   Proc.FPregled := Self;
-  //Self.FProcedures.Add(Proc); //всеки преглед да си има списък с процедури
+  //Self.FProcedures.Add(Proc); //РІСЃРµРєРё РїСЂРµРіР»РµРґ РґР° СЃРё РёРјР° СЃРїРёСЃСЉРє СЃ РїСЂРѕС†РµРґСѓСЂРё
 
-  Proc.FCodeOpis := Value;// тука е и описанието за мапване
+  Proc.FCodeOpis := Value;// С‚СѓРєР° Рµ Рё РѕРїРёСЃР°РЅРёРµС‚Рѕ Р·Р° РјР°РїРІР°РЅРµ
 end;
 
 procedure TRealPregledNewItem.SetPROCEDURE4_MKB(const Value: string);
@@ -2658,13 +2658,13 @@ var
 begin
   if Value = '' then
     exit ;
-  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Глобална колекция за процедурите
-  FPROCEDURE4_MKB := Value.Split(['|'])[0]; // само кода на процедурата
-  Proc := TRealProceduresItem(procColl.Add); // само го добавям без да се записва
+  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Р“Р»РѕР±Р°Р»РЅР° РєРѕР»РµРєС†РёСЏ Р·Р° РїСЂРѕС†РµРґСѓСЂРёС‚Рµ
+  FPROCEDURE4_MKB := Value.Split(['|'])[0]; // СЃР°РјРѕ РєРѕРґР° РЅР° РїСЂРѕС†РµРґСѓСЂР°С‚Р°
+  Proc := TRealProceduresItem(procColl.Add); // СЃР°РјРѕ РіРѕ РґРѕР±Р°РІСЏРј Р±РµР· РґР° СЃРµ Р·Р°РїРёСЃРІР°
   Proc.FPregled := Self;
-  //Self.FProcedures.Add(Proc); //всеки преглед да си има списък с процедури
+  //Self.FProcedures.Add(Proc); //РІСЃРµРєРё РїСЂРµРіР»РµРґ РґР° СЃРё РёРјР° СЃРїРёСЃСЉРє СЃ РїСЂРѕС†РµРґСѓСЂРё
 
-  Proc.FCodeOpis := Value;// тука е и описанието за мапване
+  Proc.FCodeOpis := Value;// С‚СѓРєР° Рµ Рё РѕРїРёСЃР°РЅРёРµС‚Рѕ Р·Р° РјР°РїРІР°РЅРµ
 end;
 
 procedure TRealPregledNewItem.SetINCIDENTALLY(const Value: Boolean);
@@ -3155,13 +3155,13 @@ var
 begin
   if Value = '' then
     exit;
-  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Глобална колекция за процедурите
-  FPROCEDURE1_MKB := Value.Split(['|'])[0]; // само кода на процедурата
-  Proc := TRealProceduresItem(procColl.Add); // само го добавям без да се записва
+  procColl := TRealPregledNewColl(Collection).FCollProceduresPreg;// Р“Р»РѕР±Р°Р»РЅР° РєРѕР»РµРєС†РёСЏ Р·Р° РїСЂРѕС†РµРґСѓСЂРёС‚Рµ
+  FPROCEDURE1_MKB := Value.Split(['|'])[0]; // СЃР°РјРѕ РєРѕРґР° РЅР° РїСЂРѕС†РµРґСѓСЂР°С‚Р°
+  Proc := TRealProceduresItem(procColl.Add); // СЃР°РјРѕ РіРѕ РґРѕР±Р°РІСЏРј Р±РµР· РґР° СЃРµ Р·Р°РїРёСЃРІР°
   Proc.FPregled := Self;
-  //Self.FProcedures.Add(Proc); //всеки преглед да си има списък с процедури
+  //Self.FProcedures.Add(Proc); //РІСЃРµРєРё РїСЂРµРіР»РµРґ РґР° СЃРё РёРјР° СЃРїРёСЃСЉРє СЃ РїСЂРѕС†РµРґСѓСЂРё
 
-  Proc.FCodeOpis := Value;// тука е и описанието за мапване
+  Proc.FCodeOpis := Value;// С‚СѓРєР° Рµ Рё РѕРїРёСЃР°РЅРёРµС‚Рѕ Р·Р° РјР°РїРІР°РЅРµ
 end;
 
 procedure TRealPregledNewItem.SetTO_BE_DISPANSERED(const Value: Boolean);
@@ -6564,7 +6564,7 @@ begin
   case FVISIT_TYPE_ID of
     0:
     begin
-      Include(Self.PRecord.Logical, category_R2); // Направление за консултация
+      Include(Self.PRecord.Logical, category_R2); // РќР°РїСЂР°РІР»РµРЅРёРµ Р·Р° РєРѕРЅСЃСѓР»С‚Р°С†РёСЏ
       case FNAPR_TYPE_ID of
         1: Include(Self.PRecord.Logical, INC_MED_NAPR_Ostro);
         2: Include(Self.PRecord.Logical, INC_MED_NAPR_Hron);
@@ -6581,7 +6581,7 @@ begin
     end;
     1:
     begin
-      Include(Self.PRecord.Logical, category_R3); // Направление за високоспециализирани дейности
+      Include(Self.PRecord.Logical, category_R3); // РќР°РїСЂР°РІР»РµРЅРёРµ Р·Р° РІРёСЃРѕРєРѕСЃРїРµС†РёР°Р»РёР·РёСЂР°РЅРё РґРµР№РЅРѕСЃС‚Рё
       case FNAPR_TYPE_ID of
         1: Include(Self.PRecord.Logical, INC_MED_NAPR_Ostro);
         2: Include(Self.PRecord.Logical, INC_MED_NAPR_Hron);
