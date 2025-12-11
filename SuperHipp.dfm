@@ -284,7 +284,7 @@ object frmSuperHip: TfrmSuperHip
       Width = 437
       Height = 503
       Margins.Left = 82
-      ActivePage = tsNomenNzis
+      ActivePage = tsTreePat
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -497,7 +497,7 @@ object frmSuperHip: TfrmSuperHip
           TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
-          TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
+          TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView, toAlwaysSelectNode]
           OnAdvancedHeaderDraw = vtrPregledPatAdvancedHeaderDraw
           OnChange = vtrPreglediChange_Patients
           OnCollapsed = vtrPregledPatCollapsed
@@ -10103,7 +10103,6 @@ object frmSuperHip: TfrmSuperHip
                   OffsetIcon = 0
                   Description = #1048#1084#1087#1086#1088#1090' '#1086#1090' Firebird'
                   SubButtons = <>
-                  OnClick = SubButonImportFDBClick
                 end
                 item
                   MinValue = 0
@@ -10150,7 +10149,6 @@ object frmSuperHip: TfrmSuperHip
                   OffsetIcon = 0
                   Description = #1048#1084#1087#1086#1088#1090' '#1086#1090' Firebird'
                   SubButtons = <>
-                  OnClick = SubButonImportFDBClick
                 end
                 item
                   MinValue = 0
@@ -10428,7 +10426,7 @@ object frmSuperHip: TfrmSuperHip
       Top = 42
       Width = 1080
       Height = 325
-      ActivePage = tsGrid
+      ActivePage = tsTest
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -15990,7 +15988,6 @@ object frmSuperHip: TfrmSuperHip
     Top = 160
     Width = 1589
     Height = 2
-    UseSystemFont = False
     Caption = 'actmmb1'
     Color = clMenuBar
     ColorMap.DisabledFontColor = 7171437
@@ -15998,7 +15995,7 @@ object frmSuperHip: TfrmSuperHip
     ColorMap.BtnSelectedFont = clBlack
     ColorMap.UnusedColor = clWhite
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clBlack
+    Font.Color = clWindowText
     Font.Height = -13
     Font.Name = 'Segoe UI'
     Font.Style = []
@@ -40431,7 +40428,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C0101700088049C1510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010170008804A41510001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000D0010000010020000000000000D0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -44378,7 +44375,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 360
     Bitmap = {
-      494C010164006814581518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164006814601518001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000006000000070020000010020000000000000A8
       0300000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -52214,7 +52211,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 720
     Top = 296
     Bitmap = {
-      494C010106000800500118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010106000800580118001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000003000000001002000000000000048
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

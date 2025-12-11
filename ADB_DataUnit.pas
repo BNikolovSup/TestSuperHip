@@ -1,8 +1,8 @@
 unit ADB_DataUnit;
-        //plannedType
+        //plannedType  pregNodes
 interface
 uses
-  System.Classes, system.IniFiles, system.SysUtils, Winapi.Windows,
+  System.Classes, system.IniFiles, system.SysUtils, Winapi.Windows, Vcl.Forms,
   System.Rtti, system.DateUtils, Xml.XMLIntf, System.Math,
   System.Generics.Collections, Vcl.Dialogs, system.Diagnostics, System.TimeSpan,
   Aspects.Collections, Aspects.Types, VirtualStringTreeAspect, VirtualTrees,
@@ -78,7 +78,7 @@ uses
     DiagReps: TList<TDiagRep>;
     SourceAnsw: TSourceAnsw;
     incNaprNode: PVirtualNode;
-    ReqesterNode: PVirtualNode;
+    RequesterNode: PVirtualNode;
     log: string;
     constructor create;
     destructor destroy; override;
@@ -86,6 +86,7 @@ uses
     function getRhifAreaNumber(buf: pointer; posdata: cardinal): string;
     function GetNZISPidType(buf: pointer; posdata: cardinal): TNZISidentifierType;
     function GetNzisGender(buf: pointer; posdata: cardinal): TNzisGender;
+    procedure Clear;
   end;
 
   TPatNodes = class
@@ -96,13 +97,18 @@ uses
     diags: TList<PVirtualNode>;
     pregs: TList<PVirtualNode>;
     CollDiag: TRealDiagnosisColl;
+    lstGraph: TList<TGraphPeriod132>;
+    ListCurrentProf: TList<TGraphPeriod132>;
+    NoteProf: string;
+    CurrentGraphIndex: Integer;
 
     constructor create;
     destructor destroy; override;
 
     function GetNZISPidType(buf: pointer; posdata: cardinal): TNZISidentifierType;
-    function GetPrevProfPregled(dateNow: TDate; pregColl: TPregledNewColl; exceptPreg: TRealPregledNewItem = nil): Cardinal;
+    function GetPrevProfPregled(dateNow: TDate; pregColl: TPregledNewColl; exceptPregNode: PVirtualNode = nil): Cardinal;
     procedure SortDiag(SortIsAsc: Boolean);
+    procedure Clear;
   end;
 
   TNodesSendedToNzis = class
@@ -137,6 +143,10 @@ uses
     FAdbMainFileName: string;
     FAdbHipNomenFileName: string;
     FmmoTest: Tmemo;
+    FPregNodesBack: TPregledNodes;
+    FPatNodesBack: TPatNodes;
+    FPatNodesActive: TPatNodes;
+    FPregNodesActive: TPregledNodes;
     procedure SetAdbMain(const Value: TMappedFile);
     procedure SetAdbNomenHip(const Value: TMappedFile);
     procedure SetAdbNomenNzis(const Value: TMappedFile);
@@ -148,13 +158,11 @@ uses
     procedure SetAdbNzisNomenFileName(const Value: string);
     procedure SetAdbNzokNomenFileName(const Value: string);
     procedure SetAdbOptionFileName(const Value: string);
-    //FPatNodes: TPatNodes;
   protected
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
     ver: string;
-    streamCmdFile: TFileCmdStream;
-    StreamCmdFileTemp: TFileCmdStream;
+
 
     procedure AddTagToStream(XmlStream: TXmlStream;NameTag, ValueTag :string; amp: Boolean = true; Node: PVirtualNode = nil);
 
@@ -247,9 +255,11 @@ uses
     listLog: TStringList;
     lstColl: TList<TBaseCollection>;
     streamCmdFileNomenNzis: TFileCmdStream;
+    streamCmdFile: TFileCmdStream;
+    StreamCmdFileTemp: TFileCmdStream;
 
     //AdbMain: TMappedFile;
-    AdbLink: TMappedLinkFile;
+    //AdbLink: TMappedLinkFile;
     NasMesto: TRealNasMestoAspects;
     cmdFile: TFileStream;
     VtrMain: TVirtualStringTreeAspect;
@@ -266,9 +276,10 @@ uses
     //XmlStream: TXmlStream;
     constructor Create(AvtrNasMesto, AvtrAdb: TVirtualStringTreeAspect);
     destructor Destroy; override;
-    function GetPatNodes(PatNode: PVirtualNode): TPatNodes;
-    function GetPregNodes(PregNode: PVirtualNode): TPregledNodes;
+    function GetPatNodes(PatNode: PVirtualNode; OldPatNodes: TPatNodes = nil): TPatNodes;
+    function GetPregNodes(PregNode: PVirtualNode; OldPregNodes: TPregledNodes = nil): TPregledNodes;
     function GetURLFromMsgType(msgType: TNzisMsgType; IsTest: Boolean): string;
+    function GetNzisNomenCollectionFromID(id: Integer): TBaseCollection;
     procedure FillXmlStreamC001(XmlStream: TXmlStream; NomenID: string);
 
     procedure FillXmlStreamX001(XmlStream: TXmlStream; PregNode: PVirtualNode; var IndexInListSended: integer);
@@ -297,6 +308,11 @@ uses
     procedure initDB(FFDbName: string);
     procedure FindLNK(AGUID: TGUID);
     procedure FindADB(AGUID: TList<TGUID>);
+    procedure BuildPregNodes(node: PVirtualNode);
+    procedure BuildPatNodes(node: PVirtualNode);
+    procedure SwapNodesBuffers;
+
+    procedure ImportFDB;
 
     property patEgn: string read FPatEgn;
     property AdbMain: TMappedFile read FAdbMain write SetAdbMain; // адб на главните колекции
@@ -318,15 +334,19 @@ uses
     property AdbNzisNomenFileName: string read FAdbNzisNomenFileName write SetAdbNzisNomenFileName;
     property AdbHipNomenFileName: string read FAdbHipNomenFileName write SetAdbHipNomenFileName;
     property AdbNzokNomenFileName: string read FAdbNzokNomenFileName write SetAdbNzokNomenFileName;
+    // nodes
+    property PregNodesBack: TPregledNodes read FPregNodesBack;
+    property PatNodesBack: TPatNodes read FPatNodesBack;
 
-
+    property PregNodesActive: TPregledNodes read FPregNodesActive;
+    property PatNodesActive: TPatNodes read FPatNodesActive;
   end;
 
 
 implementation
 
 uses
-  system.IOUtils;
+  system.IOUtils, Aspects.Functions;
 
 function LibraryPath: String;
 var  lpBuffer:   Array [0..MAX_PATH] of wideChar;
@@ -407,11 +427,11 @@ begin
 
   if vPrevDiag = nil then
   begin
-    AdbLink.AddNewNode(vvDiag, diag.DataPos, vPreg, amAddChildLast, vDiag, linkpos);
+    FAdbMainLink.AddNewNode(vvDiag, diag.DataPos, vPreg, amAddChildLast, vDiag, linkpos);
   end
   else
   begin
-    AdbLink.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
+    FAdbMainLink.AddNewNode(vvDiag, diag.DataPos, vPrevDiag, amInsertAfter, vDiag, linkpos);
   end;
   diag.Node := vDiag;
 end;
@@ -441,7 +461,7 @@ begin
       Dispose(newIncMN.PRecord);
       newIncMN.PRecord := nil;
       Pat.FIncMNs[i].DataPos := newIncMN.DataPos;
-      AdbLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
+      FAdbMainLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
 
       if newIncMN.FIncDoctor.DataPos = 0 then
       begin
@@ -450,11 +470,11 @@ begin
         newIncDoctor.InsertOtherDoctor;
         Dispose(newIncDoctor.PRecord);
         newIncDoctor.PRecord := nil;
-        AdbLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+        FAdbMainLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
       end
       else
       begin
-        AdbLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+        FAdbMainLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
       end;
 
       for j := 0 to Pat.FIncMNs[i].FPregledi.Count - 1 do
@@ -484,7 +504,7 @@ begin
   Dispose(newPat.PRecord);
   newPat.PRecord := nil;
   Pat.DataPos := newPat.DataPos;
-  AdbLink.AddNewNode(vvPatient, newPat.DataPos, AdbLink.FVTR.RootNode.FirstChild, amAddChildFirst, patnode, linkPos);
+  FAdbMainLink.AddNewNode(vvPatient, newPat.DataPos, FAdbMainLink.FVTR.RootNode.FirstChild, amAddChildFirst, patnode, linkPos);
   Pat.FNode := patnode;
 
   newAddres := TRealAddresItem(NasMesto.addresColl.Add);
@@ -495,7 +515,7 @@ begin
   newAddres.InsertAddres;
   Dispose(newAddres.PRecord);
   newAddres.PRecord := nil;
-  AdbLink.AddNewNode(vvAddres, newAddres.DataPos, PatNode, amAddChildFirst, treeLink, linkPos);
+  FAdbMainLink.AddNewNode(vvAddres, newAddres.DataPos, PatNode, amAddChildFirst, treeLink, linkPos);
 
   for i := 0 to Pat.FIncMNs.Count - 1 do
   begin
@@ -508,7 +528,7 @@ begin
     Dispose(newIncMN.PRecord);
     newIncMN.PRecord := nil;
     Pat.FIncMNs[i].DataPos := newIncMN.DataPos;
-    AdbLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
+    FAdbMainLink.AddNewNode(vvIncMN, newIncMN.DataPos, Pat.FNode, amAddChildFirst, incMNNode, linkPos);
 
     if newIncMN.FIncDoctor.DataPos = 0 then
     begin
@@ -517,11 +537,11 @@ begin
       newIncDoctor.InsertOtherDoctor;
       Dispose(newIncDoctor.PRecord);
       newIncDoctor.PRecord := nil;
-      AdbLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+      FAdbMainLink.AddNewNode(vvOtherDoctor, newIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
     end
     else
     begin
-      AdbLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
+      FAdbMainLink.AddNewNode(vvOtherDoctor, newIncMN.FIncDoctor.DataPos, incMNNode, amAddChildFirst, IncDocNode, linkPos);
     end;
 
     for j := 0 to Pat.FIncMNs[i].FPregledi.Count - 1 do
@@ -567,8 +587,8 @@ begin
   Dispose(newPreg.PRecord);
   newPreg.PRecord := nil;
   OldPreg.DataPos := newPreg.DataPos;
-  AdbLink.AddNewNode(vvPregledNew, newPreg.DataPos, ParentNode, amAddChildFirst, pregNode, linkPos);
-  AdbLink.AddNewNode(vvPerformer, newPreg.FDoctor.DataPos, pregNode, amAddChildFirst, treeLink, linkPos);
+  FAdbMainLink.AddNewNode(vvPregledNew, newPreg.DataPos, ParentNode, amAddChildFirst, pregNode, linkPos);
+  FAdbMainLink.AddNewNode(vvPerformer, newPreg.FDoctor.DataPos, pregNode, amAddChildFirst, treeLink, linkPos);
 
   for i := 0 to OldPreg.FDiagnosis.Count - 1 do
   begin
@@ -589,7 +609,7 @@ begin
       newMdn.PRecord := nil;
       OldPreg.FMdns[i].DataPos := newMdn.DataPos;
 
-      AdbLink.AddNewNode(vvMDN, newMdn.DataPos, pregNode, amAddChildlast, mdnNode, linkPos);
+      FAdbMainLink.AddNewNode(vvMDN, newMdn.DataPos, pregNode, amAddChildlast, mdnNode, linkPos);
       newDiagMdn := TRealDiagnosisItem(CollDiag.Add); //OldPreg.FMdns[i].FDiagnosis[0];
       New(newDiagMdn.PRecord);
       newDiagMdn.PRecord.setProp := [Diagnosis_code_CL011];
@@ -597,7 +617,7 @@ begin
       newDiagMdn.InsertDiagnosis;
       Dispose(newDiagMdn.PRecord);
       newDiagMdn.PRecord := nil;
-      AdbLink.AddNewNode(vvdiag, newDiagMdn.DataPos, mdnNode, amAddChildlast, diagNode, linkPos);
+      FAdbMainLink.AddNewNode(vvdiag, newDiagMdn.DataPos, mdnNode, amAddChildlast, diagNode, linkPos);
 
       for j := 0 to OldPreg.FMdns[i].FExamAnals.Count - 1 do
       begin
@@ -607,7 +627,7 @@ begin
         Dispose(newAnal.PRecord);
         newAnal.PRecord := nil;
         OldPreg.FMdns[i].FExamAnals[j].DataPos := newAnal.DataPos;
-        AdbLink.AddNewNode(vvExamAnal, newAnal.DataPos, mdnNode, amAddChildlast, treeLink, linkPos);
+        FAdbMainLink.AddNewNode(vvExamAnal, newAnal.DataPos, mdnNode, amAddChildlast, treeLink, linkPos);
       end;
     except
       Dispose(newMdn.PRecord);
@@ -627,7 +647,7 @@ begin
       newMN.PRecord := nil;
       OldPreg.FMns[i].DataPos := newMN.DataPos;
 
-      AdbLink.AddNewNode(vvMedNapr, newMN.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+      FAdbMainLink.AddNewNode(vvMedNapr, newMN.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
     except
       Dispose(newMN.PRecord);
       newMN.PRecord := nil;
@@ -646,7 +666,7 @@ begin
       newMNHosp.PRecord := nil;
       OldPreg.FMNsHosp[i].DataPos := newMNHosp.DataPos;
 
-      AdbLink.AddNewNode(vvMedNaprHosp, newMNHosp.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+      FAdbMainLink.AddNewNode(vvMedNaprHosp, newMNHosp.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
     except
       Dispose(newMNHosp.PRecord);
       newMNHosp.PRecord := nil;
@@ -665,7 +685,7 @@ begin
       newMNLkk.PRecord := nil;
       OldPreg.FMNsLKK[i].DataPos := newMNLkk.DataPos;
 
-      AdbLink.AddNewNode(vvMedNaprLkk, newMNLkk.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
+      FAdbMainLink.AddNewNode(vvMedNaprLkk, newMNLkk.DataPos, pregNode, amAddChildlast, treeLink, linkPos);
     except
       Dispose(newMNLkk.PRecord);
       newMNLkk.PRecord := nil;
@@ -712,6 +732,33 @@ begin
 
 end;
 
+procedure TADBDataModule.BuildPatNodes(node: PVirtualNode);
+begin
+  FPatNodesBack.Clear;
+  FPatNodesBack := GetPatNodes(node);
+end;
+
+procedure TADBDataModule.BuildPregNodes(node: PVirtualNode);
+var
+  i: Integer;
+begin
+  //FPregNodesBack := GetPregNodes(node, FPregNodesBack);
+//  for i := 0 to 1000000 do
+//  begin
+//    FPregNodesBack.Clear;
+//    if (i mod 1000) = 0 then
+//      Application.ProcessMessages;
+//  end;
+  FPregNodesBack.Clear;
+  FPregNodesBack := GetPregNodes(node, FPregNodesBack);
+end;
+
+procedure TADBDataModule.SwapNodesBuffers;
+begin
+  SwapObj(TObject(FPatNodesActive), TObject(FPatNodesBack));
+  SwapObj(TObject(FPregNodesActive), TObject(FPregNodesBack));
+end;
+
 constructor TADBDataModule.Create(AvtrNasMesto, AvtrAdb: TVirtualStringTreeAspect);
 begin
   VtrNasMesta := AvtrNasMesto;
@@ -729,6 +776,9 @@ begin
   CollPatient.NasMesto := FNasMesto;
   FNasMesto.LinkToColl;
   FNasMesto.addresColl := TRealAddresColl.Create(TRealAddresItem);
+
+  FPregNodesBack := TPregledNodes.create;
+  FPatNodesBack := TPatNodes.create;
   
 end;
 
@@ -740,6 +790,8 @@ begin
   FreeAndNil(ListPrimDocuments);
   FreeColl;
   FreeAndNil(FNasMesto);
+  FreeAndNil(FPregNodesBack);
+  FreeAndNil(FPatNodesBack);
   inherited;
 end;
 
@@ -969,7 +1021,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create(AdbLink);
+  NodeSended := TNodesSendedToNzis.create(FAdbMainLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -1090,7 +1142,7 @@ begin
 
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
-  NodeSended := TNodesSendedToNzis.create(AdbLink);
+  NodeSended := TNodesSendedToNzis.create(FAdbMainLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -1536,7 +1588,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create(AdbLink);
+  NodeSended := TNodesSendedToNzis.create(FAdbMainLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -1678,7 +1730,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create(AdbLink);
+  NodeSended := TNodesSendedToNzis.create(FAdbMainLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream);//, TEncoding.UTF8);
@@ -1762,7 +1814,7 @@ begin
   addTagToStream(XmlStream, '/nhis:contents', '');
   addTagToStream(XmlStream, '/nhis:message', '');
 
-  NodeSended := TNodesSendedToNzis.create(AdbLink);
+  NodeSended := TNodesSendedToNzis.create(FAdbMainLink);
   NodeSended.node := PregNode;
   XmlStream.Position := 0;
   NodeSended.XmlReq.LoadFromStream(XmlStream, TEncoding.UTF8);
@@ -2106,15 +2158,43 @@ begin
   end;
 end;
 
-function TADBDataModule.GetPatNodes(PatNode: PVirtualNode): TPatNodes;
+function TADBDataModule.GetNzisNomenCollectionFromID(
+  id: Integer): TBaseCollection;
 var
-  run, runMDN, runExamAnal: PVirtualNode;
-  data, docData, dataMdn: PAspRec;
+  i: Integer;
+  BC: TBaseCollection;
+  collTypeStr: string;
+begin
+  Result := nil;
+  for i := 0 to lstColl.Count - 1 do
+  begin
+    BC := lstColl[i];
+    if BC = nil then
+      Continue;
+    collTypeStr := TRttiEnumerationType.GetName(BC.GetCollType);
+    if not collTypeStr.StartsWith('ctCL') then
+      Continue;
+
+    if collTypeStr.Substring(4, 3).ToInteger = id then
+    begin
+      Result := BC;
+      Exit;
+    end;
+  end;
+end;
+
+function TADBDataModule.GetPatNodes(PatNode: PVirtualNode; OldPatNodes: TPatNodes): TPatNodes;
+var
+  run, runNodeInPregled, runExamAnal: PVirtualNode;
+  data, docData, dataNodeInPregled: PAspRec;
   i: Integer;
   doc, tempDoc: TRealDoctorItem;
   idDoc, idTempDoc: Integer;
 begin
-  Result := TPatNodes.create;
+  if Assigned(OldPatNodes) then
+    Result := OldPatNodes
+  else
+    Result := TPatNodes.create;
   Result.patNode := PatNode;
   run := patNode.FirstChild;// обикалям нещата в пациента
   while run <> nil do
@@ -2144,14 +2224,14 @@ begin
       vvPregledNew:
       begin
         Result.pregs.Add(run);
-        runMDN := run.FirstChild;
-        while runMDN <> nil do
+        runNodeInPregled := run.FirstChild;
+        while runNodeInPregled <> nil do
         begin
-          dataMdn := pointer(PByte(runMDN) + lenNode);
-          case dataMdn.vid of
+          dataNodeInPregled := pointer(PByte(runNodeInPregled) + lenNode);
+          case dataNodeInPregled.vid of
             vvMDN:
             begin
-              runExamAnal := runMDN.FirstChild;
+              runExamAnal := runNodeInPregled.FirstChild;
               while runExamAnal <> nil do
               begin
                 result.ExamAnals.Add(runExamAnal);
@@ -2160,11 +2240,10 @@ begin
             end;
             vvDiag:
             begin
-              Result.diags.Add(runMDN);
+              Result.diags.Add(runNodeInPregled);
             end;
           end;
-          runMDN := runMDN.NextSibling;
-
+          runNodeInPregled := runNodeInPregled.NextSibling;
         end;
       end;
     end;
@@ -2172,7 +2251,7 @@ begin
   end;
 end;
 
-function TADBDataModule.GetPregNodes(PregNode: PVirtualNode): TPregledNodes;
+function TADBDataModule.GetPregNodes(PregNode: PVirtualNode; OldPregNodes: TPregledNodes): TPregledNodes;
 var
   run, vPlaned, runPlaned, runQuest, runAnsw: PVirtualNode;
   runDiagRep: PVirtualNode;
@@ -2189,7 +2268,10 @@ var
   diagRep: TDiagRep;
 begin
   Stopwatch := TStopwatch.StartNew;
-  Result := TPregledNodes.Create;
+  if Assigned(OldPregNodes) then
+    Result := OldPregNodes
+  else
+    Result := TPregledNodes.create;
   Result.pregNode := PregNode;
   run := PregNode.FirstChild;// обикалям нещата в прегледа
   while run <> nil do
@@ -2280,7 +2362,7 @@ begin
         case dataSender.vid of
           vvOtherDoctor:
           begin
-            Result.ReqesterNode := runIncNapr;
+            Result.RequesterNode := runIncNapr;
           end;
         end;
         runIncNapr := runIncNapr.NextSibling;
@@ -2767,67 +2849,41 @@ begin
 
           ctCL022:
           begin
-            //Cl022 := TCL022Item(Adb_DM.CL022Coll.Add);
-//            Cl022.DataPos := aspPos;
-            Inc(aspPos, (CL022Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL024:
           begin
-            //Cl024 := TCL024Item(Adb_DM.CL024Coll.Add);
-//            Cl024.DataPos := aspPos;
-            Inc(aspPos, (CL024Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL037:
           begin
-            //Cl037 := TCL037Item(Adb_DM.CL037Coll.Add);
-//            Cl037.DataPos := aspPos;
-            Inc(aspPos, (CL037Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL038:
           begin
-            //Cl038 := TCL038Item(Adb_DM.CL038Coll.Add);
-//            Cl038.DataPos := aspPos;
-            Inc(aspPos, (CL038Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL088:
           begin
-            //Cl088 := TCL088Item(Adb_DM.CL088Coll.Add);
-//            Cl088.DataPos := aspPos;
-            Inc(aspPos, (CL088Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
-
 
           ctCL134:
           begin
-            //Cl134 := TCl134Item(Adb_DM.Cl134Coll.Add);
-//            Cl134.DataPos := aspPos;
-            Inc(aspPos, (Cl134Coll.FieldCount) * 4);
+            lstColl[ord(ctCL134)].OpenAdbFull(aspPos);
           end;
           ctCL139:
           begin
-            //Cl139 := TCl139Item(Adb_DM.Cl139Coll.Add);
-//            Cl139.DataPos := aspPos;
-            Inc(aspPos, (Cl139Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL142:
           begin
-            //Cl142 := TCl142Item(Adb_DM.Cl142Coll.Add);
-//            Cl142.DataPos := aspPos;
-            Inc(aspPos, (Cl142Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
           ctCL144:
           begin
-            //Cl144 := TRealCl144Item(Adb_DM.Cl144Coll.Add);
-//            Cl144.DataPos := aspPos;
-            Inc(aspPos, (Cl144Coll.FieldCount) * 4);
+            lstColl[Ord(collType)].OpenAdbFull(aspPos);
           end;
-
-          //ctPR001:
-//          begin
-//            //PR001 := TPR001Item(Adb_DM.PR001Coll.Add);
-////            PR001.DataPos := aspPos;
-//            Inc(aspPos, (PR001Coll.FieldCount) * 4);
-//          end;
 
           ctNomenNzis:
           begin
@@ -3138,7 +3194,7 @@ begin
   LNK.FStreamCmdFile := streamCmdFile;
   //FDBHelper.AdbLink := LNK;
   //FmxProfForm.AspLink := LNK;
-  AdbLink := LNK;
+  FAdbMainLink := LNK;
 
   //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
 
@@ -3396,6 +3452,53 @@ end;
 
 { Lifecycle methods for collections in TADBDataModule }
 
+procedure TADBDataModule.ImportFDB;
+var
+  fileStr: TFileStream;
+  fileNameNew, LnkFilename: string;
+  AGuid: TGUID;
+  AdbDir: string;
+begin
+  //if DbName = '' then exit;
+
+  if AdbMain <> nil then
+  begin
+    UnmapViewOfFile(AdbMain.Buf);
+  end;
+
+
+  AGuid := TGuid.NewGuid;
+  AdbDir := ParamStr(2);
+  fileNameNew := AdbDir + 'AspHip' + AGuid.ToString + '.adb';
+  fileStr := TFileStream.Create(fileNameNew, fmCreate);
+  fileStr.Size := 1000000000;//00;
+  fileStr.Free;
+
+  AdbMain := TMappedFile.Create(fileNameNew, true, AGuid);
+  streamCmdFile := TFileCmdStream.Create(fileNameNew.Replace('.adb', '.cmd'), fmCreate);
+  streamCmdFile.Size := 100;
+  streamCmdFile.Guid := AGuid;
+  streamCmdFile.Position := streamCmdFile.Size;
+
+  //LnkFilename := AspectsHipFile.FileName.Replace('.adb', '.lnk');
+//  DeleteFile(LnkFilename);
+//  fileStr := TFileStream.Create(LnkFilename, fmCreate);
+//  fileStr.Size := 600000000;
+//  fileStr.Free;
+//
+//  AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, AspectsHipFile.GUID);
+  if AdbNomenNzis = nil then
+    OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
+  //OpenLinkNomenHipAnals;
+
+
+
+
+
+  //LoadThreadDB(FDbName);
+
+end;
+
 procedure TADBDataModule.InitColl;
 begin
   // Create list container
@@ -3535,7 +3638,7 @@ begin
   lstColl[Ord(CL134Coll.GetCollType)] := CL134Coll;
 
   CL139Coll := TRealCL139Coll.Create(TRealCl139Item);
-  lstColl[Ord(CL139Coll.GetCollType)] := CL134Coll;
+  lstColl[Ord(CL139Coll.GetCollType)] := CL139Coll;
 
   CL142Coll := TRealCL142Coll.Create(TRealCl142Item);
   lstColl[Ord(CL142Coll.GetCollType)] := CL142Coll;
@@ -3554,9 +3657,11 @@ begin
   lstColl[Ord(ProceduresNomenColl.GetCollType)] := ProceduresNomenColl;
 
 
+
+
   // ... добави тук другите колекции, ако имаш още полета в DM ...
 
-
+  CollPregled.FCollDiag := CollDiag;
 
 
 
@@ -3608,6 +3713,8 @@ begin
     FindLNK(AdbMain.GUID);
     if FAdbMainLink <> nil then
       OpenLinkPatPreg(FAdbMainLink);
+    if AdbNomenNzis = nil then
+    OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
     //StartHistoryThread(FDbName);
     //StartCertThread;
 //    if chkAspectDistr.Checked then
@@ -3635,6 +3742,7 @@ begin
   begin
     if coll = nil then Continue;
 
+
     case coll.GetCollType of
       // these are stored in AdbMain:
       // (list the collection types that live in AdbMain)
@@ -3646,7 +3754,7 @@ begin
       ctNZIS_PLANNED_TYPE, ctNZIS_QUESTIONNAIRE_RESPONSE,
       ctNZIS_QUESTIONNAIRE_ANSWER, ctNZIS_ANSWER_VALUE,
       ctNZIS_DIAGNOSTIC_REPORT, ctNZIS_RESULT_DIAGNOSTIC_REPORT,
-      ctNzisToken, ctCertificates, ctMkb, ctAnalsNew:
+      ctNzisToken, ctCertificates, ctMkb, ctAnalsNew, ctOtherDoctor:
       begin
         if Assigned(AdbMain) then
         begin
@@ -3919,12 +4027,21 @@ end;
 
 { TPregledNodes }
 
+procedure TPregledNodes.Clear;
+begin
+  mkbs.Clear;
+  diags.Clear;
+  Planeds.Clear;
+  Quests.Clear;
+  DiagReps.Clear;
+  incNaprNode := nil;
+end;
+
 constructor TPregledNodes.create;
 begin
   inherited;
   mkbs := TList<PVirtualNode>.Create;
   diags := TList<PVirtualNode>.Create;
- // evnts := TList<PVirtualNode>.Create;
   Planeds := TList<PVirtualNode>.Create;
   Quests := TList<TQuests>.Create;
   DiagReps := TList<TDiagRep>.Create;
@@ -4012,6 +4129,16 @@ end;
 
 
 
+procedure TPatNodes.Clear;
+begin
+  addresses.Clear;
+  ExamAnals.Clear;
+  diags.Clear;
+  pregs.Clear;
+  lstGraph.Clear;
+  NoteProf := '';
+end;
+
 constructor TPatNodes.create;
 begin
   inherited;
@@ -4019,6 +4146,9 @@ begin
   ExamAnals := TList<PVirtualNode>.create;
   diags := TList<PVirtualNode>.create;
   pregs := TList<PVirtualNode>.create;
+  lstGraph := TList<TGraphPeriod132>.create;
+  ListCurrentProf := TList<TGraphPeriod132>.Create;
+  NoteProf := '';
 end;
 
 destructor TPatNodes.destroy;
@@ -4027,6 +4157,8 @@ begin
   FreeAndNil(ExamAnals);
   FreeAndNil(diags);
   FreeAndNil(pregs);
+  FreeAndNil(lstGraph);
+  FreeAndNil(ListCurrentProf);
   inherited;
 end;
 
@@ -4050,7 +4182,7 @@ end;
 
 
 
-function TPatNodes.GetPrevProfPregled(dateNow: TDate; pregColl: TPregledNewColl; exceptPreg: TRealPregledNewItem): Cardinal;
+function TPatNodes.GetPrevProfPregled(dateNow: TDate; pregColl: TPregledNewColl; exceptPregNode: PVirtualNode): Cardinal;
 var
   i: Integer;
   data: PAspRec;
@@ -4070,9 +4202,9 @@ begin
   for i := 0 to pregs.Count -1 do
   begin
     data := Pointer(PByte(pregs[i]) + lenNode);
-    if exceptPreg <> nil then
+    if exceptPregNode <> nil then
     begin
-      if exceptPreg.DataPos = data.DataPos then
+      if PAspRec(PByte(exceptPregNode) + lenNode).DataPos = data.DataPos then
       begin
         Continue;
       end;

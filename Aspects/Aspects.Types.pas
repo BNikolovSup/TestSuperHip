@@ -60,7 +60,10 @@ type
                       ctNZIS_QUESTIONNAIRE_ANSWERDel, ctNZIS_ANSWER_VALUEDel, ctMkbDel, ctOtherDoctorDel,
                       ctCL142Del, ctPregledNewDel, ctCL006Del, ctCL022Del, ctCL024Del, ctNomenNzisDel,
                       ctCL011, ctCL011Del, ctCL009, ctCL009Del, ctCL006Old, ctCL009Old, ctCL132Del, ctCL132Old,
-                      ctPR001Del, ctPR001Old);
+                      ctPR001Del, ctPR001Old, ctNZIS_RESULT_DIAGNOSTIC_REPORTDel, ctNZIS_RESULT_DIAGNOSTIC_REPORTOld,
+                      ctCL134Del, ctCL134Old, ctCL144Del, ctCL144Old, ctCL037Del, ctCL037Old, ctCL038Del,
+                      ctCL038Old, ctCL139Del, ctCL139Old, ctCL088Del, ctCL088Old, ctCL142Old, ctCL024Old,
+                      ctCL022Old, ctNZIS_DIAGNOSTIC_REPORTDel, ctNZIS_DIAGNOSTIC_REPORTOld);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -242,7 +245,16 @@ type
              vvCL009Root,
              vvCL006,
              vvCL132Root,
-             vvPR001Root
+             vvPR001Root,
+             vvNZIS_RESULT_DIAGNOSTIC_REPORTRoot,
+             vvCL134Root,
+             vvCL144Root,
+             vvCL037,
+             vvCL037Root,
+             vvCL038Root,
+             vvCL139Root,
+             vvCL088Root,
+             vvNZIS_DIAGNOSTIC_REPORTRoot
              );
 
 

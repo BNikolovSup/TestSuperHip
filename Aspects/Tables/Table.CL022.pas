@@ -5,7 +5,8 @@ uses
   Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults, Tee.Renders,
+  uGridHelpers  ;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -22,7 +23,7 @@ end;
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
 TLogicalCL022 = (
-    IS_);
+    Is_);
 TlogicalCL022Set = set of TLogicalCL022;
 
 
@@ -34,10 +35,12 @@ TCL022Item = class(TBaseItem)
        , CL022_Description
        , CL022_DescriptionEn
        , CL022_achi_code
-       , CL022_nhif_package
-       , CL022_achi_chapter
-       , CL022_nhif_code
        , CL022_achi_block
+       , CL022_nhif_package
+       , CL022_nhif_code
+       , CL022_achi_chapter
+       , CL022_loinc
+       , CL022_snomed
        , CL022_Logical
        );
 	  
@@ -49,10 +52,12 @@ TCL022Item = class(TBaseItem)
         Description: AnsiString;
         DescriptionEn: AnsiString;
         achi_code: AnsiString;
-        nhif_package: AnsiString;
-        achi_chapter: AnsiString;
-        nhif_code: AnsiString;
         achi_block: AnsiString;
+        nhif_package: AnsiString;
+        nhif_code: AnsiString;
+        achi_chapter: AnsiString;
+        loinc: AnsiString;
+        snomed: AnsiString;
         Logical: TlogicalCL022Set;
         setProp: TSetProp;
       end;
@@ -146,14 +151,24 @@ TCL022Item = class(TBaseItem)
     procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
     procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalCL022Set);
-	procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer); override;
 	function IsCollVisible(PropIndex: Word): Boolean; override;
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
 	function GetCollDelType: TCollectionsType; override;
+	{NZIS_START}
+	procedure ImportXMLNzis(cl000: TObject); override;
+	procedure UpdateXMLNzis; override;
+	function CellDiffKind(ACol, ARow: Integer): TDiffKind; override;
+	procedure BuildKeyDict(PropIndex: Word);
+	{NZIS_END}
   end;
 
 implementation
+{NZIS_START}
+uses
+  Nzis.Nomen.baseCL000, System.Rtti;
+{NZIS_END}  
 
 { TCL022Item }
 
@@ -239,10 +254,12 @@ begin
             CL022_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
             CL022_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
             CL022_achi_code: SaveData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
             CL022_achi_block: SaveData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
+            CL022_loinc: SaveData(PRecord.loinc, PropPosition, metaPosition, dataPosition);
+            CL022_snomed: SaveData(PRecord.snomed, PropPosition, metaPosition, dataPosition);
             CL022_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -280,10 +297,12 @@ begin
             CL022_Description: Result := IsFinded(ATempItem.PRecord.Description, buf, FPosDataADB, word(CL022_Description), cot);
             CL022_DescriptionEn: Result := IsFinded(ATempItem.PRecord.DescriptionEn, buf, FPosDataADB, word(CL022_DescriptionEn), cot);
             CL022_achi_code: Result := IsFinded(ATempItem.PRecord.achi_code, buf, FPosDataADB, word(CL022_achi_code), cot);
-            CL022_nhif_package: Result := IsFinded(ATempItem.PRecord.nhif_package, buf, FPosDataADB, word(CL022_nhif_package), cot);
-            CL022_achi_chapter: Result := IsFinded(ATempItem.PRecord.achi_chapter, buf, FPosDataADB, word(CL022_achi_chapter), cot);
-            CL022_nhif_code: Result := IsFinded(ATempItem.PRecord.nhif_code, buf, FPosDataADB, word(CL022_nhif_code), cot);
             CL022_achi_block: Result := IsFinded(ATempItem.PRecord.achi_block, buf, FPosDataADB, word(CL022_achi_block), cot);
+            CL022_nhif_package: Result := IsFinded(ATempItem.PRecord.nhif_package, buf, FPosDataADB, word(CL022_nhif_package), cot);
+            CL022_nhif_code: Result := IsFinded(ATempItem.PRecord.nhif_code, buf, FPosDataADB, word(CL022_nhif_code), cot);
+            CL022_achi_chapter: Result := IsFinded(ATempItem.PRecord.achi_chapter, buf, FPosDataADB, word(CL022_achi_chapter), cot);
+            CL022_loinc: Result := IsFinded(ATempItem.PRecord.loinc, buf, FPosDataADB, word(CL022_loinc), cot);
+            CL022_snomed: Result := IsFinded(ATempItem.PRecord.snomed, buf, FPosDataADB, word(CL022_snomed), cot);
             CL022_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(CL022_Logical), cot);
       end;
     end;
@@ -316,7 +335,7 @@ begin
       vCmdProp := vtrTemp.AddChild(vCmd, nil);
       dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
       dataCmdProp.index := word(propindexCL022);
-      dataCmdProp.vid := vvPregledNew;
+      dataCmdProp.vid := vvCL022;
     end;
     self.FillPropCL022(propindexCL022, stream);
   end;
@@ -354,17 +373,17 @@ begin
               SetLength(Self.PRecord.achi_code, lenStr);
               stream.Read(Self.PRecord.achi_code[1], lenStr);
             end;
+            CL022_achi_block:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.achi_block, lenStr);
+              stream.Read(Self.PRecord.achi_block[1], lenStr);
+            end;
             CL022_nhif_package:
             begin
               stream.Read(lenStr, 2);
               SetLength(Self.PRecord.nhif_package, lenStr);
               stream.Read(Self.PRecord.nhif_package[1], lenStr);
-            end;
-            CL022_achi_chapter:
-            begin
-              stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.achi_chapter, lenStr);
-              stream.Read(Self.PRecord.achi_chapter[1], lenStr);
             end;
             CL022_nhif_code:
             begin
@@ -372,11 +391,23 @@ begin
               SetLength(Self.PRecord.nhif_code, lenStr);
               stream.Read(Self.PRecord.nhif_code[1], lenStr);
             end;
-            CL022_achi_block:
+            CL022_achi_chapter:
             begin
               stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.achi_block, lenStr);
-              stream.Read(Self.PRecord.achi_block[1], lenStr);
+              SetLength(Self.PRecord.achi_chapter, lenStr);
+              stream.Read(Self.PRecord.achi_chapter[1], lenStr);
+            end;
+            CL022_loinc:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.loinc, lenStr);
+              stream.Read(Self.PRecord.loinc[1], lenStr);
+            end;
+            CL022_snomed:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.snomed, lenStr);
+              stream.Read(Self.PRecord.snomed[1], lenStr);
             end;
             CL022_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
   end;
@@ -401,7 +432,7 @@ var
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctCL022;
+  CollType := PCollectionsType(PByte(Buf) + DataPos - 4)^;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -417,10 +448,12 @@ begin
             CL022_Description: SaveData(PRecord.Description, PropPosition, metaPosition, dataPosition);
             CL022_DescriptionEn: SaveData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
             CL022_achi_code: SaveData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
             CL022_achi_block: SaveData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_package: SaveData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_code: SaveData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL022_achi_chapter: SaveData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
+            CL022_loinc: SaveData(PRecord.loinc, PropPosition, metaPosition, dataPosition);
+            CL022_snomed: SaveData(PRecord.snomed, PropPosition, metaPosition, dataPosition);
             CL022_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
@@ -456,10 +489,12 @@ begin
             CL022_Description: UpdateData(PRecord.Description, PropPosition, metaPosition, dataPosition);
             CL022_DescriptionEn: UpdateData(PRecord.DescriptionEn, PropPosition, metaPosition, dataPosition);
             CL022_achi_code: UpdateData(PRecord.achi_code, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_package: UpdateData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
-            CL022_achi_chapter: UpdateData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
-            CL022_nhif_code: UpdateData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
             CL022_achi_block: UpdateData(PRecord.achi_block, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_package: UpdateData(PRecord.nhif_package, PropPosition, metaPosition, dataPosition);
+            CL022_nhif_code: UpdateData(PRecord.nhif_code, PropPosition, metaPosition, dataPosition);
+            CL022_achi_chapter: UpdateData(PRecord.achi_chapter, PropPosition, metaPosition, dataPosition);
+            CL022_loinc: UpdateData(PRecord.loinc, PropPosition, metaPosition, dataPosition);
+            CL022_snomed: UpdateData(PRecord.snomed, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -561,59 +596,71 @@ begin
     begin
 	  // === проверки за запазване (CheckForSave) ===
 
-  if (CL022_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Key))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_Key in tempItem.PRecord.setProp) and (tempItem.PRecord.Key <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Key))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Description))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_Description in tempItem.PRecord.setProp) and (tempItem.PRecord.Description <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_Description))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_DescriptionEn))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_DescriptionEn in tempItem.PRecord.setProp) and (tempItem.PRecord.DescriptionEn <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_DescriptionEn))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_achi_code in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_code))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_achi_code in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_code))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_nhif_package in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_package <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_package))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_achi_block in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_block <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_block))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_achi_chapter in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_chapter <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_chapter))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_nhif_package in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_package <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_package))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_nhif_code in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_code))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_nhif_code in tempItem.PRecord.setProp) and (tempItem.PRecord.nhif_code <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_nhif_code))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_achi_block in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_block <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_block))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_achi_chapter in tempItem.PRecord.setProp) and (tempItem.PRecord.achi_chapter <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_achi_chapter))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (CL022_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL022_Logical))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (CL022_loinc in tempItem.PRecord.setProp) and (tempItem.PRecord.loinc <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_loinc))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
+
+      if (CL022_snomed in tempItem.PRecord.setProp) and (tempItem.PRecord.snomed <> Self.getAnsiStringMap(tempItem.DataPos, word(CL022_snomed))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
+
+      if (CL022_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(CL022_Logical))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
     end;
   end;
 end;
@@ -656,10 +703,12 @@ begin
     CL022_Description: Result := 'Description';
     CL022_DescriptionEn: Result := 'DescriptionEn';
     CL022_achi_code: Result := 'achi_code';
-    CL022_nhif_package: Result := 'nhif_package';
-    CL022_achi_chapter: Result := 'achi_chapter';
-    CL022_nhif_code: Result := 'nhif_code';
     CL022_achi_block: Result := 'achi_block';
+    CL022_nhif_package: Result := 'nhif_package';
+    CL022_nhif_code: Result := 'nhif_code';
+    CL022_achi_chapter: Result := 'achi_chapter';
+    CL022_loinc: Result := 'loinc';
+    CL022_snomed: Result := 'snomed';
     CL022_Logical: Result := 'Logical';
   end;
 end;
@@ -667,7 +716,7 @@ end;
 function TCL022Coll.DisplayLogicalName(flagIndex: Integer): string;
 begin
   case flagIndex of
-0: Result := 'IS_';
+0: Result := 'Is_';
   else
     Result := '???';
   end;
@@ -722,7 +771,7 @@ end;
 function TCL022Coll.FieldCount: Integer; 
 begin
   inherited;
-  Result := 9;
+  Result := 11;
 end;
 
 function TCL022Coll.FindRootCollOptionNode(): PVirtualNode;
@@ -901,10 +950,12 @@ begin
     CL022_Description: str := (CL022.PRecord.Description);
     CL022_DescriptionEn: str := (CL022.PRecord.DescriptionEn);
     CL022_achi_code: str := (CL022.PRecord.achi_code);
-    CL022_nhif_package: str := (CL022.PRecord.nhif_package);
-    CL022_achi_chapter: str := (CL022.PRecord.achi_chapter);
-    CL022_nhif_code: str := (CL022.PRecord.nhif_code);
     CL022_achi_block: str := (CL022.PRecord.achi_block);
+    CL022_nhif_package: str := (CL022.PRecord.nhif_package);
+    CL022_nhif_code: str := (CL022.PRecord.nhif_code);
+    CL022_achi_chapter: str := (CL022.PRecord.achi_chapter);
+    CL022_loinc: str := (CL022.PRecord.loinc);
+    CL022_snomed: str := (CL022.PRecord.snomed);
     CL022_Logical: str := CL022.Logical08ToStr(TLogicalData08(CL022.PRecord.Logical));
   else
     begin
@@ -1015,10 +1066,12 @@ begin
     CL022_Description: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL022_DescriptionEn: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL022_achi_code: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_nhif_package: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_achi_chapter: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    CL022_nhif_code: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL022_achi_block: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL022_nhif_package: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL022_nhif_code: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL022_achi_chapter: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL022_loinc: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    CL022_snomed: str :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     CL022_Logical: str :=  CL022.Logical08ToStr(CL022.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
@@ -1084,7 +1137,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_nhif_package:
+      CL022_achi_block:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1094,7 +1147,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_achi_chapter:
+      CL022_nhif_package:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1114,7 +1167,27 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      CL022_achi_block:
+      CL022_achi_chapter:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      CL022_loinc:
+      begin
+        TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
+        if TempItem.IndexAnsiStr <> nil then
+        begin
+          TempItem.IndexAnsiStr1 := AnsiString(TempItem.IndexAnsiStr);
+        end
+        else
+          TempItem.IndexAnsiStr1 := '';
+      end;
+      CL022_snomed:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
         if TempItem.IndexAnsiStr <> nil then
@@ -1190,10 +1263,12 @@ CL022_Key: ListForFinder[0].PRecord.Key := AText;
     CL022_Description: ListForFinder[0].PRecord.Description := AText;
     CL022_DescriptionEn: ListForFinder[0].PRecord.DescriptionEn := AText;
     CL022_achi_code: ListForFinder[0].PRecord.achi_code := AText;
-    CL022_nhif_package: ListForFinder[0].PRecord.nhif_package := AText;
-    CL022_achi_chapter: ListForFinder[0].PRecord.achi_chapter := AText;
-    CL022_nhif_code: ListForFinder[0].PRecord.nhif_code := AText;
     CL022_achi_block: ListForFinder[0].PRecord.achi_block := AText;
+    CL022_nhif_package: ListForFinder[0].PRecord.nhif_package := AText;
+    CL022_nhif_code: ListForFinder[0].PRecord.nhif_code := AText;
+    CL022_achi_chapter: ListForFinder[0].PRecord.achi_chapter := AText;
+    CL022_loinc: ListForFinder[0].PRecord.loinc := AText;
+    CL022_snomed: ListForFinder[0].PRecord.snomed := AText;
   end;
 end;
 
@@ -1203,10 +1278,7 @@ procedure TCL022Coll.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TC
 begin
   Include(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
-  //case TCL022Item.TPropertyIndex(Field) of
-//
-//  end;
+  
 end;
 
 
@@ -1216,9 +1288,6 @@ begin
   Include(ListForFinder[0].PRecord.setProp, TCL022Item.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  //case TCL022Item.TPropertyIndex(Field) of
-//
-//  end;
 end;
 
 
@@ -1273,10 +1342,12 @@ begin
     CL022_Description: Result := actAnsiString;
     CL022_DescriptionEn: Result := actAnsiString;
     CL022_achi_code: Result := actAnsiString;
-    CL022_nhif_package: Result := actAnsiString;
-    CL022_achi_chapter: Result := actAnsiString;
-    CL022_nhif_code: Result := actAnsiString;
     CL022_achi_block: Result := actAnsiString;
+    CL022_nhif_package: Result := actAnsiString;
+    CL022_nhif_code: Result := actAnsiString;
+    CL022_achi_chapter: Result := actAnsiString;
+    CL022_loinc: Result := actAnsiString;
+    CL022_snomed: Result := actAnsiString;
     CL022_Logical: Result := actLogical;
   else
     Result := actNone;
@@ -1311,10 +1382,12 @@ begin
     CL022_Description: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     CL022_DescriptionEn: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     CL022_achi_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     CL022_achi_block: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL022_loinc: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    CL022_snomed: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     end;
   end;
   if isOld then
@@ -1334,10 +1407,12 @@ begin
     CL022_Description: CL022.PRecord.Description := AValue;
     CL022_DescriptionEn: CL022.PRecord.DescriptionEn := AValue;
     CL022_achi_code: CL022.PRecord.achi_code := AValue;
-    CL022_nhif_package: CL022.PRecord.nhif_package := AValue;
-    CL022_achi_chapter: CL022.PRecord.achi_chapter := AValue;
-    CL022_nhif_code: CL022.PRecord.nhif_code := AValue;
     CL022_achi_block: CL022.PRecord.achi_block := AValue;
+    CL022_nhif_package: CL022.PRecord.nhif_package := AValue;
+    CL022_nhif_code: CL022.PRecord.nhif_code := AValue;
+    CL022_achi_chapter: CL022.PRecord.achi_chapter := AValue;
+    CL022_loinc: CL022.PRecord.loinc := AValue;
+    CL022_snomed: CL022.PRecord.snomed := AValue;
     CL022_Logical: CL022.PRecord.Logical := tlogicalCL022Set(CL022.StrToLogical08(AValue));
   end;
 end;
@@ -1363,10 +1438,12 @@ begin
     CL022_Description: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     CL022_DescriptionEn: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     CL022_achi_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     CL022_achi_block: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL022_nhif_package: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL022_nhif_code: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL022_achi_chapter: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL022_loinc: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    CL022_snomed: isOld :=  CL022.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     end;
   end;
   if isOld then
@@ -1386,10 +1463,12 @@ begin
     CL022_Description: CL022.PRecord.Description := AFieldText;
     CL022_DescriptionEn: CL022.PRecord.DescriptionEn := AFieldText;
     CL022_achi_code: CL022.PRecord.achi_code := AFieldText;
-    CL022_nhif_package: CL022.PRecord.nhif_package := AFieldText;
-    CL022_achi_chapter: CL022.PRecord.achi_chapter := AFieldText;
-    CL022_nhif_code: CL022.PRecord.nhif_code := AFieldText;
     CL022_achi_block: CL022.PRecord.achi_block := AFieldText;
+    CL022_nhif_package: CL022.PRecord.nhif_package := AFieldText;
+    CL022_nhif_code: CL022.PRecord.nhif_code := AFieldText;
+    CL022_achi_chapter: CL022.PRecord.achi_chapter := AFieldText;
+    CL022_loinc: CL022.PRecord.loinc := AFieldText;
+    CL022_snomed: CL022.PRecord.snomed := AFieldText;
     CL022_Logical: CL022.PRecord.Logical := tlogicalCL022Set(CL022.StrToLogical08(AFieldText));
   end;
 end;
@@ -1436,14 +1515,14 @@ end;
           ListCL022Search.Add(self.Items[i]);
         end;
       end;
-      CL022_nhif_package:
+      CL022_achi_block:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
           ListCL022Search.Add(self.Items[i]);
         end;
       end;
-      CL022_achi_chapter:
+      CL022_nhif_package:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
@@ -1457,7 +1536,21 @@ end;
           ListCL022Search.Add(self.Items[i]);
         end;
       end;
-      CL022_achi_block:
+      CL022_achi_chapter:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListCL022Search.Add(self.Items[i]);
+        end;
+      end;
+      CL022_loinc:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListCL022Search.Add(self.Items[i]);
+        end;
+      end;
+      CL022_snomed:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
         begin
@@ -1471,7 +1564,7 @@ end;
 procedure TCL022Coll.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
-
+  clls: TDiffCellRenderer;
 begin
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
   for i := 0 to self.FieldCount - 1 do
@@ -1487,6 +1580,11 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
+  
+  clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
+  clls.FGrid := Grid;
+  clls.FCollAdb := Self;
+  Grid.Cells := clls;
 
   Grid.Columns[self.FieldCount].Width.Value := 50;
   Grid.Columns[self.FieldCount].Index := 0;
@@ -1677,11 +1775,329 @@ begin
       CL022_Description: SortByIndexAnsiString;
       CL022_DescriptionEn: SortByIndexAnsiString;
       CL022_achi_code: SortByIndexAnsiString;
-      CL022_nhif_package: SortByIndexAnsiString;
-      CL022_achi_chapter: SortByIndexAnsiString;
-      CL022_nhif_code: SortByIndexAnsiString;
       CL022_achi_block: SortByIndexAnsiString;
+      CL022_nhif_package: SortByIndexAnsiString;
+      CL022_nhif_code: SortByIndexAnsiString;
+      CL022_achi_chapter: SortByIndexAnsiString;
+      CL022_loinc: SortByIndexAnsiString;
+      CL022_snomed: SortByIndexAnsiString;
   end;
 end;
+
+{NZIS_START}
+procedure TCL022Coll.ImportXMLNzis(cl000: TObject);
+var
+ Acl000 : TCL000EntryCollection;
+ entry : TCL000EntryItem;
+ item : TCL022Item;
+ i, idxOld, j: Integer;
+ idx : array of Integer;
+ propIdx: TCL022Item.TPropertyIndex;
+ propName, xmlName, oldValue, newValue: string;
+ kindDiff: TDiffKind; pCardinalData: PCardinal;
+ dataPosition: Cardinal; IsNew: Boolean;
+begin
+  Acl000 := TCL000EntryCollection(cl000);
+  IsNew := Count = 0;
+
+  for i := 0 to Count - 1 do
+  begin
+    if PWord(PByte(Buf) + Items[i].DataPos - 4)^ = Ord(ctCL022Del) then
+      Continue;
+    PWord(PByte(Buf) + Items[i].DataPos - 4)^ := Ord(ctCL022Old);
+  end;
+
+  BuildKeyDict(Ord(CL022_Key));
+
+  j := 0;
+  SetLength(idx, 0);
+
+  for propIdx := Low(TCL022Item.TPropertyIndex) to High(TCL022Item.TPropertyIndex) do
+  begin
+    propName := TRttiEnumerationType.GetName(propIdx);
+
+    if SameText(propName, 'CL022_Key') then Continue;
+    if SameText(propName, 'CL022_Description') then Continue;
+    if SameText(propName, 'CL022_Logical') then Continue;
+
+    xmlName := propName.Substring(Length('CL022_'));
+    xmlName := xmlName.Replace('_', ' ');
+
+    for i := 0 to Acl000.FieldsNames.Count - 1 do
+      if SameText(Acl000.FieldsNames[i], xmlName) or
+         SameText(Acl000.FieldsNames[i], xmlName.Replace(' ', '_')) then
+      begin
+        SetLength(idx, Length(idx)+1);
+        idx[High(idx)] := i;
+        Break;
+      end;
+  end;
+
+  for i := 0 to Acl000.Count - 1 do
+  begin
+    entry := Acl000.Items[i];
+
+    if KeyDict.TryGetValue(entry.Key, idxOld) then
+    begin
+      item := Items[idxOld];
+      kindDiff := dkChanged;
+    end
+    else
+    begin
+      item := TCL022Item(Add);
+      kindDiff := dkNew;
+    end;
+
+    if item.PRecord <> nil then
+      Dispose(item.PRecord);
+    New(item.PRecord);
+    item.PRecord.setProp := [];
+
+    newValue := entry.Key;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_Key));
+    item.PRecord.Key := newValue;
+    if oldValue <> newValue then Include(item.PRecord.setProp, CL022_Key);
+
+    newValue := entry.Descr;
+    oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_Description));
+    item.PRecord.Description := newValue;
+    if oldValue <> newValue then Include(item.PRecord.setProp, CL022_Description);
+
+    j := 0;
+    // DescriptionEn
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_DescriptionEn));
+
+      Item.PRecord.DescriptionEn := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_DescriptionEn);
+    end;
+    Inc(j);
+
+    // achi_code
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_achi_code));
+
+      Item.PRecord.achi_code := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_achi_code);
+    end;
+    Inc(j);
+
+    // achi_block
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_achi_block));
+
+      Item.PRecord.achi_block := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_achi_block);
+    end;
+    Inc(j);
+
+    // nhif_package
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_nhif_package));
+
+      Item.PRecord.nhif_package := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_nhif_package);
+    end;
+    Inc(j);
+
+    // nhif_code
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_nhif_code));
+
+      Item.PRecord.nhif_code := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_nhif_code);
+    end;
+    Inc(j);
+
+    // achi_chapter
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_achi_chapter));
+
+      Item.PRecord.achi_chapter := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_achi_chapter);
+    end;
+    Inc(j);
+
+    // loinc
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_loinc));
+
+      Item.PRecord.loinc := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_loinc);
+    end;
+    Inc(j);
+
+    // snomed
+    if (j < Length(idx)) and (entry.FMetaDataFields[idx[j]] <> nil) then
+    begin
+      newValue := entry.FMetaDataFields[idx[j]].Value;
+      oldValue := getAnsiStringMap(item.DataPos, Ord(CL022_snomed));
+
+      Item.PRecord.snomed := entry.FMetaDataFields[idx[j]].Value;
+      if (oldValue <> newValue) then Include(item.PRecord.setProp, CL022_snomed);
+    end;
+    Inc(j);
+
+    // NEW
+    if kindDiff = dkNew then
+    begin
+      if IsNew then
+      begin
+        item.InsertCL022;
+        PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL022);
+        Self.streamComm.Len := Self.streamComm.Size;
+        Self.cmdFile.CopyFrom(Self.streamComm, 0);
+        Dispose(item.PRecord);
+        item.PRecord := nil;
+      end;
+    end
+    else
+    begin
+      // UPDATE
+      if item.PRecord.setProp <> [] then
+      begin
+        if IsNew then
+        begin
+          pCardinalData := pointer(PByte(Buf) + 12);
+          dataPosition := pCardinalData^ + PosData;
+          item.SaveCL022(dataPosition);
+          PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL022);
+          Self.streamComm.Len := Self.streamComm.Size;
+          Self.cmdFile.CopyFrom(Self.streamComm, 0);
+          pCardinalData^ := dataPosition - PosData;
+        end
+        else
+          PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL022);
+      end
+      else
+      begin
+        Dispose(item.PRecord);
+        item.PRecord := nil;
+        PWord(PByte(Buf) + item.DataPos - 4)^ := Ord(ctCL022);
+      end;
+    end;
+  end;
+end;
+
+procedure TCL022Coll.UpdateXMLNzis;
+var
+  i: Integer;
+  pCardinalData: PCardinal;
+  dataPosition: Cardinal;
+begin
+  for i := 0 to Count - 1 do
+  begin
+    if Items[i].PRecord = nil then
+    begin
+      if Pword(PByte(Buf) + Items[i].DataPos +  - 4)^ = ord(ctCL022Old) then
+        Pword(PByte(Buf) + Items[i].DataPos +  - 4)^ := ord(ctCL022Del);
+        Continue;
+    end;
+
+
+    if Items[i].DataPos = 0 then
+    begin
+      Items[i].InsertCL022;
+      Self.streamComm.Len := Self.streamComm.Size;
+      Self.cmdFile.CopyFrom(Self.streamComm, 0);
+      Dispose(Items[i].PRecord);
+      Items[i].PRecord := nil;
+    end
+    else
+    begin
+      pCardinalData := pointer(PByte(self.Buf) + 12);
+      dataPosition := pCardinalData^ + self.PosData;
+      Items[i].SaveCL022(dataPosition);
+      self.streamComm.Len := self.streamComm.Size;
+      Self.CmdFile.CopyFrom(self.streamComm, 0);
+      pCardinalData := pointer(PByte(Buf) + 12);
+      pCardinalData^  := dataPosition - self.PosData;
+    end;
+
+  end;
+end;
+
+procedure TCL022Coll.BuildKeyDict(PropIndex: Word);
+var
+  i      : Integer;
+  item   : TCL022Item;
+  keyStr : string;
+  pIdx   : TCL022Item.TPropertyIndex;
+begin
+  // общата част – алокация / чистене на речника
+  inherited BuildKeyDict(PropIndex);
+
+  // кастваме Word > enum на генерирания клас
+  pIdx := TCL022Item.TPropertyIndex(PropIndex);
+
+  for i := 0 to Count - 1 do
+  begin
+    item := Items[i];
+    if Pword(PByte(Buf) + item.DataPos +  - 4)^ = ord(ctCL022Del) then
+      Continue;
+    keyStr := self.getAnsiStringMap(item.datapos,PropIndex);
+
+    if keyStr <> '' then
+    begin
+      // ако има дубликати – последният печели (полезно за "последна версия")
+      KeyDict.AddOrSetValue(keyStr, i);
+    end;
+  end;
+end;
+
+function TCL022Coll.CellDiffKind(ACol, ARow: Integer): TDiffKind;
+begin
+  if (ARow > count) or (ARow < 0) then
+    Exit;
+
+
+  if items[ARow].DataPos = 0 then
+  begin
+    Result := dkNew;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL022Old)) then
+  begin
+    Result := dkForDeleted;
+    Exit;
+  end;
+
+  if (Pword(PByte(Buf) + items[ARow].DataPos +  - 4)^ = ord(ctCL022Del)) then
+  begin
+    Result := dkDeleted;
+    Exit;
+  end;
+
+  if Items[ARow].PRecord = nil then
+  begin
+    Result := dkNone;
+    Exit;
+  end;
+
+  if TCL022Item.TPropertyIndex(ACol) in Items[ARow].PRecord.setProp then
+  begin
+    Result := dkChanged;
+    Exit;
+  end;
+  //test
+
+end;
+
+{NZIS_END}
 
 end.

@@ -66,7 +66,7 @@ type
     function CompareStrings(const S1, S2: string): Integer;
 
 
-    procedure ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode );
+    //procedure ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode );
     procedure RemoveDiag(vPreg: PVirtualNode; diag: TRealDiagnosisItem); overload;
     procedure RemoveDiag(vPreg: PVirtualNode; diagDataPos: cardinal); overload;
     procedure IterateTempExpand(Sender: TBaseVirtualTree; Node: PVirtualNode; Data: Pointer; var Abort: Boolean);
@@ -104,7 +104,7 @@ type
     procedure ChoiceMKB(sender: TObject);
     procedure vtrChangeSelectMKB(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vtrMkbGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
-    procedure vtrMKBChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
+    //procedure vtrMKBChecked(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure vtrTempInitNodeMKB(Sender: TBaseVirtualTree; ParentNode,
       Node: PVirtualNode; var InitialStates: TVirtualNodeInitStates);
     procedure vtrTempInitChildrenMKB(Sender: TBaseVirtualTree; Node: PVirtualNode;
@@ -481,7 +481,7 @@ begin
   FVtr.Tag := Word(vvNzisMessages);
   FVtr.Clear;
   InitVariableVtrNzisHist;
-  NodesSendedToNzis := TNodesSendedToNzis.create(Adb_DM.AdbLink);
+  NodesSendedToNzis := TNodesSendedToNzis.create(Adb_DM.AdbMainLink);
   NodesSendedToNzis.LoadFromFile('HistNzis.hst');
   //for i := 0 to Adb_DM.LstNodeSended.Count - 1 do
 //  begin
@@ -672,7 +672,7 @@ end;
 procedure TTempVtrHelper.InitVariableVtrMkb;
 begin
   FVtr.OnChange := vtrChangeSelectMKB;
-  FVtr.OnChecked := vtrMKBChecked;
+  //FVtr.OnChecked := vtrMKBChecked;
   FVtr.OnMeasureItem := vtrMeasureItemMkb;
   FVtr.OnDrawText := vtrDrawTextMKB;
   FVtr.OnGetText := vtrMkbGetText;
@@ -751,11 +751,11 @@ begin
     begin
       if diag.DataPos = Data.DataPos then
       begin
-        Adb_DM.AdbLink.MarkDeletedNode(RunNode);
+        Adb_DM.AdbMainLink.MarkDeletedNode(RunNode);
         dataPreg := Pointer(PByte(vPreg) + lenNode);
         dataPat :=  Pointer(PByte(vPreg.Parent) + lenNode);
         tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-        ShowPregledFMX(dataPat, dataPreg, vPreg);
+        //ShowPregledFMX(dataPat, dataPreg, vPreg);
         FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
         Break;
       end;
@@ -782,7 +782,7 @@ begin
     begin
       if diagDataPos = Data.DataPos then
       begin
-        Adb_DM.AdbLink.MarkDeletedNode(RunNode);
+        Adb_DM.AdbMainLink.MarkDeletedNode(RunNode);
         dataPreg := Pointer(PByte(vPreg) + lenNode);
         dataPat :=  Pointer(PByte(vPreg.Parent) + lenNode);
         //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
@@ -820,391 +820,391 @@ begin
   FVtr.OnCollapsed := vtrCollapsed;
 end;
 
-procedure TTempVtrHelper.ShowPregledFMX(dataPat, dataPreg: PAspRec;
-  linkPreg: PVirtualNode);
-var
-  edt: TEdit;
-  run, runAnal : PVirtualNode;
-  dataRun, dataAnal, dataFMXPreg: PAspRec;
-  diag: TRealDiagnosisItem;
-  performer: TRealDoctorItem;
-  mdn: TRealMDNItem;
-  mn: TRealBLANKA_MED_NAPRItem;
-  immun: TRealExamImmunizationItem;
-  anal: TRealExamAnalysisItem;
-  i, lastVacantPreg: Integer;
-  PosInNomen: integer;
-  vScrol: FMX.StdCtrls.TScrollBar;
-
-  nodePlan: PVirtualNode;
-  dataPlan: PAspRec;
-  cl132Key, cl136Key: string;
-  prNomen: string;
-  cl132pos, pr001Pos: Cardinal;
-  revis: TRevision;
-
-  p: PCardinal;
-  ofset: Cardinal;
-  dataPatRevision: PAspRec;
-  TempDiags: TList<TRealDiagnosisItem>;
-  TempMns: TList<TRealBLANKA_MED_NAPRItem>;
-begin
-  Stopwatch := TStopwatch.StartNew;
-  FmxProfForm.ClearListsPreg;
-  TempDiags := TList<TRealDiagnosisItem>.Create;
-  TempMns := TList<TRealBLANKA_MED_NAPRItem>.Create;
-  FmxProfForm.linkPreg := linkPreg;
-
-  dataRun := pointer(PByte(linkPreg) + lenNode);
-  mmoTest.Lines.Add(format('Fill dataPreg = %d', [dataPreg.DataPos]));
-
-  run := linkPreg.Parent.FirstChild; //  събирам останалите прегледи на пациента
-  FmxProfForm.OtherPregleds.Clear;
-  while run <> nil do
-  begin
-    dataRun := pointer(PByte(run) + lenNode);
-    case dataRun.vid of
-      vvPregledNew:
-      begin
-        if run = linkPreg  then
-        begin
-          run:= run.NextSibling;
-          Continue;
-        end;
-        FmxProfForm.OtherPregleds.Add(run);
-      end;
-    end;
-
-    run:= run.NextSibling;
-  end;
-
-  run := linkPreg.FirstChild; // ще се обикалят всички неща по прегледа
-  while run <> nil do
-  begin
-    dataRun := pointer(PByte(run) + lenNode);
-    case dataRun.vid of
-      vvPerformer:
-      begin
-        FmxProfForm.Doctor.DataPos := dataRun.DataPos;
-      end;
-      vvDiag:
-      begin
-        if FmxProfForm.Pregled.CanDeleteDiag then
-        begin
-          diag := TRealDiagnosisItem.Create(nil);
-          diag.DataPos := dataRun.DataPos;
-          diag.Node := run;
-          TempDiags.Add(diag);
-        end
-        else
-        begin
-
-        end;
-      end;
-      vvMDN:
-      begin
-        mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
-        if mdn = nil then
-        begin
-          mdn := TRealMdnItem.Create(nil);
-          mdn.DataPos := dataRun.DataPos;
-          mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
-          mdn.LinkNode := run;
-        end;
-        FmxProfForm.Pregled.FMdns.Add(mdn);
-
-
-        runAnal := run.FirstChild;
-        while runAnal <> nil do
-        begin
-          dataAnal := pointer(PByte(runAnal) + lenNode);
-          case dataAnal.vid of
-            vvExamAnal:
-            begin
-              anal := Adb_DM.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
-              if anal = nil then
-              begin
-                anal := TRealExamAnalysisItem.Create(nil);
-                anal.DataPos := dataAnal.DataPos;
-                mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
-                anal.LinkNode := runAnal;
-              end;
-              mdn.FExamAnals.Add(anal);
-            end;
-          end;
-          runAnal := runAnal.NextSibling;
-        end;
-      end;
-      vvNZIS_PLANNED_TYPE:
-      begin
-        nodePlan := run;
-        dataPlan := Pointer(PByte(nodePlan) + lenNode);
-        cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-        prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-        cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-        cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
-        if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
-        begin
-          mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
-          if mdn = nil then
-          begin
-            mdn := TRealMdnItem.Create(nil);
-            mdn.DataPos := dataRun.DataPos;
-            mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
-            mdn.LinkNode := run;
-          end;
-          FmxProfForm.Pregled.FMdns.Add(mdn);
-
-
-          runAnal := run.FirstChild;
-          while runAnal <> nil do
-          begin
-            dataAnal := pointer(PByte(runAnal) + lenNode);
-            case dataAnal.vid of
-              vvExamAnal:
-              begin
-                anal := Adb_DM.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
-                if anal = nil then
-                begin
-                  anal := TRealExamAnalysisItem.Create(nil);
-                  anal.DataPos := dataAnal.DataPos;
-                  mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-                  PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
-                  anal.LinkNode := runAnal;
-                end;
-                mdn.FExamAnals.Add(anal);
-              end;
-              vvMedNapr:
-              begin
-                mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
-                if mn = nil then
-                begin
-                  mn := TRealBLANKA_MED_NAPRItem.Create(nil);
-                  mn.DataPos := dataAnal.DataPos;
-                  mn.LinkNode := run;
-                end;
-                //FmxProfForm.Pregled.FMNs.Add(mn);
-                TempMns.Add(mn);
-                //if oldPreg <> nil then
-//                begin
-//                  mn.FPregled := oldPreg;
-//                end
-//                else
-//                begin
-//                  mn.FPregled := FmxProfForm.Pregled;
-//                end;
-              end;
-            end;
-            runAnal := runAnal.NextSibling;
-          end;
-        end
-        else
-        begin
-          nodePlan := run;
-          dataPlan := Pointer(PByte(nodePlan) + lenNode);
-          cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
-          cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
-          cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
-          runAnal := run.FirstChild;
-          while runAnal <> nil do
-          begin
-            dataAnal := pointer(PByte(runAnal) + lenNode);
-            case dataAnal.vid of
-             // vvExamAnal:
+//procedure TTempVtrHelper.ShowPregledFMX(dataPat, dataPreg: PAspRec;
+//  linkPreg: PVirtualNode);
+//var
+//  edt: TEdit;
+//  run, runAnal : PVirtualNode;
+//  dataRun, dataAnal, dataFMXPreg: PAspRec;
+//  diag: TRealDiagnosisItem;
+//  performer: TRealDoctorItem;
+//  mdn: TRealMDNItem;
+//  mn: TRealBLANKA_MED_NAPRItem;
+//  immun: TRealExamImmunizationItem;
+//  anal: TRealExamAnalysisItem;
+//  i, lastVacantPreg: Integer;
+//  PosInNomen: integer;
+//  vScrol: FMX.StdCtrls.TScrollBar;
+//
+//  nodePlan: PVirtualNode;
+//  dataPlan: PAspRec;
+//  cl132Key, cl136Key: string;
+//  prNomen: string;
+//  cl132pos, pr001Pos: Cardinal;
+//  revis: TRevision;
+//
+//  p: PCardinal;
+//  ofset: Cardinal;
+//  dataPatRevision: PAspRec;
+//  TempDiags: TList<TRealDiagnosisItem>;
+//  TempMns: TList<TRealBLANKA_MED_NAPRItem>;
+//begin
+//  Stopwatch := TStopwatch.StartNew;
+//  FmxProfForm.ClearListsPreg;
+//  TempDiags := TList<TRealDiagnosisItem>.Create;
+//  TempMns := TList<TRealBLANKA_MED_NAPRItem>.Create;
+//  FmxProfForm.linkPreg := linkPreg;
+//
+//  dataRun := pointer(PByte(linkPreg) + lenNode);
+//  mmoTest.Lines.Add(format('Fill dataPreg = %d', [dataPreg.DataPos]));
+//
+//  run := linkPreg.Parent.FirstChild; //  събирам останалите прегледи на пациента
+//  FmxProfForm.OtherPregleds.Clear;
+//  while run <> nil do
+//  begin
+//    dataRun := pointer(PByte(run) + lenNode);
+//    case dataRun.vid of
+//      vvPregledNew:
+//      begin
+//        if run = linkPreg  then
+//        begin
+//          run:= run.NextSibling;
+//          Continue;
+//        end;
+//        FmxProfForm.OtherPregleds.Add(run);
+//      end;
+//    end;
+//
+//    run:= run.NextSibling;
+//  end;
+//
+//  run := linkPreg.FirstChild; // ще се обикалят всички неща по прегледа
+//  while run <> nil do
+//  begin
+//    dataRun := pointer(PByte(run) + lenNode);
+//    case dataRun.vid of
+//      vvPerformer:
+//      begin
+//        FmxProfForm.Doctor.DataPos := dataRun.DataPos;
+//      end;
+//      vvDiag:
+//      begin
+//        if FmxProfForm.Pregled.CanDeleteDiag then
+//        begin
+//          diag := TRealDiagnosisItem.Create(nil);
+//          diag.DataPos := dataRun.DataPos;
+//          diag.Node := run;
+//          TempDiags.Add(diag);
+//        end
+//        else
+//        begin
+//
+//        end;
+//      end;
+//      vvMDN:
+//      begin
+//        mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
+//        if mdn = nil then
+//        begin
+//          mdn := TRealMdnItem.Create(nil);
+//          mdn.DataPos := dataRun.DataPos;
+//          mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
+//          mdn.LinkNode := run;
+//        end;
+//        FmxProfForm.Pregled.FMdns.Add(mdn);
+//
+//
+//        runAnal := run.FirstChild;
+//        while runAnal <> nil do
+//        begin
+//          dataAnal := pointer(PByte(runAnal) + lenNode);
+//          case dataAnal.vid of
+//            vvExamAnal:
+//            begin
+//              anal := Adb_DM.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
+//              if anal = nil then
 //              begin
-//                anal := CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
+//                anal := TRealExamAnalysisItem.Create(nil);
+//                anal.DataPos := dataAnal.DataPos;
+//                mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
+//                PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
+//                anal.LinkNode := runAnal;
+//              end;
+//              mdn.FExamAnals.Add(anal);
+//            end;
+//          end;
+//          runAnal := runAnal.NextSibling;
+//        end;
+//      end;
+//      vvNZIS_PLANNED_TYPE:
+//      begin
+//        nodePlan := run;
+//        dataPlan := Pointer(PByte(nodePlan) + lenNode);
+//        cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+//        prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+//        cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+//        cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
+//        if (cl136Key = '2') and (nodePlan.CheckState = csCheckedNormal) then
+//        begin
+//          mdn := Adb_DM.CollMDN.GetItemsFromDataPos(dataRun.DataPos);
+//          if mdn = nil then
+//          begin
+//            mdn := TRealMdnItem.Create(nil);
+//            mdn.DataPos := dataRun.DataPos;
+//            mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
+//            mdn.LinkNode := run;
+//          end;
+//          FmxProfForm.Pregled.FMdns.Add(mdn);
+//
+//
+//          runAnal := run.FirstChild;
+//          while runAnal <> nil do
+//          begin
+//            dataAnal := pointer(PByte(runAnal) + lenNode);
+//            case dataAnal.vid of
+//              vvExamAnal:
+//              begin
+//                anal := Adb_DM.CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
 //                if anal = nil then
 //                begin
 //                  anal := TRealExamAnalysisItem.Create(nil);
 //                  anal.DataPos := dataAnal.DataPos;
 //                  mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
-//                  PosInNomen := anal.getIntMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_PosDataNomen));
+//                  PosInNomen := anal.getIntMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_PosDataNomen));
 //                  anal.LinkNode := runAnal;
 //                end;
 //                mdn.FExamAnals.Add(anal);
 //              end;
-              vvMedNapr:
-              begin
-                mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
-                if mn = nil then
-                begin
-                  mn := TRealBLANKA_MED_NAPRItem.Create(nil);
-                  mn.DataPos := dataAnal.DataPos;
-                  mn.LinkNode := run;
-                end;
-                //FmxProfForm.Pregled.FMNs.Add(mn);
-                TempMns.Add(mn);
-                //if oldPreg <> nil then
+//              vvMedNapr:
+//              begin
+//                mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
+//                if mn = nil then
 //                begin
-//                  mn.FPregled := oldPreg;
-//                end
-//                else
-//                begin
-//                  mn.FPregled := FmxProfForm.Pregled;
+//                  mn := TRealBLANKA_MED_NAPRItem.Create(nil);
+//                  mn.DataPos := dataAnal.DataPos;
+//                  mn.LinkNode := run;
 //                end;
-              end;
-            end;
-            runAnal := runAnal.NextSibling;
-          end;
-        end;
-
-      end;
-      vvMedNapr:
-      begin
-        mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataRun.DataPos);
-        if mn = nil then
-        begin
-          mn := TRealBLANKA_MED_NAPRItem.Create(nil);
-          mn.DataPos := dataRun.DataPos;
-          //mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
-          mn.LinkNode := run;
-        end;
-        //FmxProfForm.Pregled.FMNs.Add(mn);
-        TempMns.Add(mn);
-        //if oldPreg <> nil then
-//        begin
-//          mn.FPregled := oldPreg;
+//                //FmxProfForm.Pregled.FMNs.Add(mn);
+//                TempMns.Add(mn);
+//                //if oldPreg <> nil then
+////                begin
+////                  mn.FPregled := oldPreg;
+////                end
+////                else
+////                begin
+////                  mn.FPregled := FmxProfForm.Pregled;
+////                end;
+//              end;
+//            end;
+//            runAnal := runAnal.NextSibling;
+//          end;
 //        end
 //        else
 //        begin
-//          mn.FPregled := FmxProfForm.Pregled;
+//          nodePlan := run;
+//          dataPlan := Pointer(PByte(nodePlan) + lenNode);
+//          cl132Key := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+//          prNomen := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+//          cl132pos := Adb_DM.CollNZIS_PLANNED_TYPE.getCardMap(dataPlan.DataPos, word(NZIS_PLANNED_TYPE_CL132_DataPos));
+//          cl136Key := Adb_DM.CL132Coll.getAnsiStringMap(cl132pos, word(CL132_cl136));
+//          runAnal := run.FirstChild;
+//          while runAnal <> nil do
+//          begin
+//            dataAnal := pointer(PByte(runAnal) + lenNode);
+//            case dataAnal.vid of
+//             // vvExamAnal:
+////              begin
+////                anal := CollExamAnal.GetItemsFromDataPos(dataAnal.DataPos);
+////                if anal = nil then
+////                begin
+////                  anal := TRealExamAnalysisItem.Create(nil);
+////                  anal.DataPos := dataAnal.DataPos;
+////                  mmoTest.Lines.Add(format('Fill anal.DataPos = %d', [anal.DataPos]));
+////                  PosInNomen := anal.getIntMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_PosDataNomen));
+////                  anal.LinkNode := runAnal;
+////                end;
+////                mdn.FExamAnals.Add(anal);
+////              end;
+//              vvMedNapr:
+//              begin
+//                mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataAnal.DataPos);
+//                if mn = nil then
+//                begin
+//                  mn := TRealBLANKA_MED_NAPRItem.Create(nil);
+//                  mn.DataPos := dataAnal.DataPos;
+//                  mn.LinkNode := run;
+//                end;
+//                //FmxProfForm.Pregled.FMNs.Add(mn);
+//                TempMns.Add(mn);
+//                //if oldPreg <> nil then
+////                begin
+////                  mn.FPregled := oldPreg;
+////                end
+////                else
+////                begin
+////                  mn.FPregled := FmxProfForm.Pregled;
+////                end;
+//              end;
+//            end;
+//            runAnal := runAnal.NextSibling;
+//          end;
 //        end;
-      end;
-      vvExamImun:
-      begin
-        immun := Adb_DM.CollExamImun.GetItemsFromDataPos(dataRun.DataPos);
-        if immun = nil then
-        begin
-          immun := TRealExamImmunizationItem.Create(nil);
-          immun.DataPos := dataRun.DataPos;
-          //mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
-          immun.LinkNode := run;
-        end;
-        FmxProfForm.Pregled.FImmuns.Add(immun);
-        immun.FPregled := FmxProfForm.Pregled;
-      end;
-      vvPatientRevision:
-      begin
-        revis := TRevision.Create;
-        revis.CollType := ctPatientNew;
-        revis.node := run;
-        revis.propIndex := run.Dummy;
-        dataPatRevision := Pointer(PByte(run) + lenNode);
-        ofset := dataPatRevision.index;
-        case run.Dummy of
-          word(PatientNew_FNAME):
-          begin
-            FmxProfForm.patNameF := Adb_DM.CollPatient.getAnsiStringMapOfset(ofset, word(PatientNew_FNAME));
-          end;
-        end;
-        //pat.Revisions.Add(revis);
-      end;
-    end;
-
-    run := run.NextSibling;
-  end;
-  //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
-
-  //FmxProfForm.AspAdbBuf := AspectsHipFile.Buf;
-//  FmxProfForm.AspAdbPosData := AspectsHipFile.FPosData;
-  FmxProfForm.Patient.DataPos := dataPat.DataPos;
-  if FmxProfForm.Pregled.FNode = nil then // не е избиран и редактиран до сега
-  begin
-    FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-    FmxProfForm.Pregled.FNode := linkPreg;
-    dataPreg.index := 0;
-  end
-  else
-  begin
-    if FmxProfForm.Pregled.PRecord <> nil then // Редактиран е и трябва да се добави нов във колекцията
-    begin
-      FmxProfForm.RemoveLastVacantindexPreg;
-      if dataPreg.index < 0 then  // само че да не е ползван и незаписан преди
-      begin
-        lastVacantPreg := FmxProfForm.FindVacantIndexPreg();
-        if lastVacantPreg = -1 then
-        begin
-          //oldPreg := FmxProfForm.Pregled;
-          FmxProfForm.Pregled := TRealPregledNewItem(Adb_DM.CollPregled.Add);
-          dataPreg.index := Adb_DM.CollPregled.Count - 1;
-          ////  трябва да се вземат нещата от стария (попълненият) преглед
-//          FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
-//          FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
-        end
-        else
-        begin
-          FmxProfForm.Pregled := Adb_DM.CollPregled.Items[lastVacantPreg];
-
-          dataPreg.index := lastVacantPreg;
-
-        end;
-
-        FmxProfForm.Pregled.FNode := linkPreg;
-        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-      end
-      else
-      begin
-       // oldPreg := FmxProfForm.Pregled;
-        FmxProfForm.Pregled := Adb_DM.CollPregled.Items[dataPreg.index];
-        FmxProfForm.Pregled.FNode := linkPreg;
-        //dataPreg.index := dataPreg.index; // не трябва да се сменява
-        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-        ////  трябва да се вземат нещата от стария (попълненият) преглед
-//        FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
-//        FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
-      end;
-    end
-    else
-    begin
-      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // който е за редактиране
-      if dataPreg.index = - 1 then
-      begin
-        if FmxProfForm.FindVacantIndexPreg() = -1 then
-        begin// тука трябва да се записват някъде минусираните
-          FmxProfForm.AddVacantindexPreg(dataFMXPreg.index);
-        end;
-        dataPreg.index := dataFMXPreg.index;// заменям стария индекс със новия
-        dataFMXPreg.index := -1;// стария го минусирам :) за да се знае, че не е ползван
-        if dataPreg.index = -1 then
-        begin
-          //Caption := 'errrr';
-          Exit;
-        end;
-      end
-      else
-      begin
-        //Caption := 'errrr'; // zzzz
-//        Exit;
-      end;
-
-
-      FmxProfForm.Pregled := Adb_DM.CollPregled.Items[dataPreg.index]; //взимам  прегледа и му слагам новите неща
-      FmxProfForm.Pregled.FNode := linkPreg;
-      FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-
-    end;
-  end;
-
-  FmxProfForm.ClearBlanka;
-  FmxProfForm.Pregled.FDiagnosis.AddRange(TempDiags);
-  FmxProfForm.Pregled.FMNs.AddRange(TempMns);
-  for i := 0 to FmxProfForm.Pregled.FMNs.Count - 1 do
-    FmxProfForm.Pregled.FMNs[i].FPregled := FmxProfForm.Pregled;
-  TempDiags.Free;
-  TempMns.Free;
-
-
-  FmxProfForm.FillProfActivityPreg(linkPreg);
-  FmxProfForm.FillRightLYT(dataPreg);
-  FmxProfForm.rctNzisBTN.Repaint;
-  FmxProfForm.InitSetings;
-
-  Elapsed := Stopwatch.Elapsed;
-  //FmxProfForm.scldlyt1.endupdate;
-  mmoTest.Lines.Add( 'DYN ' + FloatToStr(Elapsed.TotalMilliseconds));
-end;
+//
+//      end;
+//      vvMedNapr:
+//      begin
+//        mn := Adb_DM.CollMedNapr.GetItemsFromDataPos(dataRun.DataPos);
+//        if mn = nil then
+//        begin
+//          mn := TRealBLANKA_MED_NAPRItem.Create(nil);
+//          mn.DataPos := dataRun.DataPos;
+//          //mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
+//          mn.LinkNode := run;
+//        end;
+//        //FmxProfForm.Pregled.FMNs.Add(mn);
+//        TempMns.Add(mn);
+//        //if oldPreg <> nil then
+////        begin
+////          mn.FPregled := oldPreg;
+////        end
+////        else
+////        begin
+////          mn.FPregled := FmxProfForm.Pregled;
+////        end;
+//      end;
+//      vvExamImun:
+//      begin
+//        immun := Adb_DM.CollExamImun.GetItemsFromDataPos(dataRun.DataPos);
+//        if immun = nil then
+//        begin
+//          immun := TRealExamImmunizationItem.Create(nil);
+//          immun.DataPos := dataRun.DataPos;
+//          //mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
+//          immun.LinkNode := run;
+//        end;
+//        FmxProfForm.Pregled.FImmuns.Add(immun);
+//        immun.FPregled := FmxProfForm.Pregled;
+//      end;
+//      vvPatientRevision:
+//      begin
+//        revis := TRevision.Create;
+//        revis.CollType := ctPatientNew;
+//        revis.node := run;
+//        revis.propIndex := run.Dummy;
+//        dataPatRevision := Pointer(PByte(run) + lenNode);
+//        ofset := dataPatRevision.index;
+//        case run.Dummy of
+//          word(PatientNew_FNAME):
+//          begin
+//            FmxProfForm.patNameF := Adb_DM.CollPatient.getAnsiStringMapOfset(ofset, word(PatientNew_FNAME));
+//          end;
+//        end;
+//        //pat.Revisions.Add(revis);
+//      end;
+//    end;
+//
+//    run := run.NextSibling;
+//  end;
+//  //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
+//
+//  //FmxProfForm.AspAdbBuf := AspectsHipFile.Buf;
+////  FmxProfForm.AspAdbPosData := AspectsHipFile.FPosData;
+//  FmxProfForm.Patient.DataPos := dataPat.DataPos;
+//  if FmxProfForm.Pregled.FNode = nil then // не е избиран и редактиран до сега
+//  begin
+//    FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//    FmxProfForm.Pregled.FNode := linkPreg;
+//    dataPreg.index := 0;
+//  end
+//  else
+//  begin
+//    if FmxProfForm.Pregled.PRecord <> nil then // Редактиран е и трябва да се добави нов във колекцията
+//    begin
+//      FmxProfForm.RemoveLastVacantindexPreg;
+//      if dataPreg.index < 0 then  // само че да не е ползван и незаписан преди
+//      begin
+//        lastVacantPreg := FmxProfForm.FindVacantIndexPreg();
+//        if lastVacantPreg = -1 then
+//        begin
+//          //oldPreg := FmxProfForm.Pregled;
+//          FmxProfForm.Pregled := TRealPregledNewItem(Adb_DM.CollPregled.Add);
+//          dataPreg.index := Adb_DM.CollPregled.Count - 1;
+//          ////  трябва да се вземат нещата от стария (попълненият) преглед
+////          FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
+////          FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
+//        end
+//        else
+//        begin
+//          FmxProfForm.Pregled := Adb_DM.CollPregled.Items[lastVacantPreg];
+//
+//          dataPreg.index := lastVacantPreg;
+//
+//        end;
+//
+//        FmxProfForm.Pregled.FNode := linkPreg;
+//        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//      end
+//      else
+//      begin
+//       // oldPreg := FmxProfForm.Pregled;
+//        FmxProfForm.Pregled := Adb_DM.CollPregled.Items[dataPreg.index];
+//        FmxProfForm.Pregled.FNode := linkPreg;
+//        //dataPreg.index := dataPreg.index; // не трябва да се сменява
+//        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//        ////  трябва да се вземат нещата от стария (попълненият) преглед
+////        FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
+////        FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
+//      end;
+//    end
+//    else
+//    begin
+//      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // който е за редактиране
+//      if dataPreg.index = - 1 then
+//      begin
+//        if FmxProfForm.FindVacantIndexPreg() = -1 then
+//        begin// тука трябва да се записват някъде минусираните
+//          FmxProfForm.AddVacantindexPreg(dataFMXPreg.index);
+//        end;
+//        dataPreg.index := dataFMXPreg.index;// заменям стария индекс със новия
+//        dataFMXPreg.index := -1;// стария го минусирам :) за да се знае, че не е ползван
+//        if dataPreg.index = -1 then
+//        begin
+//          //Caption := 'errrr';
+//          Exit;
+//        end;
+//      end
+//      else
+//      begin
+//        //Caption := 'errrr'; // zzzz
+////        Exit;
+//      end;
+//
+//
+//      FmxProfForm.Pregled := Adb_DM.CollPregled.Items[dataPreg.index]; //взимам  прегледа и му слагам новите неща
+//      FmxProfForm.Pregled.FNode := linkPreg;
+//      FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//
+//    end;
+//  end;
+//
+//  FmxProfForm.ClearBlanka;
+//  FmxProfForm.Pregled.FDiagnosis.AddRange(TempDiags);
+//  FmxProfForm.Pregled.FMNs.AddRange(TempMns);
+//  for i := 0 to FmxProfForm.Pregled.FMNs.Count - 1 do
+//    FmxProfForm.Pregled.FMNs[i].FPregled := FmxProfForm.Pregled;
+//  TempDiags.Free;
+//  TempMns.Free;
+//
+//
+//  FmxProfForm.FillProfActivityPreg(linkPreg);
+//  FmxProfForm.FillRightLYT(dataPreg);
+//  FmxProfForm.rctNzisBTN.Repaint;
+//  FmxProfForm.InitSetings;
+//
+//  Elapsed := Stopwatch.Elapsed;
+//  //FmxProfForm.scldlyt1.endupdate;
+//  mmoTest.Lines.Add( 'DYN ' + FloatToStr(Elapsed.TotalMilliseconds));
+//end;
 
 function TTempVtrHelper.SplitMKB_Add(const str: string): TArray<Cardinal>;
 var
@@ -1739,103 +1739,103 @@ begin
 
 end;
 
-procedure TTempVtrHelper.vtrMKBChecked(Sender: TBaseVirtualTree;
-  Node: PVirtualNode);
-var
-  data, dataPreg, dataPat, dataMkb, dataMkbAdd1, dataMkbAdd2: PAspRec;
-  tempViewportPosition: TPointF;
-  i: integer;
-  pregled: TRealPregledNewItem;
-  vMkb, vmkbAdd1, vmkbAdd2: PVirtualNode;
-begin
-  data := Fvtr.GetNodeData(node);
-  CurrentPregled := FmxProfForm.Pregled;
-  case data.vid of
-    vvMKB:
-    begin
-      if (csCheckedNormal = Node.CheckState) then
-      begin
-        CurrentPregled.CanDeleteDiag := False;
-        //Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-        Adb_DM.AddNewDiag(CurrentPregled.FNode, Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE)), '', CurrentPregled.FDiagnosis.Count, Data.DataPos);
-        CurrentPregled.FDiagnosis.Add(Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
-        dataPat := Pointer(PByte(CurrentPregled.FNode.Parent) + lenNode);
-        dataPreg := Pointer(PByte(CurrentPregled.FNode) + lenNode);
-        FmxProfForm.AddDiag(nil, nil, FmxProfForm.Pregled.FDiagnosis.Count, Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
-        FmxProfForm.xpdrDiagn.RecalcSize;
-        FmxProfForm.lytDiagFrame.Height := FmxProfForm.xpdrDiagn.Height + 30;
-        //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-        //ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
-        //FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
-        data.index := FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].DataPos;
-        FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].MkbNode := Node;
-        FmxProfForm.Pregled.CanDeleteDiag := true;
-
-        vMkb := FVtr.CopyTo(Node, vDiagPreg, amAddChildLast, false);
-        dataMkb := FVtr.GetNodeData(vMkb);
-        dataMkb.vid := vvMKB;
-        dataMkb.DataPos := data.DataPos;
-
-        vmkbAdd1 := Node.FirstChild;
-        vmkbAdd2 := vMkb.FirstChild;
-        while vmkbAdd2 <> nil do
-        begin
-          dataMkbAdd1 := FVtr.GetNodeData(vmkbAdd1);
-          dataMkbAdd2 := FVtr.GetNodeData(vmkbAdd2);
-          dataMkbAdd2.vid := dataMkbAdd1.vid;
-          dataMkbAdd2.DataPos := dataMkbAdd1.DataPos;
-
-          vmkbAdd1 := vmkbAdd1.NextSibling;
-          vmkbAdd2 := vmkbAdd2.NextSibling;
-        end;
-      end
-      else
-      begin
-        //Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-        FmxProfForm.Pregled.CanDeleteDiag := False;
-        for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
-        begin
-          if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
-          begin
-
-            Adb_DM.CollPregled.streamComm.Size := 0;
-            Adb_DM.CollPregled.streamComm.OpType := toDeleteNode;
-            Adb_DM.CollPregled.streamComm.Size := 12 + 4;
-            Adb_DM.CollPregled.streamComm.Ver := 0;
-            Adb_DM.CollPregled.streamComm.Vid := ctLink;
-            Adb_DM.CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
-            Adb_DM.CollPregled.streamComm.Propertys := [];
-            Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
-            Adb_DM.cmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
-            FmxProfForm.Pregled.FDiagnosis.Delete(i);
-            Break;
-          end;
-        end;
-
-        RemoveDiag(FmxProfForm.Pregled.FNode, cardinal(Data.index));
-
-        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
-        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
-        //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-//        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
-//        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
-        FmxProfForm.Pregled.CanDeleteDiag := true;
-
-        vMkb := vDiagPreg.FirstChild;
-        while vMkb <> nil do
-        begin
-          dataMkb := FVtr.GetNodeData(vMkb);
-          if dataMkb.DataPos = Data.DataPos then
-          begin
-            FVtr.DeleteNode(vmkb);
-            Break;
-          end;
-          vMkb := vMkb.NextSibling;
-        end;
-      end;
-    end;
-  end;
-end;
+//procedure TTempVtrHelper.vtrMKBChecked(Sender: TBaseVirtualTree;
+//  Node: PVirtualNode);
+//var
+//  data, dataPreg, dataPat, dataMkb, dataMkbAdd1, dataMkbAdd2: PAspRec;
+//  tempViewportPosition: TPointF;
+//  i: integer;
+//  pregled: TRealPregledNewItem;
+//  vMkb, vmkbAdd1, vmkbAdd2: PVirtualNode;
+//begin
+//  data := Fvtr.GetNodeData(node);
+//  CurrentPregled := FmxProfForm.Pregled;
+//  case data.vid of
+//    vvMKB:
+//    begin
+//      if (csCheckedNormal = Node.CheckState) then
+//      begin
+//        CurrentPregled.CanDeleteDiag := False;
+//        //Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+//        Adb_DM.AddNewDiag(CurrentPregled.FNode, Adb_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE)), '', CurrentPregled.FDiagnosis.Count, Data.DataPos);
+//        CurrentPregled.FDiagnosis.Add(Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
+//        dataPat := Pointer(PByte(CurrentPregled.FNode.Parent) + lenNode);
+//        dataPreg := Pointer(PByte(CurrentPregled.FNode) + lenNode);
+//        FmxProfForm.AddDiag(nil, nil, FmxProfForm.Pregled.FDiagnosis.Count, Adb_DM.CollDiag.Items[Adb_DM.CollDiag.Count - 1]);
+//        FmxProfForm.xpdrDiagn.RecalcSize;
+//        FmxProfForm.lytDiagFrame.Height := FmxProfForm.xpdrDiagn.Height + 30;
+//        //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+//        //ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+//        //FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+//        data.index := FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].DataPos;
+//        FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].MkbNode := Node;
+//        FmxProfForm.Pregled.CanDeleteDiag := true;
+//
+//        vMkb := FVtr.CopyTo(Node, vDiagPreg, amAddChildLast, false);
+//        dataMkb := FVtr.GetNodeData(vMkb);
+//        dataMkb.vid := vvMKB;
+//        dataMkb.DataPos := data.DataPos;
+//
+//        vmkbAdd1 := Node.FirstChild;
+//        vmkbAdd2 := vMkb.FirstChild;
+//        while vmkbAdd2 <> nil do
+//        begin
+//          dataMkbAdd1 := FVtr.GetNodeData(vmkbAdd1);
+//          dataMkbAdd2 := FVtr.GetNodeData(vmkbAdd2);
+//          dataMkbAdd2.vid := dataMkbAdd1.vid;
+//          dataMkbAdd2.DataPos := dataMkbAdd1.DataPos;
+//
+//          vmkbAdd1 := vmkbAdd1.NextSibling;
+//          vmkbAdd2 := vmkbAdd2.NextSibling;
+//        end;
+//      end
+//      else
+//      begin
+//        //Caption := CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+//        FmxProfForm.Pregled.CanDeleteDiag := False;
+//        for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
+//        begin
+//          if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
+//          begin
+//
+//            Adb_DM.CollPregled.streamComm.Size := 0;
+//            Adb_DM.CollPregled.streamComm.OpType := toDeleteNode;
+//            Adb_DM.CollPregled.streamComm.Size := 12 + 4;
+//            Adb_DM.CollPregled.streamComm.Ver := 0;
+//            Adb_DM.CollPregled.streamComm.Vid := ctLink;
+//            Adb_DM.CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
+//            Adb_DM.CollPregled.streamComm.Propertys := [];
+//            Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
+//            Adb_DM.cmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
+//            FmxProfForm.Pregled.FDiagnosis.Delete(i);
+//            Break;
+//          end;
+//        end;
+//
+//        RemoveDiag(FmxProfForm.Pregled.FNode, cardinal(Data.index));
+//
+//        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
+//        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+//        //tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+////        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+////        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+//        FmxProfForm.Pregled.CanDeleteDiag := true;
+//
+//        vMkb := vDiagPreg.FirstChild;
+//        while vMkb <> nil do
+//        begin
+//          dataMkb := FVtr.GetNodeData(vMkb);
+//          if dataMkb.DataPos = Data.DataPos then
+//          begin
+//            FVtr.DeleteNode(vmkb);
+//            Break;
+//          end;
+//          vMkb := vMkb.NextSibling;
+//        end;
+//      end;
+//    end;
+//  end;
+//end;
 
 procedure TTempVtrHelper.vtrMkbGetText(Sender: TBaseVirtualTree;
   Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;

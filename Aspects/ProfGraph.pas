@@ -1,4 +1,4 @@
-unit ProfGraph;
+﻿unit ProfGraph;
 
 interface
 uses
@@ -16,8 +16,6 @@ type
     startDate: TDate;
     endDate: TDate;
     repNumber: Integer;
-    //preg: TObject;
-    //Pat: TRealPatientNewItem;
   end;
 
   TProfGraph = class
@@ -41,24 +39,17 @@ type
     procedure FillCl144InCL142;
   public
 
-    //BufNomen: Pointer;
-    //BufADB: Pointer;
-    //posDataADB: cardinal;
     vtrGraph: TVirtualStringTreeHipp;
 
     collPat: TCollection;
     Adb_DM: TObject;
-    //NzisPregNotPreg: string; // прегледи според нзис, ама не са (Божинката)
-//    RL090: string;
 
     constructor create;
-    procedure GeneratePeriod(Apat: TObject);
-    //procedure GeneratePeriodOld(Apat: TObject);
+    procedure GeneratePeriod1();
     function RuleCl132_PR001(cl132, pr001: TObject): Boolean;
 
     procedure LoadVtrGraph1(Apat: TObject; patIndex: Integer);
-    procedure LoadVtrGraph(Apat: TObject; patIndex: Integer);
-    procedure LoadVtrGraphOutVtr(Apat: TObject; patIndex: Integer);
+    procedure LoadVtrGraphOutVtr1();
     property CurrDate: TDate read FCurrDate write FCurrDate;
     property SexMale: Boolean read FSexMale write FSexMale;
     property VisibleMinali: Boolean read FVisibleMinali write FVisibleMinali;
@@ -68,7 +59,6 @@ type
 implementation
 uses
   RealObj.RealHipp,
-  //SuperHipp,
   ADB_DataUnit;
 
 { TProfGraph }
@@ -458,7 +448,7 @@ begin
   end;
 end;
 
-procedure TProfGraph.GeneratePeriod(Apat: TObject);
+procedure TProfGraph.GeneratePeriod1();
 var
   i, j, k, m: Integer;
   cl132i: TRealCL132Item;
@@ -470,20 +460,23 @@ var
   maxLive, maxYear, StartNzisData, BrthDate: TDate;
   Graph, Key, egn: string;
   gr: TGraphPeriod132;
-  pat: TRealPatientNewItem;
-  preg: TRealPregledNewItem;
+  patNodes: TPatNodes;
+  pregNodes: TPregledNodes;
+  dataPat, dataPreg: PAspRec;
 
   CL132Coll: TRealCL132Coll;
   PR001Coll: TRealPR001Coll;
   CL134Coll: TRealCL134Coll;
   patColl: TRealPatientNewColl;
-
+  pregColl: TRealPregledNewColl;
 begin
+  if TADBDataModule(Adb_DM).AdbNomenNzis = nil then
+    TADBDataModule(Adb_DM).OpenADBNomenNzis('NzisNomen.adb');
   CL132Coll := TADBDataModule(Adb_DM).CL132Coll;
   PR001Coll := TADBDataModule(Adb_DM).PR001Coll;
   CL134Coll := TADBDataModule(Adb_DM).CL134Coll;
   patColl := TADBDataModule(Adb_DM).CollPatient;
-
+  pregColl := TADBDataModule(Adb_DM).CollPregled;
 
   if not isFilled then
   begin
@@ -498,14 +491,15 @@ begin
   end;
   Stopwatch := TStopwatch.StartNew;
 
-  pat := TRealPatientNewItem(Apat);
+  patNodes := TADBDataModule(Adb_DM).PatNodesBack;
   startMin := 0;
   currentMin := 0;
   startMax := 0;
   currentMax := 0;
   maxYear := 120;
   StartNzisData := EncodeDate(1821, 01, 01);
-  BrthDate := patColl.getDateMap(pat.DataPos, word(PatientNew_BIRTH_DATE));
+  dataPat := PAspRec(PByte(patNodes.patNode) + lenNode);
+  BrthDate := patColl.getDateMap(dataPat.DataPos, word(PatientNew_BIRTH_DATE));
   maxLive := DatStrToDays(BrthDate, '120 year');
   for i := 0 to CL132Coll.Count - 1 do
   begin
@@ -530,7 +524,7 @@ begin
     datStr := CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_min_age)); //измислили са датите да са в някаква странна форма
     Graph :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Description));
     Key :=  CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_Key));
-    egn := patColl.getAnsiStringMap(pat.DataPos, word(PatientNew_EGN));
+    egn := patColl.getAnsiStringMap(dataPat.DataPos, word(PatientNew_EGN));
     if (egn = '0052120125') and (Key = 'V17') then
       egn := '0052120125';  // за тестови цели. спирам си тук да видя какво става при такаова нещо
 
@@ -573,7 +567,7 @@ begin
         gr.repNumber := 0;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData then
-          pat.lstGraph.Add(gr);
+          patNodes.lstGraph.Add(gr);
 
         while currentMax < maxYear do // до максималните години по номенклатурата JM1
         begin
@@ -600,7 +594,7 @@ begin
 
           gr.Cl132 := cl132i;
             if gr.startDate >= StartNzisData then
-          pat.lstGraph.Add(gr);
+          patNodes.lstGraph.Add(gr);
         end;
 
       end
@@ -628,7 +622,7 @@ begin
         gr.repNumber := -1;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData  then
-          pat.lstGraph.Add(gr);
+          patNodes.lstGraph.Add(gr);
       end;
     end
     else // няма крайна дата, но може да има, а да е ваксина V16
@@ -668,14 +662,14 @@ begin
           begin
             gr.startDate := gr.startDate + (BrthDate - StartOfTheYear(BrthDate));
           end;
-          pat.lstGraph.Add(gr);
+          patNodes.lstGraph.Add(gr);
         end;
       end
       else
       begin
         //assert(repStr = '', Format('План %s, е без крайна дата и няма повторяемост. ', [Key]))
       end;
-      
+
 
       if Key <> 'V16' then
       begin
@@ -696,15 +690,14 @@ begin
           case CL132Coll.getAnsiStringMap(cl132i.DataPos, word(CL132_cl136))[1] of
             '1': // преглед
             begin
-              for k := 0 to pat.FPregledi.Count - 1 do
+              for k := 0 to patNodes.pregs.Count - 1 do
               begin
-                preg := pat.FPregledi[k];
-                datTemp := preg.getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PregledNew_START_DATE));
+                dataPreg := PAspRec(PByte(patNodes.pregs[k]) + lenNode);
+                datTemp := pregColl.getDateMap(dataPreg.DataPos, word(PregledNew_START_DATE));
                 if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
                 begin
-                  if preg.Cl132 = nil then
+                  if pregNodes.Planeds = nil then
                   begin
-                    preg.Cl132 := cl132i;
                     break;
                   end;
                 end;
@@ -714,7 +707,7 @@ begin
           gr.Cl132 := cl132i;
           if gr.startDate >= StartNzisData then
           begin
-            pat.lstGraph.Add(gr); // няма крайна дата и се повтаря до края на живота
+            patNodes.lstGraph.Add(gr); // няма крайна дата и се повтаря до края на живота
           end;
         end;
       end
@@ -738,334 +731,15 @@ begin
         gr.repNumber := -1;
         gr.Cl132 := cl132i;
         if gr.startDate >= StartNzisData  then
-          pat.lstGraph.Add(gr);
+          patNodes.lstGraph.Add(gr);
       end;
     end;
   end;
   Elapsed := Stopwatch.Elapsed;
-  gr.Cl132.test := ( 'rrrr ' + FloatToStr(Elapsed.TotalMilliseconds));
+  //gr.Cl132.test := ( 'rrrr ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
-procedure TProfGraph.LoadVtrGraph(Apat: TObject; patIndex: Integer);
-var
-  i, j, k, m: Integer;
-  gr: TGraphPeriod132;
-  examAnal: TRealExamAnalysisItem;
-  vPat, vMinali, vNast, vBudeshti, vCl132, vPr001, vCL134, vCL088, vRun: PVirtualNode;
-  data, dataNast: PAspRec;
-  cl134: TCL134Item;
-  Cl132: TRealCl132Item;
-  pr001: TRealPR001Item;
-  Cl088: TRealCl088Item;
-  test, note, Field_cl133: string;
-  pat: TRealPatientNewItem;
-  Rule88, ACL088_key, Cl132Key: string;
-  AEndDate, datTemp: TDate;
-  adbDM: TADBDataModule;
 
-  prStartDate: TDate;
-  IsPregForPerform: boolean;
-
-  dataExamAnal: PAspRec;
-  NodeExamAnal: PVirtualNode;
-  cl22Pr1, cl22ExamAnal: string;
-  PatNodes: TPatNodes;
-  BufNomen: Pointer;
-begin
-  adbDM := TADBDataModule(Adb_DM);
-  BufNomen := adbDM.AdbNomenNzis.Buf;
-
-
-  vtrGraph.BeginUpdate;
-  IsPregForPerform := False;
-  pat := TRealPatientNewItem(Apat);
-  PatNodes := adbDM.GetPatNodes(pat.FNode);
-  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
- // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
-  vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
-  data := vtrGraph.GetNodeData(vPat);
-  data.DataPos := pat.DataPos;
-  data.index := patIndex;
-  data.vid := vvPatient;
-
-  vNast := vtrGraph.AddChild(vPat, nil);
-
-  dataNast := vtrGraph.GetNodeData(vNast);
-  dataNast.index := -2;
-  dataNast.DataPos := MaxInt;
-
-  if FVisibleMinali then
-  begin
-    vMinali := vtrGraph.AddChild(vPat, nil);
-    data := vtrGraph.GetNodeData(vMinali);
-    data.index := -1;
-  end;
-
-  if FVisibleBudeshti then
-  begin
-    vBudeshti := vtrGraph.AddChild(vPat, nil);
-    data := vtrGraph.GetNodeData(vBudeshti);
-    data.index := -3;
-  end;
-  pat.ListCurrentProf.Clear;
-  for i := 0 to pat.lstGraph.Count - 1 do
-  begin
-
-    gr := pat.lstGraph[i];
-    FreeAndNil(gr.Cl132.FExamAnal);
-    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
-      FreeAndNil(gr.Cl132.FListPr001[j].FExamAnal);
-    //Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_Key));
-    //SuperHipp.frmSuperHip.mmoTest.Lines.Add(DateToStr(gr.startDate) + '   ' + Cl132Key);
-    if UserDate > gr.endDate then
-    begin
-      if not FVisibleMinali then Continue;
-      vCl132 := vtrGraph.AddChild(vMinali, nil);
-      vCl132.CheckType := ctCheckBox;
-      vCl132.CheckState := csUncheckedNormal;
-      data := vtrGraph.GetNodeData(vCl132);
-      data.vid := vvCl132;
-      data.index := i;
-    end
-    else
-    if (UserDate < gr.endDate) and (UserDate < gr.startDate) then
-    begin
-      if not FVisibleBudeshti then Continue;
-      vCl132 := vtrGraph.AddChild(vBudeshti, nil);
-      data := vtrGraph.GetNodeData(vCl132);
-      vCl132.CheckType := ctCheckBox;
-      vCl132.CheckState := csUncheckedNormal;
-      data.vid := vvCl132;
-      data.index := i;
-    end
-    else
-    if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
-    begin
-      vCl132 := vtrGraph.AddChild(vNast, nil);
-      data := vtrGraph.GetNodeData(vCl132);
-
-      //if gr.Cl132.getAnsiStringMap(BufNomen, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then // ако е тип преглед
-      case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
-        '1': //ако е тип преглед
-        begin
-          gr.Cl132.FPregled := nil;
-          Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
-          for j := 0 to pat.FPregledi.Count - 1 do
-          begin
-            prStartDate := pat.FPregledi[j].getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PregledNew_START_DATE));
-            if (prStartDate <= gr.endDate) and ((prStartDate >= gr.startDate)) then
-            begin
-
-              //if pat.FPregledi[j].Cl132 = gr.Cl132 then
-              begin
-                gr.Cl132.FPregled := pat.FPregledi[j];
-                pat.FPregledi[j].Cl132 := gr.Cl132;
-                pat.CurrentGraphIndex := i;
-                Break;
-              end;
-            end;
-          end;
-          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
-          begin
-            if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
-            begin
-              vCl132.CheckType := ctCheckBox;
-              vCl132.CheckState := csUncheckedNormal;
-              pat.ListCurrentProf.Add(gr);
-            end
-            else
-            begin
-              if IsPregForPerform then
-              begin
-                vCl132.CheckType := ctButton;
-                vCl132.CheckState := csCheckedDisabled;
-                pat.ListCurrentProf.Add(gr);
-                //IsPregForPerform := true;
-                //AEndDate := gr.endDate;
-              end
-              else
-              begin
-                vCl132.CheckType := ctCheckBox;
-                vCl132.CheckState := csCheckedDisabled;
-                IsPregForPerform := true;
-                AEndDate := gr.endDate;
-                if dataNast.DataPos = MaxInt then
-                begin
-                  dataNast.DataPos := i;
-                  pat.NoteProf := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Description));
-                  pat.CurrentGraphIndex := i;
-                  pat.ListCurrentProf.Add(gr);
-                end
-                else
-                begin
-                  ShowMessage('Има повече от един преглед');
-                end;
-              end;
-            end;
-          end
-          else  // намерен е преглед
-          begin
-            vCl132.CheckType := ctNone;
-            //Include(vcl132.States, vsDisabled);
-            //vCl132.CheckState := csUncheckedNormal;
-            AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz дали ...
-          end;
-        end;
-        '2': // изследвания
-        begin
-          pat.ListCurrentProf.Add(gr);
-          //vCl132.CheckType := ctCheckBox;
-          //Include(vCl132.States, vsExpanded);
-          for k := 0 to PatNodes.ExamAnals.Count - 1 do
-          begin
-            NodeExamAnal := PatNodes.ExamAnals[k];
-            dataExamAnal := pointer(PByte(NodeExamAnal) + lenNode);
-            examAnal := TRealExamAnalysisItem.Create(nil);
-            examAnal.DataPos := dataExamAnal.DataPos;
-            cl22ExamAnal := examAnal.getAnsiStringMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(ExamAnalysis_NZIS_CODE_CL22));
-            datTemp := examAnal.getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(ExamAnalysis_DATA));
-            for m := 0 to gr.Cl132.FListPr001.Count - 1 do
-            begin
-              cl22Pr1 := gr.Cl132.FListPr001[m].getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Activity_ID));
-              if (datTemp >= gr.startDate) and (datTemp <= gr.endDate)  then
-              begin
-                if cl22Pr1 = cl22ExamAnal then
-                begin
-                  if examAnal.Cl132 = nil then
-                  begin
-                    //vCl132.CheckType := ctNone;
-                    gr.Cl132.FListPr001[m].FExamAnal := TRealExamAnalysisItem.Create(nil);
-                    TRealExamAnalysisItem(gr.Cl132.FListPr001[m].FExamAnal).DataPos := dataExamAnal.DataPos;
-                    gr.Cl132.FExamAnal := TRealExamAnalysisItem.Create(nil);
-                    TRealExamAnalysisItem(gr.Cl132.FExamAnal).DataPos := dataExamAnal.DataPos;
-                    //pat.FExamAnals.Add()
-                    //examAnal.Cl132 := gr.Cl132;
-                  end;
-                end;
-              end;
-            end;
-          end;
-        end;
-        '3': // имунизации
-        begin
-          pat.ListCurrentProf.Add(gr);
-        end
-      else
-
-      end;
-
-
-     // begin
-//        if gr.endDate = AEndDate then // ако другата дейност е със същия краен срок като прегледа
-//        begin
-//          vCl132.CheckType := ctCheckBox;
-//          vCl132.CheckState := csCheckedDisabled;
-//        end
-//        else
-//        begin
-//          vCl132.CheckType := ctCheckBox;
-//          vCl132.CheckState := csUncheckedNormal;
-//        end;
-//      end;
-      data.vid := vvCl132;
-      data.index := i;
-    end;
-    for j := 0 to gr.Cl132.FListPr001.Count - 1 do
-    begin
-      if vCl132 = nil then
-      begin
-        vCl132 := nil;
-      end;
-      vPr001 := vtrGraph.AddChild(vCl132, nil);
-      data := vtrGraph.GetNodeData(vPr001);
-      data.vid := vvPr001;
-      data.index := j;
-
-      pr001 := gr.Cl132.FListPr001[j];
-      if pr001.FExamAnal <> nil then
-      begin
-        vPr001.CheckType := ctNone;
-        Include(vPr001.States, vsDisabled);
-      end
-      else
-      begin
-        vPr001.CheckType := ctCheckBox;
-      end;
-
-      //pr001.
-
-      if pr001.CL142 <> nil  then
-      begin
-        Rule88 := pr001.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(PR001_Rules));
-
-        if pr001.CL142.FListCL088.Count > 1 then
-        begin
-          for k := 0 to pr001.CL142.FListCL088.Count - 1 do
-          begin
-            if Trim(Rule88) <> '' then
-            begin
-              Cl088 := pr001.CL142.FListCL088[k];
-              ACL088_key := cl088.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).PR001Coll.posData, word(CL088_key));
-              if Pos(ACL088_key, Rule88) = 0 then Continue;
-            end;
-
-            vCL088 := vtrGraph.AddChild(vPr001, nil);
-            data := vtrGraph.GetNodeData(vCL088);
-            data.vid := vvCL088;
-            data.index := k;
-          end;
-        end;
-      end;
-
-      for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do
-      begin
-        cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
-        note := cl134.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL134_Note));
-        Field_cl133 := cl134.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL134_CL133));
-        if (note <> '') and (Field_cl133[1] in ['5', '6']) then
-        begin
-          test := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key)) +
-                   cl134.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL134_Note));
-        end
-        else
-        begin
-          test := '';
-        end;
-
-       // if (test = '')  or  (lstValid.Text.Contains(test)) then
-        begin
-          vCL134 := vtrGraph.AddChild(vPr001, nil);
-          data := vtrGraph.GetNodeData(vCL134);
-          data.vid := vvCl134;
-          data.index := k;
-        end;
-      end;
-    end;
-  end;
-  //vtrGraph.FullExpand();
-  vtrGraph.Expanded[vNast] := True;
-  vtrGraph.Expanded[vPat] := True;
-  vtrGraph.Sort(vNast, 0, sdAscending, false);
-  vtrGraph.Sort(vMinali, 0, sdAscending, false);
-  vtrGraph.Sort(vBudeshti, 0, sdAscending, false);
-  if vNast.FirstChild <> nil then
-  begin
-    vRun := vNast.FirstChild.NextSibling;
-    while vRun <> nil do
-    begin
-      vtrGraph.Expanded[vRun] := True;
-      vRun := vRun.NextSibling;
-    end;
-  end
-  else
-  begin
-    ShowMessage('Няма никакъв план');
-  end;
-
-  //vtrGraph.FocusedNode := vtrGraph.RootNode.FirstChild;
-  //vtrGraph.Selected[vtrGraph.RootNode.FirstChild] := True;
-  vtrGraph.EndUpdate;
-end;
 
 procedure TProfGraph.LoadVtrGraph1(Apat: TObject; patIndex: Integer);
 var
@@ -1389,19 +1063,19 @@ begin
   //vtrGraph.EndUpdate;
 end;
 
-procedure TProfGraph.LoadVtrGraphOutVtr(Apat: TObject; patIndex: Integer);
+procedure TProfGraph.LoadVtrGraphOutVtr1();
 var
   i, j, k, m: Integer;
   gr: TGraphPeriod132;
   examAnal: TRealExamAnalysisItem;
   vPat, vMinali, vNast, vBudeshti, vCl132, vPr001, vCL134, vCL088, vRun: PVirtualNode;
-  data, dataNast: PAspRec;
+  data, dataNast, dataPreg: PAspRec;
   cl134: TCL134Item;
   Cl132: TRealCl132Item;
   pr001: TRealPR001Item;
   Cl088: TRealCl088Item;
   test, note, Field_cl133: string;
-  pat: TRealPatientNewItem;
+  //pat: TRealPatientNewItem;
   Rule88, ACL088_key, Cl132Key: string;
   AEndDate, datTemp: TDate;
   adbDM: TADBDataModule;
@@ -1417,123 +1091,82 @@ var
   BufNomen: Pointer;
 begin
   adbDM := TADBDataModule(Adb_DM);
+  if adbDM.AdbNomenNzis = nil then
+    adbDM.OpenADBNomenNzis('NzisNomen.adb');
   BufNomen := adbDM.AdbNomenNzis.Buf;
 
 
-  //vtrGraph.BeginUpdate;
   IsPregForPerform := False;
-  pat := TRealPatientNewItem(Apat);
-  PatNodes := adbDM.GetPatNodes(pat.FNode);
-  pat.NoteProf := 'Няма неизвършени дейности по профилактиката.';
- // vtrGraph.DeleteChildren(vtrGraph.RootNode.FirstChild, true);
-  //vPat := vtrGraph.AddChild(vtrGraph.RootNode.FirstChild, nil);
-  //data := vtrGraph.GetNodeData(vPat);
-  //data.DataPos := pat.DataPos;
-  //data.index := patIndex;
-  //data.vid := vvPatient;
+  //pat := TRealPatientNewItem(Apat);
+  PatNodes := adbDM.PatNodesBack;
 
-  //vNast := vtrGraph.AddChild(vPat, nil);
+  PatNodes.NoteProf := 'Няма неизвършени дейности по профилактиката.';
 
-  //dataNast := vtrGraph.GetNodeData(vNast);
-  //dataNast.index := -2;
   dataNast_DataPos := MaxInt;
 
-  //if FVisibleMinali then
-//  begin
-//    vMinali := vtrGraph.AddChild(vPat, nil);
-//    data := vtrGraph.GetNodeData(vMinali);
-//    data.index := -1;
-//  end;
-//
-//  if FVisibleBudeshti then
-//  begin
-//    vBudeshti := vtrGraph.AddChild(vPat, nil);
-//    data := vtrGraph.GetNodeData(vBudeshti);
-//    data.index := -3;
-//  end;
-  pat.ListCurrentProf.Clear;
-  for i := 0 to pat.lstGraph.Count - 1 do
-  begin
 
-    gr := pat.lstGraph[i];
+  PatNodes.ListCurrentProf.Clear;
+  for i := 0 to PatNodes.lstGraph.Count - 1 do
+  begin
+    gr := PatNodes.lstGraph[i];
     FreeAndNil(gr.Cl132.FExamAnal);
     for j := 0 to gr.Cl132.FListPr001.Count - 1 do
       FreeAndNil(gr.Cl132.FListPr001[j].FExamAnal);
     if UserDate > gr.endDate then
     begin
       if not FVisibleMinali then Continue;
-      //vCl132 := vtrGraph.AddChild(vMinali, nil);
-//      vCl132.CheckType := ctCheckBox;
-//      vCl132.CheckState := csUncheckedNormal;
-//      data := vtrGraph.GetNodeData(vCl132);
-//      data.vid := vvCl132;
-//      data.index := i;
+
     end
     else
     if (UserDate < gr.endDate) and (UserDate < gr.startDate) then
     begin
       if not FVisibleBudeshti then Continue;
-      //vCl132 := vtrGraph.AddChild(vBudeshti, nil);
-//      data := vtrGraph.GetNodeData(vCl132);
-//      vCl132.CheckType := ctCheckBox;
-//      vCl132.CheckState := csUncheckedNormal;
-//      data.vid := vvCl132;
-//      data.index := i;
+
     end
     else
     if (UserDate <= gr.endDate) and (UserDate >= gr.startDate) then  // текущи
     begin
-      //vCl132 := vtrGraph.AddChild(vNast, nil);
-      //data := vtrGraph.GetNodeData(vCl132);
-
       case gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_cl136))[1]  of
         '1': //ако е тип преглед
         begin
           gr.Cl132.FPregled := nil;
           Cl132Key := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Key));
-          for j := 0 to pat.FPregledi.Count - 1 do
+          for j := 0 to PatNodes.pregs.Count - 1 do
           begin
-            prStartDate := pat.FPregledi[j].getDateMap(TADBDataModule(Adb_DM).AdbMain.Buf, TADBDataModule(Adb_DM).AdbMain.FPosData, word(PregledNew_START_DATE));
+            dataPreg := PAspRec(PByte(PatNodes.pregs[j]) + lenNode);
+            prStartDate := adbDM.CollPregled.getDateMap(dataPreg.DataPos, word(PregledNew_START_DATE));
             if (prStartDate <= gr.endDate) and ((prStartDate >= gr.startDate)) then
             begin
-
-              //if pat.FPregledi[j].Cl132 = gr.Cl132 then
               begin
-                gr.Cl132.FPregled := pat.FPregledi[j];
-                pat.FPregledi[j].Cl132 := gr.Cl132;
-                pat.CurrentGraphIndex := i;
+                gr.Cl132.FPregNode := PatNodes.pregs[j];
+                //pat.FPregledi[j].Cl132 := gr.Cl132; //zzzzzzzzzzzzzzzzzzzzzz трябва да се смени с нещо
+                PatNodes.CurrentGraphIndex := i;
                 Break;
               end;
             end;
           end;
-          if gr.Cl132.FPregled = nil then // ако не е намерен направен преглед
+          if gr.Cl132.FPregNode = nil then // ако не е намерен направен преглед
           begin
             if NzisPregNotPreg.Contains('|' + Cl132Key + '|') then
             begin
-              //vCl132.CheckType := ctCheckBox;
-//              vCl132.CheckState := csUncheckedNormal;
-              pat.ListCurrentProf.Add(gr);
+              PatNodes.ListCurrentProf.Add(gr);
             end
             else
             begin
               if IsPregForPerform then
               begin
-                //vCl132.CheckType := ctButton;
-//                vCl132.CheckState := csCheckedDisabled;
-                pat.ListCurrentProf.Add(gr);
+                PatNodes.ListCurrentProf.Add(gr);
               end
               else
               begin
-                //vCl132.CheckType := ctCheckBox;
-//                vCl132.CheckState := csCheckedDisabled;
                 IsPregForPerform := true;
                 AEndDate := gr.endDate; //zzzzzzzzzzzzzzzzzzzzzzzzzzzzz
                 if dataNast_DataPos = MaxInt then
                 begin
                   dataNast_DataPos := i;
-                  pat.NoteProf := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Description));
-                  pat.CurrentGraphIndex := i;
-                  pat.ListCurrentProf.Add(gr);
+                  PatNodes.NoteProf := gr.Cl132.getAnsiStringMap(BufNomen, TADBDataModule(Adb_DM).CL132Coll.posData, word(CL132_Description));
+                  PatNodes.CurrentGraphIndex := i;
+                  PatNodes.ListCurrentProf.Add(gr);
                 end
                 else
                 begin
@@ -1550,7 +1183,7 @@ begin
         end;
         '2': // изследвания
         begin
-          pat.ListCurrentProf.Add(gr);
+          PatNodes.ListCurrentProf.Add(gr);
           for k := 0 to PatNodes.ExamAnals.Count - 1 do
           begin
             NodeExamAnal := PatNodes.ExamAnals[k];
@@ -1583,16 +1216,11 @@ begin
         end;
         '3': // имунизации
         begin
-          pat.ListCurrentProf.Add(gr);
+          PatNodes.ListCurrentProf.Add(gr);
         end
       else
 
       end;
-
-
-
-      //data.vid := vvCl132;
-      //data.index := i;
     end;
     for j := 0 to gr.Cl132.FListPr001.Count - 1 do
     begin
@@ -1684,6 +1312,8 @@ begin
 
   //vtrGraph.EndUpdate;
 end;
+
+
 
 function TProfGraph.RuleCl132_PR001(cl132, pr001: TObject): boolean;
 var

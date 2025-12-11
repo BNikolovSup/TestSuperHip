@@ -1115,8 +1115,8 @@ begin
     TempItem.PRecord.Description := entry.FDescr;
     if Entry.FMetaDataFields[idx[0]] <> nil then
     begin
-      TempItem.PRecord.Display_Value_EN := Entry.FMetaDataFields[idx[0]].FValue;
-      include(TempItem.PRecord.setProp, CL134_Display_Value_EN);
+      TempItem.PRecord.DescriptionEn := Entry.FMetaDataFields[idx[0]].FValue;
+      include(TempItem.PRecord.setProp, CL134_DescriptionEn);
     end;
     if Entry.FMetaDataFields[idx[1]] <> nil then
     begin

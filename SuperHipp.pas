@@ -1,4 +1,4 @@
-﻿unit SuperHipp;  //prac
+﻿unit SuperHipp;  //getpatnodes
 interface
 
   uses
@@ -541,7 +541,7 @@ type
     procedure pnlRoleViewRoleButtonClick(Sender: TObject);
     procedure AdminFDBClick(Sender: TObject);
     procedure vtrFDBGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
-    procedure SubButonImportFDBClick(Sender: TObject);
+    //procedure SubButonImportFDBClick(Sender: TObject);
     procedure vtrFDBChange(Sender: TBaseVirtualTree; Node: PVirtualNode);
     procedure ImportPL_NZOK(Sender: TObject);
     procedure ImportPR001(TempColl: TPR001Coll);
@@ -923,7 +923,7 @@ type
    procedure LoadADB;
    procedure OpenDB(index: Integer);
    //procedure OpenADB(ADB: TMappedFile);
-   procedure OpenCmd(ADB: TMappedFile);
+   //procedure OpenCmd(ADB: TMappedFile);
    procedure OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
    procedure OpenLinkPatPreg(LNK: TMappedFile);
    procedure OpenLinkNomenHipAnals;
@@ -985,9 +985,9 @@ type
     ProcTemp: TRealProceduresItem;
     //FPatientTemp: TRealPatientNewItem;
     NZIS_PLANNED_TYPETemp: TRealNZIS_PLANNED_TYPEItem;
-    NZIS_QUESTIONNAIRE_RESPONSETemp: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
-    NZIS_QUESTIONNAIRE_ANSWERTemp: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
-    NZIS_ANSWER_VALUETemp: TRealNZIS_ANSWER_VALUEItem;
+    //NZIS_QUESTIONNAIRE_RESPONSETemp: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
+    //NZIS_QUESTIONNAIRE_ANSWERTemp: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
+    //NZIS_ANSWER_VALUETemp: TRealNZIS_ANSWER_VALUEItem;
     NZIS_DIAGNOSTIC_REPORTTemp: TRealNZIS_DIAGNOSTIC_REPORTItem;
     NZIS_Result_DIAGNOSTIC_REPORTTemp: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
    // procedure SetPatientTemp(const Value: TRealPatientNewItem);
@@ -1139,7 +1139,7 @@ type
 
     profGR: TProfGraph;
 
-    streamCmdFile: TFileCmdStream;
+    //streamCmdFile: TFileCmdStream;
     streamCmdFileTemp: TFileCmdStream;
     streamCmdFileNomenNzis: TFileCmdStream;
     FDBHelper: TDbHelper;
@@ -1176,6 +1176,7 @@ type
     procedure FillMDN_inPregled;
     procedure FillPrfCard_inPregled;
     procedure LoadVtrMinaliPregledi(node: PVirtualNode; Apat: TRealPatientNewItem = nil);
+    procedure LoadVtrMinaliPregledi1(node: PVirtualNode; Apat: TRealPatientNewItem = nil);
     procedure LoadVtrSpisyciNeblUsl;
     procedure SortListString(list: TList<TString>);
     procedure SortListCollType(list: TList<word>);
@@ -1248,13 +1249,15 @@ type
     procedure FillDiagInMkb;
     function FindCertFromSerNumber(serNom: TArray<System.Byte>): TElX509Certificate;
     procedure GetPatProf(var pat: TRealPatientNewItem);
-    procedure GetCurrentPatProf(pat: TRealPatientNewItem);
-    procedure GetCurrentPatProf1(pat: TRealPatientNewItem);
+    //procedure GetCurrentPatProf(pat: TRealPatientNewItem);
+    //procedure GetCurrentPatProf1(pat: TRealPatientNewItem);
+    procedure GetCurrentPatProf2();
     procedure FillOldPlanesInCurrentPlan;
     function FindNodevtrPreg(DirectionFind: TDirectionFinder; ACol: TColumnIndex): boolean;
     function FindNodevtrTemp(DirectionFind: TDirectionFinder; ACol: TColumnIndex): boolean;
     //function FindNodevtr(DirectionFind: TDirectionFinder; vtr: TVirtualStringTree): boolean;
     procedure AddNewPregled;
+    procedure AddNewPregledProf;
     procedure AddNewDiag(vPreg: PVirtualNode; cl011, cl011Add: string; rank: integer; DataPosMkb: cardinal);
     procedure RemoveDiag(vPreg: PVirtualNode; diag: TRealDiagnosisItem); overload;
     procedure RemoveDiag(vPreg: PVirtualNode; diagDataPos: cardinal); overload;
@@ -1623,7 +1626,7 @@ end;
 
 procedure TfrmSuperHip.btnNzisProfClick(Sender: TObject);
 begin
-  AddNewPregled;
+  AddNewPregledProf;
 
   CheckCollForSave;
 end;
@@ -2044,13 +2047,13 @@ begin
     end;
   end;
   Exit;
-  FmxProfForm.Pregled.FDiagnosis.Exchange(1, 3);
-  vPreg := FmxProfForm.Pregled.FNode;
-  FmxProfForm.Pregled.CanDeleteDiag := False;
-  datapreg := Pointer(PByte(vPreg) + lenNode);
-  datapat := Pointer(PByte(vPreg.Parent) + lenNode);
-  ShowPregledFMX(datapat, datapreg, vpreg);
-  FmxProfForm.Pregled.CanDeleteDiag := True;
+  //FmxProfForm.Pregled.FDiagnosis.Exchange(1, 3);
+//  vPreg := FmxProfForm.Pregled.FNode;
+//  FmxProfForm.Pregled.CanDeleteDiag := False;
+//  datapreg := Pointer(PByte(vPreg) + lenNode);
+//  datapat := Pointer(PByte(vPreg.Parent) + lenNode);
+//  ShowPregledFMX(datapat, datapreg, vpreg);
+//  FmxProfForm.Pregled.CanDeleteDiag := True;
   Exit;
   for i := 0 to ListHistoryNav.Count - 1 do
   begin
@@ -2941,6 +2944,7 @@ procedure TfrmSuperHip.BtnXMLtoCL000(node: PVirtualNode);
 var
   data: PAspRec;
   IdNom: integer;
+  BC: TBaseCollection;
 begin
   case node.Dummy of
     77:
@@ -2966,26 +2970,15 @@ begin
     begin
       data := vtrNomenNzis.GetNodeData(node);
       idnom := data.index;
-      case idNom of
-        6:  Adb_DM.CL006Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
-        9:  Adb_DM.CL009Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
-        11: Adb_DM.CL011Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
-        //6:  Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl006(Adb_DM.CL006Coll);
-        22: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl022(Adb_DM.CL022Coll);
-        24: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl024(Adb_DM.CL024Coll);
-        37: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl037(Adb_DM.CL037Coll);
-        38: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl038(Adb_DM.CL038Coll);
-        88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
-        132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
-        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
-        139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
-        142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
-        144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
-
+      BC := Adb_DM.GetNzisNomenCollectionFromID(data.index);
+      if BC <> nil then
+      begin
+        BC.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
+      end
+      else
+      begin
+        raise Exception.Create('Не е създадена колекция : CL' + inttostr(data.index));
       end;
-      caption := '';
-      //ListNomenNzisNames[data.index].ArrStr[1];
-//      ListNomenNzisNames[data.index].Cl000Coll;
     end;
     80:
     begin
@@ -3018,7 +3011,7 @@ begin
         88: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl088(Adb_DM.CL088Coll);
         //132: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl132(Adb_DM.CL132Coll);
         132: Adb_DM.CL132Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
-        134: Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl134(Adb_DM.CL134Coll);
+        134: Adb_DM.CL134Coll.ImportXMLNzis(Adb_DM.ListNomenNzisNames[data.index].Cl000Coll);
         139:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl139(Adb_DM.CL139Coll);
         142:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl142(Adb_DM.CL142Coll);
         144:Adb_DM.ListNomenNzisNames[data.index].Cl000Coll.ImportCl144(Adb_DM.CL144Coll);
@@ -3264,60 +3257,60 @@ var
   node: PVirtualNode;
 begin
 
-  if profGR = nil then
-  begin
-    //LoadVtrNomenNzis1;
-//    OpenBufNomenNzis('c:\temp\NzisNomen.adb');
-    Adb_DM.OpenADBNomenNzis(ParamStr(2) + 'NzisNomen.adb');
-    LoadVtrNomenNzis1();
-    profGR := TProfGraph.create;
-
-    profGR := TProfGraph.create;
-    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
-    //profGR.BufADB := AspectsHipFile.Buf;
-    //profGR.posDataADB := AspectsHipFile.FPosData;
-    profGR.vtrGraph := vtrGraph;
-    profGR.Adb_DM := Adb_DM;
-  end;
-  profGR.VisibleMinali := False;
-  profGR.VisibleBudeshti := False;
-  Stopwatch := TStopwatch.StartNew;
-  vtrGraph.BeginUpdate;
-  vtrGraph.Clear;
-  vRootGraph := vtrGraph.AddChild(nil, nil);
-    dataGraph := vtrGraph.GetNodeData(vRootGraph);
-    dataGraph.vid := vvNone;
-    dataGraph.index := 0;
-  Adb_DM.ACollPatGR.Clear;
-  Adb_DM.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
-
-  for i := 0 to Adb_DM.CollPatient.ListNodes.Count - 1 do
-  begin
-    //node := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
-    pat := TRealPatientNewItem(Adb_DM.ACollPatGR.Add);
-    //pat := TRealPatientNewItem.Create(nil);
-    pat.DataPos := Adb_DM.CollPatient.ListNodes[i].DataPos;
-    pat.FNode := pointer(PByte(Adb_DM.CollPatient.ListNodes[i]) - lenNode);
-    //pat := CollPatient.Items[i];
-    dat := Adb_DM.CollPatient.getDateMap(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(Adb_DM.CollPatient.getLogical40Map(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
-    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
-    profGR.CurrDate := dat;
-    profGR.GeneratePeriod(pat);
-    vtrGraph.OnCompareNodes := nil;
-    //vtrGraph.OnGetText := nil;
-    vtrGraph.OnGetImageIndexEx := nil;
-    //if i < 4100 then
-    begin
-      profGR.LoadVtrGraph1(pat, i);
-    end;
-    //FreeAndNil(pat);
-  end;
-  vtrGraph.EndUpdate;
-  //vtrGraph.Clear;
-  //CollPatGR.Clear;
-  Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('%d nodes за  проф: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
+  //if profGR = nil then
+//  begin
+//    //LoadVtrNomenNzis1;
+////    OpenBufNomenNzis('c:\temp\NzisNomen.adb');
+//    Adb_DM.OpenADBNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+//    LoadVtrNomenNzis1();
+//    profGR := TProfGraph.create;
+//
+//    profGR := TProfGraph.create;
+//    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
+//    //profGR.BufADB := AspectsHipFile.Buf;
+//    //profGR.posDataADB := AspectsHipFile.FPosData;
+//    profGR.vtrGraph := vtrGraph;
+//    profGR.Adb_DM := Adb_DM;
+//  end;
+//  profGR.VisibleMinali := False;
+//  profGR.VisibleBudeshti := False;
+//  Stopwatch := TStopwatch.StartNew;
+//  vtrGraph.BeginUpdate;
+//  vtrGraph.Clear;
+//  vRootGraph := vtrGraph.AddChild(nil, nil);
+//    dataGraph := vtrGraph.GetNodeData(vRootGraph);
+//    dataGraph.vid := vvNone;
+//    dataGraph.index := 0;
+//  Adb_DM.ACollPatGR.Clear;
+//  Adb_DM.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
+//
+//  for i := 0 to Adb_DM.CollPatient.ListNodes.Count - 1 do
+//  begin
+//    //node := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
+//    pat := TRealPatientNewItem(Adb_DM.ACollPatGR.Add);
+//    //pat := TRealPatientNewItem.Create(nil);
+//    pat.DataPos := Adb_DM.CollPatient.ListNodes[i].DataPos;
+//    pat.FNode := pointer(PByte(Adb_DM.CollPatient.ListNodes[i]) - lenNode);
+//    //pat := CollPatient.Items[i];
+//    dat := Adb_DM.CollPatient.getDateMap(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
+//    log := TlogicalPatientNewSet(Adb_DM.CollPatient.getLogical40Map(Adb_DM.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
+//    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
+//    profGR.CurrDate := dat;
+//    profGR.GeneratePeriod(pat);
+//    vtrGraph.OnCompareNodes := nil;
+//    //vtrGraph.OnGetText := nil;
+//    vtrGraph.OnGetImageIndexEx := nil;
+//    //if i < 4100 then
+//    begin
+//      profGR.LoadVtrGraph1(pat, i);
+//    end;
+//    //FreeAndNil(pat);
+//  end;
+//  vtrGraph.EndUpdate;
+//  //vtrGraph.Clear;
+//  //CollPatGR.Clear;
+//  Elapsed := Stopwatch.Elapsed;
+//  mmoTest.lines.add(Format('%d nodes за  проф: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
 end;
 
 
@@ -4000,7 +3993,7 @@ begin
   Adb_DM.CollPregled.streamComm.DataPos := Cardinal(DiagLink);
   Adb_DM.CollPregled.streamComm.Propertys := [];
   Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
+  Adb_DM.streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
   RemoveDiag(PregledLink, TempItem);
 end;
 
@@ -4026,7 +4019,7 @@ begin
   Adb_DM.CollPregled.streamComm.DataPos := Cardinal(pregLink);
   Adb_DM.CollPregled.streamComm.Propertys := [];
   Adb_DM.CollPregled.streamComm.Len := Adb_DM.CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
+  Adb_DM.streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
 end;
 
 procedure TfrmSuperHip.DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode; var mdn: TRealMDNItem);
@@ -9218,53 +9211,53 @@ end;
 //  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
 //end;
 
-procedure TfrmSuperHip.OpenCmd(ADB: TMappedFile);
-var
-  fileName, fileNameTemp: string;
-begin
-
-  fileName := ADB.FileName.Replace('.adb', '.cmd');
-
-  if TFile.Exists (fileName) then
-  begin
-    streamCmdFile := TFileCMDStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
-    FDBHelper.cmdFile := streamCmdFile;
-    Adb_DM.CollPregled.cmdFile := streamCmdFile;
-    Adb_DM.CollDoctor.cmdFile := streamCmdFile;
-    Adb_DM.CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
-    Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
-    Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
-  end
-  else
-  begin
-    streamCmdFile := TFileCmdStream.Create(fileName, fmCreate);
-    streamCmdFile.Size := 100;
-  end;
-  streamCmdFile.Position := streamCmdFile.Size;
-
-  fileNameTemp := ADB.FileName.Replace('.adb', '.tmp');
-  if TFile.Exists (fileNameTemp) then
-  begin
-    streamCmdFileTemp := TFileCMDStream.Create(fileNameTemp, fmOpenReadWrite + fmShareDenyNone);
-    streamCmdFileTemp.Guid := ADB.GUID;
-    //FDBHelper.cmdFile := streamCmdFile;
-    //CollPregled.cmdFile := streamCmdFile;
-    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
-    //CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
-//    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
-//    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
-  end
-  else
-  begin
-    streamCmdFileTemp := TFileCmdStream.Create(fileNameTemp, fmCreate);
-
-    streamCmdFileTemp.Size := 100;
-
-    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
-  end;
-  streamCmdFileTemp.Position := streamCmdFileTemp.Size;
-  Adb_DM.cmdFile := streamCmdFile;
-end;
+//procedure TfrmSuperHip.OpenCmd(ADB: TMappedFile);
+//var
+//  fileName, fileNameTemp: string;
+//begin
+//
+//  fileName := ADB.FileName.Replace('.adb', '.cmd');
+//
+//  if TFile.Exists (fileName) then
+//  begin
+//    streamCmdFile := TFileCMDStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
+//    FDBHelper.cmdFile := streamCmdFile;
+//    Adb_DM.CollPregled.cmdFile := streamCmdFile;
+//    Adb_DM.CollDoctor.cmdFile := streamCmdFile;
+//    Adb_DM.CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
+//    Adb_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+//    Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+//  end
+//  else
+//  begin
+//    streamCmdFile := TFileCmdStream.Create(fileName, fmCreate);
+//    streamCmdFile.Size := 100;
+//  end;
+//  streamCmdFile.Position := streamCmdFile.Size;
+//
+//  fileNameTemp := ADB.FileName.Replace('.adb', '.tmp');
+//  if TFile.Exists (fileNameTemp) then
+//  begin
+//    streamCmdFileTemp := TFileCMDStream.Create(fileNameTemp, fmOpenReadWrite + fmShareDenyNone);
+//    streamCmdFileTemp.Guid := ADB.GUID;
+//    //FDBHelper.cmdFile := streamCmdFile;
+//    //CollPregled.cmdFile := streamCmdFile;
+//    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
+//    //CollNZIS_ANSWER_VALUE.cmdFile := streamCmdFile;
+////    CollNzis_RESULT_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+////    CollNZIS_DIAGNOSTIC_REPORT.cmdFile := streamCmdFile;
+//  end
+//  else
+//  begin
+//    streamCmdFileTemp := TFileCmdStream.Create(fileNameTemp, fmCreate);
+//
+//    streamCmdFileTemp.Size := 100;
+//
+//    Adb_DM.CollDoctor.cmdFileTemp := streamCmdFileTemp;
+//  end;
+//  streamCmdFileTemp.Position := streamCmdFileTemp.Size;
+//  Adb_DM.cmdFile := streamCmdFile;
+//end;
 
 procedure TfrmSuperHip.OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
 var
@@ -9763,11 +9756,11 @@ begin
   //vtrPregledPat.Sort(vtrPregledPat.RootNode.FirstChild, 0, sdAscending, false);
   Elapsed := Stopwatch.Elapsed;
   Adb_DM.AdbMainLink.FVTR := vtrPregledPat;
-  Adb_DM.AdbMainLink.FStreamCmdFile := streamCmdFile;
+  Adb_DM.AdbMainLink.FStreamCmdFile := Adb_DM.streamCmdFile;
   FDBHelper.AdbLink := Adb_DM.AdbMainLink;
-  FmxProfForm.AspLink := Adb_DM.AdbMainLink;
+  //FmxProfForm.AspLink := Adb_DM.AdbMainLink;
   //Adb_DM.AdbMain := AspectsHipFile;
-  Adb_DM.AdbLink := Adb_DM.AdbMainLink;
+  //Adb_DM.AdbLink := Adb_DM.AdbMainLink;
 
   //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
 
@@ -9857,6 +9850,7 @@ begin
   grdNom.Selected.Range.Enabled:=True;
   FDBHelper := TDbHelper.Create;
   FDBHelper.Vtr := vtrPregledPat;
+
 
   ListHistoryNav := TList<THistoryNav>.Create;
   InitExpression;
@@ -10214,111 +10208,242 @@ begin
     Result := TBaseCollection(Pointer(data^.DataPos));
 end;
 
-procedure TfrmSuperHip.GetCurrentPatProf(pat: TRealPatientNewItem);
-var
-  preg: TRealPregledNewItem;
-  diag: TRealDiagnosisItem;
-  runPat, runPreg, runDiag: PVirtualNode;
-  runDataPat, runDataPreg, runDataDiag, dataGraph: PAspRec;
-  egn, mkb: string;
-  //PregIsProf: Boolean;
-  i: Integer;
-  dat: TDate;
-  log: TlogicalPatientNewSet;
-begin
-  if profGR = nil then
-  begin
+//procedure TfrmSuperHip.GetCurrentPatProf(pat: TRealPatientNewItem);
+//var
+//  preg: TRealPregledNewItem;
+//  diag: TRealDiagnosisItem;
+//  runPat, runPreg, runDiag: PVirtualNode;
+//  runDataPat, runDataPreg, runDataDiag, dataGraph: PAspRec;
+//  egn, mkb: string;
+//  //PregIsProf: Boolean;
+//  i: Integer;
+//  dat: TDate;
+//  log: TlogicalPatientNewSet;
+//begin
+//  if profGR = nil then
+//  begin
+//
+//    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+//    LoadVtrNomenNzis1();
+//
+//    profGR := TProfGraph.create;
+//
+//    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
+//    //profGR.BufADB := AspectsHipFile.Buf;
+//    //profGR.posDataADB := AspectsHipFile.FPosData;
+//    profGR.vtrGraph := vtrGraph;
+//  end;
+//  //vtrGraph.BeginUpdate;
+//  //vtrGraph.DeleteChildren(vRootGraph);
+//  //lstPatGraph.Clear;
+//  runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
+//  while runPat <> nil do
+//  begin
+//    runDataPat := pointer(PByte(runPat) + lenNode);
+//
+//    //PatientTemp.DataPos := runDataPat.DataPos;
+//    egn := Adb_dm.CollPatient.getAnsiStringMap(runDataPat.DataPos, word(PatientNew_EGN));
+//    if egn <> Adb_DM.patEgn then //////////////////////'8403236257' then
+//    begin
+//      runPat := runPat.NextSibling;
+//      Continue;
+//    end;
+//
+//
+//    runPreg := runPat.FirstChild;
+//    while runPreg <> nil do
+//    begin
+//      runDataPreg := pointer(PByte(runPreg) + lenNode);
+//      preg := TRealPregledNewItem.Create(nil);
+//      preg.DataPos := runDataPreg.DataPos;
+//      //PregIsProf := False;
+//      runDiag := runPreg.FirstChild;
+//      while runDiag <> nil do // Тука на това ниво са и мдн-тата;
+//      begin
+//        runDataDiag := pointer(PByte(runDiag) + lenNode);
+//        case runDataDiag.vid of
+//          vvDiag:
+//          begin
+//            diag := TRealDiagnosisItem.Create(nil);
+//            diag.DataPos := runDataDiag.DataPos;
+//            mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
+//            if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
+//            begin
+//              //preg.ListNZIS_PLANNED_TYPEs.Count;
+//              pat.FPregledi.Add(preg);
+//              preg.FDiagnosis.Add(diag);
+//              //Break;
+//            end;
+//          end;
+//          vvmdn:
+//          begin
+//
+//          end;
+//        end;
+//
+//        runDiag := runDiag.NextSibling;
+//      end;
+//      runPreg := runPreg.NextSibling;
+//    end;
+//
+//
+//    //i := lstPatGraph.Add(CurrentPatient);
+//    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+//    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
+//    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
+//    profGR.CurrDate := dat;
+//    profGR.Adb_DM := Adb_DM;
+//    profGR.GeneratePeriod(pat);
+//    vtrGraph.UpdateVerticalScrollBar(true);
+//    vtrGraph.Clear;
+//
+//    vRootGraph := vtrGraph.AddChild(nil, nil);
+//    dataGraph := vtrGraph.GetNodeData(vRootGraph);
+//    dataGraph.vid := vvNone;
+//    dataGraph.index := 0;
+//    pat.FNode := runPat;
+//    profGR.LoadVtrGraph(pat, i);
+//    pnlProfMinaliPreg.Caption := pat.NoteProf;
+//    btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+//    pnlProfMinaliPreg.Repaint;
+//    runPat := runPat.NextSibling;
+//    Break;
+//  end;
+//
+//end;
 
-    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
-    LoadVtrNomenNzis1();
+//procedure TfrmSuperHip.GetCurrentPatProf1(pat: TRealPatientNewItem);
+//var
+//  preg: TRealPregledNewItem;
+//  plan: TRealNZIS_PLANNED_TYPEItem;
+//  diag: TRealDiagnosisItem;
+//  runPat, runPreg, runPregledNodes, runPlanes: PVirtualNode;
+//  runDataPat, runDataPreg, runDataPregledNodes, dataGraph, runDataPlanes: PAspRec;
+//  egn, mkb: string;
+//  //PregIsProf: Boolean;
+//  i: Integer;
+//  dat: TDate;
+//  log: TlogicalPatientNewSet;
+//  CL132Key: string;
+//begin
+//  if profGR = nil then
+//  begin
+//
+//    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
+//    LoadVtrNomenNzis1();
+//
+//    profGR := TProfGraph.create;
+//
+//    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
+//    //profGR.BufADB := AspectsHipFile.Buf;
+//    //profGR.posDataADB := AspectsHipFile.FPosData;
+//    profGR.vtrGraph := vtrGraph;
+//  end;
+//  runPat := pat.FNode;
+//
+//  runPreg := runPat.FirstChild;
+//  preg := nil;
+//  while runPreg <> nil do
+//  begin
+//    runDataPreg := pointer(PByte(runPreg) + lenNode);
+//
+//    runPregledNodes := runPreg.FirstChild;
+//    while runPregledNodes <> nil do // Тука на това ниво са и мдн-тата;
+//    begin
+//      runDataPregledNodes := pointer(PByte(runPregledNodes) + lenNode);
+//      case runDataPregledNodes.vid of
+//        vvDiag:
+//        begin
+//          diag := TRealDiagnosisItem.Create(nil);
+//          diag.DataPos := runDataPregledNodes.DataPos;
+//          mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
+//          if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
+//          begin
+//            //preg.ListNZIS_PLANNED_TYPEs.Count;
+//            preg := TRealPregledNewItem.Create(nil);
+//            preg.DataPos := runDataPreg.DataPos;
+//            pat.FPregledi.Add(preg);
+//            preg.FDiagnosis.Add(diag);
+//
+//
+//          end;
+//        end;
+//
+//        vvmdn:
+//        begin
+//
+//        end;
+//      end;
+//
+//      runPregledNodes := runPregledNodes.NextSibling;
+//    end;
+//    runPreg := runPreg.NextSibling;
+//  end;
+//
+//
+//  dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+//  log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
+//  profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
+//  profGR.CurrDate := dat;
+//  profGR.Adb_DM := Adb_DM;
+//  profGR.GeneratePeriod(pat);
+//  //vtrGraph.UpdateVerticalScrollBar(true);
+////  vtrGraph.Clear;
+////
+////  vRootGraph := vtrGraph.AddChild(nil, nil);
+////  dataGraph := vtrGraph.GetNodeData(vRootGraph);
+////  dataGraph.vid := vvNone;
+////  dataGraph.index := 0;
+//  profGR.LoadVtrGraphOutVtr(pat, i);
+//
+//  if pat.CurrentGraphIndex >= 0 then
+//  begin
+//    runPreg := runPat.FirstChild; // наново, за да се откраднат от предишен преглед останали планове
+//    while runPreg <> nil do
+//    begin
+//      runDataPreg := pointer(PByte(runPreg) + lenNode);
+//
+//      runPregledNodes := runPreg.FirstChild;
+//      while runPregledNodes <> nil do // Тука на това ниво са и мдн-тата;
+//      begin
+//        runDataPregledNodes := pointer(PByte(runPregledNodes) + lenNode);
+//        case runDataPregledNodes.vid of
+//          vvNZIS_PLANNED_TYPE:
+//          begin
+//            //if (runPregledNodes.CheckType = ctCheckBox) and (runPregledNodes.CheckState = csUncheckedNormal) then
+//            begin
+//              CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
+//              if (Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_StartDate))<=
+//                pat.lstGraph[pat.CurrentGraphIndex].endDate)then
+//
+//              begin
+//                plan := TRealNZIS_PLANNED_TYPEItem.Create(nil);
+//                plan.DataPos := runDataPregledNodes.DataPos;
+//                preg.ListNZIS_PLANNED_TYPEs.Add(plan);
+//                plan.Node := runPregledNodes;
+//                //vtrPregledPat.InternalDisconnectNode(runPregledNodes, false);
+//              end;
+//            end;
+//          end;
+//          vvmdn:
+//          begin
+//
+//          end;
+//        end;
+//
+//        runPregledNodes := runPregledNodes.NextSibling;
+//      end;
+//      runPreg := runPreg.NextSibling;
+//    end;
+//  end;
+//
+//  pnlProfMinaliPreg.Caption := pat.NoteProf;
+//  btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+//  pnlProfMinaliPreg.Repaint;
+//
+//end;
 
-    profGR := TProfGraph.create;
-
-    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
-    //profGR.BufADB := AspectsHipFile.Buf;
-    //profGR.posDataADB := AspectsHipFile.FPosData;
-    profGR.vtrGraph := vtrGraph;
-  end;
-  //vtrGraph.BeginUpdate;
-  //vtrGraph.DeleteChildren(vRootGraph);
-  //lstPatGraph.Clear;
-  runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
-  while runPat <> nil do
-  begin
-    runDataPat := pointer(PByte(runPat) + lenNode);
-
-    //PatientTemp.DataPos := runDataPat.DataPos;
-    egn := Adb_dm.CollPatient.getAnsiStringMap(runDataPat.DataPos, word(PatientNew_EGN));
-    if egn <> Adb_DM.patEgn then //////////////////////'8403236257' then
-    begin
-      runPat := runPat.NextSibling;
-      Continue;
-    end;
-
-
-    runPreg := runPat.FirstChild;
-    while runPreg <> nil do
-    begin
-      runDataPreg := pointer(PByte(runPreg) + lenNode);
-      preg := TRealPregledNewItem.Create(nil);
-      preg.DataPos := runDataPreg.DataPos;
-      //PregIsProf := False;
-      runDiag := runPreg.FirstChild;
-      while runDiag <> nil do // Тука на това ниво са и мдн-тата;
-      begin
-        runDataDiag := pointer(PByte(runDiag) + lenNode);
-        case runDataDiag.vid of
-          vvDiag:
-          begin
-            diag := TRealDiagnosisItem.Create(nil);
-            diag.DataPos := runDataDiag.DataPos;
-            mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
-            if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
-            begin
-              //preg.ListNZIS_PLANNED_TYPEs.Count;
-              pat.FPregledi.Add(preg);
-              preg.FDiagnosis.Add(diag);
-              //Break;
-            end;
-          end;
-          vvmdn:
-          begin
-
-          end;
-        end;
-
-        runDiag := runDiag.NextSibling;
-      end;
-      runPreg := runPreg.NextSibling;
-    end;
-
-
-    //i := lstPatGraph.Add(CurrentPatient);
-    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
-    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
-    profGR.CurrDate := dat;
-    profGR.Adb_DM := Adb_DM;
-    profGR.GeneratePeriod(pat);
-    vtrGraph.UpdateVerticalScrollBar(true);
-    vtrGraph.Clear;
-
-    vRootGraph := vtrGraph.AddChild(nil, nil);
-    dataGraph := vtrGraph.GetNodeData(vRootGraph);
-    dataGraph.vid := vvNone;
-    dataGraph.index := 0;
-    pat.FNode := runPat;
-    profGR.LoadVtrGraph(pat, i);
-    pnlProfMinaliPreg.Caption := pat.NoteProf;
-    btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
-    pnlProfMinaliPreg.Repaint;
-    runPat := runPat.NextSibling;
-    Break;
-  end;
-
-end;
-
-procedure TfrmSuperHip.GetCurrentPatProf1(pat: TRealPatientNewItem);
+procedure TfrmSuperHip.GetCurrentPatProf2();
 var
   preg: TRealPregledNewItem;
   plan: TRealNZIS_PLANNED_TYPEItem;
@@ -10334,19 +10459,11 @@ var
 begin
   if profGR = nil then
   begin
-
-    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
-
     profGR := TProfGraph.create;
-
-    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
-    //profGR.BufADB := AspectsHipFile.Buf;
-    //profGR.posDataADB := AspectsHipFile.FPosData;
     profGR.vtrGraph := vtrGraph;
   end;
-  runPat := pat.FNode;
-
+  runPat := Adb_DM.PatNodesBack.patNode;
   runPreg := runPat.FirstChild;
   preg := nil;
   while runPreg <> nil do
@@ -10365,11 +10482,10 @@ begin
           mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
           if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
           begin
-            //preg.ListNZIS_PLANNED_TYPEs.Count;
-            preg := TRealPregledNewItem.Create(nil);
-            preg.DataPos := runDataPreg.DataPos;
-            pat.FPregledi.Add(preg);
-            preg.FDiagnosis.Add(diag);
+            //preg := TRealPregledNewItem.Create(nil);
+//            preg.DataPos := runDataPreg.DataPos;
+//            pat.FPregledi.Add(preg);
+//            preg.FDiagnosis.Add(diag);  // zzzzzzzzzzzzzzzzzzzzzzz да се види какво да става тука
 
 
           end;
@@ -10386,13 +10502,13 @@ begin
     runPreg := runPreg.NextSibling;
   end;
 
-
-  dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
-  log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
+  runDataPat := PAspRec(PByte(Adb_DM.PatNodesBack.patNode) + lenNode);
+  dat := Adb_DM.CollPatient.getDateMap(runDataPat.DataPos, word(PatientNew_BIRTH_DATE));
+  log := TlogicalPatientNewSet(Adb_DM.CollPatient.getLogical40Map(runDataPat.DataPos, word(PatientNew_Logical)));
   profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
   profGR.CurrDate := dat;
   profGR.Adb_DM := Adb_DM;
-  profGR.GeneratePeriod(pat);
+  profGR.GeneratePeriod1();
   //vtrGraph.UpdateVerticalScrollBar(true);
 //  vtrGraph.Clear;
 //
@@ -10400,9 +10516,9 @@ begin
 //  dataGraph := vtrGraph.GetNodeData(vRootGraph);
 //  dataGraph.vid := vvNone;
 //  dataGraph.index := 0;
-  profGR.LoadVtrGraphOutVtr(pat, i);
+  profGR.LoadVtrGraphOutVtr1();
 
-  if pat.CurrentGraphIndex >= 0 then
+  if Adb_DM.PatNodesBack.CurrentGraphIndex >= 0 then
   begin
     runPreg := runPat.FirstChild; // наново, за да се откраднат от предишен преглед останали планове
     while runPreg <> nil do
@@ -10420,14 +10536,13 @@ begin
             begin
               CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
               if (Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_StartDate))<=
-                pat.lstGraph[pat.CurrentGraphIndex].endDate)then
+                Adb_DM.PatNodesBack.lstGraph[Adb_DM.PatNodesBack.CurrentGraphIndex].endDate)then
 
               begin
                 plan := TRealNZIS_PLANNED_TYPEItem.Create(nil);
                 plan.DataPos := runDataPregledNodes.DataPos;
-                preg.ListNZIS_PLANNED_TYPEs.Add(plan);
+                //preg.ListNZIS_PLANNED_TYPEs.Add(plan); //zzzzzzzzzzzzzzzzzzzzzzzzzzz
                 plan.Node := runPregledNodes;
-                //vtrPregledPat.InternalDisconnectNode(runPregledNodes, false);
               end;
             end;
           end;
@@ -10443,8 +10558,8 @@ begin
     end;
   end;
 
-  pnlProfMinaliPreg.Caption := pat.NoteProf;
-  btnNzisProf.Enabled  := (pat.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
+  pnlProfMinaliPreg.Caption := Adb_DM.PatNodesBack.NoteProf;
+  btnNzisProf.Enabled  := (Adb_DM.PatNodesBack.NoteProf <> 'Няма неизвършени дейности по профилактиката.');
   pnlProfMinaliPreg.Repaint;
 
 end;
@@ -10478,81 +10593,81 @@ var
   dat: TDate;
   log: TlogicalPatientNewSet;
 begin
-  //if Assigned(pat) then
+  ////if Assigned(pat) then
+////  begin
+////    FreeAndNil(pat);
+////  end;
+//  pat := TRealPatientNewItem.Create(nil);
+//  vtrGraph.BeginUpdate;
+//  vtrGraph.DeleteChildren(vRootGraph);
+//  Adb_dm.lstPatGraph.Clear;
+//  //runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
+//  //runPat := Adb_DM.PatNodes.patNode;
+//  while runPat <> nil do
 //  begin
-//    FreeAndNil(pat);
-//  end;
-  pat := TRealPatientNewItem.Create(nil);
-  vtrGraph.BeginUpdate;
-  vtrGraph.DeleteChildren(vRootGraph);
-  Adb_dm.lstPatGraph.Clear;
-  //runPat := vtrPregledPat.RootNode.FirstChild.FirstChild;
-  //runPat := Adb_DM.PatNodes.patNode;
-  while runPat <> nil do
-  begin
-    runDataPat := pointer(PByte(runPat) + lenNode);
-
-    pat.DataPos := runDataPat.DataPos;
-    //egn := pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
-//    if egn <> Adb_DM.patEgn then //////////////////////'8403236257' then
+//    runDataPat := pointer(PByte(runPat) + lenNode);
+//
+//    pat.DataPos := runDataPat.DataPos;
+//    //egn := pat.getAnsiStringMap(AspectsHipFile.Buf, CollPatient.posData, word(PatientNew_EGN));
+////    if egn <> Adb_DM.patEgn then //////////////////////'8403236257' then
+////    begin
+////      runPat := runPat.NextSibling;
+////      Continue;
+////    end;
+//
+//
+//    runPreg := runPat.FirstChild;
+//    while runPreg <> nil do
 //    begin
-//      runPat := runPat.NextSibling;
-//      Continue;
+//      runDataPreg := pointer(PByte(runPreg) + lenNode);
+//      preg := TRealPregledNewItem.Create(nil);
+//      preg.DataPos := runDataPreg.DataPos;
+//      PregIsProf := False;
+//      runDiag := runPreg.FirstChild;
+//      while runDiag <> nil do
+//      begin
+//        runDataDiag := pointer(PByte(runDiag) + lenNode);
+//        if runDataDiag.vid <> vvDiag then
+//        begin
+//          runDiag := runDiag.NextSibling;
+//          continue;
+//        end;
+//        diag := TRealDiagnosisItem.Create(nil);
+//        diag.DataPos := runDataDiag.DataPos;
+//        mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
+//        if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
+//        begin
+//          PregIsProf := True;
+//          preg.FDiagnosis.Add(diag);
+//          Break;
+//        end;
+//        runDiag := runDiag.NextSibling;
+//      end;
+//
+//      if PregIsProf then
+//      begin
+//        pat.FPregledi.Add(preg);
+//      end;
+//      runPreg := runPreg.NextSibling;
 //    end;
-
-
-    runPreg := runPat.FirstChild;
-    while runPreg <> nil do
-    begin
-      runDataPreg := pointer(PByte(runPreg) + lenNode);
-      preg := TRealPregledNewItem.Create(nil);
-      preg.DataPos := runDataPreg.DataPos;
-      PregIsProf := False;
-      runDiag := runPreg.FirstChild;
-      while runDiag <> nil do
-      begin
-        runDataDiag := pointer(PByte(runDiag) + lenNode);
-        if runDataDiag.vid <> vvDiag then
-        begin
-          runDiag := runDiag.NextSibling;
-          continue;
-        end;
-        diag := TRealDiagnosisItem.Create(nil);
-        diag.DataPos := runDataDiag.DataPos;
-        mkb := diag.getAnsiStringMap(Adb_dm.CollDiag.Buf, Adb_dm.CollDiag.posData, word(Diagnosis_code_CL011));
-        if 'Z00.0Z00.1Z00.2Z00.3Z10.8Z23.2Z23.8Z24.6Z27.4Z27.8'.Contains(mkb) and mkb.Contains('.') then
-        begin
-          PregIsProf := True;
-          preg.FDiagnosis.Add(diag);
-          Break;
-        end;
-        runDiag := runDiag.NextSibling;
-      end;
-
-      if PregIsProf then
-      begin
-        pat.FPregledi.Add(preg);
-      end;
-      runPreg := runPreg.NextSibling;
-    end;
-
-    Adb_dm.lstPatGraph.Clear;
-    i := Adb_dm.lstPatGraph.Add(pat);
-    //pat.DataPos := runDataPat.DataPos;
-    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
-    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
-    profGR.CurrDate := dat;
-    profGR.Adb_DM := Adb_DM;
-    pat.FPregledi.Clear;
-    pat.lstGraph.Clear;
-    profGR.GeneratePeriod(pat);
-    vtrGraph.DeleteChildren(vRootGraph);
-    profGR.LoadVtrGraph(pat, i);
-
-    //runPat := runPat.NextSibling;
-    Break;
-  end;
+//
+//    Adb_dm.lstPatGraph.Clear;
+//    i := Adb_dm.lstPatGraph.Add(pat);
+//    //pat.DataPos := runDataPat.DataPos;
+//    dat := pat.getDateMap(Adb_DM.AdbMain.Buf, Adb_dm.CollPatient.posData, word(PatientNew_BIRTH_DATE));
+//    log := TlogicalPatientNewSet(pat.getLogical40Map(Adb_dm.CollPatient.Buf, Adb_dm.CollPatient.posData, word(PatientNew_Logical)));
+//    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
+//    profGR.CurrDate := dat;
+//    profGR.Adb_DM := Adb_DM;
+//    pat.FPregledi.Clear;
+//    pat.lstGraph.Clear;
+//    profGR.GeneratePeriod(pat);
+//    vtrGraph.DeleteChildren(vRootGraph);
+//    profGR.LoadVtrGraph(pat, i);
+//
+//    //runPat := runPat.NextSibling;
+//    Break;
+//  end;
 
 end;
 
@@ -11093,6 +11208,7 @@ begin
   Adb_DM.mmoTest := mmoTest;
   Adb_DM.AdbMainFileName := '';
   Adb_DM.OnClearColl := Adb_DMOnClearColl;
+  FDBHelper.Adb_DM := Adb_DM;
 end;
 
 //procedure TfrmSuperHip.InitColl;
@@ -12715,7 +12831,7 @@ begin
   thrLoadDb.OnTerminate := TerminateLoadDB;
   thrLoadDb.OnProgres := LoadDbOnProgres;
   thrLoadDb.OnCnt := LoadDbOnCNT;
-  thrLoadDb.cmdFile := streamCmdFile;
+  thrLoadDb.cmdFile := Adb_DM.streamCmdFile;
 
   thrLoadDb.Guid := Adb_DM.AdbMain.GUID;
   thrLoadDb.Adb_dm := Adb_DM;
@@ -12815,7 +12931,82 @@ end;
 //  frmFilter.Show;
 //end;
 
-procedure TfrmSuperHip.LoadVtrMinaliPregledi(node: PVirtualNode; Apat: TRealPatientNewItem);
+procedure TfrmSuperHip.LoadVtrMinaliPregledi(node: PVirtualNode;
+  Apat: TRealPatientNewItem);
+var
+  dataNode, data, dataPregInMN: PAspRec;
+  vPregNode, vPreg, run: PVirtualNode;
+  i: Integer;
+begin
+  vtrMinaliPregledi.BeginUpdate;
+  vtrMinaliPregledi.Clear;
+  if node.ChildCount = 0 then
+  begin
+    vtrMinaliPregledi.EndUpdate;
+    Exit;
+  end;
+  vPregNode := node.FirstChild;
+  while vPregNode <> nil  do
+  begin
+    dataNode := pointer(PByte(vPregNode) + lenNode);
+    case datanode.vid of
+      vvPregledNew:
+      begin
+        vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+        data := vtrMinaliPregledi.GetNodeData(vPreg);
+        data.index := integer(vPregNode);
+        data.DataPos := dataNode.DataPos;
+        data.vid := vvPregledNew;
+      end;
+      vvIncMN:
+      begin
+        run := vPregNode.FirstChild;
+        while run <> nil do
+        begin
+          dataPregInMN := pointer(PByte(run) + lenNode);
+          case dataPregInMN.vid of
+            vvPregledNew:
+            begin
+              vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+              data := vtrMinaliPregledi.GetNodeData(vPreg);
+              data.index := integer(run);
+              data.DataPos := dataPregInMN.DataPos;
+              data.vid := vvPregledNew;
+            end;
+          end;
+          run := run.NextSibling;
+        end;
+      end;
+    end;
+    vPregNode := vPregNode.NextSibling;
+  end;
+  if {Fdm.IsGP and }(Apat <> nil) then
+  begin
+    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+    data := vtrMinaliPregledi.GetNodeData(vPreg);
+    data.DataPos := 0;
+    data.vid := vvCl132;
+  end;
+  //if (not Fdm.IsGP) and (Apat <> nil) then
+//  begin
+//    vPreg := vtrMinaliPregledi.AddChild(nil, nil);
+//
+//    data := vtrMinaliPregledi.GetNodeData(vPreg);
+//    data.DataPos := 0;
+//    data.vid := vvIncMN;
+//  end;
+
+  vtrMinaliPregledi.EndUpdate;
+  vtrMinaliPregledi.Sort(vtrMinaliPregledi.RootNode, 0, sdDescending, false);
+  vtrMinaliPregledi.FocusedNode := vtrMinaliPregledi.RootNode.FirstChild;
+  vtrMinaliPregledi.Selected[vtrMinaliPregledi.RootNode.FirstChild] := True;
+
+
+  //Elapsed := Stopwatch.Elapsed;
+  //mmoTest.Lines.Add('Minali za ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TfrmSuperHip.LoadVtrMinaliPregledi1(node: PVirtualNode; Apat: TRealPatientNewItem);
 var
   dataNode, data, dataPregInMN: PAspRec;
   vPregNode, vPreg, run: PVirtualNode;
@@ -12862,7 +13053,7 @@ begin
     end;
     vPregNode := vPregNode.NextSibling;
   end;
-  if {Fdm.IsGP and }(Apat <> nil) then
+  //if {Fdm.IsGP and }(Apat <> nil) then
   begin
     vPreg := vtrMinaliPregledi.AddChild(nil, nil);
     data := vtrMinaliPregledi.GetNodeData(vPreg);
@@ -13141,7 +13332,7 @@ begin
 
   vtr.InitNode(TreeLink);
   vtr.InternalConnectNode_cmd(TreeLink, vtr.RootNode,
-                    vtr, amAddChildLast, streamCmdFile);
+                    vtr, amAddChildLast, Adb_DM.streamCmdFile);
   run := TreeLink;
 
   for I := 0 to Adb_dm.CollPatient.Count - 1 do
@@ -13164,7 +13355,7 @@ begin
     TreeLink.Dummy := i mod 255;
     vtr.InitNode(TreeLink);
     vtr.InternalConnectNode_cmd(TreeLink, run,
-                    vtr, amAddChildLast, streamCmdFile);
+                    vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
     vPat := TreeLink;
     if pat.FDoctor <> nil then
@@ -13183,7 +13374,7 @@ begin
       TreeLink.Align := 50;
       TreeLink.Dummy := 0;
       vtr.InitNode(TreeLink);
-      vtr.InternalConnectNode_cmd(TreeLink, vPat, vtr, amAddChildLast, streamCmdFile);
+      vtr.InternalConnectNode_cmd(TreeLink, vPat, vtr, amAddChildLast, Adb_DM.streamCmdFile);
     end;
     if pat.FAdresi.Count > 0 then
     begin
@@ -13201,7 +13392,7 @@ begin
       TreeLink.Align := 50;
       TreeLink.Dummy := 0;
       vtr.InitNode(TreeLink);
-      vtr.InternalConnectNode_cmd(TreeLink, vPat, vtr, amAddChildLast, streamCmdFile);
+      vtr.InternalConnectNode_cmd(TreeLink, vPat, vtr, amAddChildLast, Adb_DM.streamCmdFile);
     end;
     
     for j := 0 to pat.FMDDs.Count - 1 do
@@ -13222,7 +13413,7 @@ begin
       //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vpat,
-                      vtr, amAddChildFirst, streamCmdFile);
+                      vtr, amAddChildFirst, Adb_DM.streamCmdFile);
 
       vMDD := TreeLink;
 
@@ -13247,7 +13438,7 @@ begin
       //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vpat,
-                      vtr, amAddChildFirst, streamCmdFile);
+                      vtr, amAddChildFirst, Adb_DM.streamCmdFile);
 
       vIncMN := TreeLink;
       TreeLink := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
@@ -13265,7 +13456,7 @@ begin
       //TreeLink.Dummy := j mod 255;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vIncMN,
-                      vtr, amAddChildFirst, streamCmdFile);
+                      vtr, amAddChildFirst, Adb_DM.streamCmdFile);
 
       IncMn.LinkNode := vIncMN;
       //if IncMn.NRN = '22157700253F' then
@@ -13297,19 +13488,19 @@ begin
       if preg.FIncMN = nil then
       begin
         vtr.InternalConnectNode_cmd(TreeLink, vpat,
-                        vtr, amAddChildFirst, streamCmdFile);
+                        vtr, amAddChildFirst, Adb_DM.streamCmdFile);
       end
       else
       begin
         if preg.FIncMN.LinkNode <> nil then
         begin
           vtr.InternalConnectNode_cmd(TreeLink,  preg.FIncMN.LinkNode,
-                          vtr, amAddChildLast, streamCmdFile);
+                          vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end
         else
         begin
           vtr.InternalConnectNode_cmd(TreeLink, vpat,
-                        vtr, amAddChildFirst, streamCmdFile);//zzzzzzzzzzzzzzzzzz  да се отбележи, че не е добре
+                        vtr, amAddChildFirst, Adb_DM.streamCmdFile);//zzzzzzzzzzzzzzzzzz  да се отбележи, че не е добре
           //Caption := pat.PatEGN;
         end;
       end;
@@ -13341,7 +13532,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vPerformer := TreeLink;
 
@@ -13362,7 +13553,7 @@ begin
           TreeLink.Align := 50;
           TreeLink.Dummy := 0;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vPerformer, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vPerformer, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end
         else
         begin
@@ -13387,7 +13578,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := k mod 255;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
       end;
 
       for k := 0 to preg.FProcedures.Count -1 do
@@ -13406,7 +13597,7 @@ begin
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
       end;
 
       for k := 0 to preg.FMdns.Count -1 do
@@ -13426,7 +13617,7 @@ begin
         TreeLink.Align := 50;
         //TreeLink.Dummy := k mod 255;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vMdn  := TreeLink;
 
@@ -13452,7 +13643,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMDN, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMDN, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
 
         for m := 0 to mdn.FExamAnals.Count -1 do
@@ -13471,7 +13662,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMDN, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMDN, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
       end;
       for k := 0 to preg.FMNs.Count -1 do
@@ -13491,7 +13682,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vMn  := TreeLink;
         for m := 0 to mn.FDiagnosis2.Count -1 do
@@ -13510,7 +13701,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMn, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMn, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
       end;
 
@@ -13531,7 +13722,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vMn  := TreeLink;
         for m := 0 to mn3A.FDiagnosis2.Count -1 do
@@ -13550,7 +13741,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMn, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMn, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
       end;
 
@@ -13571,7 +13762,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vMNHosp  := TreeLink;
         for m := 0 to mnHosp.FDiagnosis2.Count -1 do
@@ -13590,7 +13781,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMNHosp, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMNHosp, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
       end;
 
@@ -13611,7 +13802,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
 
         vMNLkk  := TreeLink;
         for m := 0 to mnLkk.FDiagnosis2.Count -1 do
@@ -13630,7 +13821,7 @@ begin
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
-          vtr.InternalConnectNode_cmd(TreeLink, vMNLkk, vtr, amAddChildLast, streamCmdFile);
+          vtr.InternalConnectNode_cmd(TreeLink, vMNLkk, vtr, amAddChildLast, Adb_DM.streamCmdFile);
         end;
       end;
 
@@ -13651,7 +13842,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
       end;
       for k := 0 to preg.FProfCards.Count -1 do
       begin
@@ -13670,7 +13861,7 @@ begin
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
         vtr.InitNode(TreeLink);
-        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, streamCmdFile);
+        vtr.InternalConnectNode_cmd(TreeLink, vpreg, vtr, amAddChildLast, Adb_DM.streamCmdFile);
       end;
     end;
   end;
@@ -13903,7 +14094,7 @@ end;
 
 procedure TfrmSuperHip.MenuTitleLoadDBClick(Sender: TObject);
 begin
-  SubButonImportFDBClick(Sender);
+  //SubButonImportFDBClick(Sender);
   FmxTitleBar.p1.IsOpen := False;
   pgcTree.ActivePage := tsTreeDBFB;
   vtrFDB.SetFocus;
@@ -13969,7 +14160,7 @@ begin
     log := TlogicalPatientNewSet(Adb_dm.CollPatient.getLogical40Map(Adb_dm.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
     profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
     profGR.CurrDate := dat;
-    profGR.GeneratePeriod(pat);
+    profGR.GeneratePeriod1();
 
     if i < 4100 then
     begin
@@ -15148,15 +15339,15 @@ end;
 
 procedure TfrmSuperHip.SelectMKB(sender: TObject);
 var
-  diag: TRealDiagnosisItem;
+  diagNode: TRealDiagnosisItem;
 begin
-  if TVtrVid(vtrTemp.Tag) <> vvDiag then
-  begin
-    ChoiceMKB(FmxProfForm.Pregled);
-
-  end;
-  diag := TRealDiagnosisItem(sender);
-  vtrTemp.Selected[diag.MkbNode] := True;
+  //if TVtrVid(vtrTemp.Tag) <> vvDiag then
+//  begin
+//    ChoiceMKB(FmxProfForm.Pregled);
+//
+//  end;
+//  diagNode := TRealDiagnosisItem(sender);
+//  vtrTemp.Selected[diagNode.MkbNode] := True;////////////////zzzzzzzzzzzzzzzzzzzzzzzzzz PregNodes
 end;
 
 //procedure TfrmSuperHip.SetPatientTemp(const Value: TRealPatientNewItem);
@@ -15218,7 +15409,7 @@ procedure TfrmSuperHip.ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtu
 var
   edt: TEdit;
   run, runAnal : PVirtualNode;
-  dataRun, dataAnal, dataFMXPreg: PAspRec;
+  dataRun, dataAnal, dataFMXPreg, dataParent: PAspRec;
   diag: TRealDiagnosisItem;
   performer: TRealDoctorItem;
   mdn: TRealMDNItem;
@@ -15250,18 +15441,9 @@ begin
   FmxProfForm.AspNomenPosData := Adb_DM.AdbNomenNzis.FPosData;
 
   Stopwatch := TStopwatch.StartNew;
-  //FmxProfForm.scldlyt1.BeginUpdate;
   FmxProfForm.ClearListsPreg;
   TempDiags := TList<TRealDiagnosisItem>.Create;
   TempMns := TList<TRealBLANKA_MED_NAPRItem>.Create;
-  //oldPreg := nil;
-  FmxProfForm.linkPreg := linkPreg;
-
-
-
-  //FmxProfForm.AspNomenHipBuf := AspectsNomHipFile.Buf;
-//  FmxProfForm.AspNomenHipPosData := AspectsNomHipFile.FPosData;
-
   dataRun := pointer(PByte(linkPreg) + lenNode);
   mmoTest.Lines.Add(format('Fill dataPreg = %d', [dataPreg.DataPos]));
 
@@ -15292,22 +15474,21 @@ begin
     case dataRun.vid of
       vvPerformer:
       begin
-        FmxProfForm.Doctor.DataPos := dataRun.DataPos;
+        //FmxProfForm.Doctor.DataPos := dataRun.DataPos; // zzzzzzzzzzzzzzzzzz pregNodes
       end;
       vvDiag:
       begin
-        if FmxProfForm.Pregled.CanDeleteDiag then
-        begin
-          diag := TRealDiagnosisItem.Create(nil);
-          diag.DataPos := dataRun.DataPos;
-          diag.Node := run;
-          //FmxProfForm.Pregled.FDiagnosis.Add(diag);
-          TempDiags.Add(diag);
-        end
-        else
-        begin
-
-        end;
+        //if FmxProfForm.Pregled.CanDeleteDiag then
+//        begin
+//          diag := TRealDiagnosisItem.Create(nil);
+//          diag.DataPos := dataRun.DataPos;
+//          diag.Node := run;
+//          TempDiags.Add(diag);
+//        end
+//        else
+//        begin
+//
+//        end;//zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       end;
       vvMDN:
       begin
@@ -15319,7 +15500,7 @@ begin
           mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
           mdn.LinkNode := run;
         end;
-        FmxProfForm.Pregled.FMdns.Add(mdn);
+       // FmxProfForm.Pregled.FMdns.Add(mdn);//zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
 
 
         runAnal := run.FirstChild;
@@ -15362,7 +15543,7 @@ begin
             mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
             mdn.LinkNode := run;
           end;
-          FmxProfForm.Pregled.FMdns.Add(mdn);
+          //FmxProfForm.Pregled.FMdns.Add(mdn); //zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
 
 
           runAnal := run.FirstChild;
@@ -15490,8 +15671,8 @@ begin
           //mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
           immun.LinkNode := run;
         end;
-        FmxProfForm.Pregled.FImmuns.Add(immun);
-        immun.FPregled := FmxProfForm.Pregled;
+        //FmxProfForm.Pregled.FImmuns.Add(immun);
+//        immun.FPregled := FmxProfForm.Pregled; //zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       end;
       //vvPatientRevision:
 //      begin
@@ -15515,93 +15696,108 @@ begin
   end;
   fmxCntrDyn.ChangeActiveForm(FmxProfForm);
 
-  FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
-  FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
-  FmxProfForm.Patient.DataPos := dataPat.DataPos;
-  if FmxProfForm.Pregled.FNode = nil then // не е избиран и редактиран до сега
-  begin
-    FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-    FmxProfForm.Pregled.FNode := linkPreg;
-    dataPreg.index := 0;
-  end
-  else
-  begin
-    if FmxProfForm.Pregled.PRecord <> nil then // Редактиран е и трябва да се добави нов във колекцията
+  //FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
+  //FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
+  Adb_DM.BuildPregNodes(linkPreg);//PregNodes := Adb_DM.GetPregNodes(linkPreg);
+  dataParent := pointer(PByte(linkPreg.Parent) + lenNode);
+  case dataParent.vid of
+    vvPatient:
     begin
-      FmxProfForm.RemoveLastVacantindexPreg;
-      if dataPreg.index < 0 then  // само че да не е ползван и незаписан преди
-      begin
-        lastVacantPreg := FmxProfForm.FindVacantIndexPreg();
-        if lastVacantPreg = -1 then
-        begin
-          //oldPreg := FmxProfForm.Pregled;
-          FmxProfForm.Pregled := TRealPregledNewItem(Adb_dm.CollPregled.Add);
-          dataPreg.index := Adb_dm.CollPregled.Count - 1;
-          ////  трябва да се вземат нещата от стария (попълненият) преглед
-//          FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
-//          FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
-        end
-        else
-        begin
-          FmxProfForm.Pregled := Adb_dm.CollPregled.Items[lastVacantPreg];
-
-          dataPreg.index := lastVacantPreg;
-
-        end;
-
-        FmxProfForm.Pregled.FNode := linkPreg;
-        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-      end
-      else
-      begin
-       // oldPreg := FmxProfForm.Pregled;
-        FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index];
-        FmxProfForm.Pregled.FNode := linkPreg;
-        //dataPreg.index := dataPreg.index; // не трябва да се сменява
-        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-        ////  трябва да се вземат нещата от стария (попълненият) преглед
-//        FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
-//        FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
-      end;
-    end
-    else
+      Adb_DM.BuildPatNodes(linkPreg.Parent); //PAdb_dm.GetPatNodes(linkPreg.Parent);// нещата на пациента
+      FmxProfForm.lytIncMN.Height := 3;
+    end;
+    vvIncMN:
     begin
-      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // който е за редактиране
-      if dataPreg.index = - 1 then
-      begin
-        if FmxProfForm.FindVacantIndexPreg() = -1 then
-        begin// тука трябва да се записват някъде минусираните
-          FmxProfForm.AddVacantindexPreg(dataFMXPreg.index);
-        end;
-        dataPreg.index := dataFMXPreg.index;// заменям стария индекс със новия
-        dataFMXPreg.index := -1;// стария го минусирам :) за да се знае, че не е ползван
-        if dataPreg.index = -1 then
-        begin
-          Caption := 'errrr';
-          Exit;
-        end;
-      end
-      else
-      begin
-        //Caption := 'errrr'; // zzzz
-//        Exit;
-      end;
-
-
-      FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index]; //взимам  прегледа и му слагам новите неща
-      FmxProfForm.Pregled.FNode := linkPreg;
-      FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
-
+      FmxProfForm.lytIncMN.Height := 150;
+      Adb_DM.BuildPatNodes(linkPreg.Parent.parent) //PatNodes := Adb_dm.GetPatNodes(linkPreg.Parent.parent);// нещата на пациента
     end;
   end;
 
+  //FmxProfForm.Patient.DataPos := dataPat.DataPos;
+//  if FmxProfForm.Pregled.FNode = nil then // не е избиран и редактиран до сега
+//  begin
+//    FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//    FmxProfForm.Pregled.FNode := linkPreg;
+//    dataPreg.index := 0;
+//  end
+//  else
+//  begin
+//    if FmxProfForm.Pregled.PRecord <> nil then // Редактиран е и трябва да се добави нов във колекцията
+//    begin
+//      FmxProfForm.RemoveLastVacantindexPreg;
+//      if dataPreg.index < 0 then  // само че да не е ползван и незаписан преди
+//      begin
+//        lastVacantPreg := FmxProfForm.FindVacantIndexPreg();
+//        if lastVacantPreg = -1 then
+//        begin
+//          //oldPreg := FmxProfForm.Pregled;
+//          FmxProfForm.Pregled := TRealPregledNewItem(Adb_dm.CollPregled.Add);
+//          dataPreg.index := Adb_dm.CollPregled.Count - 1;
+//          ////  трябва да се вземат нещата от стария (попълненият) преглед
+////          FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
+////          FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
+//        end
+//        else
+//        begin
+//          FmxProfForm.Pregled := Adb_dm.CollPregled.Items[lastVacantPreg];
+//
+//          dataPreg.index := lastVacantPreg;
+//
+//        end;
+//
+//        FmxProfForm.Pregled.FNode := linkPreg;
+//        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//      end
+//      else
+//      begin
+//       // oldPreg := FmxProfForm.Pregled;
+//        FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index];
+//        FmxProfForm.Pregled.FNode := linkPreg;
+//        //dataPreg.index := dataPreg.index; // не трябва да се сменява
+//        FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+//        ////  трябва да се вземат нещата от стария (попълненият) преглед
+////        FmxProfForm.Pregled.FMNs.AddRange(oldPreg.FMNs);
+////        FmxProfForm.Pregled.FDiagnosis.AddRange(oldPreg.FDiagnosis);
+//      end;
+//    end
+//    else
+//    begin
+//      dataFMXPreg := pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode); // който е за редактиране
+//      if dataPreg.index = - 1 then
+//      begin
+//        if FmxProfForm.FindVacantIndexPreg() = -1 then
+//        begin// тука трябва да се записват някъде минусираните
+//          FmxProfForm.AddVacantindexPreg(dataFMXPreg.index);
+//        end;
+//        dataPreg.index := dataFMXPreg.index;// заменям стария индекс със новия
+//        dataFMXPreg.index := -1;// стария го минусирам :) за да се знае, че не е ползван
+//        if dataPreg.index = -1 then
+//        begin
+//          Caption := 'errrr';
+//          Exit;
+//        end;
+//      end
+//      else
+//      begin
+//        //Caption := 'errrr'; // zzzz
+////        Exit;
+//      end;
+
+
+      //FmxProfForm.Pregled := Adb_dm.CollPregled.Items[dataPreg.index]; //взимам  прегледа и му слагам новите неща
+//      FmxProfForm.Pregled.FNode := linkPreg;
+//      FmxProfForm.Pregled.DataPos := dataPreg.DataPos;
+
+   // end;
+ // end;
+
   FmxProfForm.ClearBlanka;
-  FmxProfForm.Pregled.FDiagnosis.AddRange(TempDiags);
-  FmxProfForm.Pregled.FMNs.AddRange(TempMns);
-  for i := 0 to FmxProfForm.Pregled.FMNs.Count - 1 do
-    FmxProfForm.Pregled.FMNs[i].FPregled := FmxProfForm.Pregled;
-  TempDiags.Free;
-  TempMns.Free;
+  //FmxProfForm.Pregled.FDiagnosis.AddRange(TempDiags);
+  //FmxProfForm.Pregled.FMNs.AddRange(TempMns);
+  //for i := 0 to FmxProfForm.Pregled.FMNs.Count - 1 do
+//    FmxProfForm.Pregled.FMNs[i].FPregled := FmxProfForm.Pregled;
+  //TempDiags.Free;
+  //TempMns.Free;
 
 
   FmxProfForm.FillProfActivityPreg(linkPreg);
@@ -15610,7 +15806,6 @@ begin
   FmxProfForm.InitSetings;
 
   Elapsed := Stopwatch.Elapsed;
-  //FmxProfForm.scldlyt1.endupdate;
   mmoTest.Lines.Add( 'DYN ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
@@ -16222,7 +16417,7 @@ begin
   dataGraph := vtrGraph.GetNodeData(vRootGraph);
   dataGraph.vid := vvNone;
   dataGraph.index := 0;
-  profGR.LoadVtrGraph(FmxProfForm.Patient, 0);
+  //profGR.LoadVtrGraph(FmxProfForm.Patient, 0);  //zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
   vtrGraph.Expanded[vRootGraph] := True;
   pgcTree.ActivePage := tsGraph;
   Exit;
@@ -16396,21 +16591,21 @@ begin
             TempItem.PRecord.nhif_code := ArrNhifCode[j];
             include(TempItem.PRecord.setProp, CL142_nhif_code);
           end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048), len) <> nil then
-          begin
-            TempItem.PRecord.cl048 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048));
-            include(TempItem.PRecord.setProp, CL142_cl048);
-          end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006), len) <> nil then
-          begin
-            TempItem.PRecord.cl006 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006));
-            include(TempItem.PRecord.setProp, CL142_cl006);
-          end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly), len) <> nil then
-          begin
-            TempItem.PRecord.highly := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly));
-            include(TempItem.PRecord.setProp, CL142_highly);
-          end;
+          //if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048), len) <> nil then
+//          begin
+//            TempItem.PRecord.cl048 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048));
+//            include(TempItem.PRecord.setProp, CL142_cl048);
+//          end;
+//          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006), len) <> nil then
+//          begin
+//            TempItem.PRecord.cl006 := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006));
+//            include(TempItem.PRecord.setProp, CL142_cl006);
+//          end;
+//          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly), len) <> nil then
+//          begin
+//            TempItem.PRecord.highly := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly));
+//            include(TempItem.PRecord.setProp, CL142_highly);
+//          end;
 
 
           TempItem.InsertCL142;
@@ -16851,75 +17046,75 @@ begin
   mmoTest.Lines.Add('insert PR001 ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
-procedure TfrmSuperHip.SubButonImportFDBClick(Sender: TObject);
-var
-  fileStr: TFileStream;
-  fileNameNew, LnkFilename: string;
-  AGuid: TGUID;
-  AdbDir: string;
-begin
-  //pnlRoleView.Width := pnlRoleView.CompactWidth;
+//procedure TfrmSuperHip.SubButonImportFDBClick(Sender: TObject);
+//var
+//  fileStr: TFileStream;
+//  fileNameNew, LnkFilename: string;
+//  AGuid: TGUID;
+//  AdbDir: string;
+//begin
+//  //pnlRoleView.Width := pnlRoleView.CompactWidth;
+////
+////  while pnlRoleView.Opened do
+////  begin
+////    pnlRoleView.Refresh;
+////    Application.ProcessMessages;
+////  end;
 //
-//  while pnlRoleView.Opened do
+//  pnlRoleView.ForceClose;
+//  if FDbName = '' then exit;
+//
+//  if Adb_DM.AdbMain <> nil then
 //  begin
-//    pnlRoleView.Refresh;
-//    Application.ProcessMessages;
+//    UnmapViewOfFile(Adb_DM.AdbMain.Buf);
 //  end;
-
-  pnlRoleView.ForceClose;
-  if FDbName = '' then exit;
-
-  if Adb_DM.AdbMain <> nil then
-  begin
-    UnmapViewOfFile(Adb_DM.AdbMain.Buf);
-  end;
-
-
-  AGuid := TGuid.NewGuid;
-  AdbDir := ParamStr(2);
-  fileNameNew := AdbDir + 'AspHip' + AGuid.ToString + '.adb';
-  fileStr := TFileStream.Create(fileNameNew, fmCreate);
-  fileStr.Size := 1000000000;//00;
-  fileStr.Free;
-
-  Adb_DM.AdbMain := TMappedFile.Create(fileNameNew, true, AGuid);
-  Adb_DM.AdbMain := Adb_DM.AdbMain;
-  streamCmdFile := TFileCmdStream.Create(fileNameNew.Replace('.adb', '.cmd'), fmCreate);
-  streamCmdFile.Size := 100;
-  streamCmdFile.Guid := AGuid;
-  streamCmdFile.Position := streamCmdFile.Size;
-
-  //LnkFilename := AspectsHipFile.FileName.Replace('.adb', '.lnk');
-//  DeleteFile(LnkFilename);
-//  fileStr := TFileStream.Create(LnkFilename, fmCreate);
-//  fileStr.Size := 600000000;
+//
+//
+//  AGuid := TGuid.NewGuid;
+//  AdbDir := ParamStr(2);
+//  fileNameNew := AdbDir + 'AspHip' + AGuid.ToString + '.adb';
+//  fileStr := TFileStream.Create(fileNameNew, fmCreate);
+//  fileStr.Size := 1000000000;//00;
 //  fileStr.Free;
 //
-//  AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, AspectsHipFile.GUID);
-  if Adb_DM.AdbNomenNzis = nil then
-    Adb_DM.OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
-  OpenLinkNomenHipAnals;
-
-  //CollPractica.Clear;
-//  CollPatient.Clear;
-//  CollPregled.Clear;
-//  CollDoctor.Clear;
-//  CollUnfav.Clear;
-//  CollDiag.Clear;
-//  CollMDN.Clear;
-//  CollMedNapr.Clear;
-//  CollMedNapr3A.Clear;
-//  CollIncMdn.Clear;
-//  CollMkb.Clear;
-//  CollExamAnal.Clear;
-//  CollProceduresNomen.Clear;
-//  CollCardProf.Clear;
-
-
-
-  LoadThreadDB(FDbName);
-
-end;
+//  Adb_DM.AdbMain := TMappedFile.Create(fileNameNew, true, AGuid);
+//  Adb_DM.AdbMain := Adb_DM.AdbMain;
+//  streamCmdFile := TFileCmdStream.Create(fileNameNew.Replace('.adb', '.cmd'), fmCreate);
+//  streamCmdFile.Size := 100;
+//  streamCmdFile.Guid := AGuid;
+//  streamCmdFile.Position := streamCmdFile.Size;
+//
+//  //LnkFilename := AspectsHipFile.FileName.Replace('.adb', '.lnk');
+////  DeleteFile(LnkFilename);
+////  fileStr := TFileStream.Create(LnkFilename, fmCreate);
+////  fileStr.Size := 600000000;
+////  fileStr.Free;
+////
+////  AspectsLinkPatPregFile := TMappedLinkFile.Create(LnkFilename, true, AspectsHipFile.GUID);
+//  if Adb_DM.AdbNomenNzis = nil then
+//    Adb_DM.OpenADBNomenNzis(paramstr(2) + 'NzisNomen.adb');
+//  OpenLinkNomenHipAnals;
+//
+//  //CollPractica.Clear;
+////  CollPatient.Clear;
+////  CollPregled.Clear;
+////  CollDoctor.Clear;
+////  CollUnfav.Clear;
+////  CollDiag.Clear;
+////  CollMDN.Clear;
+////  CollMedNapr.Clear;
+////  CollMedNapr3A.Clear;
+////  CollIncMdn.Clear;
+////  CollMkb.Clear;
+////  CollExamAnal.Clear;
+////  CollProceduresNomen.Clear;
+////  CollCardProf.Clear;
+//
+//
+//
+//  LoadThreadDB(FDbName);
+//
+//end;
 
 procedure TfrmSuperHip.ActiveControlChanged(Sender: TObject);
 begin
@@ -17229,7 +17424,7 @@ begin
 
   diag.InsertDiagnosis;
   ADB_DM.CollDiag.streamComm.Len := ADB_DM.CollDiag.streamComm.Size;
-  streamCmdFile.CopyFrom(ADB_DM.CollDiag.streamComm, 0);
+  Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollDiag.streamComm, 0);
   Dispose(diag.PRecord);
   diag.PRecord := nil;
 
@@ -17347,7 +17542,7 @@ begin
   NZIS_PLANNED_TYPE.InsertNZIS_PLANNED_TYPE; // добавям новия план
 
   ADB_DM.CollNZIS_PLANNED_TYPE.streamComm.Len := ADB_DM.CollNZIS_PLANNED_TYPE.streamComm.Size;
-  streamCmdFile.CopyFrom(ADB_DM.CollNZIS_PLANNED_TYPE.streamComm, 0);
+  Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_PLANNED_TYPE.streamComm, 0);
   Dispose(NZIS_PLANNED_TYPE.PRecord);
   NZIS_PLANNED_TYPE.PRecord := nil;
 
@@ -17446,7 +17641,7 @@ begin
   mmoTest.Lines.Add(ADB_DM.CollPatient.getAnsiStringMap(dataPa.DataPos, Word(PatientNZOK_EGN)));
   //създаване на прегледа с добавяне в колекцията
   TempItem := TRealPregledNewItem(ADB_DM.CollPregled.Add);
-  TempItem.Fpatient := FmxProfForm.Patient;
+  //TempItem.Fpatient := FmxProfForm.Patient; //zzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
   if TempItem.Fpatient.CurrentGraphIndex < 0 then exit;
   if TempItem.Fpatient.lstGraph.Count = 0 then
   begin
@@ -17470,7 +17665,7 @@ begin
   TempItem.InsertPregledNew;
 
   ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
-  streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
+  Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
 
 
   Dispose(TempItem.PRecord);
@@ -17546,7 +17741,7 @@ begin
           NZIS_QUESTIONNAIRE_RESPONSE.InsertNZIS_QUESTIONNAIRE_RESPONSE;
 
           ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Size;
-          streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm, 0);
+          Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm, 0);
           Dispose(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
           NZIS_QUESTIONNAIRE_RESPONSE.PRecord := nil;
 
@@ -17585,7 +17780,7 @@ begin
             examAnal.InsertExamAnalysis;
 
             ADB_DM.CollExamAnal.streamComm.Len := ADB_DM.CollExamAnal.streamComm.Size;
-            streamCmdFile.CopyFrom(ADB_DM.CollExamAnal.streamComm, 0);
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollExamAnal.streamComm, 0);
             Dispose(examAnal.PRecord);
             examAnal.PRecord := nil;
 
@@ -17638,7 +17833,7 @@ begin
             NZIS_DIAGNOSTIC_REPORT.InsertNZIS_DIAGNOSTIC_REPORT;
 
             ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Size;
-            streamCmdFile.CopyFrom(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm, 0);
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm, 0);
             Dispose(NZIS_DIAGNOSTIC_REPORT.PRecord);
             NZIS_DIAGNOSTIC_REPORT.PRecord := nil;
 
@@ -17683,7 +17878,7 @@ begin
               NZIS_RESULT_DIAGNOSTIC_REPORT.InsertNZIS_RESULT_DIAGNOSTIC_REPORT;
 
               ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Size;
-              streamCmdFile.CopyFrom(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm, 0);
+              Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm, 0);
               Dispose(NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord);
               NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord := nil;
 
@@ -17728,7 +17923,7 @@ begin
             NZIS_QUESTIONNAIRE_ANSWER.InsertNZIS_QUESTIONNAIRE_ANSWER;
 
             ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Size;
-            streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm, 0);
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm, 0);
             Dispose(NZIS_QUESTIONNAIRE_ANSWER.PRecord);
             NZIS_QUESTIONNAIRE_ANSWER.PRecord := nil;
 
@@ -17751,6 +17946,363 @@ begin
   vtrPregledPat.EndUpdate;
   vtrPregledPat.Selected[vpreg] := True;
   vtrPregledPat.FocusedNode := vpreg;
+  ReShowProfForm(dataPa, Pointer(PByte(vpreg) + lenNode),vpreg);
+  if chkAutamatNzis.Checked then
+  begin
+    data := Pointer(PByte(vpreg) + lenNode);
+    ADB_DM.CollPregled.SetWordMap(data.DataPos, word(PregledNew_NZIS_STATUS),3);
+    TempItem.FNode := vpreg;
+    OnOpenPregled1(TempItem);
+  end;
+  TempItem.FNode := vpreg;
+  if chkAutamatL009.Checked then
+  begin
+    OnGetPlanedTypeL009_1(TempItem);
+  end;
+end;
+
+procedure TfrmSuperHip.AddNewPregledProf;
+var
+  p: PInt;
+  TempItem, preg: TRealPregledNewItem;
+  Plan: TRealNZIS_PLANNED_TYPEItem;
+  examAnal: TRealExamAnalysisItem;
+  MedNapr: TRealBLANKA_MED_NAPRItem;
+  i, j, k: Integer;
+  pCardinalData: ^Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData, cl22Pos: Cardinal;
+
+  TreeLink, Run: PVirtualNode;
+  vPreg, vCl132, vPr001, vCL088, vPerf, vDeput, vDiag: PVirtualNode;
+  linkpos: Cardinal;
+  data, dataPa, dataPerformer: PAspRec;
+  gr: TGraphPeriod132;
+  Rule88, ACL144_key, Cl132Key, note, Field_cl133, cl028Key, test, PR001ActivityID: string;
+  pr001: TRealPR001Item;
+  Cl144: TRealCl144Item;
+  Cl142: TRealCl142Item;
+  cl134: TRealCl134Item;
+  NZIS_PLANNED_TYPE: TRealNZIS_PLANNED_TYPEItem;
+  NZIS_QUESTIONNAIRE_RESPONSE: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
+  NZIS_QUESTIONNAIRE_ANSWER: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
+  NZIS_NZIS_ANSWER_VALUE: TRealNZIS_ANSWER_VALUEItem;
+  NZIS_DIAGNOSTIC_REPORT: TRealNZIS_DIAGNOSTIC_REPORTItem;
+  NZIS_RESULT_DIAGNOSTIC_REPORT: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
+  mkb, mkb_s: string;
+  ArrPR001ActivityID: TArray<string>;
+begin
+  // намиране на пациента, на който ще се прави новия преглед;
+  //nodePat := PVirtualNode(vtrMinaliPregledi.Tag); //zzzzzzzzzzzzzzzzzzz вече не е нужно да е така а наптаво от ДМ
+
+  dataPa := Pointer(PByte(ADB_DM.PatNodesBack.patNode) + lenNode);
+  mmoTest.Lines.Add(ADB_DM.CollPatient.getAnsiStringMap(dataPa.DataPos, Word(PatientNZOK_EGN)));
+  //създаване на прегледа с добавяне в колекцията
+  TempItem := TRealPregledNewItem(ADB_DM.CollPregled.Add);
+  //TempItem.Fpatient := FmxProfForm.Patient; //zzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
+  if ADB_DM.PatNodesBack.CurrentGraphIndex < 0 then exit;
+  if ADB_DM.PatNodesBack.lstGraph.Count = 0 then
+  begin
+    Exit;/////zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  end;
+  if ADB_DM.PatNodesBack.CurrentGraphIndex > ADB_DM.PatNodesBack.lstGraph.Count - 1 then  Exit;
+
+
+
+  try
+    gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
+    TempItem.StartDate := Floor(gr.endDate);// Тука трябва да е последния ден от срока за профилактиката
+    TempItem.StartTime := 0;
+  except
+    Caption := 'ddd';
+  end;
+  New(TempItem.PRecord);
+  TempItem.PRecord.setProp := [];
+  FDBHelper.InsertAdbPregledField(TempItem); // otdeleno
+
+  TempItem.InsertPregledNew;
+
+  ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
+  Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
+
+
+  Dispose(TempItem.PRecord);
+  TempItem.PRecord := nil;
+
+  pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+  FPosMetaData := pCardinalData^;
+  ADB_DM.CollPregled.IncCntInADB;
+  Elapsed := Stopwatch.Elapsed;
+  /////////////////////////////////////////////
+  vtrPregledPat.BeginUpdate;
+  Adb_DM.AdbMainLink.AddNewNode(vvPregledNew, TempItem.DataPos, ADB_DM.PatNodesBack.patNode, amAddChildFirst, TreeLink, linkpos);
+  vPreg := TreeLink;
+
+  // zzzzzzzzzzzzzzzzzzzzzzzzzzzzz AutoNzis  тука слагам 2-рия доктор замества 1-вия
+  Adb_DM.AdbMainLink.AddNewNode(vvPerformer, ADB_DM.CollDoctor.Items[0].DataPos, vPreg, amAddChildLast, vPerf, linkpos);
+  Adb_DM.AdbMainLink.AddNewNode(vvDeput, ADB_DM.CollDoctor.Items[1].DataPos, vPerf, amAddChildLast, vDeput, linkpos);
+  mkb_s := '';
+  ADB_DM.ListPregledLinkForInsert.Add(vPreg);
+  for i := 0 to ADB_DM.PatNodesBack.ListCurrentProf.Count - 1 do
+  begin
+    gr := ADB_DM.PatNodesBack.ListCurrentProf[i];
+    begin
+      if gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_cl136)) = '1' then
+      begin
+        mkb := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_cl011));
+        if not mkb_s.Contains(mkb) then
+        begin
+          AddNewDiag(vPreg, mkb, '', 0, 100);
+          mkb_s := mkb_s + mkb;
+        end;
+      end;
+      Cl132Key := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(CL132_Key));
+      //for j := 0 to ADB_DM.PatNodesBack.pregs.Count - 1 do
+//      begin
+//        preg := ADB_DM.PatNodesBack.FPregledi[j];
+//        for k := 0 to preg.ListNZIS_PLANNED_TYPEs.Count - 1 do
+//        begin
+//          Plan := preg.ListNZIS_PLANNED_TYPEs[k];
+//          //
+//          if ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(Plan.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) = Cl132Key then
+//          begin
+//            if (Plan.Node.CheckType = ctCheckBox) and (Plan.Node.CheckState = csUncheckedNormal)  then
+//              vtrPregledPat.InternalDisconnectNode(plan.Node, False);
+//          end;
+//        end;
+//      end;
+      AddNewPlan(vPreg, gr, TreeLink);
+
+
+
+      vCl132 := TreeLink;
+
+      for j := 0 to gr.Cl132.FListPr001.Count - 1 do
+      begin
+        pr001 := gr.Cl132.FListPr001[j];
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL133'  then
+        begin
+          NZIS_QUESTIONNAIRE_RESPONSE := TRealNZIS_QUESTIONNAIRE_RESPONSEItem(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.Add);
+          New(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord.setProp :=
+             [NZIS_QUESTIONNAIRE_RESPONSE_CL133_QUEST_RESPONSE_CODE,
+              NZIS_QUESTIONNAIRE_RESPONSE_ID,
+              NZIS_QUESTIONNAIRE_RESPONSE_PLANNED_TYPE_ID,
+              NZIS_QUESTIONNAIRE_RESPONSE_PR001_KEY];
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord.ID := 0;
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord.PLANNED_TYPE_ID := 0;
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord.CL133_QUEST_RESPONSE_CODE :=
+             pr001.getWordMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord.PR001_KEY :=
+             pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) + '|' +
+             pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
+          NZIS_QUESTIONNAIRE_RESPONSE.InsertNZIS_QUESTIONNAIRE_RESPONSE;
+
+          ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm.Size;
+          Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.streamComm, 0);
+          Dispose(NZIS_QUESTIONNAIRE_RESPONSE.PRecord);
+          NZIS_QUESTIONNAIRE_RESPONSE.PRecord := nil;
+
+          pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+          FPosMetaData := pCardinalData^;
+          ADB_DM.CollNZIS_QUESTIONNAIRE_RESPONSE.IncCntInADB;
+          Adb_DM.AdbMainLink.AddNewNode(vvNZIS_QUESTIONNAIRE_RESPONSE, NZIS_QUESTIONNAIRE_RESPONSE.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+          if True then
+          begin
+
+          end;
+
+        end
+        else
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL022'  then
+        begin
+          ArrPR001ActivityID := string(ADB_DM.PR001Coll.getAnsiStringMap(pr001.DataPos, Word(PR001_Activity_ID))).Split([';']);
+          for k := 0 to Length(ArrPR001ActivityID) - 1 do
+          begin
+            PR001ActivityID := ArrPR001ActivityID[k];
+            cl22Pos := ADB_DM.CL022Coll.GetDataPosFromKey(PR001ActivityID);
+
+            examAnal := TRealExamAnalysisItem(ADB_DM.CollExamAnal.Add);
+            New(examAnal.PRecord);
+            examAnal.PRecord.setProp :=
+               [
+                ExamAnalysis_ID,
+                ExamAnalysis_NZIS_CODE_CL22,
+                ExamAnalysis_PosDataNomen
+                ];
+            examAnal.PRecord.ID := 0;
+            examAnal.PRecord.NZIS_CODE_CL22 := ADB_DM.CL022Coll.getAnsiStringMap(cl22Pos, word(CL022_nhif_code));
+            examAnal.PRecord.PosDataNomen := cl22Pos;
+
+
+            examAnal.InsertExamAnalysis;
+
+            ADB_DM.CollExamAnal.streamComm.Len := ADB_DM.CollExamAnal.streamComm.Size;
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollExamAnal.streamComm, 0);
+            Dispose(examAnal.PRecord);
+            examAnal.PRecord := nil;
+
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+            FPosMetaData := pCardinalData^;
+            ADB_DM.CollExamAnal.IncCntInADB;
+            Adb_DM.AdbMainLink.AddNewNode(vvExamAnal, examAnal.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+          end;
+
+        end
+        else
+        if pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Nomenclature)) = 'CL014'  then
+        begin
+          if  pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID)) = 'R2' then
+          begin
+            MedNapr := TRealBLANKA_MED_NAPRItem(ADB_DM.CollMedNapr.Add);
+            New(MedNapr.PRecord);
+            MedNapr.PRecord.setProp :=
+               [BLANKA_MED_NAPR_ID ,
+                BLANKA_MED_NAPR_SPECIALITY_ID
+                ];
+            MedNapr.PRecord.ID := 0;
+            MedNapr.PRecord.SPECIALITY_ID := 0;////
+            //MedNapr.PRecord.PosDataNomen := cl22Pos;
+
+
+            MedNapr.InsertBLANKA_MED_NAPR;
+            Adb_DM.AdbMainLink.AddNewNode(vvMedNapr, MedNapr.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+          end;
+
+        end
+        else
+        begin
+          if pr001.CL142 <> nil then
+          begin
+            NZIS_DIAGNOSTIC_REPORT := TRealNZIS_DIAGNOSTIC_REPORTItem(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.Add);
+            New(NZIS_DIAGNOSTIC_REPORT.PRecord);
+            NZIS_DIAGNOSTIC_REPORT.PRecord.setProp :=
+               [NZIS_DIAGNOSTIC_REPORT_CL083_STATUS,
+                NZIS_DIAGNOSTIC_REPORT_CL142_CODE,
+                NZIS_DIAGNOSTIC_REPORT_ID,
+                NZIS_DIAGNOSTIC_REPORT_PREGLED_ID,
+                NZIS_DIAGNOSTIC_REPORT_NOMEN_POS];
+            NZIS_DIAGNOSTIC_REPORT.PRecord.ID := 0;
+            NZIS_DIAGNOSTIC_REPORT.PRecord.PREGLED_ID := 0;
+            NZIS_DIAGNOSTIC_REPORT.PRecord.CL083_STATUS := 10;// registriran
+            NZIS_DIAGNOSTIC_REPORT.PRecord.CL142_CODE :=
+               pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, Word(PR001_Activity_ID));
+            NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := pr001.CL142.DataPos;
+            NZIS_DIAGNOSTIC_REPORT.InsertNZIS_DIAGNOSTIC_REPORT;
+
+            ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm.Size;
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.streamComm, 0);
+            Dispose(NZIS_DIAGNOSTIC_REPORT.PRecord);
+            NZIS_DIAGNOSTIC_REPORT.PRecord := nil;
+
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+            FPosMetaData := pCardinalData^;
+            ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.IncCntInADB;
+            Adb_DM.AdbMainLink.AddNewNode(vvNZIS_DIAGNOSTIC_REPORT, NZIS_DIAGNOSTIC_REPORT.DataPos, vCl132, amAddChildLast, TreeLink, linkpos);
+          end;
+        end;
+        vPr001 := TreeLink;
+        if pr001.CL142 <> nil  then
+        begin
+          Rule88 := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Notes));
+
+          if pr001.CL142.FListCL144.Count > 1 then // дейности
+          begin
+            for k := 0 to pr001.CL142.FListCL144.Count - 1 do
+            begin
+              Cl144 := pr001.CL142.FListCL144[k];
+              if Trim(Rule88) <> '' then
+              begin
+                ACL144_key := Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
+                if Pos(ACL144_key, Rule88) = 0 then Continue;
+              end;
+              /////////AspectsLinkPatPregFile.AddNewNode(vvCL144, Cl144.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
+              //NZIS_RESULT_DIAGNOSTIC_REPORT
+              NZIS_RESULT_DIAGNOSTIC_REPORT := TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.Add);
+              New(NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord);
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.setProp :=  [
+                 NZIS_RESULT_DIAGNOSTIC_REPORT_ID,
+                 NZIS_RESULT_DIAGNOSTIC_REPORT_CL144_CODE,
+                 NZIS_RESULT_DIAGNOSTIC_REPORT_DIAGNOSTIC_REPORT_ID,
+                 NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE,
+                 NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS
+                 ];
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.ID := 0;
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.DIAGNOSTIC_REPORT_ID := 0;
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL144_CODE := Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_Key));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.CL028_VALUE_SCALE := StrToInt(Cl144.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL144_cl028)));
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := Cl144.DataPos;
+
+              NZIS_RESULT_DIAGNOSTIC_REPORT.InsertNZIS_RESULT_DIAGNOSTIC_REPORT;
+
+              ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Len := ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm.Size;
+              Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.streamComm, 0);
+              Dispose(NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord);
+              NZIS_RESULT_DIAGNOSTIC_REPORT.PRecord := nil;
+
+              pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+              FPosMetaData := pCardinalData^;
+              ADB_DM.CollNZIS_RESULT_DIAGNOSTIC_REPORT.IncCntInADB;
+              Adb_DM.AdbMainLink.AddNewNode(vvNZIS_RESULT_DIAGNOSTIC_REPORT, NZIS_RESULT_DIAGNOSTIC_REPORT.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
+            end;
+          end;
+        end;
+
+        for k := 0 to gr.Cl132.FListPr001[j].LstCl134.Count - 1 do  // отговори
+        begin
+          cl134 := gr.Cl132.FListPr001[j].LstCl134[k];
+          note := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
+          Field_cl133 := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_CL133));
+          cl028Key := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_CL028));
+          if (note <> '') and (Field_cl133[1] in ['5', '6']) then
+          begin
+            test := gr.Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) +
+                     cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Note));
+          end
+          else
+          begin
+            test := '';
+          end;
+
+          begin
+            NZIS_QUESTIONNAIRE_ANSWER := TRealNZIS_QUESTIONNAIRE_ANSWERItem(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.Add);
+            New(NZIS_QUESTIONNAIRE_ANSWER.PRecord);
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.setProp :=
+               [NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE,
+                NZIS_QUESTIONNAIRE_ANSWER_ID,
+                NZIS_QUESTIONNAIRE_ANSWER_QUESTIONNAIRE_RESPONSE_ID,
+                NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS];
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.ID := 0;
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.QUESTIONNAIRE_RESPONSE_ID := 0;
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.CL134_QUESTION_CODE := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.buf, ADB_DM.CL132Coll.posData, word(CL134_Key));;
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord.NOMEN_POS := cl134.DataPos;
+               //pr001.getWordMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, Word(PR001_Activity_ID));
+
+            NZIS_QUESTIONNAIRE_ANSWER.InsertNZIS_QUESTIONNAIRE_ANSWER;
+
+            ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Len := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm.Size;
+            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.streamComm, 0);
+            Dispose(NZIS_QUESTIONNAIRE_ANSWER.PRecord);
+            NZIS_QUESTIONNAIRE_ANSWER.PRecord := nil;
+
+            pCardinalData := pointer(Adb_DM.AdbMain.Buf);
+            FPosMetaData := pCardinalData^;
+            ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.IncCntInADB;
+            Adb_DM.AdbMainLink.AddNewNode(vvNZIS_QUESTIONNAIRE_ANSWER, NZIS_QUESTIONNAIRE_ANSWER.DataPos, vPr001, amAddChildLast, TreeLink, linkpos);
+            //case cl028Key[1] of
+//              '1':// едиторчета
+//              begin
+//                AspectsLinkPatPregFile.AddNewNode(vvNZIS_ANSWER_VALUE, 0, TreeLink, amAddChildLast, TreeLink, linkpos);
+//              end;
+//            end;
+          end;
+        end;
+      end;
+    end;
+  end;
+
+  vtrPregledPat.EndUpdate;
+  vtrPregledPat.Selected[vpreg] := True;
+  //vtrPregledPat.FocusedNode := vpreg;
   ReShowProfForm(dataPa, Pointer(PByte(vpreg) + lenNode),vpreg);
   if chkAutamatNzis.Checked then
   begin
@@ -18492,7 +19044,7 @@ procedure TfrmSuperHip.StartAspectPerformerThread;
 begin
   thrAspPerf := TAspectPerformerThread.Create(true);
   thrAspPerf.FreeOnTerminate := True;
-  thrAspPerf.FCmdADB := streamCmdFile;
+  thrAspPerf.FCmdADB := Adb_DM.streamCmdFile;
   thrAspPerf.FCmdNzisNomen := streamCmdFileNomenNzis;
   thrAspPerf.AspectsNomFile := Adb_DM.AdbNomenNzis;
   thrAspPerf.Resume;
@@ -18552,7 +19104,7 @@ begin
   thrHistPerf.OnDeleteEvent := DeleteEvent;
 
   thrHistPerf.OnIndexedPregled := OnIndexedPregled;
-  thrHistPerf.cmdFile := streamCmdFile;
+  thrHistPerf.cmdFile := Adb_DM.streamCmdFile;
   thrHistPerf.FDBHelper := FDBHelper;
   //thrHistDb.OnTerminate := TerminateLoadDB;
   thrHistPerf.Resume;
@@ -19122,16 +19674,16 @@ var
   mn: TRealBLANKA_MED_NAPRItem;
 begin
 
-  mn := FmxProfForm.Pregled.FMNs[0];
-  mn.Collection := ADB_DM.CollMedNapr;
-  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
-  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
-  New(mn.PRecord);
-  mn.PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
-  mn.PRecord.SpecDataPos := 444;
-  mn.SaveBLANKA_MED_NAPR(dataPosition);
-  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
-  pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;
+  //mn := FmxProfForm.Pregled.FMNs[0];
+//  mn.Collection := ADB_DM.CollMedNapr;
+//  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+//  dataPosition := pCardinalData^ + Adb_DM.AdbMain.FPosData;
+//  New(mn.PRecord);
+//  mn.PRecord.setProp := [BLANKA_MED_NAPR_SpecDataPos];
+//  mn.PRecord.SpecDataPos := 444;
+//  mn.SaveBLANKA_MED_NAPR(dataPosition);
+//  pCardinalData := pointer(PByte(Adb_DM.AdbMain.Buf) + 12);
+//  pCardinalData^  := dataPosition - Adb_DM.AdbMain.FPosData;//zzzzzzzzzzzzzzzzzzzzzz pregNodes
 end;
 
 procedure TfrmSuperHip.treeviewGetNodeDataSize(Sender: TBaseVirtualTree; var NodeDataSize: Integer);
@@ -20136,11 +20688,11 @@ begin
     vvMKB:
     begin
       Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-      AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
-      dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
-      dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+      AddNewDiag(Adb_DM.PregNodesBack.pregNode, Caption, '', Adb_DM.PregNodesBack.diags.Count, Data.DataPos);
+      dataPat := Pointer(PByte(Adb_DM.PregNodesBack.pregNode.Parent) + lenNode);
+      dataPreg := Pointer(PByte(Adb_DM.PregNodesBack.pregNode) + lenNode);
       tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-      ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+      ShowPregledFMX(dataPat, dataPreg, Adb_DM.PregNodesBack.pregNode);
       FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
     end;
   end;
@@ -20160,50 +20712,50 @@ begin
     begin
       if (csCheckedNormal = Node.CheckState) then
       begin
-        FmxProfForm.Pregled.CanDeleteDiag := False;
-        Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-        AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
-        FmxProfForm.Pregled.FDiagnosis.Add(ADB_DM.CollDiag.Items[ADB_DM.CollDiag.Count - 1]);
-        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
-        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
-        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
-        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
-        data.index := FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].DataPos;
-        FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].MkbNode := Node;
-        FmxProfForm.Pregled.CanDeleteDiag := true;
+        //FmxProfForm.Pregled.CanDeleteDiag := False;
+//        Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+//        AddNewDiag(FmxProfForm.Pregled.FNode, Caption, '', FmxProfForm.Pregled.FDiagnosis.Count, Data.DataPos);
+//        FmxProfForm.Pregled.FDiagnosis.Add(ADB_DM.CollDiag.Items[ADB_DM.CollDiag.Count - 1]);
+//        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
+//        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+//        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+//        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+//        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+//        data.index := FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].DataPos;
+//        FmxProfForm.Pregled.FDiagnosis[FmxProfForm.Pregled.FDiagnosis.Count - 1].MkbNode := Node;
+//        FmxProfForm.Pregled.CanDeleteDiag := true;// pregNodes
       end
       else
       begin
-        Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
-        FmxProfForm.Pregled.CanDeleteDiag := False;
-        for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
-        begin
-          if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
-          begin
-
-            ADB_DM.CollPregled.streamComm.Size := 0;
-            ADB_DM.CollPregled.streamComm.OpType := toDeleteNode;
-            ADB_DM.CollPregled.streamComm.Size := 12 + 4;
-            ADB_DM.CollPregled.streamComm.Ver := 0;
-            ADB_DM.CollPregled.streamComm.Vid := ctLink;
-            ADB_DM.CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
-            ADB_DM.CollPregled.streamComm.Propertys := [];
-            ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
-            streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
-            FmxProfForm.Pregled.FDiagnosis.Delete(i);
-            Break;
-          end;
-        end;
-
-        RemoveDiag(FmxProfForm.Pregled.FNode, cardinal(Data.index));
-
-        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
-        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
-        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
-        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
-        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
-        FmxProfForm.Pregled.CanDeleteDiag := true;
+        //Caption := ADB_DM.CollMkb.getAnsiStringMap(data.DataPos, word(Mkb_CODE));
+//        FmxProfForm.Pregled.CanDeleteDiag := False;
+//        for i := 0 to FmxProfForm.Pregled.FDiagnosis.Count - 1 do
+//        begin
+//          if FmxProfForm.Pregled.FDiagnosis[i].MkbNode = node then
+//          begin
+//
+//            ADB_DM.CollPregled.streamComm.Size := 0;
+//            ADB_DM.CollPregled.streamComm.OpType := toDeleteNode;
+//            ADB_DM.CollPregled.streamComm.Size := 12 + 4;
+//            ADB_DM.CollPregled.streamComm.Ver := 0;
+//            ADB_DM.CollPregled.streamComm.Vid := ctLink;
+//            ADB_DM.CollPregled.streamComm.DataPos := Cardinal(FmxProfForm.Pregled.FDiagnosis[i].Node);
+//            ADB_DM.CollPregled.streamComm.Propertys := [];
+//            ADB_DM.CollPregled.streamComm.Len := ADB_DM.CollPregled.streamComm.Size;
+//            Adb_DM.streamCmdFile.CopyFrom(ADB_DM.CollPregled.streamComm, 0);
+//            FmxProfForm.Pregled.FDiagnosis.Delete(i);
+//            Break;
+//          end;
+//        end;
+//
+//        RemoveDiag(FmxProfForm.Pregled.FNode, cardinal(Data.index));
+//
+//        dataPat := Pointer(PByte(FmxProfForm.Pregled.FNode.Parent) + lenNode);
+//        dataPreg := Pointer(PByte(FmxProfForm.Pregled.FNode) + lenNode);
+//        tempViewportPosition := FmxProfForm.scrlbx1.ViewportPosition;
+//        ShowPregledFMX(dataPat, dataPreg, FmxProfForm.Pregled.FNode);
+//        FmxProfForm.scrlbx1.ViewportPosition := tempViewportPosition;
+//        FmxProfForm.Pregled.CanDeleteDiag := true;//pregNodes
       end;
     end;
   end;
@@ -21645,39 +22197,39 @@ begin
   case data.vid of
     vvCl132:// може да е преглед, мдн, ваксина
     begin
-      cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-      cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
-      cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
-      case cl136Key[1] of
-        '1':
-        begin // ако няма преглед, значи трябва да го заплануваме
-          if cl132.FPregled <> nil then
-          begin
-            FmxProfForm.Pregled.DataPos := TRealPregledNewItem(cl132.FPregled).DataPos;
-          end
-          else
-          begin
-
-          end;
-        end;
-        '2': ;
-        '3': ;
-        '4': ;
-      end;
-      begin
-        //if AspectsNomHipFile = nil then
-//          OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
-//        if AspectsNomFile = nil then
-//          OpenBufNomenNzis('NzisNomen.adb');
-        InternalChangeWorkPage(tsFMXForm);
-        fmxCntrDyn.ChangeActiveForm(FmxProfForm);
-        FmxProfForm.AspNomenBuf := Adb_DM.AdbNomenNzis.Buf;
-        FmxProfForm.AspNomenPosData := Adb_DM.AdbNomenNzis.FPosData;
-        FmxProfForm.AspNomenHipBuf := AspectsNomHipFile.Buf;
-        FmxProfForm.AspNomenHipPosData := AspectsNomHipFile.FPosData;
-        FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
-        FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
-      end;
+      //cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//      cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+//      cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
+//      case cl136Key[1] of
+//        '1':
+//        begin // ако няма преглед, значи трябва да го заплануваме
+//          if cl132.FPregled <> nil then
+//          begin
+//            FmxProfForm.Pregled.DataPos := TRealPregledNewItem(cl132.FPregled).DataPos;
+//          end
+//          else
+//          begin
+//
+//          end;
+//        end;
+//        '2': ;
+//        '3': ;
+//        '4': ;
+//      end;
+//      begin
+//        //if AspectsNomHipFile = nil then
+////          OpenBufNomenHip(paramstr(2) + 'HipNomen.adb');
+////        if AspectsNomFile = nil then
+////          OpenBufNomenNzis('NzisNomen.adb');
+//        InternalChangeWorkPage(tsFMXForm);
+//        fmxCntrDyn.ChangeActiveForm(FmxProfForm);
+//        FmxProfForm.AspNomenBuf := Adb_DM.AdbNomenNzis.Buf;
+//        FmxProfForm.AspNomenPosData := Adb_DM.AdbNomenNzis.FPosData;
+//        FmxProfForm.AspNomenHipBuf := AspectsNomHipFile.Buf;
+//        FmxProfForm.AspNomenHipPosData := AspectsNomHipFile.FPosData;
+//        FmxProfForm.AspAdbBuf := Adb_DM.AdbMain.Buf;
+//        FmxProfForm.AspAdbPosData := Adb_DM.AdbMain.FPosData;
+//      end;// pregNodes
 
 
     end;
@@ -21686,7 +22238,7 @@ begin
     begin
       nodePat := FindPatientByDataPos(data.DataPos);
       vtrMinaliPregledi.Tag := Cardinal(nodePat);
-      LoadVtrMinaliPregledi(nodePat);
+      LoadVtrMinaliPregledi1(nodePat);
      // pgcWork.ActivePage := tsMinaliPregledi;
       InternalChangeWorkPage(tsMinaliPregledi);
     end;
@@ -21705,18 +22257,16 @@ begin
   data1 := Sender.GetNodeData(Node1);
   data2 := Sender.GetNodeData(Node2);
 
-  //dataPat := vtrGraph.GetNodeData(Node1.Parent.parent);
-  //pat := lstPatGraph[dataPat.index];
-  cl132_1 := FmxProfForm.Patient.lstGraph[data1.index].Cl132;
-  cl132_2 := FmxProfForm.Patient.lstGraph[data2.index].Cl132;
-
-  if FmxProfForm.Patient.lstGraph[data1.index].endDate > FmxProfForm.Patient.lstGraph[data2.index].endDate then
-     Result := 1
-  else
-  if FmxProfForm.Patient.lstGraph[data1.index].endDate < FmxProfForm.Patient.lstGraph[data2.index].endDate then
-    Result := -1
-  else
-    Result := StrToInt(cl132_1.cl136) - StrToInt(cl132_2.cl136);
+  //cl132_1 := FmxProfForm.Patient.lstGraph[data1.index].Cl132;
+//  cl132_2 := FmxProfForm.Patient.lstGraph[data2.index].Cl132;
+//
+//  if FmxProfForm.Patient.lstGraph[data1.index].endDate > FmxProfForm.Patient.lstGraph[data2.index].endDate then
+//     Result := 1
+//  else
+//  if FmxProfForm.Patient.lstGraph[data1.index].endDate < FmxProfForm.Patient.lstGraph[data2.index].endDate then
+//    Result := -1
+//  else
+//    Result := StrToInt(cl132_1.cl136) - StrToInt(cl132_2.cl136);//zzzzzzzzzzzzzzzzzzzz pregNodes
    
 end;
 
@@ -21732,65 +22282,65 @@ begin
   if Kind <> TVTImageKind.ikState then
     Exit;
   Data := Sender.GetNodeData(Node);
-  case Column of
-    0:
-    begin
-      case Data.vid of
-        vvcl132:
-        begin
-          //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
-          //pat := lstPatGraph[dataPat.index];
-          cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
-          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
-          case cl136Key[1] of
-            '1':
-            begin
-              if NzisPregNotPreg.Contains('|' + cl132Key + '|') then
-              begin
-                ImageIndex := 78;
-              end
-              else
-              begin
-                ImageIndex := 12;
-              end;
-            end;
-            '2': ImageIndex := 27;
-            '3': ImageIndex := 63;
-            '4': ImageIndex := 98;
-          end;
-        end;
-      end; //case
-    end; //0
-    1:
-    begin
-      case Data.vid of
-        vvcl132:
-        begin
-          //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
-          //pat := lstPatGraph[dataPat.index];
-          cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
-          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
-          case cl136Key[1] of
-            '1':
-            begin
-              if not NzisPregNotPreg.Contains('|' + cl132Key + '|') then
-              begin
-                //if TRealPregledNewItem(cl132.FPregled).StartDate
-                if cl132.FPregled <> nil then
-                begin
-                  ImageIndex := 6;
-                end;
-              end;
-
-            end;
-
-          end;
-        end;
-      end; //case
-    end; //0
-  end;
+  //case Column of
+//    0:
+//    begin
+//      case Data.vid of
+//        vvcl132:
+//        begin
+//          //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
+//          //pat := lstPatGraph[dataPat.index];
+//          cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+//          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
+//          case cl136Key[1] of
+//            '1':
+//            begin
+//              if NzisPregNotPreg.Contains('|' + cl132Key + '|') then
+//              begin
+//                ImageIndex := 78;
+//              end
+//              else
+//              begin
+//                ImageIndex := 12;
+//              end;
+//            end;
+//            '2': ImageIndex := 27;
+//            '3': ImageIndex := 63;
+//            '4': ImageIndex := 98;
+//          end;
+//        end;
+//      end; //case
+//    end; //0
+//    1:
+//    begin
+//      case Data.vid of
+//        vvcl132:
+//        begin
+//          //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
+//          //pat := lstPatGraph[dataPat.index];
+//          cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//          cl136Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_cl136));
+//          cl132Key := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, Adb_DM.AdbNomenNzis.FPosData, word(CL132_Key));
+//          case cl136Key[1] of
+//            '1':
+//            begin
+//              if not NzisPregNotPreg.Contains('|' + cl132Key + '|') then
+//              begin
+//                //if TRealPregledNewItem(cl132.FPregled).StartDate
+//                if cl132.FPregled <> nil then
+//                begin
+//                  ImageIndex := 6;
+//                end;
+//              end;
+//
+//            end;
+//
+//          end;
+//        end;
+//      end; //case
+//    end; //0
+//  end;//zzzzzzzzzzzzzzzzzzz pregNodes
 end;
 
 procedure TfrmSuperHip.vtrGraphGetText(Sender: TBaseVirtualTree;
@@ -22084,288 +22634,288 @@ begin
   if FmxProfForm = nil then exit;
 
   data := vtrGraph.GetNodeData(node);
-  case Column of
-    0:
-    begin
-      case data.index of
-        -1: CellText := 'минали';
-        -2: CellText := 'текущи';
-        -3: CellText := 'бъдещи';
-
-      else
-        case data.vid of
-          vvNone:
-          begin
-            CellText := 'Графици';
-          end;
-          vvCl132:
-          begin
-            //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
-            //pat := lstPatGraph[dataPat.index];
-            cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
-          end;
-          vvPr001:
-          begin
-            if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-            //dataPat := vtrGraph.GetNodeData(node.Parent.parent.parent);
-
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
-            if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
-            begin
-              cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
-            end;
-            //else  if pr001.CL133 <> TCL133.CL133_none  then
+  //case Column of
+//    0:
+//    begin
+//      case data.index of
+//        -1: CellText := 'минали';
+//        -2: CellText := 'текущи';
+//        -3: CellText := 'бъдещи';
+//
+//      else
+//        case data.vid of
+//          vvNone:
+//          begin
+//            CellText := 'Графици';
+//          end;
+//          vvCl132:
+//          begin
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+//            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
+//          end;
+//          vvPr001:
+//          begin
+//            if node.Parent.parent.parent = nil then
 //            begin
-//              CellText :=CellText + ' cl133 ' +  TRttiEnumerationType.GetName(pr001.CL133);
-//            end
-//            else  if (pr001.CL142 <> nil)  then
-//            begin
-//              if pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_Key)) = '65-360' then
-//                Caption := '';
-//              CellText :=CellText + ' cl142 ' +  pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_Key));
+//              CellText := 'errrrr';
+//              exit;
 //            end;
-          end;
-          vvCL088:
-          begin
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            CL142 := pr001.CL142;
-            cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
-          end;
-          vvCl134:
-          begin
-            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
-          end;
-          vvPatient:
-          begin
-            //pat := lstPatGraph[data.index];
-            CellText := FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_LNAME));
-          end;
-        end;
-      end;
-    end;
-    1:
-    begin
-      case data.index of
-        -1: ;//CellText := 'минали';
-        -2: //CellText := 'текущи';
-        begin
-          if data.DataPos <> MaxInt then
-          begin
-            cl132 := FmxProfForm.Patient.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
-          end;
-        end;
-        -3: ;//CellText := 'бъдещи';
-
-      else
-        case data.vid of
-          vvPatient:
-          begin
-            //pat := lstPatGraph[data.index];
-            CellText := 'ЕГН ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
-          end;
-          vvCl132:
-          begin
-            //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
-            //pat := lstPatGraph[dataPat.index];
-            CellText := DateToStr(FmxProfForm.Patient.lstGraph[data.index].startDate) + ' - ' + DateToStr(FmxProfForm.Patient.lstGraph[data.index].endDate);
-            cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-            cl132_CL136Str := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(cl132_CL136));
-            //if cl132_CL136 = '1' then
-            case cl132_CL136Str[1] of
-              '1':
-              begin
-                if cl132.FPregled <> nil then
-                begin
-                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
-                  CellText := DateToStr(strtDate) + #13#10 + CellText;
-                end;
-              end;
-              //'2':
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.parent.parent);
+//
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[data.index];
+//            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
+//            if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
+//            begin
+//              cl088 := pr001.CL142.FListCL088[0];
+//              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+//            end;
+//            //else  if pr001.CL133 <> TCL133.CL133_none  then
+////            begin
+////              CellText :=CellText + ' cl133 ' +  TRttiEnumerationType.GetName(pr001.CL133);
+////            end
+////            else  if (pr001.CL142 <> nil)  then
+////            begin
+////              if pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_Key)) = '65-360' then
+////                Caption := '';
+////              CellText :=CellText + ' cl142 ' +  pr001.CL142.getAnsiStringMap(AspectsNomFile.Buf, PR001Coll.posData, word(CL142_Key));
+////            end;
+//          end;
+//          vvCL088:
+//          begin
+//            dataPr001 := vtrGraph.GetNodeData(node.Parent);
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[dataPr001.index];
+//            CL142 := pr001.CL142;
+//            cl088 := CL142.FListCL088[data.index];
+//            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+//          end;
+//          vvCl134:
+//          begin
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
+//            dataPr001 := vtrGraph.GetNodeData(node.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[dataPr001.index];
+//            cl134 := pr001.LstCl134[data.index];
+//            CellText := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
+//          end;
+//          vvPatient:
+//          begin
+//            //pat := lstPatGraph[data.index];
+//            CellText := FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_FNAME));
+//            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_SNAME));
+//            CellText := CellText + ' ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_LNAME));
+//          end;
+//        end;
+//      end;
+//    end;
+//    1:
+//    begin
+//      case data.index of
+//        -1: ;//CellText := 'минали';
+//        -2: //CellText := 'текущи';
+//        begin
+//          if data.DataPos <> MaxInt then
+//          begin
+//            cl132 := FmxProfForm.Patient.lstGraph[data.DataPos].Cl132;
+//            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+//            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
+//          end;
+//        end;
+//        -3: ;//CellText := 'бъдещи';
+//
+//      else
+//        case data.vid of
+//          vvPatient:
+//          begin
+//            //pat := lstPatGraph[data.index];
+//            CellText := 'ЕГН ' + FmxProfForm.Patient.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
+//          end;
+//          vvCl132:
+//          begin
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            CellText := DateToStr(FmxProfForm.Patient.lstGraph[data.index].startDate) + ' - ' + DateToStr(FmxProfForm.Patient.lstGraph[data.index].endDate);
+//            cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//            cl132_CL136Str := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(cl132_CL136));
+//            //if cl132_CL136 = '1' then
+//            case cl132_CL136Str[1] of
+//              '1':
 //              begin
-//                if cl132.FExamAnal <> nil then
+//                if cl132.FPregled <> nil then
 //                begin
-//                  strtDate := TRealExamAnalysisItem(cl132.FExamAnal).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_DATA));
+//                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
 //                  CellText := DateToStr(strtDate) + #13#10 + CellText;
 //                end;
 //              end;
-            else
-              begin
-                pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
-              end;
-            end;
-          end;
-          vvPr001:
-          begin
-            if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent);
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[data.index];
-            //if pr001.FExamAnal <> nil then
-//              Exit;
-            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
-
-            if pr001.CL142 <> nil then
-            begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
-            end;
-            if pr001.FExamAnal <> nil then
-            begin
-              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_DATA));
-              CellText := DateToStr(strtDate) + #13#10 + CellText;
-            end;
-          end;
-          vvCL088:
-          begin
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            CL142 := pr001.CL142;
-            cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
-          end;
-          vvCl134:
-          begin
-            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
-            //pat := lstPatGraph[dataPat.index];
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
-              '1': CellText := 'Количествено представяне';
-              '2': CellText := 'Категоризация по номенклатура';
-              '3': CellText := 'Описателен метод';
-              '4': CellText := 'Конкретна дата';
-              '5': CellText := 'Положително или отрицателно';
-            end;
-          end;
-        end;
-      end;
-    end;
-    2:
-    begin
-      case data.vid of
-        vvPatient:
-        begin
-          //pat := lstPatGraph[data.index];
-          CellText := 'има общо: ' + IntToStr(FmxProfForm.Patient.FPregledi.Count) + ' прегледа';
-        end;
-        vvCL088:
-        begin
-          dataPr001 := vtrGraph.GetNodeData(node.Parent);
-          //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
-          //pat := lstPatGraph[dataPat.index];
-          dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-          cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-          pr001 := cl132.FListPr001[dataPr001.index];
-          CL142 := pr001.CL142;
-          cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
-        end;
-        vvPr001:
-        begin
-          if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-          //dataPat := vtrGraph.GetNodeData(node.Parent.parent.Parent);
-          //pat := lstPatGraph[dataPat.index];
-          dataCL132 := vtrGraph.GetNodeData(node.Parent);
-          cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
-          pr001 := cl132.FListPr001[data.index];
-          //if pr001.CL050 <> nil then
-          begin
-            //CellText := pr001.getAnsiStringMap(bufNom, PR001Coll.posData, word(PR001_Nomenclature));
-            case pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
-              '2': CellText := 'Изследвания';
-              '0': CellText := 'Дейност по профилактика';
-              '3': CellText := 'Въпроси';
-              '8': CellText := 'Имунизации';
-            end;
-          end;
-        end;
-        vvCl132:
-        begin
-          //dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-          //pat := lstPatGraph[dataPat.index];
-          dataPeriod := vtrGraph.GetNodeData(node.Parent);
-          case dataPeriod.index of
-            -1: //минали
-            begin
-              CellText := '++' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
-            end;
-            -2: //текущи
-            begin
-              cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
-              //if cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping)) = '1' then
-//              begin
-//                //for i := 0 to CurrentPatient.FPregledi.Count - 1 do
+//              //'2':
+////              begin
+////                if cl132.FExamAnal <> nil then
 ////                begin
-////                  preg := CurrentPatient.FPregledi[i];
-////                  preg.StartDate := preg.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
-////                  if (CurrentPatient.lstGraph[data.index].startDate <= preg.StartDate) and
-////                     (CurrentPatient.lstGraph[data.index].endDate >= preg.StartDate)  then
-////                  begin
-////                    if TRealCl132Item(preg.Cl132) = CurrentPatient.lstGraph[data.index].Cl132 then
-////                    begin
-////                      CellText := 'ima preg';
-////                      exit;
-////                    end;
-////                  end;
+////                  strtDate := TRealExamAnalysisItem(cl132.FExamAnal).getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(ExamAnalysis_DATA));
+////                  CellText := DateToStr(strtDate) + #13#10 + CellText;
 ////                end;
+////              end;
+//            else
+//              begin
+//                pr001 := cl132.FListPr001[0];
+//                CellText := CellText + #13#10 + pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
 //              end;
-              CellText := '+' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
-            end;
-            -3: //бъдещи
-            begin
-              CellText := '-' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].startDate, UserDate));
-            end;
-          end;
-
-        end;
-      end;
-    end;
-  end;
+//            end;
+//          end;
+//          vvPr001:
+//          begin
+//            if node.Parent.parent.parent = nil then
+//            begin
+//              CellText := 'errrrr';
+//              exit;
+//            end;
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[data.index];
+//            //if pr001.FExamAnal <> nil then
+////              Exit;
+//            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
+//
+//            if pr001.CL142 <> nil then
+//            begin
+//              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
+//            end;
+//            if pr001.FExamAnal <> nil then
+//            begin
+//              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_DATA));
+//              CellText := DateToStr(strtDate) + #13#10 + CellText;
+//            end;
+//          end;
+//          vvCL088:
+//          begin
+//            dataPr001 := vtrGraph.GetNodeData(node.Parent);
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[dataPr001.index];
+//            CL142 := pr001.CL142;
+//            cl088 := CL142.FListCL088[data.index];
+//            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+//          end;
+//          vvCl134:
+//          begin
+//            //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
+//            //pat := lstPatGraph[dataPat.index];
+//            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
+//            dataPr001 := vtrGraph.GetNodeData(node.Parent);
+//            cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//            pr001 := cl132.FListPr001[dataPr001.index];
+//            cl134 := pr001.LstCl134[data.index];
+//            case cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
+//              '1': CellText := 'Количествено представяне';
+//              '2': CellText := 'Категоризация по номенклатура';
+//              '3': CellText := 'Описателен метод';
+//              '4': CellText := 'Конкретна дата';
+//              '5': CellText := 'Положително или отрицателно';
+//            end;
+//          end;
+//        end;
+//      end;
+//    end;
+//    2:
+//    begin
+//      case data.vid of
+//        vvPatient:
+//        begin
+//          //pat := lstPatGraph[data.index];
+//          CellText := 'има общо: ' + IntToStr(FmxProfForm.Patient.FPregledi.Count) + ' прегледа';
+//        end;
+//        vvCL088:
+//        begin
+//          dataPr001 := vtrGraph.GetNodeData(node.Parent);
+//          //dataPat := vtrGraph.GetNodeData(node.Parent.Parent.Parent.Parent);
+//          //pat := lstPatGraph[dataPat.index];
+//          dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
+//          cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//          pr001 := cl132.FListPr001[dataPr001.index];
+//          CL142 := pr001.CL142;
+//          cl088 := CL142.FListCL088[data.index];
+//          CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
+//        end;
+//        vvPr001:
+//        begin
+//          if node.Parent.parent.parent = nil then
+//            begin
+//              CellText := 'errrrr';
+//              exit;
+//            end;
+//          //dataPat := vtrGraph.GetNodeData(node.Parent.parent.Parent);
+//          //pat := lstPatGraph[dataPat.index];
+//          dataCL132 := vtrGraph.GetNodeData(node.Parent);
+//          cl132 := FmxProfForm.Patient.lstGraph[dataCL132.index].Cl132;
+//          pr001 := cl132.FListPr001[data.index];
+//          //if pr001.CL050 <> nil then
+//          begin
+//            //CellText := pr001.getAnsiStringMap(bufNom, PR001Coll.posData, word(PR001_Nomenclature));
+//            case pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
+//              '2': CellText := 'Изследвания';
+//              '0': CellText := 'Дейност по профилактика';
+//              '3': CellText := 'Въпроси';
+//              '8': CellText := 'Имунизации';
+//            end;
+//          end;
+//        end;
+//        vvCl132:
+//        begin
+//          //dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
+//          //pat := lstPatGraph[dataPat.index];
+//          dataPeriod := vtrGraph.GetNodeData(node.Parent);
+//          case dataPeriod.index of
+//            -1: //минали
+//            begin
+//              CellText := '++' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
+//            end;
+//            -2: //текущи
+//            begin
+//              cl132 := FmxProfForm.Patient.lstGraph[data.index].Cl132;
+//              //if cl132.getAnsiStringMap(AspectsNomFile.Buf, AspectsNomFile.FPosData, word(CL132_CL136_Mapping)) = '1' then
+////              begin
+////                //for i := 0 to CurrentPatient.FPregledi.Count - 1 do
+//////                begin
+//////                  preg := CurrentPatient.FPregledi[i];
+//////                  preg.StartDate := preg.getDateMap(AspectsHipFile.Buf, AspectsHipFile.FPosData, word(PregledNew_START_DATE));
+//////                  if (CurrentPatient.lstGraph[data.index].startDate <= preg.StartDate) and
+//////                     (CurrentPatient.lstGraph[data.index].endDate >= preg.StartDate)  then
+//////                  begin
+//////                    if TRealCl132Item(preg.Cl132) = CurrentPatient.lstGraph[data.index].Cl132 then
+//////                    begin
+//////                      CellText := 'ima preg';
+//////                      exit;
+//////                    end;
+//////                  end;
+//////                end;
+////              end;
+//              CellText := '+' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].endDate, UserDate));
+//            end;
+//            -3: //бъдещи
+//            begin
+//              CellText := '-' + inttostr(DaysBetween(FmxProfForm.Patient.lstGraph[data.index].startDate, UserDate));
+//            end;
+//          end;
+//
+//        end;
+//      end;
+//    end;
+//  end;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz pregnodes
 
 end;
 
@@ -22703,43 +23253,43 @@ var
   //preg: TPregledItem;
 begin
   data := Sender.GetNodeData(node);
-  //dataPat := Sender.GetNodeData(PVirtualNode(Sender.tag));
+  dataPat := Sender.GetNodeData(PVirtualNode(Sender.tag));
   //pat := CollPatient.Items[dataPat.index];
   case data.vid of
-    vvCl132:
-    begin
-      case Column of
-        0:
-        begin
-          CellText := IntToStr(FmxProfForm.Patient.lstGraph.Count);
-          if FmxProfForm.Patient.lstGraph.Count = 0 then Exit;
-          if FmxProfForm.Patient.CurrentGraphIndex < 0 then Exit;
-          if FmxProfForm.Patient.CurrentGraphIndex > FmxProfForm.Patient.lstGraph.Count - 1 then  Exit;
-
-          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-          CellText := CellText + '   ' + 'има да се правят толкова неща';
-          //for i := 0 to FmxProfForm.Patient.lstGraph.Count - 1 do
-//          begin
-//            gr := FmxProfForm.Patient.lstGraph[i];
-//            if (Date <= gr.endDate) and (Date >= gr.startDate) then  // текущи
-//            begin
-//              if FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then
-//              begin
-//                CellText := FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
-//                CellText := CellText + '   ' + 'има да се правят толкова неща';
-//                Exit;
-//              end;
-//            end;
-//          end;
-
-
-        end;
-        //1: CellText := IntToStr(PregledTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_AMB_LISTN)));
-        //2: CellText := PregledTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_AMB_LISTN));
-        //3: CellText := PregledTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_NRN));
-        //4: CellText := preg.MedNaprStr;
-      end;
-    end;
+    //vvCl132:
+//    begin
+//      case Column of
+//        0:
+//        begin
+//          CellText := IntToStr(FmxProfForm.Patient.lstGraph.Count);
+//          if FmxProfForm.Patient.lstGraph.Count = 0 then Exit;
+//          if FmxProfForm.Patient.CurrentGraphIndex < 0 then Exit;
+//          if FmxProfForm.Patient.CurrentGraphIndex > FmxProfForm.Patient.lstGraph.Count - 1 then  Exit;
+//
+//          CellText := FmxProfForm.Patient.lstGraph[FmxProfForm.Patient.CurrentGraphIndex].Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
+//          CellText := CellText + '   ' + 'има да се правят толкова неща';
+//          //for i := 0 to FmxProfForm.Patient.lstGraph.Count - 1 do
+////          begin
+////            gr := FmxProfForm.Patient.lstGraph[i];
+////            if (Date <= gr.endDate) and (Date >= gr.startDate) then  // текущи
+////            begin
+////              if FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_CL136_Mapping)) = '1' then
+////              begin
+////                CellText := FmxProfForm.Patient.lstGraph[i].Cl132.getAnsiStringMap(AspectsNomFile.Buf, CL132Coll.posData, word(CL132_Key));
+////                CellText := CellText + '   ' + 'има да се правят толкова неща';
+////                Exit;
+////              end;
+////            end;
+////          end;
+//
+//
+//        end;
+//        //1: CellText := IntToStr(PregledTemp.getIntMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_AMB_LISTN)));
+////        2: CellText := PregledTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_AMB_LISTN));
+////        3: CellText := PregledTemp.getAnsiStringMap(AspectsHipFile.Buf, CollPregled.posData, word(PregledNew_NRN));
+////        4: CellText := preg.MedNaprStr;
+//      end;
+//    end;
     vvPregledNew: //pregled
     begin
       case Column of
@@ -22777,7 +23327,7 @@ begin
         end;
       end;
     end;
-  end;
+  end;//zzzzzzzzzzzzzzzzzzzzzz pregNodes
 end;
 
 //procedure TfrmSuperHip.vtrMinaliPreglediCompareNodes(Sender: TBaseVirtualTree;
@@ -23660,7 +24210,6 @@ procedure TfrmSuperHip.vtrPreglediChange_Patients(Sender: TBaseVirtualTree; ANod
 var
   Node: PVirtualNode;
   data, dataPat: PAspRec;
-  //pat: TRealPatientNewItem;
   delta: Single;
   TL_leyaut, BR_memo: Single;
   vRun: PVirtualNode;
@@ -23675,6 +24224,8 @@ var
   ofset: Cardinal;
   logDat: TLogicalData24;
 begin
+  if FmxProfForm = nil then
+    Exit;
   FmxProfForm.Focused := nil;
   if ANode = nil then
   begin
@@ -23698,26 +24249,27 @@ begin
     vvPatient: // pacient
     begin
       Stopwatch := TStopwatch.StartNew;
+      Adb_DM.BuildPatNodes(node);
+      Elapsed := Stopwatch.Elapsed;
+      mmoTest.Lines.Add('patNodes za ' + FloatToStr(Elapsed.TotalMilliseconds));
+
       vtrMinaliPregledi.Tag := Cardinal(Node);
-      //Adb_DM.AdbMain := AspectsHipFile;
-      Adb_DM.AdbLink := Adb_DM.AdbMainLink;
       XmlStream := TXmlStream.Create;
       //if Fdm.IsGP then
       begin
-        //Adb_DM.CollDoc := CollDoctor;
         Adb_DM.FillXmlStreamL009(XmlStream, node);
         edtUrl.Text := Adb_DM.GetURLFromMsgType(L009, true);
         XmlStream.Position := 0;
         syndtNzisReq.Lines.LoadFromStream(XmlStream);
 
-        FmxProfForm.Patient.DataPos := data.DataPos;
-        FmxProfForm.Patient.lstGraph.Clear;
-        FmxProfForm.Patient.FPregledi.Clear;
-        FmxProfForm.Patient.FNode := Node;
-        GetCurrentPatProf1(FmxProfForm.Patient);
+        //FmxProfForm.Patient.DataPos := data.DataPos;
+//        FmxProfForm.Patient.lstGraph.Clear;
+//        FmxProfForm.Patient.FPregledi.Clear;
+//        FmxProfForm.Patient.FNode := Node;
+        GetCurrentPatProf2();//zzzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       end;
 
-      LoadVtrMinaliPregledi(node, FmxProfForm.Patient);
+      LoadVtrMinaliPregledi1(node, nil); //zzzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       if chkLockNzisMess.Checked then
       begin
         InternalChangeWorkPage(tsNZIS);
@@ -23733,6 +24285,11 @@ begin
 
     vvPregledNew: //pregled  FMX
     begin
+      Stopwatch := TStopwatch.StartNew;
+      //pregNodes := Adb_DM.GetPregNodes(node);
+      Adb_DM.BuildPregNodes(node);
+      Elapsed := Stopwatch.Elapsed;
+      mmoTest.Lines.Add('pregNodes za ' + FloatToStr(Elapsed.TotalMilliseconds));
       if not Sender.Focused then  Exit;
 
       dataPat := pointer(PByte(node.Parent) + lenNode);
@@ -24730,8 +25287,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
-          CellText := NZIS_QUESTIONNAIRE_ANSWERTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE));
+          //NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
+          CellText := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.getAnsiStringMap(data.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_CL134_QUESTION_CODE));
         end;
         vvNZIS_ANSWER_VALUE:
         begin
@@ -24747,20 +25304,20 @@ begin
               CellText := 'errrrr';
               exit;
             end;
-            NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            //NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
+            case ADB_DM.CollNZIS_ANSWER_VALUE.getWordMap(data.DataPos, word(NZIS_ANSWER_VALUE_CL028)) of
               1:
               begin
-               CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
+               CellText := Double.ToString(ADB_DM.CollNZIS_ANSWER_VALUE.getDoubleMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
               end;
-              2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
+              2: CellText := ADB_DM.CollNZIS_ANSWER_VALUE.getAnsiStringMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
               3: CellText := 'Текст-записан';
               4: CellText := 'Дата-записана';
             end;
           end
           else
           begin
-            if ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
+            if (data.index > -1) and (ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil) then
             begin
               case ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
                 1: CellText := Double.ToString(ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord.ANSWER_QUANTITY);
@@ -24771,10 +25328,10 @@ begin
             end
             else
             begin
-              NZIS_ANSWER_VALUETemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
-              case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
-                1: CellText := Double.ToString(NZIS_ANSWER_VALUETemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
-                2: CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
+              //NZIS_ANSWER_VALUEtemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
+              case ADB_DM.CollNZIS_ANSWER_VALUE.getWordMap(data.DataPos, word(NZIS_ANSWER_VALUE_CL028)) of
+                1: CellText := Double.ToString(ADB_DM.CollNZIS_ANSWER_VALUE.getDoubleMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_QUANTITY)));
+                2: CellText := ADB_DM.CollNZIS_ANSWER_VALUE.getAnsiStringMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_CODE));
                 3: CellText := 'Текст-ЗА записване';
                 4: CellText := 'Дата-ЗА записване';
               end;
@@ -24930,8 +25487,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_QUESTIONNAIRE_ANSWERTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
+          //NZIS_QUESTIONNAIRE_ANSWERTemp.DataPos := data.DataPos;
+          nomenPos := ADB_DM.CollNZIS_QUESTIONNAIRE_ANSWER.getCardMap(data.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
           CellText := ADB_DM.CL134Coll.getAnsiStringMap(nomenPos, Word(CL134_Description));
           CellText := CellText + '  ' + data.index.ToString;
         end;
@@ -24949,27 +25506,27 @@ begin
               CellText := 'errrrr';
               exit;
             end;
-            NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            //NZIS_ANSWER_VALUETemp.DataPos := data.DataPos;
+            case ADB_DM.CollNZIS_ANSWER_VALUE.getWordMap(data.DataPos, word(NZIS_ANSWER_VALUE_CL028)) of
               2:
               begin
-                nomenPos := NZIS_ANSWER_VALUETemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_NOMEN_POS));
+                nomenPos := ADB_DM.CollNZIS_ANSWER_VALUE.getCardMap(data.DataPos, word(NZIS_ANSWER_VALUE_NOMEN_POS));
                 CellText := ADB_DM.CL139Coll.getAnsiStringMap(nomenPos, word(CL139_Description));
               end;
               3:
               begin
-                CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
+                CellText := ADB_DM.CollNZIS_ANSWER_VALUE.getAnsiStringMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
               end;
               4:
               begin
-                CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
+                CellText := DateToStr(ADB_DM.CollNZIS_ANSWER_VALUE.getDateMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
               end;
             end;
           end
           else
           begin
-            NZIS_ANSWER_VALUETemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
-            case NZIS_ANSWER_VALUETemp.getWordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_CL028)) of
+            //NZIS_ANSWER_VALUETemp.DataPos := ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].DataPos;
+            case ADB_DM.CollNZIS_ANSWER_VALUE.getWordMap(data.DataPos, word(NZIS_ANSWER_VALUE_CL028)) of
               2:
               begin
                 if  ADB_DM.CollNZIS_ANSWER_VALUE.Items[data.index].PRecord <> nil then
@@ -24990,7 +25547,7 @@ begin
                 end
                 else
                 begin
-                  CellText := NZIS_ANSWER_VALUETemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
+                  CellText := ADB_DM.CollNZIS_ANSWER_VALUE.getAnsiStringMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_TEXT));
                 end;
               end;
               4:
@@ -25001,7 +25558,7 @@ begin
                 end
                 else
                 begin
-                  CellText := DateToStr(NZIS_ANSWER_VALUETemp.getDateMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
+                  CellText := DateToStr(ADB_DM.CollNZIS_ANSWER_VALUE.getDateMap(data.DataPos, word(NZIS_ANSWER_VALUE_ANSWER_DATE)));
                 end;
               end;
             end;
@@ -25211,8 +25768,6 @@ procedure TfrmSuperHip.vtrPregledPatSaveNode(Sender: TBaseVirtualTree;
 var
   data: PAspRec;
 begin
-  data := Pointer(PByte(Node) + lenNode);
-  Stream.Write(data^, sizeof(TAspRec));
 end;
 
 procedure TfrmSuperHip.vtrProfRegGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -25395,7 +25950,8 @@ begin
       1:
       begin
         dbPath := Option.dblist[data.index];
-        SubButonImportFDBClick(Sender);
+        Adb_DM.ImportFDB;
+        LoadThreadDB(FDbName);
         pgcTree.ActivePage := tsTreeDBFB;
         vtrFDB.SetFocus;
       end;
@@ -25414,10 +25970,10 @@ begin
   data := vtrRecentDB.GetNodeData(node);
   if data.index >= 0 then
   begin
-    if Assigned(streamCmdFile) then
+    if Assigned(Adb_DM.streamCmdFile) then
     begin
-      streamCmdFile.free;
-      streamCmdFile := nil;
+      Adb_DM.streamCmdFile.free;
+      Adb_DM.streamCmdFile := nil;
     end;
     if FmxProfForm <> nil then
       FmxProfForm.ClearBlanka;
@@ -25677,10 +26233,10 @@ begin
   Stopwatch := TStopwatch.StartNew;
   pnlRoleView.clear(False);
   //pnlTreeResize(nil);
-  if Assigned(streamCmdFile) then
+  if Assigned(Adb_DM.streamCmdFile) then
   begin
-    streamCmdFile.free;
-    streamCmdFile := nil;
+    Adb_DM.streamCmdFile.free;
+    Adb_DM.streamCmdFile := nil;
   end;
   if option.dblist.Count = 1 then
   begin
@@ -25805,9 +26361,9 @@ var
   patID, PregID: Integer;
 begin
   if FmxProfForm = nil then Exit;
-  patID := FmxProfForm.Patient.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPatient.posData, word(PatientNew_ID));
-  pregID := FmxProfForm.Pregled.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPregled.posData, word(PregledNew_ID));
-  PostMessage(HipHandle, WM_Hip_Deactivate, patID, pregID);
+  //patID := FmxProfForm.Patient.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPatient.posData, word(PatientNew_ID));
+//  pregID := FmxProfForm.Pregled.getIntMap(ADB_DM.AdbMain.buf, ADB_DM.CollPregled.posData, word(PregledNew_ID));
+//  PostMessage(HipHandle, WM_Hip_Deactivate, patID, pregID);//zzzzzzzzzzzzzzzzzzzz pregNodes
 end;
 
 procedure TfrmSuperHip.WMHipScrollPatient(var Msg: TMessage);
@@ -25816,18 +26372,20 @@ var
   runPreg, runCl132: PVirtualNode;
   PlanedPreg: TPregledPlanedInfo;
 
-  data, dataPreg, dataCL132: PAspRec;
+  data, dataPreg, dataCL132, dataFMX: PAspRec;
   FindedCl132: Boolean;
   cl132:string;
   copyDataStruct: TCopyDataStruct;
 begin
   run := vtrPregledPat.RootNode.FirstChild.FirstChild;
+  dataFMX := PAspRec(PByte(Adb_DM.PatNodesBack.patNode) + lenNode);
   while run <> nil do
   begin
     data := pointer(PByte(run) + lenNode);
     if ADB_DM.CollPatient.getIntMap(data.DataPos, word(PatientNew_ID)) = Msg.WParam then
     begin
-      if data.DataPos <> FmxProfForm.Patient.DataPos then
+
+      if data.DataPos <> dataFMX.DataPos then
       begin
         vtrPregledPat.Selected[run] := True;
         vtrPregledPat.FocusedNode := run;

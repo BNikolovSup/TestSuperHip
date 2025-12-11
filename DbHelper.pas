@@ -25,7 +25,7 @@ uses
   public
 
     AdbHip: TMappedFile;
-    AdbNomenNzis: TMappedFile;
+    //AdbNomenNzis: TMappedFile;
     AdbLink: TMappedFile;
     cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
@@ -34,7 +34,7 @@ uses
     Adb_DM: TADBDataModule;
     //mkbColl: TRealMkbColl;
 
-
+    constructor create;
     procedure InsertPracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
     procedure UpdatePracticaField(ibsql: TIBSQL; TempItem: TPracticaItem);
     procedure InsertPregledField(ibsql: TIBSQL; TempItem: TRealPregledNewItem);
@@ -81,6 +81,12 @@ end;
 implementation
 
 
+
+constructor TDbHelper.create;
+begin
+  inherited;
+
+end;
 
 procedure TDbHelper.FindDiagInPregled(vPregled: PVirtualNode; var diag0, diag1, diag2, diag3, diag4: TRealDiagnosisItem);
 var
@@ -185,8 +191,8 @@ begin
   Include(TempItem.PRecord.setProp, PregledNew_Logical);
   TempItem.PRecord.Logical := [];
 
-  gr := TempItem.Fpatient.lstGraph[TempItem.Fpatient.CurrentGraphIndex];
-  case gr.Cl132.getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL132_cl047))[1] of
+  gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
+  case gr.Cl132.getAnsiStringMap(Adb_dm.AdbNomenNzis.Buf, Adb_dm.AdbNomenNzis.FPosData, word(CL132_cl047))[1] of
     '3': //Детско здраве
     begin
       Include(TempItem.PRecord.Logical, TLogicalPregledNew.IS_PREVENTIVE_Childrens);
@@ -2587,9 +2593,9 @@ begin
   begin
     for i := 0 to Adb_DM.CL022Coll.Count - 1 do
     begin
-      if Adb_DM.CL022Coll.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_NHIF_Code)) = cl22Code then
+      if Adb_DM.CL022Coll.Items[i].getAnsiStringMap(Adb_dm.AdbNomenNzis.Buf, Adb_dm.AdbNomenNzis.FPosData, word(CL022_NHIF_Code)) = cl22Code then
       begin
-        cl22Code := Adb_DM.CL022Coll.Items[i].getAnsiStringMap(AdbNomenNzis.Buf, AdbNomenNzis.FPosData, word(CL022_Key));
+        cl22Code := Adb_DM.CL022Coll.Items[i].getAnsiStringMap(Adb_dm.AdbNomenNzis.Buf, Adb_dm.AdbNomenNzis.FPosData, word(CL022_Key));
         Break;
       end;
     end;
@@ -2957,7 +2963,7 @@ begin
   if pregNodes.incNaprNode <> nil then
   begin
     dataIncMN :=  Pointer(PByte(pregNodes.incNaprNode) + lenNode);
-    dataRequester :=  Pointer(PByte(pregNodes.ReqesterNode) + lenNode);
+    dataRequester :=  Pointer(PByte(pregNodes.RequesterNode) + lenNode);
 
     ibsql.ParamByName('copied_from_nrn').AsString :=
          Adb_DM.CollPregled.getAnsiStringMap(dataIncMN.DataPos, word(INC_NAPR_NRN));

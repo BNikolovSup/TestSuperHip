@@ -2,11 +2,10 @@ unit Table.NZIS_DIAGNOSTIC_REPORT;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
+  Aspects.Collections, Aspects.Types,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control, System.Generics.Defaults, Tee.Renders,
-  uGridHelpers  ;
+  VirtualTrees, VCLTee.Control;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -22,25 +21,19 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
-TLogicalNZIS_DIAGNOSTIC_REPORT = (
-    Is_);
-TlogicalNZIS_DIAGNOSTIC_REPORTSet = set of TLogicalNZIS_DIAGNOSTIC_REPORT;
-
 
 TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
   public
     type
       TPropertyIndex = (
-       NZIS_DIAGNOSTIC_REPORT_CL083_STATUS
-       , NZIS_DIAGNOSTIC_REPORT_CL142_CODE
-       , NZIS_DIAGNOSTIC_REPORT_ID
-       , NZIS_DIAGNOSTIC_REPORT_PREGLED_ID
-       , NZIS_DIAGNOSTIC_REPORT_NOMEN_POS
-       , NZIS_DIAGNOSTIC_REPORT_Logical
-       );
+NZIS_DIAGNOSTIC_REPORT_CL083_STATUS
+, NZIS_DIAGNOSTIC_REPORT_CL142_CODE
+, NZIS_DIAGNOSTIC_REPORT_ID
+, NZIS_DIAGNOSTIC_REPORT_PREGLED_ID
+, NZIS_DIAGNOSTIC_REPORT_NOMEN_POS
+);
 	  
       TSetProp = set of TPropertyIndex;
-      PSetProp = ^TSetProp;
       PRecNZIS_DIAGNOSTIC_REPORT = ^TRecNZIS_DIAGNOSTIC_REPORT;
       TRecNZIS_DIAGNOSTIC_REPORT = record
         CL083_STATUS: word;
@@ -48,7 +41,6 @@ TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
         ID: integer;
         PREGLED_ID: integer;
         NOMEN_POS: cardinal;
-        Logical: TlogicalNZIS_DIAGNOSTIC_REPORTSet;
         setProp: TSetProp;
       end;
 
@@ -64,14 +56,8 @@ TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
     destructor Destroy; override;
     procedure InsertNZIS_DIAGNOSTIC_REPORT;
     procedure UpdateNZIS_DIAGNOSTIC_REPORT;
-    procedure SaveNZIS_DIAGNOSTIC_REPORT(var dataPosition: Cardinal)overload;
-	procedure SaveNZIS_DIAGNOSTIC_REPORT(Abuf: Pointer; var dataPosition: Cardinal)overload;
+    procedure SaveNZIS_DIAGNOSTIC_REPORT(var dataPosition: Cardinal);
 	function IsFullFinded(buf: Pointer; FPosDataADB: Cardinal; coll: TCollection): Boolean; override;
-	function GetPRecord: Pointer; override;
-    procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
-    function GetCollType: TCollectionsType; override;
-	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
-	procedure FillPropNZIS_DIAGNOSTIC_REPORT(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
@@ -79,21 +65,17 @@ TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
   private
     FSearchingInt: Integer;
     FSearchingValue: string;
-	tempItem: TNZIS_DIAGNOSTIC_REPORTItem;
     function GetItem(Index: Integer): TNZIS_DIAGNOSTIC_REPORTItem;
     procedure SetItem(Index: Integer; const Value: TNZIS_DIAGNOSTIC_REPORTItem);
     procedure SetSearchingValue(const Value: string);
   public
     FindedRes: TFindedResult;
-	linkOptions: TMappedLinkFile;
-	ListForFinder: TList<TNZIS_DIAGNOSTIC_REPORTItem>;
+	tempItem: TNZIS_DIAGNOSTIC_REPORTItem;
+	ListForFDB: TList<TNZIS_DIAGNOSTIC_REPORTItem>;
     ListNZIS_DIAGNOSTIC_REPORTSearch: TList<TNZIS_DIAGNOSTIC_REPORTItem>;
 	PRecordSearch: ^TNZIS_DIAGNOSTIC_REPORTItem.TRecNZIS_DIAGNOSTIC_REPORT;
     ArrPropSearch: TArray<TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex>;
     ArrPropSearchClc: TArray<TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex>;
-	VisibleColl: TNZIS_DIAGNOSTIC_REPORTItem.TSetProp;
-	ArrayPropOrder: TArray<TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex>;
-    ArrayPropOrderSearchOptions: TArray<integer>;
 
     constructor Create(ItemClass: TCollectionItemClass);override;
     destructor destroy; override;
@@ -115,17 +97,8 @@ TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
     procedure SortByIndexInt;
 	procedure SortByIndexWord;
     procedure SortByIndexAnsiString;
-	procedure DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);override;
 
 	function DisplayName(propIndex: Word): string; override;
-	function DisplayLogicalName(flagIndex: Integer): string;
-	function RankSortOption(propIndex: Word): cardinal; override;
-    function FindRootCollOptionNode(): PVirtualNode; override;
-    function FindSearchFieldCollOptionGridNode(): PVirtualNode;
-    function FindSearchFieldCollOptionCOTNode(): PVirtualNode;
-    function FindSearchFieldCollOptionNode(): PVirtualNode;
-    function CreateRootCollOptionNode(): PVirtualNode;
-    procedure OrderFieldsSearch1(Grid: TTeeGrid);override;
 	function FieldCount: Integer; override;
 	procedure ShowGrid(Grid: TTeeGrid);override;
 	procedure ShowGridFromList(Grid: TTeeGrid; LST: TList<TNZIS_DIAGNOSTIC_REPORTItem>);
@@ -134,18 +107,8 @@ TNZIS_DIAGNOSTIC_REPORTItem = class(TBaseItem)
     procedure IndexValue(propIndex: TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex);
 	procedure IndexValueListNodes(propIndex:  TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex);
     property Items[Index: Integer]: TNZIS_DIAGNOSTIC_REPORTItem read GetItem write SetItem;
-	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
     property SearchingValue: string read FSearchingValue write SetSearchingValue;
-    procedure OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
-	procedure OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
-    procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
-    procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
-    procedure OnSetTextSearchLog(Log: TlogicalNZIS_DIAGNOSTIC_REPORTSet);
-	procedure CheckForSave(var cnt: Integer); override;
-	function IsCollVisible(PropIndex: Word): Boolean; override;
-    procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
-	function GetCollType: TCollectionsType; override;
-	function GetCollDelType: TCollectionsType; override;
+	procedure OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
   end;
 
 implementation
@@ -162,35 +125,6 @@ begin
   if Assigned(PRecord) then
     Dispose(PRecord);
   inherited;
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTItem.FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>);
-var
-  paramField: TParamProp;
-  setPropPat: TSetProp;
-  i: Integer;
-  PropertyIndex: TPropertyIndex;
-begin
-  i := 0;
-  for paramField in SetOfProp do
-  begin
-    PropertyIndex := TPropertyIndex(byte(paramField));
-    Include(Self.PRecord.setProp, PropertyIndex);
-    //case PropertyIndex of
-      //PatientNew_EGN: Self.PRecord.EGN := arrstr[i];
-    //end;
-    inc(i);
-  end;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTItem.GetCollType: TCollectionsType;
-begin
-  Result := ctNZIS_DIAGNOSTIC_REPORT;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTItem.GetPRecord: Pointer;
-begin
-  result := Pointer(PRecord);
 end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTItem.InsertNZIS_DIAGNOSTIC_REPORT;
@@ -235,7 +169,6 @@ begin
             NZIS_DIAGNOSTIC_REPORT_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: SaveData(PRecord.PREGLED_ID, PropPosition, metaPosition, dataPosition);
             NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: SaveData(PRecord.NOMEN_POS, PropPosition, metaPosition, dataPosition);
-            NZIS_DIAGNOSTIC_REPORT_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -264,86 +197,19 @@ begin
     if Result = false then
       Exit;
     pidx := TNZIS_DIAGNOSTIC_REPORTColl(coll).ArrPropSearchClc[i];
-	ATempItem := TNZIS_DIAGNOSTIC_REPORTColl(coll).ListForFinder.Items[0];
+	ATempItem := TNZIS_DIAGNOSTIC_REPORTColl(coll).ListForFDB.Items[0];
     cot := ATempItem.ArrCondition[word(pidx)];
     begin
       case pidx of
         NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: Result := IsFinded(ATempItem.PRecord.CL083_STATUS, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_CL083_STATUS), cot);
-            NZIS_DIAGNOSTIC_REPORT_CL142_CODE: Result := IsFinded(ATempItem.PRecord.CL142_CODE, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE), cot);
-            NZIS_DIAGNOSTIC_REPORT_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_ID), cot);
-            NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: Result := IsFinded(ATempItem.PRecord.PREGLED_ID, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_PREGLED_ID), cot);
-            NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: Result := IsFinded(ATempItem.PRecord.NOMEN_POS, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS), cot);
-            NZIS_DIAGNOSTIC_REPORT_Logical: Result := IsFinded(TLogicalData08(ATempItem.PRecord.Logical), buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_Logical), cot);
+        NZIS_DIAGNOSTIC_REPORT_CL142_CODE: Result := IsFinded(ATempItem.PRecord.CL142_CODE, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE), cot);
+        NZIS_DIAGNOSTIC_REPORT_ID: Result := IsFinded(ATempItem.PRecord.ID, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_ID), cot);
+        NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: Result := IsFinded(ATempItem.PRecord.PREGLED_ID, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_PREGLED_ID), cot);
+        NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: Result := IsFinded(ATempItem.PRecord.NOMEN_POS, buf, FPosDataADB, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS), cot);
+
       end;
     end;
   end;
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTItem.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
-  vCmd: PVirtualNode; CmdItem: TCmdItem);
-var
-  delta: integer;
-  flds08: TLogicalData08;
-  propindexNZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex;
-  vCmdProp: PVirtualNode;
-  dataCmdProp: PAspRec;
-begin
-  delta := sizeof(TLogicalData128) - sizeof(TLogicalData08);
-  stream.Read(flds08, sizeof(TLogicalData08));
-  stream.Position := stream.Position + delta;
-  New(self.PRecord);
-
-  self.PRecord.setProp := TNZIS_DIAGNOSTIC_REPORTItem.TSetProp(flds08);// тука се записва какво има като полета
-
-
-  for propindexNZIS_DIAGNOSTIC_REPORT := Low(TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex) to High(TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex) do
-  begin
-    if not (propindexNZIS_DIAGNOSTIC_REPORT in self.PRecord.setProp) then
-      continue;
-    if vtrTemp <> nil then
-    begin
-      vCmdProp := vtrTemp.AddChild(vCmd, nil);
-      dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
-      dataCmdProp.index := word(propindexNZIS_DIAGNOSTIC_REPORT);
-      dataCmdProp.vid := vvNZIS_DIAGNOSTIC_REPORT;
-    end;
-    self.FillPropNZIS_DIAGNOSTIC_REPORT(propindexNZIS_DIAGNOSTIC_REPORT, stream);
-  end;
-
-  CmdItem.AdbItem := self;
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTItem.FillPropNZIS_DIAGNOSTIC_REPORT(propindex: TPropertyIndex;
-  stream: TStream);
-var
-  lenStr: Word;
-begin
-  case propindex of
-    NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: stream.Read(Self.PRecord.CL083_STATUS, SizeOf(Word));
-            NZIS_DIAGNOSTIC_REPORT_CL142_CODE:
-            begin
-              stream.Read(lenStr, 2);
-              SetLength(Self.PRecord.CL142_CODE, lenStr);
-              stream.Read(Self.PRecord.CL142_CODE[1], lenStr);
-            end;
-            NZIS_DIAGNOSTIC_REPORT_ID: stream.Read(Self.PRecord.ID, SizeOf(Integer));
-            NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: stream.Read(Self.PRecord.PREGLED_ID, SizeOf(Integer));
-            NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: stream.Read(Self.PRecord.NOMEN_POS, SizeOf(Cardinal));
-            NZIS_DIAGNOSTIC_REPORT_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData08));
-  end;
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTItem.SaveNZIS_DIAGNOSTIC_REPORT(Abuf: Pointer; var dataPosition: Cardinal);
-var
-  pCardinalData: PCardinal;
-  APosData, ALenData: Cardinal;
-begin
-  pCardinalData := pointer(PByte(ABuf) + 8);
-  APosData := pCardinalData^;
-  pCardinalData := pointer(PByte(ABuf) + 12);
-  ALenData := pCardinalData^;
-  dataPosition :=  ALenData + APosData;
-  SaveNZIS_DIAGNOSTIC_REPORT(dataPosition);
 end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTItem.SaveNZIS_DIAGNOSTIC_REPORT(var dataPosition: Cardinal);
@@ -352,7 +218,7 @@ var
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := PCollectionsType(PByte(Buf) + DataPos - 4)^;
+  CollType := ctNZIS_DIAGNOSTIC_REPORT;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -369,7 +235,6 @@ begin
             NZIS_DIAGNOSTIC_REPORT_ID: SaveData(PRecord.ID, PropPosition, metaPosition, dataPosition);
             NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: SaveData(PRecord.PREGLED_ID, PropPosition, metaPosition, dataPosition);
             NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: SaveData(PRecord.NOMEN_POS, PropPosition, metaPosition, dataPosition);
-            NZIS_DIAGNOSTIC_REPORT_Logical: SaveData(TLogicalData08(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -440,135 +305,25 @@ begin
 
   New(ItemForSearch.PRecord);
   ItemForSearch.PRecord.setProp := [];
-  ItemForSearch.PRecord.Logical := [];
-  Result := ListForFinder.Add(ItemForSearch);
+  Result := ListForFDB.Add(ItemForSearch);
 end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTColl.ApplyVisibilityFromTree(RootNode: PVirtualNode);
-var
-  run: PVirtualNode;
-  data: PAspRec;
-begin
-  VisibleColl := [];
-
-  run := RootNode.FirstChild;
-  while run <> nil do
-  begin
-    data := PAspRec(PByte(run) + lenNode);
-
-    if run.CheckState = csCheckedNormal then
-      Include(VisibleColl, TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(run.Dummy - 1));
-
-    run := run.NextSibling;
-  end;
-end;
-
-
-function TNZIS_DIAGNOSTIC_REPORTColl.CreateRootCollOptionNode(): PVirtualNode;
-var
-  NodeRoot, vOptionSearchGrid, vOptionSearchCOT, run: PVirtualNode;
-  linkPos: Cardinal;
-  pCardinalData: PCardinal;
-  i: Integer;
-begin
-  NodeRoot := Pointer(PByte(linkOptions.Buf) + 100);
-  linkOptions.AddNewNode(vvNZIS_DIAGNOSTIC_REPORTRoot, 0, NodeRoot , amAddChildLast, result, linkPos);
-  linkOptions.AddNewNode(vvOptionSearchGrid, 0, Result , amAddChildLast, vOptionSearchGrid, linkPos);
-  linkOptions.AddNewNode(vvOptionSearchCot, 0, Result , amAddChildLast, vOptionSearchCOT, linkPos);
-
-  vOptionSearchGrid.CheckType := ctTriStateCheckBox;
-
-  if vOptionSearchGrid.ChildCount <> FieldCount then
-  begin
-    for i := 0 to FieldCount - 1 do
-    begin
-      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i + 1;
-	  run.CheckType := ctCheckBox;
-      run.CheckState := csCheckedNormal;
-    end;
-  end
-  else
-  begin
-    // при евентуално добавена колонка...
-  end;  
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTColl.CheckForSave(var cnt: Integer);
-var
-  i: Integer;
-  tempItem: TNZIS_DIAGNOSTIC_REPORTItem;
-begin
-  for i := 0 to Self.Count - 1 do
-  begin
-    tempItem := Items[i];
-    if tempItem.PRecord <> nil then
-    begin
-	  // === проверки за запазване (CheckForSave) ===
-
-      if (NZIS_DIAGNOSTIC_REPORT_CL083_STATUS in tempItem.PRecord.setProp) and (tempItem.PRecord.CL083_STATUS <> Self.getIntMap(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_CL083_STATUS))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-
-      if (NZIS_DIAGNOSTIC_REPORT_CL142_CODE in tempItem.PRecord.setProp) and (tempItem.PRecord.CL142_CODE <> Self.getAnsiStringMap(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-
-      if (NZIS_DIAGNOSTIC_REPORT_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_ID))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-
-      if (NZIS_DIAGNOSTIC_REPORT_PREGLED_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.PREGLED_ID <> Self.getIntMap(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_PREGLED_ID))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-
-      if (NZIS_DIAGNOSTIC_REPORT_NOMEN_POS in tempItem.PRecord.setProp) and (tempItem.PRecord.NOMEN_POS <> Self.getIntMap(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-
-      if (NZIS_DIAGNOSTIC_REPORT_Logical in tempItem.PRecord.setProp) and (TLogicalData08(tempItem.PRecord.Logical) <> Self.getLogical08Map(tempItem.DataPos, word(NZIS_DIAGNOSTIC_REPORT_Logical))) then
-      begin
-        inc(cnt);
-        exit;
-      end;
-    end;
-  end;
-end;
-
 
 constructor TNZIS_DIAGNOSTIC_REPORTColl.Create(ItemClass: TCollectionItemClass);
-var
-  i: Integer;
 begin
   inherited;
   tempItem := TNZIS_DIAGNOSTIC_REPORTItem.Create(nil);
   ListNZIS_DIAGNOSTIC_REPORTSearch := TList<TNZIS_DIAGNOSTIC_REPORTItem>.Create;
-  ListForFinder := TList<TNZIS_DIAGNOSTIC_REPORTItem>.Create;
+  ListForFDB := TList<TNZIS_DIAGNOSTIC_REPORTItem>.Create;
+  FindedRes.DataPos := 0;
+  FindedRes.PropIndex := MAXWORD;
   New(PRecordSearch);
   PRecordSearch.setProp := [];
-  SetLength(ArrayPropOrderSearchOptions, FieldCount + 1);
-  ArrayPropOrderSearchOptions[0] := FieldCount;
-  for i := 1 to FieldCount do
-  begin
-    ArrayPropOrderSearchOptions[i] := i;
-  end;
-
 end;
 
 destructor TNZIS_DIAGNOSTIC_REPORTColl.destroy;
 begin
   FreeAndNil(ListNZIS_DIAGNOSTIC_REPORTSearch);
-  FreeAndNil(ListForFinder);
+  FreeAndNil(ListForFDB);
   FreeAndNil(TempItem);
   Dispose(PRecordSearch);
   PRecordSearch := nil;
@@ -584,191 +339,13 @@ begin
     NZIS_DIAGNOSTIC_REPORT_ID: Result := 'ID';
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: Result := 'PREGLED_ID';
     NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: Result := 'NOMEN_POS';
-    NZIS_DIAGNOSTIC_REPORT_Logical: Result := 'Logical';
   end;
 end;
 
-function TNZIS_DIAGNOSTIC_REPORTColl.DisplayLogicalName(flagIndex: Integer): string;
-begin
-  case flagIndex of
-0: Result := 'Is_';
-  else
-    Result := '???';
-  end;
-end;
-
-
-procedure TNZIS_DIAGNOSTIC_REPORTColl.DoColMoved(const Acol: TColumn; const OldPos, NewPos: Integer);
-var
-  FieldCollOptionNode, run: PVirtualNode;
-  pSource, pTarget: PVirtualNode;
+function TNZIS_DIAGNOSTIC_REPORTColl.FieldCount: Integer;
 begin
   inherited;
-  if linkOptions = nil then Exit;
-
-  FieldCollOptionNode := FindSearchFieldCollOptionGridNode;
-  run := FieldCollOptionNode.FirstChild;
-  pSource := nil;
-  pTarget := nil;
-  while run <> nil do
-  begin
-    if run.Index = NewPos - 1 then
-    begin
-      pTarget := run;
-    end;
-    if run.index = OldPos - 1 then
-    begin
-      pSource := run;
-    end;
-    run := run.NextSibling;
-  end;
-
-  if pTarget = nil then Exit;
-  if pSource = nil then Exit;
-  //ShowMessage(Format('pSource = %d, pTarget = %d', [pSource.Index, pTarget.Index]));
-  if pSource.Index < pTarget.Index then
-  begin
-    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertAfter, False);
-  end
-  else
-  begin
-    linkOptions.FVTR.MoveTo(pSource, pTarget, amInsertBefore, False);
-  end;
-  run := FieldCollOptionNode.FirstChild;
-  while run <> nil do
-  begin
-    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
-    run := run.NextSibling;
-  end; 
-end;
-
-
-function TNZIS_DIAGNOSTIC_REPORTColl.FieldCount: Integer; 
-begin
-  inherited;
-  Result := 6;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.FindRootCollOptionNode(): PVirtualNode;
-var
-  linkPos: Cardinal;
-  pCardinalData: PCardinal;
-  PosLinkData: Cardinal;
-  Run: PVirtualNode;
-  data: PAspRec;
-begin
-  Result := nil;
-  linkPos := 100;
-  pCardinalData := pointer(PByte(linkOptions.Buf));
-  PosLinkData := pCardinalData^;
-
-  while linkPos <= PosLinkData do
-  begin
-    Run := pointer(PByte(linkOptions.Buf) + linkpos);
-    data := Pointer(PByte(Run)+ lenNode);
-    if data.vid = vvNZIS_DIAGNOSTIC_REPORTRoot then
-    begin
-      Result := Run;
-	  data := Pointer(PByte(Result)+ lenNode);
-      data.DataPos := Cardinal(Self);
-      Exit;
-    end;
-    inc(linkPos, LenData);
-  end;
-  if Result = nil then
-    Result := CreateRootCollOptionNode;
-  if Result <> nil then
-  begin
-    data := Pointer(PByte(Result)+ lenNode);
-    data.DataPos := Cardinal(Self);
-  end;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.FindSearchFieldCollOptionCOTNode: PVirtualNode;
-var
-  run, vRootPregOptions: PVirtualNode;
-  dataRun: PAspRec;
-begin
-  vRootPregOptions := self.FindRootCollOptionNode();
-  result := nil;
-
-  run := vRootPregOptions.FirstChild;
-  while run <> nil do
-  begin
-    dataRun := pointer(PByte(run) + lenNode);
-    case dataRun.vid of
-      vvOptionSearchCot: result := run;
-    end;
-    run := run.NextSibling;
-  end;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.FindSearchFieldCollOptionGridNode: PVirtualNode;
-var
-  run, vRootPregOptions: PVirtualNode;
-  dataRun: PAspRec;
-begin
-  vRootPregOptions := self.FindRootCollOptionNode();
-
-  result := nil;
-
-  run := vRootPregOptions.FirstChild;
-  while run <> nil do
-  begin
-    dataRun := pointer(PByte(run) + lenNode);
-    case dataRun.vid of
-      vvOptionSearchGrid: result := run;
-    end;
-    run := run.NextSibling;
-  end;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.FindSearchFieldCollOptionNode(): PVirtualNode;
-var
-  linkPos: Cardinal;
-  run, vOptionSearchGrid, vOptionSearchCOT, vRootPregOptions: PVirtualNode;
-  i: Integer;
-  dataRun: PAspRec;
-begin
-  vRootPregOptions := self.FindRootCollOptionNode();
-  if vRootPregOptions = nil then
-    vRootPregOptions := CreateRootCollOptionNode;
-  vOptionSearchGrid := nil;
-  vOptionSearchCOT := nil;
-
-  run := vRootPregOptions.FirstChild;
-  while run <> nil do
-  begin
-    dataRun := pointer(PByte(run) + lenNode);
-    case dataRun.vid of
-      vvOptionSearchGrid: vOptionSearchGrid := run;
-      vvOptionSearchCot: vOptionSearchCOT := run;
-    end;
-
-    run := run.NextSibling;
-  end;
-  if vOptionSearchGrid = nil then
-  begin
-    linkOptions.AddNewNode(vvOptionSearchGrid, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
-  end;
-  if vOptionSearchCOT = nil then
-  begin
-    linkOptions.AddNewNode(vvOptionSearchCot, 0, vRootPregOptions , amAddChildLast, vOptionSearchGrid, linkPos);
-  end;
-
-  Result := vOptionSearchGrid;
-  if vOptionSearchGrid.ChildCount <> FieldCount then
-  begin
-    for i := 0 to FieldCount - 1 do
-    begin
-      linkOptions.AddNewNode(vvFieldSearchGridOption, 0, vOptionSearchGrid , amAddChildLast, run, linkPos);
-      run.Dummy := i;
-    end;
-  end
-  else
-  begin
-    // при евентуално добавена колонка...
-  end;
+  Result := 5;
 end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTColl.GetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -794,26 +371,16 @@ end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTColl.GetCellDataPos(Sender: TObject; const AColumn: TColumn; const ARow:Integer; var AValue: String);
 var
-  RowSelect: Integer;
+  ACol: Integer;
   prop: TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex;
 begin
   inherited;
- 
-  if ARow < 0 then
-  begin
-    AValue := 'hhhh';
-    Exit;
-  end;
-  try
-    if (ListDataPos.count - 1 - Self.offsetTop - Self.offsetBottom) < ARow then exit;
-    RowSelect := ARow + Self.offsetTop;
-    TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
-  except
-    AValue := 'ddddd';
-    Exit;
-  end;
+  ACol := TVirtualModeData(Sender).IndexOf(AColumn);
+  if (ListDataPos.count - 1) < ARow then exit;
 
-  GetCellFromMap(ArrayPropOrderSearchOptions[AColumn.Index], RowSelect, TempItem, AValue);
+  TempItem.DataPos := PAspRec(Pointer(PByte(ListDataPos[ARow]) + lenNode)).DataPos;
+  prop := TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(ACol);
+  GetCellFromMap(ACol, ARow, TempItem, AValue);
 end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTColl.GetCellFromRecord(propIndex: word; NZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem; var AValue: String);
@@ -826,7 +393,6 @@ begin
     NZIS_DIAGNOSTIC_REPORT_ID: str := inttostr(NZIS_DIAGNOSTIC_REPORT.PRecord.ID);
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: str := inttostr(NZIS_DIAGNOSTIC_REPORT.PRecord.PREGLED_ID);
     NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: str := inttostr(NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS);
-    NZIS_DIAGNOSTIC_REPORT_Logical: str := NZIS_DIAGNOSTIC_REPORT.Logical08ToStr(TLogicalData08(NZIS_DIAGNOSTIC_REPORT.PRecord.Logical));
   else
     begin
       str := '';
@@ -842,9 +408,9 @@ var
   prop: TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex;
 begin
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  if ListForFinder.Count = 0 then Exit;
+  if ListForFDB.Count = 0 then Exit;
 
-  AtempItem := ListForFinder[ARow];
+  AtempItem := ListForFDB[ARow];
   prop := TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(ACol);
   if Assigned(AtempItem.PRecord) and (prop in AtempItem.PRecord.setProp) then
   begin
@@ -891,16 +457,6 @@ begin
   end;
 end;
 
-function TNZIS_DIAGNOSTIC_REPORTColl.GetCollType: TCollectionsType;
-begin
-  Result := ctNZIS_DIAGNOSTIC_REPORT;
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.GetCollDelType: TCollectionsType;
-begin
-  Result := ctNZIS_DIAGNOSTIC_REPORTDel;
-end;
-
 procedure TNZIS_DIAGNOSTIC_REPORTColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   NZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem;
@@ -937,7 +493,6 @@ begin
     NZIS_DIAGNOSTIC_REPORT_ID: str :=  inttostr(NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, propIndex));
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: str :=  inttostr(NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, propIndex));
     NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: str :=  inttostr(NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, propIndex));
-    NZIS_DIAGNOSTIC_REPORT_Logical: str :=  NZIS_DIAGNOSTIC_REPORT.Logical08ToStr(NZIS_DIAGNOSTIC_REPORT.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -975,6 +530,7 @@ begin
       end;
       NZIS_DIAGNOSTIC_REPORT_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
       NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
+      NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
     end;
   end;
 end;
@@ -983,12 +539,6 @@ procedure TNZIS_DIAGNOSTIC_REPORTColl.IndexValueListNodes(propIndex: TNZIS_DIAGN
 begin
 
 end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.IsCollVisible(PropIndex: Word): Boolean;
-begin
-  Result  := TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(PropIndex) in  VisibleColl;
-end;
-
 
 procedure TNZIS_DIAGNOSTIC_REPORTColl.OnGetTextDynFMX(sender: TObject; field: Word; index: Integer; datapos: Cardinal; var value: string);
 var
@@ -1015,98 +565,6 @@ begin
   end;
 end;
 
-{=== TEXT SEARCH HANDLER ===}
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OnSetTextSearchEDT(Text: string; field: Word; Condition: TConditionSet);
-var
-  AText: string;
-begin
-  if Text = '' then
-  begin
-    Exclude(ListForFinder[0].PRecord.setProp, TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field));
-  end
-  else
-  begin
-    if not (cotSens in Condition) then
-      AText := AnsiUpperCase(Text)
-    else
-      AText := Text;
-
-    Include(ListForFinder[0].PRecord.setProp, TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field));
-  end;
-
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
-  case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field) of
-NZIS_DIAGNOSTIC_REPORT_CL142_CODE: ListForFinder[0].PRecord.CL142_CODE := AText;
-  end;
-end;
-
-
-{=== DATE SEARCH HANDLER ===}
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: TConditionSet);
-begin
-  Include(ListForFinder[0].PRecord.setProp, TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field));
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-  
-end;
-
-
-{=== NUMERIC SEARCH HANDLER ===}
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
-begin
-  Include(ListForFinder[0].PRecord.setProp, TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field));
-  Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field) of
-    NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: ListForFinder[0].PRecord.CL083_STATUS := Value;
-    NZIS_DIAGNOSTIC_REPORT_ID: ListForFinder[0].PRecord.ID := Value;
-    NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: ListForFinder[0].PRecord.PREGLED_ID := Value;
-    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: ListForFinder[0].PRecord.NOMEN_POS := Value;
-    end;
-end;
-
-
-{=== LOGICAL (CHECKBOX) SEARCH HANDLER ===}
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
-begin
-  case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(Field) of
-    NZIS_DIAGNOSTIC_REPORT_Logical:
-    begin
-      if value then
-        Include(ListForFinder[0].PRecord.Logical, TlogicalNZIS_DIAGNOSTIC_REPORT(logIndex))
-      else
-        Exclude(ListForFinder[0].PRecord.Logical, TlogicalNZIS_DIAGNOSTIC_REPORT(logIndex))   
-    end;
-  end;
-end;
-
-
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OnSetTextSearchLog(Log: TlogicalNZIS_DIAGNOSTIC_REPORTSet);
-begin
-  ListForFinder[0].PRecord.Logical := Log;
-end;
-
-procedure TNZIS_DIAGNOSTIC_REPORTColl.OrderFieldsSearch1(Grid: TTeeGrid);
-var
-  FieldCollOptionNode, run: PVirtualNode;
-  Comparison: TComparison<PVirtualNode>;
-  i, index, rank: Integer;
-  ArrCol: TArray<TColumn>;
-begin
-  inherited;
-  if linkOptions = nil then  Exit;
-
-  FieldCollOptionNode := FindSearchFieldCollOptionNode;
-  ApplyVisibilityFromTree(FieldCollOptionNode);
-  run := FieldCollOptionNode.FirstChild;
-
-  while run <> nil do
-  begin
-    Grid.Columns[run.index + 1].Header.Text := DisplayName(run.Dummy - 1);
-    ArrayPropOrderSearchOptions[run.index + 1] :=  run.Dummy - 1;
-    run := run.NextSibling;
-  end;
-
-end;
 
 function TNZIS_DIAGNOSTIC_REPORTColl.PropType(propIndex: Word): TAspectTypeKind;
 begin
@@ -1116,16 +574,10 @@ begin
     NZIS_DIAGNOSTIC_REPORT_CL142_CODE: Result := actAnsiString;
     NZIS_DIAGNOSTIC_REPORT_ID: Result := actinteger;
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: Result := actinteger;
-    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: Result := actcardinal;
-    NZIS_DIAGNOSTIC_REPORT_Logical: Result := actLogical;
+    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: Result := actinteger;
   else
     Result := actNone;
   end
-end;
-
-function TNZIS_DIAGNOSTIC_REPORTColl.RankSortOption(propIndex: Word): cardinal;
-begin
-  //
 end;
 
 procedure TNZIS_DIAGNOSTIC_REPORTColl.SetCell(Sender: TObject; const AColumn: TColumn; const ARow: Integer; var AValue: String);
@@ -1136,7 +588,7 @@ var
 begin
   if Count = 0 then Exit;
   ACol := TVirtualModeData(Sender).IndexOf(AColumn);
-  isOld := False;
+
   NZIS_DIAGNOSTIC_REPORT := Items[ARow];
   if not Assigned(NZIS_DIAGNOSTIC_REPORT.PRecord) then
   begin
@@ -1146,12 +598,13 @@ begin
   end
   else
   begin
+    isOld := False;
     case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(ACol) of
       NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    NZIS_DIAGNOSTIC_REPORT_CL142_CODE: isOld :=  NZIS_DIAGNOSTIC_REPORT.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
-    NZIS_DIAGNOSTIC_REPORT_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
-    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      NZIS_DIAGNOSTIC_REPORT_CL142_CODE: isOld :=  NZIS_DIAGNOSTIC_REPORT.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+      NZIS_DIAGNOSTIC_REPORT_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
+      NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     end;
   end;
   if isOld then
@@ -1172,7 +625,6 @@ begin
     NZIS_DIAGNOSTIC_REPORT_ID: NZIS_DIAGNOSTIC_REPORT.PRecord.ID := StrToInt(AValue);
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: NZIS_DIAGNOSTIC_REPORT.PRecord.PREGLED_ID := StrToInt(AValue);
     NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := StrToInt(AValue);
-    NZIS_DIAGNOSTIC_REPORT_Logical: NZIS_DIAGNOSTIC_REPORT.PRecord.Logical := tlogicalNZIS_DIAGNOSTIC_REPORTSet(NZIS_DIAGNOSTIC_REPORT.StrToLogical08(AValue));
   end;
 end;
 
@@ -1182,7 +634,7 @@ var
   NZIS_DIAGNOSTIC_REPORT: TNZIS_DIAGNOSTIC_REPORTItem;
 begin
   if Count = 0 then Exit;
-  isOld := False; 
+
   NZIS_DIAGNOSTIC_REPORT := Items[ARow];
   if not Assigned(NZIS_DIAGNOSTIC_REPORT.PRecord) then
   begin
@@ -1192,12 +644,13 @@ begin
   end
   else
   begin
+    isOld := False;
     case TNZIS_DIAGNOSTIC_REPORTItem.TPropertyIndex(ACol) of
       NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getWordMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    NZIS_DIAGNOSTIC_REPORT_CL142_CODE: isOld :=  NZIS_DIAGNOSTIC_REPORT.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
-    NZIS_DIAGNOSTIC_REPORT_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
-    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      NZIS_DIAGNOSTIC_REPORT_CL142_CODE: isOld :=  NZIS_DIAGNOSTIC_REPORT.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+      NZIS_DIAGNOSTIC_REPORT_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
+      NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: isOld :=  NZIS_DIAGNOSTIC_REPORT.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     end;
   end;
   if isOld then
@@ -1218,7 +671,6 @@ begin
     NZIS_DIAGNOSTIC_REPORT_ID: NZIS_DIAGNOSTIC_REPORT.PRecord.ID := StrToInt(AFieldText);
     NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: NZIS_DIAGNOSTIC_REPORT.PRecord.PREGLED_ID := StrToInt(AFieldText);
     NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: NZIS_DIAGNOSTIC_REPORT.PRecord.NOMEN_POS := StrToInt(AFieldText);
-    NZIS_DIAGNOSTIC_REPORT_Logical: NZIS_DIAGNOSTIC_REPORT.PRecord.Logical := tlogicalNZIS_DIAGNOSTIC_REPORTSet(NZIS_DIAGNOSTIC_REPORT.StrToLogical08(AFieldText));
   end;
 end;
 
@@ -1257,7 +709,14 @@ end;
           ListNZIS_DIAGNOSTIC_REPORTSearch.Add(self.Items[i]);
         end;
       end;
-      NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: 
+      NZIS_DIAGNOSTIC_REPORT_PREGLED_ID:
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
+        begin
+          ListNZIS_DIAGNOSTIC_REPORTSearch.Add(self.Items[i]);
+        end;
+      end;
+      NZIS_DIAGNOSTIC_REPORT_NOMEN_POS:
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
@@ -1271,7 +730,7 @@ end;
 procedure TNZIS_DIAGNOSTIC_REPORTColl.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
-  clls: TDiffCellRenderer;
+
 begin
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
   for i := 0 to self.FieldCount - 1 do
@@ -1287,11 +746,6 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
-  
-  clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
-  clls.FGrid := Grid;
-  clls.FCollAdb := Self;
-  Grid.Cells := clls;
 
   Grid.Columns[self.FieldCount].Width.Value := 50;
   Grid.Columns[self.FieldCount].Index := 0;
@@ -1305,7 +759,7 @@ var
   i: word;
 
 begin
-  ListForFinder := LST;
+  ListForFDB := LST;
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, LST.Count);
   for i := 0 to self.FieldCount - 1 do
   begin
@@ -1369,8 +823,8 @@ var
       J := R;
       P := (L + R) shr 1;
       repeat
-        while (Items[I].IndexAnsiStr1) < (Items[P].IndexAnsiStr1) do Inc(I);
-        while (Items[J].IndexAnsiStr1) > (Items[P].IndexAnsiStr1) do Dec(J);
+        while ((Items[I]).IndexAnsiStr1) < ((Items[P]).IndexAnsiStr1) do Inc(I);
+        while ((Items[J]).IndexAnsiStr1) > ((Items[P]).IndexAnsiStr1) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];
@@ -1479,11 +933,11 @@ procedure TNZIS_DIAGNOSTIC_REPORTColl.SortByIndexValue(propIndex: TNZIS_DIAGNOST
 begin
   case propIndex of
     NZIS_DIAGNOSTIC_REPORT_CL083_STATUS: SortByIndexWord;
-      NZIS_DIAGNOSTIC_REPORT_CL142_CODE: SortByIndexAnsiString;
-      NZIS_DIAGNOSTIC_REPORT_ID: SortByIndexInt;
-      NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: SortByIndexInt;
+    NZIS_DIAGNOSTIC_REPORT_CL142_CODE: SortByIndexAnsiString;
+    NZIS_DIAGNOSTIC_REPORT_ID: SortByIndexInt;
+    NZIS_DIAGNOSTIC_REPORT_PREGLED_ID: SortByIndexInt;
+    NZIS_DIAGNOSTIC_REPORT_NOMEN_POS: SortByIndexInt;
   end;
 end;
-
 
 end.

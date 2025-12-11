@@ -10,6 +10,7 @@ uses
   function ASPStrToDateTime(str: string): TDateTime;
   function CompareMemRange(p1, p2: PAnsiChar; len: Integer): Integer; inline;
   procedure DebugMsg(const S: string);
+  procedure SwapObj(var A, B: TObject);
   function CeltextFilterObjectFromVid(vid: Word): string;
 
 implementation
@@ -158,6 +159,15 @@ begin
     //raise Exception.Create('Непознат Vid: ' + TRttiEnumerationType.GetName(data.vid));
   end;
   Result := CellText;
+end;
+
+procedure SwapObj(var A, B: TObject);
+var
+  T: TObject;
+begin
+  T := A;
+  A := B;
+  B := T;
 end;
 
 procedure DebugMsg(const S: string);

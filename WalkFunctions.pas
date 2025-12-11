@@ -48,9 +48,10 @@ interface
 
   TDiagLabel = class
     DiagRect: TRectangle;
-    diag: TRealDiagnosisItem;
+    //diag: TRealDiagnosisItem;
     asp: PAspRec;
     node: PVirtualNode;
+    MkbNode: PVirtualNode;
     edtMain: TEdit;
     edtAdd: TEdit;
     mmoDiag: TMemo;

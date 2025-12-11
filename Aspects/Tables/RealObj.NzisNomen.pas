@@ -43,6 +43,7 @@ TCollectionForSort = class(TPersistent)
    FListPr001: TList<TRealPR001Item>;
    FPatient: TObject;
    FPregled: TObject;
+   FPregNode: PVirtualNode;
    FExamAnal: TObject;
    CL047: TStringList;
    test: string;
@@ -426,6 +427,7 @@ begin
   FListPr001 := TList<TRealPR001Item>.Create;
   FPatient := nil;
   FPregled := nil;
+  FPregNode := nil;
   FExamAnal := nil;
   cl047 := TStringList.Create;
   CL047.Text :=

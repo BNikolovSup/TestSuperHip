@@ -1780,21 +1780,21 @@ begin
             TempItem.PRecord.DescriptionEn := ArrNhifCode[j];
             include(TempItem.PRecord.setProp, CL142_nhif_code);
           end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048), len) <> nil then
-          begin
-            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048));
-            include(TempItem.PRecord.setProp, CL142_cl048);
-          end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006), len) <> nil then
-          begin
-            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006));
-            include(TempItem.PRecord.setProp, CL142_cl006);
-          end;
-          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly), len) <> nil then
-          begin
-            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly));
-            include(TempItem.PRecord.setProp, CL142_highly);
-          end;
+          //if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048), len) <> nil then
+//          begin
+//            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl048));
+//            include(TempItem.PRecord.setProp, CL142_cl048);
+//          end;
+//          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006), len) <> nil then
+//          begin
+//            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_cl006));
+//            include(TempItem.PRecord.setProp, CL142_cl006);
+//          end;
+//          if cl142.getPAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly), len) <> nil then
+//          begin
+//            TempItem.PRecord.DescriptionEn := cl142.getAnsiStringMap(Adb_dm.Cl142Coll.Buf, Adb_dm.Cl142Coll.posData, word(CL142_highly));
+//            include(TempItem.PRecord.setProp, CL142_highly);
+//          end;
 
 
           TempItem.InsertCL142;
