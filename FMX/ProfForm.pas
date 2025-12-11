@@ -1470,7 +1470,7 @@ begin
     if RunNode.FirstChild <> nil then
     begin
       TempComboLabel.Flyt.RecalcSize;
-      TempComboLYT.Height := Max(InnerChildrenRect(TempComboLabel.Flyt).Height + TempComboLabel.chk.Height, 48); // няма делено на скел-а, защото все още не е дете на скалиращия лейаут
+      TempComboLYT.Height := Max(InnerChildrenRect(TempComboLabel.Flyt).Height + TempComboLabel.chk.Height, 48); // РЅСЏРјР° РґРµР»РµРЅРѕ РЅР° СЃРєРµР»-Р°, Р·Р°С‰РѕС‚Рѕ РІСЃРµ РѕС‰Рµ РЅРµ Рµ РґРµС‚Рµ РЅР° СЃРєР°Р»РёСЂР°С‰РёСЏ Р»РµР№Р°СѓС‚
     end
     else
     begin
@@ -1729,7 +1729,7 @@ begin
     TempRect.OnPainting := rctDiagPainting;
 
   end;
-  if idxListDiags = 0 then  //основната диагноза
+  if idxListDiags = 0 then  //РѕСЃРЅРѕРІРЅР°С‚Р° РґРёР°РіРЅРѕР·Р°
   begin
     TempRect.SendToBack;
     rctMainDiaglabel.SendToBack;
@@ -1821,7 +1821,7 @@ begin
       end;
       vvNZIS_QUESTIONNAIRE_ANSWER:
       begin
-        TempEditLabel.textUnit.Text := 'мерна ед.';
+        TempEditLabel.textUnit.Text := 'РјРµСЂРЅР° РµРґ.';
         TempEditLYT.Margins.Left := 25;
         TempEditLYT.Width := ExpndrLayout.Width  - ExpndrLayout.Padding.Left - ExpndrLayout.Padding.Right - 20;
         TempEditLabel.rctSourceAnsw.Visible := True;
@@ -1863,7 +1863,7 @@ begin
       end;
       vvNZIS_QUESTIONNAIRE_ANSWER:
       begin
-        TempEditLabel.textUnit.Text := 'мерна ед.';
+        TempEditLabel.textUnit.Text := 'РјРµСЂРЅР° РµРґ.';
         TempEditLYT.Margins.Left := 25;
         TempEditLYT.Width := ExpndrLayout.Width  - ExpndrLayout.Padding.Left - ExpndrLayout.Padding.Right -20;
         TempEditLabel.rctSourceAnsw.Visible := true;
@@ -2240,7 +2240,7 @@ begin
   startDate := DateToStr(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_StartDate)));
   endDate := DateToStr(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate)));
   Delta := Floor(Adb_DM.CollNZIS_PLANNED_TYPE.getDateMap(PosDataPlan, word(NZIS_PLANNED_TYPE_EndDate))) - Floor(UserDate);
-  //12.12.2012 - 12.12.2025  (Остават 23 дни до края на плана)
+  //12.12.2012 - 12.12.2025  (РћСЃС‚Р°РІР°С‚ 23 РґРЅРё РґРѕ РєСЂР°СЏ РЅР° РїР»Р°РЅР°)
 
   TempPlanedTypeLabel.txtKey.Text := Adb_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
   TempPlanedTypeLabel.txtCapt.Text := Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_Description));
@@ -2263,22 +2263,22 @@ begin
   begin
     if delta <> 1 then
     begin
-      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Остават %d дни до края на плана)',[startDate, endDate, delta]);
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (РћСЃС‚Р°РІР°С‚ %d РґРЅРё РґРѕ РєСЂР°СЏ РЅР° РїР»Р°РЅР°)',[startDate, endDate, delta]);
     end
     else
     begin
-      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Остава %d ден до края на плана)',[startDate, endDate, delta]);
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (РћСЃС‚Р°РІР° %d РґРµРЅ РґРѕ РєСЂР°СЏ РЅР° РїР»Р°РЅР°)',[startDate, endDate, delta]);
     end;
   end
   else
   begin
     if delta <> -1 then
     begin
-      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минали са %d дни от края на плана)',[startDate, endDate, -delta]);
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (РњРёРЅР°Р»Рё СЃР° %d РґРЅРё РѕС‚ РєСЂР°СЏ РЅР° РїР»Р°РЅР°)',[startDate, endDate, -delta]);
     end
     else
     begin
-      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (Минал е %d ден от края на плана)',[startDate, endDate, -delta]);
+      TempPlanedTypeLabel.txtPeriod.Text := Format('%s - %s (РњРёРЅР°Р» Рµ %d РґРµРЅ РѕС‚ РєСЂР°СЏ РЅР° РїР»Р°РЅР°)',[startDate, endDate, -delta]);
     end;
   end;
   case Adb_DM.Cl132Coll.getAnsiStringMap(posDataCL132, word(CL132_cl136))[1] of
@@ -2593,7 +2593,7 @@ begin
 //      patName := Adb_DM.CollPatient.getAnsiStringMapOfset(ofset, word(PatientNew_SNAME));
 //      listHist.Add(ofset)
 //    end;
-//    PHist := pointer(PByte(Adb_DM.CollPatient.buf) + ofset - 4); // история на средно име
+//    PHist := pointer(PByte(Adb_DM.CollPatient.buf) + ofset - 4); // РёСЃС‚РѕСЂРёСЏ РЅР° СЃСЂРµРґРЅРѕ РёРјРµ
 //  end;
 //  listHist.Free;
 //  revs.Free;
@@ -3495,7 +3495,7 @@ begin
     begin
       TempBtnMulti.Parent := nil;
       nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
-      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// махам го от дървото
+      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// РјР°С…Р°Рј РіРѕ РѕС‚ РґСЉСЂРІРѕС‚Рѕ
       TempComboLabel.MultiBtns.Delete(i);
       Break;
     end;
@@ -3534,7 +3534,7 @@ begin
     begin
       TempBtnMulti.Parent := nil;
       nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
-      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// махам го от дървото
+      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// РјР°С…Р°Рј РіРѕ РѕС‚ РґСЉСЂРІРѕС‚Рѕ
       TempComboLabel.MultiBtns.Delete(i);
       Break;
     end;
@@ -3562,7 +3562,7 @@ begin
     begin
       TempBtnMulti.Parent := nil;
       nodeValue := TempComboLabel.GetNodeValueFromText(TempBtnMulti.Text,  Adb_DM.CollNZIS_ANSWER_VALUE);
-      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// махам го от дървото
+      Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// РјР°С…Р°Рј РіРѕ РѕС‚ РґСЉСЂРІРѕС‚Рѕ
       TempComboLabel.MultiBtns.Delete(i);
       Break;
     end;
@@ -3758,7 +3758,7 @@ begin
 
             New(AnswValue.PRecord);
             case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, Word(CL134_CL028))) of
-              4: //конкретна дата
+              4: //РєРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°
               begin
                 AnswValue.PRecord.ANSWER_DATE := TempDatEdit.Date;
                 AnswValue.PRecord.ID := 0;
@@ -3789,7 +3789,7 @@ begin
 //            ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
 //            New(ResDiagRep.PRecord);
 //            case ResDiagRep.cl028 of
-//              1: //Количествено представяне
+//              1: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
 //              begin
 //                ResDiagRep.PRecord.VALUE_QUANTITY := string.ToDouble(text);
 //                ResDiagRep.PRecord.ID := 0;
@@ -3990,7 +3990,7 @@ begin
             Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, Word(CL134_CL028))) of
-              4: //конкретна дата
+              4: //РєРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°
               begin
                 AnswValue.PRecord.ANSWER_DATE := TempDatEdit.Date;
                 AnswValue.PRecord.ID := 0;
@@ -4173,7 +4173,7 @@ begin
         begin
           //DIAGNOSTIC_REPTemp.DataPos := dataResDiag.DataPos;
           TempDateEditLabel.canValidate := False;
-          //TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)); // zzzzzzzzzz тука май има грешка, защо е answValTemp
+          //TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)); // zzzzzzzzzz С‚СѓРєР° РјР°Р№ РёРјР° РіСЂРµС€РєР°, Р·Р°С‰Рѕ Рµ answValTemp
           TempDateEditLabel.canValidate := True;
         end
         else
@@ -4182,7 +4182,7 @@ begin
           if Adb_dm.CollNzis_RESULT_DIAGNOSTIC_REPORT.Items[dataResDiag.index].PRecord = nil then
           begin
             TempDateEditLabel.canValidate := False;
-            //TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));  // zzzzzzzzzz тука май има грешка, защо е answValTemp
+            //TempDateEdit.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE));  // zzzzzzzzzz С‚СѓРєР° РјР°Р№ РёРјР° РіСЂРµС€РєР°, Р·Р°С‰Рѕ Рµ answValTemp
             TempDateEditLabel.canValidate := True;
           end
           else
@@ -4300,7 +4300,7 @@ begin
         begin
           //DIAGNOSTIC_REPTemp.DataPos := dataResDiag.DataPos;
           TempDateEditLabel.canValidate := False;
-          //TempDateEditLabel.DatEdt.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)); //zzzzzzzzzzzzzzzzzzz май има грешка
+          //TempDateEditLabel.DatEdt.Date := answValTemp.getDateMap(FAspAdbBuf, FAspAdbPosData, word(NZIS_ANSWER_VALUE_ANSWER_DATE)); //zzzzzzzzzzzzzzzzzzz РјР°Р№ РёРјР° РіСЂРµС€РєР°
           TempDateEditLabel.canValidate := True;
         end
         else
@@ -4524,7 +4524,7 @@ begin
         linStatusNRN.Opacity := 1;
         animNrnStatus.Start;
       end;
-      txtNzisStatus.Text := 'отваря се';
+      txtNzisStatus.Text := 'РѕС‚РІР°СЂСЏ СЃРµ';
       //rctNzisBTN.Stroke.Color := $FFFF9500;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4532,7 +4532,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'грешка';
+      txtNzisStatus.Text := 'РіСЂРµС€РєР°';
       linStatusNRN.Stroke.Color := $FFFA0808;
       rctBtnNzisErr.Visible := True;
     end;
@@ -4540,7 +4540,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'отворен';
+      txtNzisStatus.Text := 'РѕС‚РІРѕСЂРµРЅ';
       linStatusNRN.Stroke.Color := $FFFF9500;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4548,7 +4548,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'затворен';
+      txtNzisStatus.Text := 'Р·Р°С‚РІРѕСЂРµРЅ';
       linStatusNRN.Stroke.Color := $FF299045;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4559,7 +4559,7 @@ begin
         linStatusNRN.Opacity := 1;
         animNrnStatus.Start;
       end;
-      txtNzisStatus.Text := 'затваря се';
+      txtNzisStatus.Text := 'Р·Р°С‚РІР°СЂСЏ СЃРµ';
       linStatusNRN.Stroke.Color := $FF299045;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4567,7 +4567,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'грешка';
+      txtNzisStatus.Text := 'РіСЂРµС€РєР°';
       linStatusNRN.Stroke.Color := $FFFA0808;
       rctBtnNzisErr.Visible := True;
     end;
@@ -4575,7 +4575,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'редактиран';
+      txtNzisStatus.Text := 'СЂРµРґР°РєС‚РёСЂР°РЅ';
       linStatusNRN.Stroke.Color := $FF454BE3;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4583,7 +4583,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'грешка';
+      txtNzisStatus.Text := 'РіСЂРµС€РєР°';
       linStatusNRN.Stroke.Color := $FFFA0808;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4594,7 +4594,7 @@ begin
         linStatusNRN.Opacity := 1;
         animNrnStatus.Start;
       end;
-      txtNzisStatus.Text := 'редактира се';
+      txtNzisStatus.Text := 'СЂРµРґР°РєС‚РёСЂР° СЃРµ';
       linStatusNRN.Stroke.Color := $FF454BE3;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4607,11 +4607,11 @@ begin
       end;
       if CheckKep then
       begin
-        txtNzisStatus.Text := 'Изпраща се готов преглед';
+        txtNzisStatus.Text := 'РР·РїСЂР°С‰Р° СЃРµ РіРѕС‚РѕРІ РїСЂРµРіР»РµРґ';
       end
       else
       begin
-        txtNzisStatus.Text := 'Проверете КЕП';
+        txtNzisStatus.Text := 'РџСЂРѕРІРµСЂРµС‚Рµ РљР•Рџ';
       end;
       linStatusNRN.Stroke.Color := $FF454BE3;
       rctBtnNzisErr.Visible := false;
@@ -4620,7 +4620,7 @@ begin
     begin
       animNrnStatus.Stop;
       linStatusNRN.Opacity := 1;
-      txtNzisStatus.Text := 'Затворен готов преглед';
+      txtNzisStatus.Text := 'Р—Р°С‚РІРѕСЂРµРЅ РіРѕС‚РѕРІ РїСЂРµРіР»РµРґ';
       linStatusNRN.Stroke.Color := $FF454BE3;
       rctBtnNzisErr.Visible := false;
     end;
@@ -4630,7 +4630,7 @@ begin
       begin
         animNrnStatus.Stop;
         linStatusNRN.Opacity := 1;
-        txtNzisStatus.Text := 'Опит за готов преглед';
+        txtNzisStatus.Text := 'РћРїРёС‚ Р·Р° РіРѕС‚РѕРІ РїСЂРµРіР»РµРґ';
         linStatusNRN.Stroke.Color := $FF454BE3;
         rctBtnNzisErr.Visible := false;
       end;
@@ -4641,7 +4641,7 @@ begin
       begin
         animNrnStatus.Stop;
         linStatusNRN.Opacity := 1;
-        txtNzisStatus.Text := 'Опит за отваряне на преглед';
+        txtNzisStatus.Text := 'РћРїРёС‚ Р·Р° РѕС‚РІР°СЂСЏРЅРµ РЅР° РїСЂРµРіР»РµРґ';
         linStatusNRN.Stroke.Color := $FFFF9500;
         rctBtnNzisErr.Visible := false;
       end;
@@ -4657,10 +4657,10 @@ begin
     end;
     rctBtnNzisErr.Visible := false;
   end;
-  edt.Text := Format('АМБУЛАТОРЕН ЛИСТ  № %d НРН %s', [ambNom, ambNRN]);
+  edt.Text := Format('РђРњР‘РЈР›РђРўРћР Р•Рќ Р›РРЎРў  в„– %d РќР Рќ %s', [ambNom, ambNRN]);
   txtCalcEdit.MaxSize := PointF(100000, 30);
   txtCalcEdit.Font.Assign(edt.TextSettings.Font);
-  txtCalcEdit.Text := Format('АМБУЛАТОРЕН ЛИСТ  № %d НРН |', [ambNom]);
+  txtCalcEdit.Text := Format('РђРњР‘РЈР›РђРўРћР Р•Рќ Р›РРЎРў  в„– %d РќР Рќ |', [ambNom]);
   linStatusNRN.Margins.Left := txtCalcEdit.TextWidth ;
   txtCalcEdit.Text := ambNRN;
   linStatusNRN.Margins.Right := edt.Width - txtCalcEdit.TextWidth - linStatusNRN.Margins.Left;
@@ -4686,9 +4686,9 @@ begin
     case TPatientNewItem.TPropertyIndex(edt.tag) of
       PatientNew_BIRTH_DATE :
       begin
-        //BIRTH_DATE := TRealPatientNewItem(edt.TagObject).getDateMap(FAspAdbBuf, FAspAdbPosData, word(PatientNew_BIRTH_DATE));//  няма ги вече  FAspAdbBuf, FAspAdbPosData
+        //BIRTH_DATE := TRealPatientNewItem(edt.TagObject).getDateMap(FAspAdbBuf, FAspAdbPosData, word(PatientNew_BIRTH_DATE));//  РЅСЏРјР° РіРё РІРµС‡Рµ  FAspAdbBuf, FAspAdbPosData
         PatAge := TRealPatientNewItem(edt.TagObject).CalcAge(UserDate, BIRTH_DATE);
-        edt.Text := Format('%d год.', [PatAge]);
+        edt.Text := Format('%d РіРѕРґ.', [PatAge]);
       end;
     end;
   end;
@@ -4718,7 +4718,7 @@ begin
   for paramField in ParamSetProp do
   begin
     SetLength(ArrStr, length(ArrStr) + 1);
-    //ArrStr[length(ArrStr) - 1] := TBaseItem(edt.TagObject).getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(paramField));  //ззззззззззззз
+    //ArrStr[length(ArrStr) - 1] := TBaseItem(edt.TagObject).getAnsiStringMap(FAspAdbBuf, FAspAdbPosData, word(paramField));  //Р·Р·Р·Р·Р·Р·Р·Р·Р·Р·Р·Р·Р·
   end;
   if length(ArrStr) > 1 then
   begin
@@ -5095,7 +5095,7 @@ begin
             Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, Word(CL134_CL028))) of
-              1: //Количествено представяне
+              1: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
               begin
                 AnswValue.PRecord.ANSWER_QUANTITY := string.ToDouble(text);
                 AnswValue.PRecord.ID := 0;
@@ -5126,7 +5126,7 @@ begin
             ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
             New(ResDiagRep.PRecord);
             case ResDiagRep.cl028 of
-              1: //Количествено представяне
+              1: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
               begin
                 ResDiagRep.PRecord.VALUE_QUANTITY := string.ToDouble(text);
                 ResDiagRep.PRecord.ID := 0;
@@ -5327,7 +5327,7 @@ begin
             Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, Word(CL134_CL028))) of
-              1: //Количествено представяне
+              1: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
               begin
                 AnswValue.PRecord.ANSWER_QUANTITY := string.ToDouble(text);
                 AnswValue.PRecord.ID := 0;
@@ -5358,7 +5358,7 @@ begin
             ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
             New(ResDiagRep.PRecord);
             case ResDiagRep.cl028 of
-              1: //Количествено представяне
+              1: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
               begin
                 ResDiagRep.PRecord.VALUE_QUANTITY := string.ToDouble(text);
                 ResDiagRep.PRecord.ID := 0;
@@ -5509,7 +5509,7 @@ begin
 
   edt := TEdit(sender);
   dataInkNapr := Pointer(PByte(Adb_DM.PregNodesBack.incNaprNode) + lenNode);
-  edt.Text := FormatDateTime('DD.MM.YYYY г.', Adb_DM.CollIncMN.getDateMap(dataInkNapr.DataPos, Word(INC_NAPR_ISSUE_DATE)));
+  edt.Text := FormatDateTime('DD.MM.YYYY Рі.', Adb_DM.CollIncMN.getDateMap(dataInkNapr.DataPos, Word(INC_NAPR_ISSUE_DATE)));
 end;
 
 procedure TfrmProfFormFMX.edtDateRawPainting(Sender: TObject; Canvas: TCanvas;
@@ -5648,13 +5648,13 @@ begin
   patEgn := Adb_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_EGN));
 
   patIndex := Adb_DM.CollPatient.FindItemFromDataPos(dataPatient.DataPos);
-  if patIndex >= 0 then  // има го в колекцията
+  if patIndex >= 0 then  // РёРјР° РіРѕ РІ РєРѕР»РµРєС†РёСЏС‚Р°
   begin
     pat := Adb_DM.CollPatient.Items[patIndex];
   end
   else
   begin
-    pat := TRealPatientNewItem(Adb_DM.CollPatient.Add);// добавям го в колекцията
+    pat := TRealPatientNewItem(Adb_DM.CollPatient.Add);// РґРѕР±Р°РІСЏРј РіРѕ РІ РєРѕР»РµРєС†РёСЏС‚Р°
     pat.DataPos := dataPatient.DataPos;
   end;
 
@@ -5720,14 +5720,14 @@ begin
   TempLyt := TLayout(edtAnalCode.Parent.Parent);
   TempMdnsLabel:= TMdnsLabel(TempLyt.TagObject);
   TempMdnAnal := TMdnAnals(edtAnalCode.TagObject);
-  if TempMdnAnal = nil then // ново
+  if TempMdnAnal = nil then // РЅРѕРІРѕ
   begin
     TempMdnAnal :=  TMdnAnals.Create;
     edtAnalCode.TagObject := TempMdnAnal;
     if Assigned(FOnAddNewAnal) then
       FOnAddNewAnal(TempMdnsLabel.mdn, TempMdnsLabel.LinkMdn, TempMdnAnal.LinkAnal, TempMdnAnal.Anal);
   end;
-  if edtAnalCode.Text = '' then // изтривам го
+  if edtAnalCode.Text = '' then // РёР·С‚СЂРёРІР°Рј РіРѕ
   begin
     if Assigned(FOnDeleteNewAnal) then
     begin
@@ -5967,7 +5967,7 @@ begin
   patIndex := dataPatient.index;
 
 
-  if patIndex >= 0 then  // има го в колекцията
+  if patIndex >= 0 then  // РёРјР° РіРѕ РІ РєРѕР»РµРєС†РёСЏС‚Р°
   begin
     pat := ADB_DM.CollPatient.Items[patIndex];
     if (pat.PRecord <> nil) and (PatientNew_FNAME in pat.PRecord.setProp) then
@@ -6047,13 +6047,13 @@ begin
   patNameL := ADB_DM.CollPatient.getAnsiStringMap(dataPatient.DataPos, word(PatientNew_LNAME));
 
   patIndex := ADB_DM.CollPatient.FindItemFromDataPos(dataPatient.DataPos);
-  if patIndex >= 0 then  // има го в колекцията
+  if patIndex >= 0 then  // РёРјР° РіРѕ РІ РєРѕР»РµРєС†РёСЏС‚Р°
   begin
     pat := ADB_DM.CollPatient.Items[patIndex];
   end
   else
   begin
-    pat := TRealPatientNewItem(ADB_DM.CollPatient.Add);// добавям го в колекцията
+    pat := TRealPatientNewItem(ADB_DM.CollPatient.Add);// РґРѕР±Р°РІСЏРј РіРѕ РІ РєРѕР»РµРєС†РёСЏС‚Р°
     pat.DataPos := dataPatient.DataPos;
   end;
 
@@ -6240,7 +6240,7 @@ begin
     TempImunLabel := TImmunsLabel.Create;
     TempLyt.Tag := LstImuns.Add(TempLyt);
     TempLyt.TagObject := TempImunLabel;
-    WalkChildrenEdtImun(TempLyt, TempImunLabel); // обикаля и събира кое какво е
+    WalkChildrenEdtImun(TempLyt, TempImunLabel); // РѕР±РёРєР°Р»СЏ Рё СЃСЉР±РёСЂР° РєРѕРµ РєР°РєРІРѕ Рµ
   end
   else
   begin
@@ -6270,7 +6270,7 @@ begin
     //TempMnsLabel.LstMkbs[i].edtMkb.OnChangeTracking := edtAnalCodeChangeTracking;
     //TempMnsLabel.LstMkbs[i].edtMkb.OnKeyDown := edtMdn1KeyDown;
     ImunCode := inttostr(Adb_dm.CollExamImun.getIntMap(Imun.DataPos, word(ExamImmunization_VACCINE_ID)));
-    TempImunLabel.edtVacineCode.Text := ImunCode;//zzzzzzzzzzzzzzzz  трябва да си е кода на ваксината
+    TempImunLabel.edtVacineCode.Text := ImunCode;//zzzzzzzzzzzzzzzz  С‚СЂСЏР±РІР° РґР° СЃРё Рµ РєРѕРґР° РЅР° РІР°РєСЃРёРЅР°С‚Р°
     //if mn.FDiagnosis.Count > 0 then
 //    begin
 //      for i := 0 to mn.FDiagnosis.Count - 1 do
@@ -6299,7 +6299,7 @@ begin
 //    begin
 //      for i := 0 to mn.FPregled.FDiagnosis.Count - 1 do
 //      begin
-//        if i > 2 then Break;  // трябва да се провери и бележи кои са избраните мкб-та от прегледа. В думм-ито сигурно
+//        if i > 2 then Break;  // С‚СЂСЏР±РІР° РґР° СЃРµ РїСЂРѕРІРµСЂРё Рё Р±РµР»РµР¶Рё РєРѕРё СЃР° РёР·Р±СЂР°РЅРёС‚Рµ РјРєР±-С‚Р° РѕС‚ РїСЂРµРіР»РµРґР°. Р’ РґСѓРјРј-РёС‚Рѕ СЃРёРіСѓСЂРЅРѕ
 //
 //        TempImunLabel.LstMkbs[i].MKB :=  mn.FPregled.FDiagnosis[i];
 //
@@ -6486,7 +6486,7 @@ begin
     TempMnsLabel := TMnsLabel.Create;
     TempLyt.Tag := LstMns.Add(TempLyt);
     TempLyt.TagObject := TempMnsLabel;
-    WalkChildrenEdtMn(TempLyt, TempMnsLabel); // обикаля и събира кое какво е
+    WalkChildrenEdtMn(TempLyt, TempMnsLabel); // РѕР±РёРєР°Р»СЏ Рё СЃСЉР±РёСЂР° РєРѕРµ РєР°РєРІРѕ Рµ
   end
   else
   begin
@@ -6558,7 +6558,7 @@ begin
     begin
       for i := 0 to mn.FPregled.FDiagnosis.Count - 1 do
       begin
-        if i > 2 then Break;  // трябва да се провери и бележи кои са избраните мкб-та от прегледа. В думм-ито сигурно
+        if i > 2 then Break;  // С‚СЂСЏР±РІР° РґР° СЃРµ РїСЂРѕРІРµСЂРё Рё Р±РµР»РµР¶Рё РєРѕРё СЃР° РёР·Р±СЂР°РЅРёС‚Рµ РјРєР±-С‚Р° РѕС‚ РїСЂРµРіР»РµРґР°. Р’ РґСѓРјРј-РёС‚Рѕ СЃРёРіСѓСЂРЅРѕ
 
         TempMnsLabel.LstMkbs[i].MKB :=  mn.FPregled.FDiagnosis[i];
 
@@ -6660,7 +6660,7 @@ begin
         SourceAnswerDefault := TSourceAnsw(RunNodeCL132.Dummy);
         //respTemp.DataPos := dataPr001.DataPos;
         respKey := Adb_dm.CollNZIS_QUESTIONNAIRE_RESPONSE.getAnsiStringMap(dataPr001.DataPos, word(NZIS_QUESTIONNAIRE_RESPONSE_PR001_KEY));
-        for i := 0 to Adb_dm.PR001Coll.Count - 1 do  //zzzzzzzzzzzzzzzzzzzz трябва оптимизация
+        for i := 0 to Adb_dm.PR001Coll.Count - 1 do  //zzzzzzzzzzzzzzzzzzzz С‚СЂСЏР±РІР° РѕРїС‚РёРјРёР·Р°С†РёСЏ
         begin
           pr001Key := Adb_dm.PR001Coll.getAnsiStringMap(Adb_dm.PR001Coll.Items[i].datapos, word(PR001_Nomenclature)) + '|' +
             Adb_dm.PR001Coll.getAnsiStringMap(Adb_dm.PR001Coll.Items[i].DataPos, word(PR001_Activity_ID));
@@ -6723,14 +6723,14 @@ begin
             //answTemp.DataPos := dataRunPr001.DataPos;
             cl134Pos := Adb_dm.CollNZIS_QUESTIONNAIRE_ANSWER.getCardMap(dataRunPr001.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             case Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_CL028))[1] of
-              '1': //'Количествено представяне';
+              '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
               begin
                 captEdit := Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Description));
                 AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
                 inc(idxListEdit);
               end;
-              '2': //'Категоризация по номенклатура';
+              '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
               begin
                 if Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Multiple_Choice))= 'TRUE' then
                 begin
@@ -6752,21 +6752,21 @@ begin
                   inc(idxListComboOneSup);
                 end;
               end;
-              '3': //'Описателен метод';
+              '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
               begin
                 captMemo := Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Description));
                 AddMemoSup(tempFLYT, pr001, idxListMemoLyt, RunNodePR001, captMemo);
                 inc(idxListMemoLyt);
               end;
-              '4': //'Конкретна дата';
+              '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
               begin
                 captDateEdt := Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Description));
                 AddDateEdtSup(tempFLYT, idxListDateEditSup, RunNodePR001, captDateEdt);
                 inc(idxListDateEditSup);
               end;
-              '5': //'Положително или отрицателно';
+              '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
               begin
                 captChk := Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Description));
@@ -6776,19 +6776,19 @@ begin
               end;
             end;
           end;
-          vvCl134:// Въпроси към прегледи при снемане на анамнеза
+          vvCl134:// Р’СЉРїСЂРѕСЃРё РєСЉРј РїСЂРµРіР»РµРґРё РїСЂРё СЃРЅРµРјР°РЅРµ РЅР° Р°РЅР°РјРЅРµР·Р°
           begin
             //cl134 := TRealCl134Item.Create(nil);
             //cl134.DataPos := dataRunPr001.DataPos;
             case Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_CL028))[1] of
-              '1': //'Количествено представяне';
+              '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
               begin
                 captEdit := Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Description));
                 AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
                 inc(idxListEdit);
               end;
-              '2': //'Категоризация по номенклатура';
+              '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
               begin
                 if Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Multiple_Choice))= 'TRUE' then
                 begin
@@ -6809,21 +6809,21 @@ begin
                   inc(idxListComboOneSup);
                 end;
               end;
-              '3': //'Описателен метод';
+              '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
               begin
                 captMemo := Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Description));
                 AddMemoSup(tempFLYT, pr001, idxListMemoLyt, RunNodePR001, captMemo);
                 inc(idxListMemoLyt);
               end;
-              '4': //'Конкретна дата';
+              '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
               begin
                 captDateEdt := Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Description));
                 AddDateEdtSup(tempFLYT, idxListDateEditSup, RunNodePR001, captDateEdt);
                 inc(idxListDateEditSup);
               end;
-              '5': //'Положително или отрицателно';
+              '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
               begin
                 captChk := Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Key)) + '|' +
                              Adb_dm.CL134Coll.getAnsiStringMap(dataRunPr001.DataPos, word(CL134_Description));
@@ -6840,7 +6840,7 @@ begin
             if cl144Temp.DataPos <> 0 then
             begin
               case cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028))[1] of
-                '1': //'Количествено представяне';
+                '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
                 begin
                   captEdit :=  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
                                cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -6848,7 +6848,7 @@ begin
                   AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
                   inc(idxListEdit);
                 end;
-                '2': //'Категоризация по номенклатура';
+                '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
                 begin
                   captCombo :=   cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
                                  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -6857,7 +6857,7 @@ begin
                   AddComboPregLYT(tempFLYT, idxListComboOneSup, RunNodePR001, captCombo, false);
                   inc(idxListComboOneSup);
                 end;
-                '3': //'Описателен метод';
+                '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
                 begin
                   captMemo :=  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
                                cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -6873,11 +6873,11 @@ begin
                     inc(idxListMemoLyt);
                   end;
                 end;
-                '4': //'Конкретна дата';
+                '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
                 begin
 
                 end;
-                '5': //'Положително или отрицателно';
+                '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
                 begin
                   //captChk := cl134.getAnsiStringMap(FAspBuf, FAspPosData, word(CL134_Description));
   //
@@ -6915,7 +6915,7 @@ begin
         inc(idxListExpander);
       end;
     end
-    else // няма дечица,  това са дейностите
+    else // РЅСЏРјР° РґРµС‡РёС†Р°,  С‚РѕРІР° СЃР° РґРµР№РЅРѕСЃС‚РёС‚Рµ
     begin
       //if dataPr001.vid = vvNZIS_DIAGNOSTIC_REPORT then
 //      begin
@@ -6938,28 +6938,28 @@ begin
         end;
 
         case cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_cl028))[1] of
-          'a': //'Количествено представяне';
+          'a': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
           begin
             AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, 'dddd');
             inc(idxListEdit);
           end;
-          '2': // Номенклатура
+          '2': // РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°
           begin
-            if false then //  ако е възможна множествена селекция (за сега няма такива)
+            if false then //  Р°РєРѕ Рµ РІСЉР·РјРѕР¶РЅР° РјРЅРѕР¶РµСЃС‚РІРµРЅР° СЃРµР»РµРєС†РёСЏ (Р·Р° СЃРµРіР° РЅСЏРјР° С‚Р°РєРёРІР°)
             begin
               AddExpanderPreg(idxListExpander, RunNodeCL132);
               inc(idxListExpander);
             end
             else
             begin
-              captCombo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));// номенклатурата
+              captCombo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));// РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°С‚Р°
               captCombo := captCombo + '  ' + cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Description));
               //captCombo := captCombo + '  ' + cl088.CL138[StrToInt(captCombo)-1];
               AddComboPregLYT(flwlytVizitFor, idxListComboOneSup, RunNodeCL132, captCombo, false);
               inc(idxListComboOneSup);
             end;
           end;
-          '3':// Описателен метод Cl088 във големия експандер
+          '3':// РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ Cl088 РІСЉРІ РіРѕР»РµРјРёСЏ РµРєСЃРїР°РЅРґРµСЂ
           begin
             captMemo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));
             captMemo := captMemo + '  ' + cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Description));
@@ -7017,7 +7017,7 @@ begin
   ListPlaneds.Clear;
   FIsVtrPregled := True;
   cl132 := TRealCl132Item.Create(nil);
-  nodePreg := pvirtualnode(Anode);//  това е прегледа
+  nodePreg := pvirtualnode(Anode);//  С‚РѕРІР° Рµ РїСЂРµРіР»РµРґР°
 
 
   
@@ -7059,18 +7059,18 @@ begin
     end;
     RunPlanedType := RunPlanedType.NextSibling;
   end;
-  // трябва да се сортират плановете по крайна дата, позиция в номенклатурата и по вид
-  // после да се намери последния проф преглед на пациента, защото има правила за някои планове за време между тях
-  // после да се намери главния план-преглед, в който ще се вмъкват евентуално другите неща
+  // С‚СЂСЏР±РІР° РґР° СЃРµ СЃРѕСЂС‚РёСЂР°С‚ РїР»Р°РЅРѕРІРµС‚Рµ РїРѕ РєСЂР°Р№РЅР° РґР°С‚Р°, РїРѕР·РёС†РёСЏ РІ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°С‚Р° Рё РїРѕ РІРёРґ
+  // РїРѕСЃР»Рµ РґР° СЃРµ РЅР°РјРµСЂРё РїРѕСЃР»РµРґРЅРёСЏ РїСЂРѕС„ РїСЂРµРіР»РµРґ РЅР° РїР°С†РёРµРЅС‚Р°, Р·Р°С‰РѕС‚Рѕ РёРјР° РїСЂР°РІРёР»Р° Р·Р° РЅСЏРєРѕРё РїР»Р°РЅРѕРІРµ Р·Р° РІСЂРµРјРµ РјРµР¶РґСѓ С‚СЏС…
+  // РїРѕСЃР»Рµ РґР° СЃРµ РЅР°РјРµСЂРё РіР»Р°РІРЅРёСЏ РїР»Р°РЅ-РїСЂРµРіР»РµРґ, РІ РєРѕР№С‚Рѕ С‰Рµ СЃРµ РІРјСЉРєРІР°С‚ РµРІРµРЅС‚СѓР°Р»РЅРѕ РґСЂСѓРіРёС‚Рµ РЅРµС‰Р°
   //
 
   Adb_dm.CollNZIS_PLANNED_TYPE.SortListByEndDate_posData_cl136(ListPlaneds);
-  PrevPregPos := Adb_DM.PatNodesBack.GetPrevProfPregled(UserDate, Adb_dm.CollPregled, Adb_DM.PregNodesBack.pregNode); // намира последния проф преглед
-  if PrevPregPos > 0 then //има
+  PrevPregPos := Adb_DM.PatNodesBack.GetPrevProfPregled(UserDate, Adb_dm.CollPregled, Adb_DM.PregNodesBack.pregNode); // РЅР°РјРёСЂР° РїРѕСЃР»РµРґРЅРёСЏ РїСЂРѕС„ РїСЂРµРіР»РµРґ
+  if PrevPregPos > 0 then //РёРјР°
   begin
-    PrevPregDate := Adb_dm.CollPregled.getDateMap(PrevPregPos, word(PregledNew_START_DATE)); // и датата му
+    PrevPregDate := Adb_dm.CollPregled.getDateMap(PrevPregPos, word(PregledNew_START_DATE)); // Рё РґР°С‚Р°С‚Р° РјСѓ
   end
-  else // няма
+  else // РЅСЏРјР°
   begin
     PrevPregDate := 0;
   end;
@@ -7078,37 +7078,37 @@ begin
   for i := 0 to ListPlaneds.Count - 1 do
   begin
     plan := ListPlaneds[i];
-    if plan.Cl136 <> 1 then  // нещо друго е
-    begin //  такъв план не може да бъде главен
+    if plan.Cl136 <> 1 then  // РЅРµС‰Рѕ РґСЂСѓРіРѕ Рµ
+    begin //  С‚Р°РєСЉРІ РїР»Р°РЅ РЅРµ РјРѕР¶Рµ РґР° Р±СЉРґРµ РіР»Р°РІРµРЅ
       if AMainProf <> nil then
       begin
         planStatus := TPlanedStatusSet(plan.Node.Dummy);
         if (TPlanedStatus.psNew in planStatus) then
         begin
-          if plan.EndDate > (AMainProf.EndDate + 5) then //  ако крайната му дата е по-голяма, го отчеквам, за да си го избере доктора
+          if plan.EndDate > (AMainProf.EndDate + 5) then //  Р°РєРѕ РєСЂР°Р№РЅР°С‚Р° РјСѓ РґР°С‚Р° Рµ РїРѕ-РіРѕР»СЏРјР°, РіРѕ РѕС‚С‡РµРєРІР°Рј, Р·Р° РґР° СЃРё РіРѕ РёР·Р±РµСЂРµ РґРѕРєС‚РѕСЂР°
             plan.Node.CheckState := csUncheckedNormal;
         end;
       end;
     end
     else
-    if NzisPregNotPreg.Contains('|' + plan.CL132Key + '|') then  // измислен от нзис преглед
-    begin //  такъв преглед не може да бъде главен
+    if NzisPregNotPreg.Contains('|' + plan.CL132Key + '|') then  // РёР·РјРёСЃР»РµРЅ РѕС‚ РЅР·РёСЃ РїСЂРµРіР»РµРґ
+    begin //  С‚Р°РєСЉРІ РїСЂРµРіР»РµРґ РЅРµ РјРѕР¶Рµ РґР° Р±СЉРґРµ РіР»Р°РІРµРЅ
 
     end
     else
-    if NzisConsult.Contains('|' + plan.CL132Key + '|') then // консултация
-    begin //  такъв преглед не може да бъде главен
+    if NzisConsult.Contains('|' + plan.CL132Key + '|') then // РєРѕРЅСЃСѓР»С‚Р°С†РёСЏ
+    begin //  С‚Р°РєСЉРІ РїСЂРµРіР»РµРґ РЅРµ РјРѕР¶Рµ РґР° Р±СЉРґРµ РіР»Р°РІРµРЅ
 
     end
     else
-    if (plan.StartDate <= PrevPregDate) and (plan.EndDate >= PrevPregDate) then  // изпълнен план
-    begin //  и тоя не може да е главен
+    if (plan.StartDate <= PrevPregDate) and (plan.EndDate >= PrevPregDate) then  // РёР·РїСЉР»РЅРµРЅ РїР»Р°РЅ
+    begin //  Рё С‚РѕСЏ РЅРµ РјРѕР¶Рµ РґР° Рµ РіР»Р°РІРµРЅ
 
     end
     else
-    if RL090.Contains('|' + plan.CL132Key + '|') then  // има правило за 4 месеца м/у прегледите
-    begin  // прегледа може да бъде главен ако са минали повече от 120 дни от предишния
-      if (UserDate - PrevPregDate) > 120 then  // и понеже са подредени по край на периода
+    if RL090.Contains('|' + plan.CL132Key + '|') then  // РёРјР° РїСЂР°РІРёР»Рѕ Р·Р° 4 РјРµСЃРµС†Р° Рј/Сѓ РїСЂРµРіР»РµРґРёС‚Рµ
+    begin  // РїСЂРµРіР»РµРґР° РјРѕР¶Рµ РґР° Р±СЉРґРµ РіР»Р°РІРµРЅ Р°РєРѕ СЃР° РјРёРЅР°Р»Рё РїРѕРІРµС‡Рµ РѕС‚ 120 РґРЅРё РѕС‚ РїСЂРµРґРёС€РЅРёСЏ
+      if (UserDate - PrevPregDate) > 120 then  // Рё РїРѕРЅРµР¶Рµ СЃР° РїРѕРґСЂРµРґРµРЅРё РїРѕ РєСЂР°Р№ РЅР° РїРµСЂРёРѕРґР°
       begin
         if AMainProf = nil then
         begin
@@ -7162,15 +7162,15 @@ begin
         1:
         begin
           if NzisConsult.Contains('|' + ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(ListPlaneds[i].DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY)) + '|') then
-          begin // направление за консултация
+          begin // РЅР°РїСЂР°РІР»РµРЅРёРµ Р·Р° РєРѕРЅСЃСѓР»С‚Р°С†РёСЏ
 
           end;
         end;
-        2: //  трябва да издаде направление  МДД
+        2: //  С‚СЂСЏР±РІР° РґР° РёР·РґР°РґРµ РЅР°РїСЂР°РІР»РµРЅРёРµ  РњР”Р”
         begin
 
         end;
-        3: //  трябва да се направи имунизация
+        3: //  С‚СЂСЏР±РІР° РґР° СЃРµ РЅР°РїСЂР°РІРё РёРјСѓРЅРёР·Р°С†РёСЏ
         begin
           //ADB_DM.CollNZIS_PLANNED_TYPE.getAnsiStringMap(PosDataPlan, word(NZIS_PLANNED_TYPE_CL132_KEY));
           //ListPlaneds[i].
@@ -7186,9 +7186,9 @@ begin
     planStatus := TPlanedStatusSet(ListPlaneds[i].Node.Dummy);
     Exclude(planStatus, TPlanedStatus.psNew);
     ListPlaneds[i].Node.Dummy := Byte(planStatus);
-    if AMainProf = ListPlaneds[i] then //  за главния преглед няма правоъгълниче
+    if AMainProf = ListPlaneds[i] then //  Р·Р° РіР»Р°РІРЅРёСЏ РїСЂРµРіР»РµРґ РЅСЏРјР° РїСЂР°РІРѕСЉРіСЉР»РЅРёС‡Рµ
     begin
-      FillPlanedPreg(ListPlaneds[i].node.FirstChild);// попълва плана
+      FillPlanedPreg(ListPlaneds[i].node.FirstChild);// РїРѕРїСЉР»РІР° РїР»Р°РЅР°
       Continue;
     end;
     dataPlan := pointer(PByte(ListPlaneds[i].node) + lenNode);
@@ -7197,7 +7197,7 @@ begin
     if ListPlaneds[i].node.CheckState <> csUncheckedNormal then
     begin
       case ListPlaneds[i].Cl136 of
-        1: FillPlanedPreg(ListPlaneds[i].node.FirstChild);// попълва плана
+        1: FillPlanedPreg(ListPlaneds[i].node.FirstChild);// РїРѕРїСЉР»РІР° РїР»Р°РЅР°
       end;
     end;
   end;
@@ -7264,7 +7264,7 @@ begin
 
     for i := 0 to Adb_DM.PregNodesBack.diags.Count - 1 do
     begin
-      AddDiag(lytDiag, dataPreg, i, Adb_DM.PregNodesBack.diags[i]);//zzzzzzzzzzzzzzzzz  трябва нещата да са на диагнозата
+      AddDiag(lytDiag, dataPreg, i, Adb_DM.PregNodesBack.diags[i]);//zzzzzzzzzzzzzzzzz  С‚СЂСЏР±РІР° РЅРµС‰Р°С‚Р° РґР° СЃР° РЅР° РґРёР°РіРЅРѕР·Р°С‚Р°
 
       inc(idxDiags);
     end;
@@ -7342,13 +7342,13 @@ begin
   xpdrDiagn.Height := lytDiag.Height +50;
   lytDiagFrame.Height := xpdrDiagn.Height + 30;
 
-  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_ANAMN), 'Анамнеза');
+  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_ANAMN), 'РђРЅР°РјРЅРµР·Р°');
   inc(idxListMemoLyt);
-  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_SYST), 'Обективно състояние');
+  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_SYST), 'РћР±РµРєС‚РёРІРЅРѕ СЃСЉСЃС‚РѕСЏРЅРёРµ');
   inc(idxListMemoLyt);
-  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_IZSL), 'Изследвания');
+  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_IZSL), 'РР·СЃР»РµРґРІР°РЅРёСЏ');
   inc(idxListMemoLyt);
-  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_TERAPY), 'Терапия');
+  AddMemoLYTSup(lytRight, dataPreg, idxListMemoLyt, Word(PregledNew_TERAPY), 'РўРµСЂР°РїРёСЏ');
   inc(idxListMemoLyt);
   lytEndRight.BringToFront;
   //lytRight.RecalcSize;
@@ -7623,15 +7623,15 @@ end;
 
 procedure TfrmProfFormFMX.InitHelpTags;
 begin
-  rctTokenPlug.TagString := 'Бутон за намиране на подпис';
-  rctMkb.TagString := 'Бутон за основна диагноза';
-  rctMkbAdd.TagString := 'Бутон за свързана диагноза';
+  rctTokenPlug.TagString := 'Р‘СѓС‚РѕРЅ Р·Р° РЅР°РјРёСЂР°РЅРµ РЅР° РїРѕРґРїРёСЃ';
+  rctMkb.TagString := 'Р‘СѓС‚РѕРЅ Р·Р° РѕСЃРЅРѕРІРЅР° РґРёР°РіРЅРѕР·Р°';
+  rctMkbAdd.TagString := 'Р‘СѓС‚РѕРЅ Р·Р° СЃРІСЉСЂР·Р°РЅР° РґРёР°РіРЅРѕР·Р°';
 end;
 
 procedure TfrmProfFormFMX.InitLayoutBuffers;
 begin
   FLayoutBack := TScaledLayout(scldlyt1.Clone(Self));
-  FLayoutBack.Parent := nil; // невидим, извън визуалното дърво
+  FLayoutBack.Parent := nil; // РЅРµРІРёРґРёРј, РёР·РІСЉРЅ РІРёР·СѓР°Р»РЅРѕС‚Рѕ РґСЉСЂРІРѕ
 
   FIsBuilding := False;
 end;
@@ -7682,14 +7682,14 @@ begin
   TempLyt := TLayout(edtAnalCode.Parent.Parent);
   TempMdnsLabel:= TMdnsLabel(TempLyt.TagObject);
   TempMdnAnal := TMdnAnals(edtAnalCode.TagObject);
-  if TempMdnAnal = nil then // ново
+  if TempMdnAnal = nil then // РЅРѕРІРѕ
   begin
     TempMdnAnal :=  TMdnAnals.Create;
     edtAnalCode.TagObject := TempMdnAnal;
     if Assigned(FOnAddNewAnal) then
       FOnAddNewAnal(TempMdnsLabel.mdn, TempMdnsLabel.LinkMdn, TempMdnAnal.LinkAnal, TempMdnAnal.Anal);
   end;
-  if edtAnalCode.Text = '' then // изтривам го
+  if edtAnalCode.Text = '' then // РёР·С‚СЂРёРІР°Рј РіРѕ
   begin
     if Assigned(FOnDeleteNewAnal) then
     begin
@@ -7881,9 +7881,9 @@ end;
 //          Memo1.Text := IntToStr(FAnswValuesColl.Count) + '(FAnswValuesColl.Add)' ;
 //          New(AnswValue.PRecord);
 //          case answTemp.cl028 of
-//            2: //номенклатура
+//            2: //РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
 //            begin
-//              AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);// '06.05 | Средно-специално образование
+//              AnswValue.PRecord.ANSWER_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);// '06.05 | РЎСЂРµРґРЅРѕ-СЃРїРµС†РёР°Р»РЅРѕ РѕР±СЂР°Р·РѕРІР°РЅРёРµ
 //              AnswValue.PRecord.ID := 0;
 //              AnswValue.PRecord.QUESTIONNAIRE_ANSWER_ID := 0;
 //              AnswValue.PRecord.CL028 := 2;
@@ -7915,7 +7915,7 @@ end;
 //          ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
 //          New(ResDiagRep.PRecord);
 //          case ResDiagRep.cl028 of
-//            2: //номенклатура
+//            2: //РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
 //            begin
 //              ResDiagRep.PRecord.VALUE_CODE := Copy(lst1.Items[lst1.ItemIndex], 1, 5);;
 //              ResDiagRep.PRecord.ID := 0;
@@ -8121,12 +8121,12 @@ begin
 
       //nasMest.Node := nil;
     end;
-    //txtRczR.Text := 'РЗОК №| здр. район ' + NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
+    //txtRczR.Text := 'Р Р—РћРљ в„–| Р·РґСЂ. СЂР°Р№РѕРЅ ' + NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
 
   end
   else
   begin
-    //txtRczR.Text := 'РЗОК №| здр. район 00|00'
+    //txtRczR.Text := 'Р Р—РћРљ в„–| Р·РґСЂ. СЂР°Р№РѕРЅ 00|00'
   end;
 
   //FPatient.
@@ -8240,9 +8240,9 @@ begin
           Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
           New(AnswValue.PRecord);
           case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(Cl134Pos, Word(CL134_CL028))) of
-            2: //номенклатура
+            2: //РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
             begin
-              AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);// '06.05 | Средно-специално образование
+              AnswValue.PRecord.ANSWER_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);// '06.05 | РЎСЂРµРґРЅРѕ-СЃРїРµС†РёР°Р»РЅРѕ РѕР±СЂР°Р·РѕРІР°РЅРёРµ
               AnswValue.PRecord.ID := 0;
               AnswValue.PRecord.QUESTIONNAIRE_ANSWER_ID := 0;
               AnswValue.PRecord.CL028 := 2;
@@ -8274,7 +8274,7 @@ begin
           ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
           New(ResDiagRep.PRecord);
           case ResDiagRep.cl028 of
-            2: //номенклатура
+            2: //РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
             begin
               ResDiagRep.PRecord.VALUE_CODE := Copy(frmFmxControls.lbComboOne.Items[frmFmxControls.lbComboOne.ItemIndex], 1, 5);;
               ResDiagRep.PRecord.ID := 0;
@@ -8612,7 +8612,7 @@ var
   IsRes: Boolean;
   SourcAnsw: TSourceAnsw;
 begin
-  //TargetSourceAnsw - каквото е в дървото
+  //TargetSourceAnsw - РєР°РєРІРѕС‚Рѕ Рµ РІ РґСЉСЂРІРѕС‚Рѕ
   SourcAnsw := TargetSourceAnsw;
   isRes := False;
   if SourcAnsw in [TSourceAnsw.saPatient, TSourceAnsw.saOther, TSourceAnsw.saDoktor] then
@@ -8749,7 +8749,7 @@ begin
   end;
 
   case SourcAnsw of
-    TSourceAnsw.saNone: // няма локален
+    TSourceAnsw.saNone: // РЅСЏРјР° Р»РѕРєР°Р»РµРЅ
     begin
       case SourceAnswerDefault of
         TSourceAnsw.saNone:
@@ -8764,7 +8764,7 @@ begin
           end
           else
           begin
-            TargetRect.Fill.Assign(rctAnswNot.Fill); // няма локален/ дефолтния е пациент
+            TargetRect.Fill.Assign(rctAnswNot.Fill); // РЅСЏРјР° Р»РѕРєР°Р»РµРЅ/ РґРµС„РѕР»С‚РЅРёСЏ Рµ РїР°С†РёРµРЅС‚
           end;
         end;
         TSourceAnsw.saOther:
@@ -8775,7 +8775,7 @@ begin
           end
           else
           begin
-            TargetRect.Fill.Assign(rctAnswNot.Fill); // няма локален/ дефолтния е друг
+            TargetRect.Fill.Assign(rctAnswNot.Fill); // РЅСЏРјР° Р»РѕРєР°Р»РµРЅ/ РґРµС„РѕР»С‚РЅРёСЏ Рµ РґСЂСѓРі
           end;
         end;
         TSourceAnsw.saDoktor:
@@ -8786,7 +8786,7 @@ begin
           end
           else
           begin
-            TargetRect.Fill.Assign(rctAnswNotApplay.Fill);  // няма локален/ дефолтния е доктора
+            TargetRect.Fill.Assign(rctAnswNotApplay.Fill);  // РЅСЏРјР° Р»РѕРєР°Р»РµРЅ/ РґРµС„РѕР»С‚РЅРёСЏ Рµ РґРѕРєС‚РѕСЂР°
           end;
         end;
       end;
@@ -9073,7 +9073,7 @@ begin
             Memo1.Text := IntToStr(Adb_dm.CollNZIS_ANSWER_VALUE.Count) + '(Adb_dm.CollNZIS_ANSWER_VALUE.Add)' ;
             New(AnswValue.PRecord);
             case StrToInt(Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, Word(CL134_CL028))) of
-              3: //Количествено представяне
+              3: //РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ
               begin
                 AnswValue.PRecord.ANSWER_TEXT := text;
                 AnswValue.PRecord.ID := 0;
@@ -9104,7 +9104,7 @@ begin
             ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
             New(ResDiagRep.PRecord);
             case ResDiagRep.cl028 of
-              3: //опис
+              3: //РѕРїРёСЃ
               begin
                 ResDiagRep.PRecord.VALUE_STRING := text;
                 ResDiagRep.PRecord.ID := 0;
@@ -9325,7 +9325,7 @@ begin
             ResDiagRep.cl028 := StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
             New(ResDiagRep.PRecord);
             case ResDiagRep.cl028 of
-              3: //опис
+              3: //РѕРїРёСЃ
               begin
                 ResDiagRep.PRecord.VALUE_STRING := text;
                 ResDiagRep.PRecord.ID := 0;
@@ -9365,7 +9365,7 @@ begin
             ResDiagRep.cl028 := 3;// StrToInt(cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, Word(CL144_CL028)));
             New(ResDiagRep.PRecord);
             case ResDiagRep.cl028 of
-              3: //опис
+              3: //РѕРїРёСЃ
               begin
                 ResDiagRep.PRecord.VALUE_STRING := text;
                 ResDiagRep.PRecord.ID := 0;
@@ -9391,7 +9391,7 @@ begin
           end;
         end;
       end
-      else  // има детенце
+      else  // РёРјР° РґРµС‚РµРЅС†Рµ
       begin
         case data.vid of
           vvNZIS_QUESTIONNAIRE_ANSWER:
@@ -10013,7 +10013,7 @@ begin
     vvNZIS_RESULT_DIAGNOSTIC_REPORT:
     begin
       //RESULT_DIAGNOSTIC_REPTemp.DataPos := Data.DataPos;
-      if node.FirstChild <> nil then // записано е в базата
+      if node.FirstChild <> nil then // Р·Р°РїРёСЃР°РЅРѕ Рµ РІ Р±Р°Р·Р°С‚Р°
       begin
         TempMemoLabel.rctNull.Visible := False;
         TempMemoLabel.chk.IsChecked := True;
@@ -10381,7 +10381,7 @@ begin
   data := Pointer(PByte(Adb_DM.PregNodesBack.pregNode) + lenNode);
   nzisStatus := Adb_dm.CollPregled.getWordMap(data.DataPos, word(PregledNew_NZIS_STATUS));
   case nzisStatus of
-    0, 3, 4, 15, 16: // нищо, опит за отваряне, грешка при отваряне
+    0, 3, 4, 15, 16: // РЅРёС‰Рѕ, РѕРїРёС‚ Р·Р° РѕС‚РІР°СЂСЏРЅРµ, РіСЂРµС€РєР° РїСЂРё РѕС‚РІР°СЂСЏРЅРµ
     begin
       if Assigned(FOnOpenPregled) then
       begin
@@ -10389,7 +10389,7 @@ begin
         FOnOpenPregled(TObject(Adb_DM.PregNodesBack.pregNode));
       end;
     end;
-    5, 8, 9: // отворен е , опит за затваряне, грешка при затваряне
+    5, 8, 9: // РѕС‚РІРѕСЂРµРЅ Рµ , РѕРїРёС‚ Р·Р° Р·Р°С‚РІР°СЂСЏРЅРµ, РіСЂРµС€РєР° РїСЂРё Р·Р°С‚РІР°СЂСЏРЅРµ
     begin
       if Assigned(FOnClosePregled) then
       begin
@@ -10397,7 +10397,7 @@ begin
         FOnClosePregled(TObject(Adb_DM.PregNodesBack.pregNode));
       end;
     end;
-    6, 10, 11, 12: // затворен, редактиран, грешка при редактиране, опит за редактиране
+    6, 10, 11, 12: // Р·Р°С‚РІРѕСЂРµРЅ, СЂРµРґР°РєС‚РёСЂР°РЅ, РіСЂРµС€РєР° РїСЂРё СЂРµРґР°РєС‚РёСЂР°РЅРµ, РѕРїРёС‚ Р·Р° СЂРµРґР°РєС‚РёСЂР°РЅРµ
     begin
       if Assigned(FOnEditPregled) then
       begin
@@ -10734,12 +10734,12 @@ var
 begin
     TempRect := TRectangle(TRectangle(sender).Parent.Parent.parent);
     TempDiagLabel := TDiagLabel(TempRect.TagObject);
-    if TempDiagLabel.node = nil then // това са добавените празни диагнози
+    if TempDiagLabel.node = nil then // С‚РѕРІР° СЃР° РґРѕР±Р°РІРµРЅРёС‚Рµ РїСЂР°Р·РЅРё РґРёР°РіРЅРѕР·Рё
       Exit;
     nodePreg := TempDiagLabel.node.Parent;
     nodeDiag := TempDiagLabel.node;
     //diag := FPregled.FDiagnosis[FPregled.FDiagnosis.IndexOf(TempDiagLabel.diag)];
-    raise Exception.Create('не са довършени диагнозите!');
+    raise Exception.Create('РЅРµ СЃР° РґРѕРІСЉСЂС€РµРЅРё РґРёР°РіРЅРѕР·РёС‚Рµ!');
     if Assigned(FOnSelectMkb) then
       FOnSelectMkb(diag);
 end;
@@ -11119,14 +11119,14 @@ begin
             //answTemp.DataPos := dataRunPr001.DataPos;
             cl134Pos := Adb_dm.CollNZIS_QUESTIONNAIRE_ANSWER.getCardMap(dataRunPr001.DataPos, word(NZIS_QUESTIONNAIRE_ANSWER_NOMEN_POS));
             case Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_CL028))[1] of
-              '1': //'Количествено представяне';
+              '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
               begin
                 //captEdit := cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
 //                AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
 //                inc(idxListEdit);
               end;
-              '2': //'Категоризация по номенклатура';
+              '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
               begin
                 if Adb_dm.CL134Coll.getAnsiStringMap(cl134Pos, word(CL134_Multiple_Choice))= 'TRUE' then
                 begin
@@ -11148,7 +11148,7 @@ begin
 //                  inc(idxListComboOneSup);
                 end;
               end;
-              '3': //'Описателен метод';
+              '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
               begin
                 //captMemo := cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
                              //cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
@@ -11156,14 +11156,14 @@ begin
                 //inc(idxListMemoLyt);
                 RemoveMemoPregSup(RunNodePR001);
               end;
-              '4': //'Конкретна дата';
+              '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
               begin
                 //captDateEdt := cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
 //                AddDateEdtSup(tempFLYT, idxListDateEditSup, RunNodePR001, captDateEdt);
 //                inc(idxListDateEditSup);
               end;
-              '5': //'Положително или отрицателно';
+              '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
               begin
                 //captChk := cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
@@ -11173,19 +11173,19 @@ begin
               end;
             end;
           end;
-          vvCl134:// Въпроси към прегледи при снемане на анамнеза
+          vvCl134:// Р’СЉРїСЂРѕСЃРё РєСЉРј РїСЂРµРіР»РµРґРё РїСЂРё СЃРЅРµРјР°РЅРµ РЅР° Р°РЅР°РјРЅРµР·Р°
           begin
             cl134 := TRealCl134Item.Create(nil);
             cl134.DataPos := dataRunPr001.DataPos;
             case cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_CL028))[1] of
-              '1': //'Количествено представяне';
+              '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
               begin
                 //captEdit := cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
 //                AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
 //                inc(idxListEdit);
               end;
-              '2': //'Категоризация по номенклатура';
+              '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
               begin
                 if cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Multiple_Choice))= 'TRUE' then
                 begin
@@ -11206,7 +11206,7 @@ begin
 //                  inc(idxListComboOneSup);
                 end;
               end;
-              '3': //'Описателен метод';
+              '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
               begin
                 //captMemo := cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
@@ -11214,14 +11214,14 @@ begin
 //                inc(idxListMemoLyt);
                 RemoveMemoPregSup(RunNodePR001);
               end;
-              '4': //'Конкретна дата';
+              '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
               begin
                 //captDateEdt := cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
 //                AddDateEdtSup(tempFLYT, idxListDateEditSup, RunNodePR001, captDateEdt);
 //                inc(idxListDateEditSup);
               end;
-              '5': //'Положително или отрицателно';
+              '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
               begin
                 //captChk := cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Key)) + '|' +
 //                             cl134.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL134_Description));
@@ -11238,7 +11238,7 @@ begin
             if cl144Temp.DataPos <> 0 then
             begin
               case cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028))[1] of
-                '1': //'Количествено представяне';
+                '1': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
                 begin
                   //captEdit :=  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
 //                               cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -11246,7 +11246,7 @@ begin
 //                  AddEditPregSup(tempFLYT, pr001, idxListEdit, RunNodePR001, captEdit);
 //                  inc(idxListEdit);
                 end;
-                '2': //'Категоризация по номенклатура';
+                '2': //'РљР°С‚РµРіРѕСЂРёР·Р°С†РёСЏ РїРѕ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°';
                 begin
                   //captCombo :=   cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
   //                                 cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -11255,7 +11255,7 @@ begin
   //                  AddComboPregLYT(tempFLYT, idxListComboOneSup, RunNodePR001, captCombo, false);
   //                  inc(idxListComboOneSup);
                 end;
-                '3': //'Описателен метод';
+                '3': //'РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ';
                 begin
                   //captMemo :=  cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_cl028)) + '|' +
   //                               cl144Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL144_Key)) + '|' +
@@ -11272,11 +11272,11 @@ begin
   //                  end;
                    RemoveMemoPregSup(RunNodePR001);
                 end;
-                '4': //'Конкретна дата';
+                '4': //'РљРѕРЅРєСЂРµС‚РЅР° РґР°С‚Р°';
                 begin
 
                 end;
-                '5': //'Положително или отрицателно';
+                '5': //'РџРѕР»РѕР¶РёС‚РµР»РЅРѕ РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»РЅРѕ';
                 begin
                   //captChk := cl134.getAnsiStringMap(FAspBuf, FAspPosData, word(CL134_Description));
   //
@@ -11301,7 +11301,7 @@ begin
         inc(idxListExpander);
       end;
     end
-    else // няма дечица,  това са дейностите
+    else // РЅСЏРјР° РґРµС‡РёС†Р°,  С‚РѕРІР° СЃР° РґРµР№РЅРѕСЃС‚РёС‚Рµ
     begin
       Caption := pr001.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(PR001_Nomenclature));
       if pr001.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(PR001_Nomenclature)) = 'CL142' then
@@ -11317,28 +11317,28 @@ begin
         end;
 
         case cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_cl028))[1] of
-          'a': //'Количествено представяне';
+          'a': //'РљРѕР»РёС‡РµСЃС‚РІРµРЅРѕ РїСЂРµРґСЃС‚Р°РІСЏРЅРµ';
           begin
             //Addedit(tempFLYT, pr001, idxListEdit, RunNodePR001, 'dddd');
             //inc(idxListEdit);
           end;
-          '2': // Номенклатура
+          '2': // РќРѕРјРµРЅРєР»Р°С‚СѓСЂР°
           begin
-            if false then //  ако е възможна множествена селекция (за сега няма такива)
+            if false then //  Р°РєРѕ Рµ РІСЉР·РјРѕР¶РЅР° РјРЅРѕР¶РµСЃС‚РІРµРЅР° СЃРµР»РµРєС†РёСЏ (Р·Р° СЃРµРіР° РЅСЏРјР° С‚Р°РєРёРІР°)
             begin
               //AddExpanderPreg(idxListExpander, RunNodeCL132);
               //inc(idxListExpander);
             end
             else
             begin
-              captCombo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));// номенклатурата
+              captCombo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));// РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°С‚Р°
               captCombo := captCombo + '  ' + cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Description));
               //captCombo := captCombo + '  ' + cl088.CL138[StrToInt(captCombo)-1];
               AddComboPregLYT(flwlytVizitFor, idxListComboOneSup, RunNodeCL132, captCombo, false);
               inc(idxListComboOneSup);
             end;
           end;
-          '3':// Описателен метод Cl088 във големия експандер
+          '3':// РћРїРёСЃР°С‚РµР»РµРЅ РјРµС‚РѕРґ Cl088 РІСЉРІ РіРѕР»РµРјРёСЏ РµРєСЃРїР°РЅРґРµСЂ
           begin
             //captMemo := cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Key));
 //            captMemo := captMemo + '  ' + cl088Temp.getAnsiStringMap(FAspNomenBuf, FAspNomenPosData, word(CL088_Description));
@@ -11418,7 +11418,7 @@ begin
   for i := 0 to frmFmxControls.lbComboOne.Items.Count - 1 do
   begin
     lstItem := frmFmxControls.lbComboOne.ListItems[i];
-    if lstItem.IsChecked then  // ако е избрано
+    if lstItem.IsChecked then  // Р°РєРѕ Рµ РёР·Р±СЂР°РЅРѕ
     begin
       nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, Adb_dm.CollNZIS_ANSWER_VALUE);
       if nodeValue <> nil then
@@ -11458,12 +11458,12 @@ begin
       TempComboLabel.node.CheckState := csCheckedNormal;
       //FAspLink.FVTR.RepaintNode(nodeValue);
     end
-    else  // ако не е избрано
+    else  // Р°РєРѕ РЅРµ Рµ РёР·Р±СЂР°РЅРѕ
     begin
       nodeValue := TempComboLabel.GetNodeValueFromText(lstItem.Text, Adb_dm.CollNZIS_ANSWER_VALUE);
-      if nodeValue <> nil then // не е избрано, пък го има в дървото. Значи е премахнато
+      if nodeValue <> nil then // РЅРµ Рµ РёР·Р±СЂР°РЅРѕ, РїСЉРє РіРѕ РёРјР° РІ РґСЉСЂРІРѕС‚Рѕ. Р—РЅР°С‡Рё Рµ РїСЂРµРјР°С…РЅР°С‚Рѕ
       begin
-        Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// махам го от дървото
+        Adb_dm.AdbMainLink.MarkDeletedNode(nodeValue);// РјР°С…Р°Рј РіРѕ РѕС‚ РґСЉСЂРІРѕС‚Рѕ
         for j := 0 to TempComboLabel.MultiBtns.Count - 1 do
         begin
           if frmFmxControls.lbComboOne.Items[i].Contains(TempComboLabel.MultiBtns[j].Text) then
@@ -11560,7 +11560,7 @@ begin
         if mkbNote.Contains('*') then
         begin
           caption:= 'ddd';
-          TempDiagLabel.txtMain.Text := 'МКБ†';
+          TempDiagLabel.txtMain.Text := 'РњРљР‘вЂ ';
           TempDiagLabel.SelectAdd.Enabled := True;
           arrstr := mkbNote.Split(['(', ')']);
           //ls := TStringList.Create;
@@ -11574,7 +11574,7 @@ begin
         end
         else
         begin
-          TempDiagLabel.txtMain.Text := 'МКБ';
+          TempDiagLabel.txtMain.Text := 'РњРљР‘';
           TempDiagLabel.SelectAdd.Enabled := False;
         end;
       end;
@@ -11617,12 +11617,12 @@ begin
 
   if nodePlan.CheckState <> csUncheckedNormal then
   begin
-    nodePlan.CheckState := csUncheckedNormal;//премахване
+    nodePlan.CheckState := csUncheckedNormal;//РїСЂРµРјР°С…РІР°РЅРµ
 
   end
   else
   begin
-    nodePlan.CheckState := csCheckedNormal; //добавяне
+    nodePlan.CheckState := csCheckedNormal; //РґРѕР±Р°РІСЏРЅРµ
 
   end;
   if Assigned(FOnReShowProfForm)  then
@@ -11821,7 +11821,7 @@ var
 
 begin
   FCheckKepCounter := Value;
-  if FCheckKepCounter = -1 then //  проверете подписа
+  if FCheckKepCounter = -1 then //  РїСЂРѕРІРµСЂРµС‚Рµ РїРѕРґРїРёСЃР°
   begin
     if animNrnStatus.Pause then
     begin
@@ -11830,7 +11830,7 @@ begin
     end;
     animNrnStatus.Start;
     inc(FCheckKepCounter);
-    txtNzisStatus.Text := 'Проверете КЕП';
+    txtNzisStatus.Text := 'РџСЂРѕРІРµСЂРµС‚Рµ РљР•Рџ';
     linStatusNRN.Stroke.Color := $FF454BE3;
   end;
 end;
@@ -11883,7 +11883,7 @@ begin
   while runNode <> nil do
   begin
     data := Pointer(PByte(runNode) + lenNode);
-    if data.vid <> vvNZIS_PLANNED_TYPE then  //  не са планове
+    if data.vid <> vvNZIS_PLANNED_TYPE then  //  РЅРµ СЃР° РїР»Р°РЅРѕРІРµ
     begin
       runNode := runNode.NextSibling;
       Continue;
@@ -11892,7 +11892,7 @@ begin
     while runAnswQuest <> nil do
     begin
       dataAnsw := Pointer(PByte(runAnswQuest) + lenNode);
-      if dataAnsw.vid <> vvNZIS_QUESTIONNAIRE_RESPONSE then  // не е въпросник
+      if dataAnsw.vid <> vvNZIS_QUESTIONNAIRE_RESPONSE then  // РЅРµ Рµ РІСЉРїСЂРѕСЃРЅРёРє
       begin
         runAnswQuest := runAnswQuest.NextSibling;
         Continue;
@@ -11991,13 +11991,13 @@ begin
   dataInkNapr := Pointer(PByte(Adb_DM.PregNodesBack.incNaprNode) + lenNode);
   IncNaprlog := TlogicalINC_NAPRSet(Adb_dm.CollIncMN.getLogical24Map(dataInkNapr.DataPos, Word(INC_NAPR_Logical)));
   if category_R2 in IncNaprlog then
-    txt.Text := 'Бланка 3'
+    txt.Text := 'Р‘Р»Р°РЅРєР° 3'
   else
   if category_R3 in IncNaprlog then
-    txt.Text := 'Бланка 3A'
+    txt.Text := 'Р‘Р»Р°РЅРєР° 3A'
   else
   if category_R5 in IncNaprlog then
-    txt.Text := 'Бланка 6'
+    txt.Text := 'Р‘Р»Р°РЅРєР° 6'
   else
 end;
 
@@ -12026,14 +12026,14 @@ begin
 
     case logStat of
       TlogicalDiagnosis(-1): str := 'neznam';
-      ClinicalStatus_Active: str := 'Активен';
-      ClinicalStatus_Recurrence: str := 'Активен - Повторно проявяване';
-      ClinicalStatus_Relapse: str := 'Активен - В рецидив';
-      ClinicalStatus_Inactive: str := 'Неактивен';
-      ClinicalStatus_Remission: str := 'Неактивен - В ремисия';
-      ClinicalStatus_Resolved: str := 'Неактивен - Решен';
+      ClinicalStatus_Active: str := 'РђРєС‚РёРІРµРЅ';
+      ClinicalStatus_Recurrence: str := 'РђРєС‚РёРІРµРЅ - РџРѕРІС‚РѕСЂРЅРѕ РїСЂРѕСЏРІСЏРІР°РЅРµ';
+      ClinicalStatus_Relapse: str := 'РђРєС‚РёРІРµРЅ - Р’ СЂРµС†РёРґРёРІ';
+      ClinicalStatus_Inactive: str := 'РќРµР°РєС‚РёРІРµРЅ';
+      ClinicalStatus_Remission: str := 'РќРµР°РєС‚РёРІРµРЅ - Р’ СЂРµРјРёСЃРёСЏ';
+      ClinicalStatus_Resolved: str := 'РќРµР°РєС‚РёРІРµРЅ - Р РµС€РµРЅ';
     else
-      raise Exception.Create('Не може да има повече от един клиничен статус!');
+      raise Exception.Create('РќРµ РјРѕР¶Рµ РґР° РёРјР° РїРѕРІРµС‡Рµ РѕС‚ РµРґРёРЅ РєР»РёРЅРёС‡РµРЅ СЃС‚Р°С‚СѓСЃ!');
     end;
   end
   else
@@ -12068,7 +12068,7 @@ begin
   ambNom := Adb_dm.CollPregled.getIntMap(data.DataPos, Word(PregledNew_AMB_LISTN));
   amnNRN := Adb_dm.CollPregled.getAnsiStringMap(data.DataPos, Word(PregledNew_NRN_LRN));
 
-  txt.Text := Format('АМБУЛАТОРЕН ЛИСТ  № %d НРН %s', [ambNom, amnNRN]);
+  txt.Text := Format('РђРњР‘РЈР›РђРўРћР Р•Рќ Р›РРЎРў  в„– %d РќР Рќ %s', [ambNom, amnNRN]);
   //dtdtStartDate.Position.Point := PointF(txt.Width + 10, 5);
 
 end;
@@ -12092,11 +12092,11 @@ begin
   dataPreg := Pointer(PByte(Adb_DM.PregNodesBack.pregNode) + lenNode);
   Preglog := TlogicalPregledNewSet(Adb_dm.CollPregled.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
   if TLogicalPregledNew.IS_PRIMARY in Preglog then
-    txt.Text := 'Първичен'
+    txt.Text := 'РџСЉСЂРІРёС‡РµРЅ'
   else
   begin
     vtorNRN := Adb_dm.CollPregled.getAnsiStringMap(dataPreg.DataPos, Word(PregledNew_COPIED_FROM_NRN));
-    txt.Text := 'Вторичен: ' + vtorNRN;
+    txt.Text := 'Р’С‚РѕСЂРёС‡РµРЅ: ' + vtorNRN;
   end;
 end;
 
@@ -12174,21 +12174,21 @@ begin
   //intSet := IncNaprColl.GetNaprCode_Quick(IncNaprlog);
   intSet := NativeUInt(NaprGroup * IncNaprLog);
   case intSet of
-    TNaprType(NaprMask_Ostro): txt.Text := 'Остро заболяване или състояние извън останалите типове';
-    TNaprType(NaprMask_Hron): txt.Text := 'Хронично заболяване, неподлежащо на диспансерно наблюдение';
-    TNaprType(NaprMask_Izbor): txt.Text := 'Избор на специалист за диспансерно наблюдение';
-    TNaprType(NaprMask_Disp): txt.Text := 'Диспансерно наблюдение';
-    TNaprType(NaprMask_Eksp): txt.Text := 'Медицинска експертиза';
-    TNaprType(NaprMask_Prof): txt.Text := 'Профилактика нa пълнолетни лица';
-    TNaprType(NaprMask_Iskane_Telk): txt.Text := 'По искане на ТЕЛК (НЕЛК)';
-    TNaprType(NaprMask_Choice_Mother): txt.Text := 'Избор на специалист за майчино здравеопазване';
-    TNaprType(NaprMask_Choice_Child): txt.Text := 'Избор на специалист за детско здравеопазване';
-    TNaprType(NaprMask_PreChoice_Mother): txt.Text := 'Преизбор на специалист за майчино здравеопазване';
-    TNaprType(NaprMask_PreChoice_Child): txt.Text := 'Преизбор на специалист за детско здравеопазване';
-    TNaprType(NaprMask_Podg_Telk): txt.Text := 'Подготовка за ТЕЛК';
-    TNaprType(NaprMask_Podg_LKK): txt.Text := 'Подготовка за ЛКК';
+    TNaprType(NaprMask_Ostro): txt.Text := 'РћСЃС‚СЂРѕ Р·Р°Р±РѕР»СЏРІР°РЅРµ РёР»Рё СЃСЉСЃС‚РѕСЏРЅРёРµ РёР·РІСЉРЅ РѕСЃС‚Р°РЅР°Р»РёС‚Рµ С‚РёРїРѕРІРµ';
+    TNaprType(NaprMask_Hron): txt.Text := 'РҐСЂРѕРЅРёС‡РЅРѕ Р·Р°Р±РѕР»СЏРІР°РЅРµ, РЅРµРїРѕРґР»РµР¶Р°С‰Рѕ РЅР° РґРёСЃРїР°РЅСЃРµСЂРЅРѕ РЅР°Р±Р»СЋРґРµРЅРёРµ';
+    TNaprType(NaprMask_Izbor): txt.Text := 'РР·Р±РѕСЂ РЅР° СЃРїРµС†РёР°Р»РёСЃС‚ Р·Р° РґРёСЃРїР°РЅСЃРµСЂРЅРѕ РЅР°Р±Р»СЋРґРµРЅРёРµ';
+    TNaprType(NaprMask_Disp): txt.Text := 'Р”РёСЃРїР°РЅСЃРµСЂРЅРѕ РЅР°Р±Р»СЋРґРµРЅРёРµ';
+    TNaprType(NaprMask_Eksp): txt.Text := 'РњРµРґРёС†РёРЅСЃРєР° РµРєСЃРїРµСЂС‚РёР·Р°';
+    TNaprType(NaprMask_Prof): txt.Text := 'РџСЂРѕС„РёР»Р°РєС‚РёРєР° РЅa РїСЉР»РЅРѕР»РµС‚РЅРё Р»РёС†Р°';
+    TNaprType(NaprMask_Iskane_Telk): txt.Text := 'РџРѕ РёСЃРєР°РЅРµ РЅР° РўР•Р›Рљ (РќР•Р›Рљ)';
+    TNaprType(NaprMask_Choice_Mother): txt.Text := 'РР·Р±РѕСЂ РЅР° СЃРїРµС†РёР°Р»РёСЃС‚ Р·Р° РјР°Р№С‡РёРЅРѕ Р·РґСЂР°РІРµРѕРїР°Р·РІР°РЅРµ';
+    TNaprType(NaprMask_Choice_Child): txt.Text := 'РР·Р±РѕСЂ РЅР° СЃРїРµС†РёР°Р»РёСЃС‚ Р·Р° РґРµС‚СЃРєРѕ Р·РґСЂР°РІРµРѕРїР°Р·РІР°РЅРµ';
+    TNaprType(NaprMask_PreChoice_Mother): txt.Text := 'РџСЂРµРёР·Р±РѕСЂ РЅР° СЃРїРµС†РёР°Р»РёСЃС‚ Р·Р° РјР°Р№С‡РёРЅРѕ Р·РґСЂР°РІРµРѕРїР°Р·РІР°РЅРµ';
+    TNaprType(NaprMask_PreChoice_Child): txt.Text := 'РџСЂРµРёР·Р±РѕСЂ РЅР° СЃРїРµС†РёР°Р»РёСЃС‚ Р·Р° РґРµС‚СЃРєРѕ Р·РґСЂР°РІРµРѕРїР°Р·РІР°РЅРµ';
+    TNaprType(NaprMask_Podg_Telk): txt.Text := 'РџРѕРґРіРѕС‚РѕРІРєР° Р·Р° РўР•Р›Рљ';
+    TNaprType(NaprMask_Podg_LKK): txt.Text := 'РџРѕРґРіРѕС‚РѕРІРєР° Р·Р° Р›РљРљ';
   else
-    txt.Text := 'Непознат тип';
+    txt.Text := 'РќРµРїРѕР·РЅР°С‚ С‚РёРї';
   end;
 end;
 
@@ -12212,12 +12212,12 @@ begin
   begin
     data := Pointer(pbyte(Adb_DM.PatNodesBack.addresses[0]) + lenNode);
     AddresLinkPos := adb_dm.NasMesto.addresColl.getIntMap(data.DataPos, word(Addres_LinkPos));
-    txtRczR.Text := 'РЗОК №| здр. район ' + adb_dm.NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
+    txtRczR.Text := 'Р Р—РћРљ в„–| Р·РґСЂ. СЂР°Р№РѕРЅ ' + adb_dm.NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
 
   end
   else
   begin
-    txtRczR.Text := 'РЗОК №| здр. район 00|00'
+    txtRczR.Text := 'Р Р—РћРљ в„–| Р·РґСЂ. СЂР°Р№РѕРЅ 00|00'
   end;
 end;
 
@@ -12477,9 +12477,9 @@ begin
   dataPreg := Pointer(PByte(Adb_DM.PregNodesBack.pregNode) + lenNode);
   Preglog := TlogicalPregledNewSet(Adb_dm.CollPregled.getLogical40Map(dataPreg.DataPos, Word(pregledNew_Logical)));
   if TLogicalPregledNew.IS_EXPERTIZA in Preglog then
-    xpdrDoctor.Text := 'ЛКК'
+    xpdrDoctor.Text := 'Р›РљРљ'
   else
-    xpdrDoctor.Text := 'Лекар';
+    xpdrDoctor.Text := 'Р›РµРєР°СЂ';
 end;
 
 procedure TfrmProfFormFMX.xpdrPatientExpanded(Sender: TObject);
