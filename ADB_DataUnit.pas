@@ -1,5 +1,5 @@
 unit ADB_DataUnit;
-        //plannedType  pregNodes
+        //plannedType  pregNodes   zzz
 interface
 uses
   System.Classes, system.IniFiles, system.SysUtils, Winapi.Windows, Vcl.Forms,
@@ -315,10 +315,10 @@ uses
     procedure ImportFDB;
 
     property patEgn: string read FPatEgn;
-    property AdbMain: TMappedFile read FAdbMain write SetAdbMain; // адб на главните колекции
-    property AdbNomenNzis: TMappedFile read FAdbNomenNzis write SetAdbNomenNzis;// нзис-ка номенклатура
-    property AdbNomenHip: TMappedFile read FAdbNomenHip write SetAdbNomenHip; // Наша номенклатура
-    property AdbNomenNZOK: TMappedFile read FAdbNomenNZOK write SetAdbNomenNZOK; // НЗОК номенклатура
+    property AdbMain: TMappedFile read FAdbMain write SetAdbMain; // Р°РґР± РЅР° РіР»Р°РІРЅРёС‚Рµ РєРѕР»РµРєС†РёРё
+    property AdbNomenNzis: TMappedFile read FAdbNomenNzis write SetAdbNomenNzis;// РЅР·РёСЃ-РєР° РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
+    property AdbNomenHip: TMappedFile read FAdbNomenHip write SetAdbNomenHip; // РќР°С€Р° РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
+    property AdbNomenNZOK: TMappedFile read FAdbNomenNZOK write SetAdbNomenNZOK; // РќР—РћРљ РЅРѕРјРµРЅРєР»Р°С‚СѓСЂР°
 
     property AdbMainLink: TMappedLinkFile read FAdbMainLink write FAdbMainLink;
     //property NasMestaLink: TMappedLinkFile read FNasMestaLink write SetNasMestaLink;
@@ -327,7 +327,7 @@ uses
     property OnClearColl: TNotifyEvent read FOnClearColl write FOnClearColl;
     property mmoTest: Tmemo read FmmoTest write FmmoTest;
 
-    //ADB файлове
+    //ADB С„Р°Р№Р»РѕРІРµ
     property AdbMainFileName: string  read FAdbMainFileName write SetAdbMainFileName;
     property AdbOptionFileName: string read FAdbOptionFileName write SetAdbOptionFileName;
     property AdbNasMestoFileName: string read FAdbNasMestoFileName write SetAdbNasMestoFileName;
@@ -395,7 +395,7 @@ begin
       run := run.NextSibling;
     end;
   end;
-  diag := TRealDiagnosisItem(CollDiag.Add);// добавяне на диагноза в колекцията
+  diag := TRealDiagnosisItem(CollDiag.Add);// РґРѕР±Р°РІСЏРЅРµ РЅР° РґРёР°РіРЅРѕР·Р° РІ РєРѕР»РµРєС†РёСЏС‚Р°
   New(diag.PRecord);
   diag.PRecord.setProp := [Diagnosis_code_CL011, Diagnosis_rank, Diagnosis_MkbPos];
   diag.PRecord.code_CL011 := cl011;
@@ -822,11 +822,11 @@ begin
     DiagRank := CollDiag.getWordMap(dataDiag.DataPos, word(Diagnosis_rank));
     if DiagRank = 0 then
     begin
-      diagUs := 3; // основна
+      diagUs := 3; // РѕСЃРЅРѕРІРЅР°
     end
     else
     begin
-      diagUs := 4;  // придружаваща
+      diagUs := 4;  // РїСЂРёРґСЂСѓР¶Р°РІР°С‰Р°
     end;
     AddTagToStream(XmlStream, 'nhis:diagnosis', '');
     AddTagToStream(XmlStream, 'nhis:code', Format('value="%s"',[diagCode.Split([';'])[0]]), false);// zzzzzzzzzzzzzzzzzzzzzzz
@@ -892,10 +892,10 @@ var
   SenderId: string;
   LRN, dateLrn, pregNrn: string;
 
-  ОccurrenceDate: TDateTime;
+  РћccurrenceDate: TDateTime;
   BrdDate: TDate;
   BrdDateStr: string;
-  ОccurrenceDateStr: string;
+  РћccurrenceDateStr: string;
   PregClass: TNzisPregledType;
   rhifAreaNumber: string;
   IdentifierNzis: string;
@@ -915,7 +915,7 @@ begin
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   performer := TRealDoctorItem.Create(nil);
   if PregNodes.perfNode <> nil then
   begin
@@ -938,15 +938,15 @@ begin
   lrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 13, 36);
   pregNrn := Copy(CollPregled.GetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN_LRN)), 1, 12);
   AddTagToStream(XmlStream, 'nhis:lrn', Format('value="%s"',[LRN]), false);
-  ОccurrenceDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
+  РћccurrenceDate := preg.getDateMap(buf, posData, word(PregledNew_START_DATE)) +
               preg.getDateMap(buf, posData, word(PregledNew_START_TIME));
-  ОccurrenceDate := now;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
-  dateLrn := FormatDateTime('_YYYY.MM.DD ', ОccurrenceDate);
+  РћccurrenceDate := now;//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  dateLrn := FormatDateTime('_YYYY.MM.DD ', РћccurrenceDate);
   //CollPreg.SetAnsiStringMap(dataPreg.DataPos, Word(PregledNew_NRN), dateLrn + lrn);
-  ОccurrenceDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(ОccurrenceDate));
-  AddTagToStream(XmlStream, 'nhis:occurrence', Format('value="%s"',[ОccurrenceDateStr]), false);
+  РћccurrenceDateStr := DateToISO8601(TTimeZone.Local.ToUniversalTime(РћccurrenceDate));
+  AddTagToStream(XmlStream, 'nhis:occurrence', Format('value="%s"',[РћccurrenceDateStr]), false);
   AddTagToStream(XmlStream, 'nhis:basedOn', Format('value="%s"',[pregNrn]));
-  AddTagToStream(XmlStream, 'nhis:targetDisease', Format('value="%s"',['Z24.6']));//zzzzzzzzzzzzzz  даже може да са много
+  AddTagToStream(XmlStream, 'nhis:targetDisease', Format('value="%s"',['Z24.6']));//zzzzzzzzzzzzzz  РґР°Р¶Рµ РјРѕР¶Рµ РґР° СЃР° РјРЅРѕРіРѕ
   AddTagToStream(XmlStream, '/nhis:immunization', '');
 
   AddTagToStream(XmlStream, 'nhis:subject', '');
@@ -992,7 +992,7 @@ begin
   AddTagToStream(XmlStream, 'nhis:country', Format('value="%s"',['BG']), false);
   AddTagToStream(XmlStream, 'nhis:county', Format('value="%s"',['BLG']), false);
   AddTagToStream(XmlStream, 'nhis:ekatte', Format('value="%s"',['04279']), false);
-  AddTagToStream(XmlStream, 'nhis:city', Format('value="%s"',['Благоевград']), false);
+  AddTagToStream(XmlStream, 'nhis:city', Format('value="%s"',['Р‘Р»Р°РіРѕРµРІРіСЂР°Рґ']), false);
   AddTagToStream(XmlStream, '/nhis:address', '');
 
   AddTagToStream(XmlStream, '/nhis:subject', '');
@@ -1051,7 +1051,7 @@ begin
   pat := TRealPatientNewItem.Create(nil);
   pat.DataPos := dataPat.DataPos;
 
-  patNodes := GetPatNodes(PatNode);// обикаля дървото
+  patNodes := GetPatNodes(PatNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   doc := TRealDoctorItem.Create(nil);
   if patNodes.docNode <> nil then
   begin
@@ -1081,7 +1081,7 @@ begin
   begin
     AddTagToStream(XmlStream, 'nhis:identifierType', Format('value="%d"',[Integer(NzisPidType)]), false);
     AddTagToStream(XmlStream, 'nhis:identifier', Format('value="%s"',[IdentifierNzis]), false);
-    //zzzzzzzzzzzzzzzzzzzzzzzzzzz да се добави нзис-киа пидТипе
+    //zzzzzzzzzzzzzzzzzzzzzzzzzzz РґР° СЃРµ РґРѕР±Р°РІРё РЅР·РёСЃ-РєРёР° РїРёРґРўРёРїРµ
   end;
 
 
@@ -1109,7 +1109,7 @@ begin
   XmlStream.Clear;
   buf := AdbMain.Buf;
   posData := AdbMain.FPosData;
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   patNodes := GetPatNodes(pregnodes.patNode);
 
   InitPerformer(XmlStream, PregNodes, performer );
@@ -1136,7 +1136,7 @@ begin
   begin
     AddTagToStream(XmlStream, 'nhis:identifierType', Format('value="%d"',[Integer(NzisPidType)]), false);
     AddTagToStream(XmlStream, 'nhis:identifier', Format('value="%s"',[IdentifierNzis]), false);
-    //zzzzzzzzzzzzzzzzzzzzzzzzzzz да се добави нзис-киа пидТипе
+    //zzzzzzzzzzzzzzzzzzzzzzzzzzz РґР° СЃРµ РґРѕР±Р°РІРё РЅР·РёСЃ-РєРёР° РїРёРґРўРёРїРµ
   end;
 
 
@@ -1183,9 +1183,9 @@ begin
         if (answ.AnswNode.CheckType = ctNone) and (answ.AnswNode.Dummy = 0) then
         begin
           case PregNodes.SourceAnsw of
-            TSourceAnsw.saPatient: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[5]), False, answ.AnswNode); // отказ
-            TSourceAnsw.saOther: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[5]), False, answ.AnswNode); // отказ
-            TSourceAnsw.saDoktor: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[4]), False, answ.AnswNode); // Не е приложим
+            TSourceAnsw.saPatient: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[5]), False, answ.AnswNode); // РѕС‚РєР°Р·
+            TSourceAnsw.saOther: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[5]), False, answ.AnswNode); // РѕС‚РєР°Р·
+            TSourceAnsw.saDoktor: AddTagToStream(XmlStream, 'nhis:source',  Format('value="%d"',[4]), False, answ.AnswNode); // РќРµ Рµ РїСЂРёР»РѕР¶РёРј
           end;
         end
         else
@@ -1438,7 +1438,7 @@ var
   dataPlaned: PAspRec;
   PlanType: string;
 begin
-  for i := 0 to PregNodes.Planeds.Count - 1 do // zzzzzzzzzzzzzzz да се пробират само тия с чекчета
+  for i := 0 to PregNodes.Planeds.Count - 1 do // zzzzzzzzzzzzzzz РґР° СЃРµ РїСЂРѕР±РёСЂР°С‚ СЃР°РјРѕ С‚РёСЏ СЃ С‡РµРєС‡РµС‚Р°
   begin
     //PregNodes.pat
     dataPlaned := pointer(PByte(PregNodes.Planeds[i]) + lenNode);
@@ -1490,9 +1490,9 @@ begin
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   PatNodes := GetPatNodes(PregNodes.patNode);
-  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // ако има повече? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // Р°РєРѕ РёРјР° РїРѕРІРµС‡Рµ? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
   InitPerformer(XmlStream, PregNodes, performer );
 
@@ -1658,16 +1658,16 @@ var
   AddresLinkPos: Integer;
 begin
   XmlStream.Clear;
-  XmlStream.CurrentLine := 2; // първите два реда са от създаването
+  XmlStream.CurrentLine := 2; // РїСЉСЂРІРёС‚Рµ РґРІР° СЂРµРґР° СЃР° РѕС‚ СЃСЉР·РґР°РІР°РЅРµС‚Рѕ
   buf := AdbMain.Buf;
   posData := AdbMain.FPosData;
   dataPreg := pointer(PByte(PregNode) + lenNode);
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   PatNodes := GetPatNodes(PregNodes.patNode);
-  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // ако има повече? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+  dataAddrs := pointer(PByte(PatNodes.addresses[0]) + lenNode); // Р°РєРѕ РёРјР° РїРѕРІРµС‡Рµ? zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
 
   InitPerformer(XmlStream, PregNodes, performer );
 
@@ -1774,7 +1774,7 @@ begin
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   performer := TRealDoctorItem.Create(nil);
   if PregNodes.perfNode <> nil then
   begin
@@ -1865,7 +1865,7 @@ begin
   preg := TRealPregledNewItem.Create(nil);
   preg.DataPos := dataPreg.DataPos;
   preg.CalcTypes(buf, posData);
-  PregNodes := GetPregNodes(PregNode);// обикаля дървото
+  PregNodes := GetPregNodes(PregNode);// РѕР±РёРєР°Р»СЏ РґСЉСЂРІРѕС‚Рѕ
   performer := TRealDoctorItem.Create(nil);
   if PregNodes.perfNode <> nil then
   begin
@@ -2196,7 +2196,7 @@ begin
   else
     Result := TPatNodes.create;
   Result.patNode := PatNode;
-  run := patNode.FirstChild;// обикалям нещата в пациента
+  run := patNode.FirstChild;// РѕР±РёРєР°Р»СЏРј РЅРµС‰Р°С‚Р° РІ РїР°С†РёРµРЅС‚Р°
   while run <> nil do
   begin
     data := pointer(PByte(run) + lenNode);
@@ -2204,7 +2204,7 @@ begin
       vvDoctor:
       begin
         Result.docNode := run;
-        if data.Index < 0 then // не съм го търсил досега в колекцията
+        if data.Index < 0 then // РЅРµ СЃСЉРј РіРѕ С‚СЉСЂСЃРёР» РґРѕСЃРµРіР° РІ РєРѕР»РµРєС†РёСЏС‚Р°
         begin
           for i := 0 to CollDoctor.Count - 1 do
           begin
@@ -2273,7 +2273,7 @@ begin
   else
     Result := TPregledNodes.create;
   Result.pregNode := PregNode;
-  run := PregNode.FirstChild;// обикалям нещата в прегледа
+  run := PregNode.FirstChild;// РѕР±РёРєР°Р»СЏРј РЅРµС‰Р°С‚Р° РІ РїСЂРµРіР»РµРґР°
   while run <> nil do
   begin
     data := pointer(PByte(run) + lenNode);
@@ -2282,7 +2282,7 @@ begin
       begin
         Result.perfNode := run;
         Result.deputNode := run.FirstChild;
-        if data.Index < 0 then // не съм го търсил досега в колекцията
+        if data.Index < 0 then // РЅРµ СЃСЉРј РіРѕ С‚СЉСЂСЃРёР» РґРѕСЃРµРіР° РІ РєРѕР»РµРєС†РёСЏС‚Р°
         begin
           for i := 0 to CollDoctor.Count - 1 do
           begin
@@ -2320,7 +2320,7 @@ begin
                 answ.AnswNode := runQuest;
                 ques.answs.Add(answ);
                 runAnsw := runQuest.FirstChild;
-                while runAnsw <> nil do  //  един въпрос може да има няколко отговора
+                while runAnsw <> nil do  //  РµРґРёРЅ РІСЉРїСЂРѕСЃ РјРѕР¶Рµ РґР° РёРјР° РЅСЏРєРѕР»РєРѕ РѕС‚РіРѕРІРѕСЂР°
                 begin
                   answ.answValues.Add(runAnsw);
                   runAnsw := runAnsw.NextSibling;
@@ -2370,7 +2370,7 @@ begin
     end;
   end;
 
-  run := Result.patNode.FirstChild;// обикалям нещата в пациента
+  run := Result.patNode.FirstChild;// РѕР±РёРєР°Р»СЏРј РЅРµС‰Р°С‚Р° РІ РїР°С†РёРµРЅС‚Р°
   while run <> nil do
   begin
     data := pointer(PByte(run) + lenNode);
@@ -2378,7 +2378,7 @@ begin
       vvDoctor:
       begin
         Result.docNode := run;
-        if data.Index < 0 then // не съм го търсил досега в колекцията
+        if data.Index < 0 then // РЅРµ СЃСЉРј РіРѕ С‚СЉСЂСЃРёР» РґРѕСЃРµРіР° РІ РєРѕР»РµРєС†РёСЏС‚Р°
         begin
           for i := 0 to CollDoctor.Count - 1 do
           begin
@@ -2395,7 +2395,7 @@ begin
 //      begin
 //        Result.evnts.Add(run);
 //      end;
-      vvPregledNew: // за сега само диагнозите ще търся
+      vvPregledNew: // Р·Р° СЃРµРіР° СЃР°РјРѕ РґРёР°РіРЅРѕР·РёС‚Рµ С‰Рµ С‚СЉСЂСЃСЏ
       begin
         runPregled := run.FirstChild;
         while runPregled <> nil do
@@ -2676,7 +2676,7 @@ begin
         end;
       else
         Inc(aspPos, lstColl[ord(collType)].FieldCount * 4);
-        //raise Exception.Create('Непознат : collType' + TRttiEnumerationType.GetName(collType));
+        //raise Exception.Create('РќРµРїРѕР·РЅР°С‚ : collType' + TRttiEnumerationType.GetName(collType));
       end;
     end;
   end;
@@ -2687,7 +2687,7 @@ begin
 
 
   Elapsed := Stopwatch.Elapsed;
-  //mmoTest.Lines.Add( Format('Зареждане за %f',[Elapsed.TotalMilliseconds]));
+  //mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµ Р·Р° %f',[Elapsed.TotalMilliseconds]));
   //mmoTest.Lines.endUpdate;
 
   //CalcStatusDB;
@@ -2913,7 +2913,7 @@ begin
   OpenCmdNomenNzis(FAdbNomenNzis);
 
   Elapsed := Stopwatch.Elapsed;
-  mmoTest.lines.add(Format('зареждане от Nom: %f', [Elapsed.TotalMilliseconds]));
+  mmoTest.lines.add(Format('Р·Р°СЂРµР¶РґР°РЅРµ РѕС‚ Nom: %f', [Elapsed.TotalMilliseconds]));
 end;
 
 procedure TADBDataModule.OpenCmd(ADB: TMappedFile);
@@ -3102,7 +3102,7 @@ begin
       node := pointer(PByte(LNK.Buf) + linkpos);
       //node.NodeHeight := 27;
       Exclude(node.States, vsSelected);
-      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -3140,7 +3140,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(LNK.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -3161,7 +3161,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(LNK.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
+        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz Р·Р° РѕРїС†РёСЏ Р·Р° СЂРµРґРѕРІРµ
         //Exclude(node.States, vsInitialized);
         data := pointer(PByte(node) + lenNode);
         //if data.vid <> vvPatient then
@@ -3204,7 +3204,7 @@ begin
 
   //Elapsed := Stopwatch.Elapsed;
 
-  //mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  //mmoTest.Lines.Add( Format('Р—Р°СЂРµР¶РґР°РЅРµLink %d Р·Р° %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
   //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
   //PregledColl.ShowGrid(TeeGrid1);
 
@@ -3508,7 +3508,7 @@ begin
     lstColl.Clear;
   lstColl.Count := Ord(High(TCollectionsType)) + 1;
 
-  // Create all collections (instances) — do NOT assign Buf/posData here
+  // Create all collections (instances) вЂ” do NOT assign Buf/posData here
   CollPregled := TRealPregledNewColl.Create(TRealPregledNewItem);
   lstColl[Ord(CollPregled.GetCollType)] := CollPregled;
 
@@ -3659,7 +3659,7 @@ begin
 
 
 
-  // ... добави тук другите колекции, ако имаш още полета в DM ...
+  // ... РґРѕР±Р°РІРё С‚СѓРє РґСЂСѓРіРёС‚Рµ РєРѕР»РµРєС†РёРё, Р°РєРѕ РёРјР°С€ РѕС‰Рµ РїРѕР»РµС‚Р° РІ DM ...
 
   CollPregled.FCollDiag := CollDiag;
 
@@ -3697,15 +3697,15 @@ begin
   end;
   Elapsed := Stopwatch.Elapsed;
   mmoTest.lines.add(Format('nnnnn: %f', [Elapsed.TotalMilliseconds]));
-  if AdbMain = nil then  // не е намерено адб отговарящо на гдб-то. трябва да се импортира.
+  if AdbMain = nil then  // РЅРµ Рµ РЅР°РјРµСЂРµРЅРѕ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. С‚СЂСЏР±РІР° РґР° СЃРµ РёРјРїРѕСЂС‚РёСЂР°.
   begin
-    mmoTest.Lines.Add('не е намерено адб отговарящо на гдб-то. трябва да се импортира');
+    mmoTest.Lines.Add('РЅРµ Рµ РЅР°РјРµСЂРµРЅРѕ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. С‚СЂСЏР±РІР° РґР° СЃРµ РёРјРїРѕСЂС‚РёСЂР°');
     //RolPnlDoktorOPL.Enabled := False;
     //RolPnlDoktorOPL.Repaint;
   end
-  else  // намерено е адб отговарящо на гдб-то. Може да се отвори и зареди
+  else  // РЅР°РјРµСЂРµРЅРѕ Рµ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. РњРѕР¶Рµ РґР° СЃРµ РѕС‚РІРѕСЂРё Рё Р·Р°СЂРµРґРё
   begin
-    mmoTest.Lines.Add('намерено е адб отговарящо на гдб-то. Може да се отвори и зареди');
+    mmoTest.Lines.Add('РЅР°РјРµСЂРµРЅРѕ Рµ Р°РґР± РѕС‚РіРѕРІР°СЂСЏС‰Рѕ РЅР° РіРґР±-С‚Рѕ. РњРѕР¶Рµ РґР° СЃРµ РѕС‚РІРѕСЂРё Рё Р·Р°СЂРµРґРё');
     //if AspectsNomFile = nil then
       //OpenBufNomenNzis(paramstr(2) + 'NzisNomen.adb');
     OpenADB(AdbMain);
@@ -4099,7 +4099,7 @@ var
   i: Integer;
   dataEvn: PAspRec;
 begin
-  raise Exception.Create(' getRhifAreaNumber  не е довършен')
+  raise Exception.Create(' getRhifAreaNumber  РЅРµ Рµ РґРѕРІСЉСЂС€РµРЅ')
   //for i := 0 to evnts.Count - 1 do
 //  begin
 //    dataEvn := pointer(PByte(evnts[i]) + lenNode);
