@@ -63,7 +63,7 @@ type
                       ctPR001Del, ctPR001Old, ctNZIS_RESULT_DIAGNOSTIC_REPORTDel, ctNZIS_RESULT_DIAGNOSTIC_REPORTOld,
                       ctCL134Del, ctCL134Old, ctCL144Del, ctCL144Old, ctCL037Del, ctCL037Old, ctCL038Del,
                       ctCL038Old, ctCL139Del, ctCL139Old, ctCL088Del, ctCL088Old, ctCL142Old, ctCL024Old,
-                      ctCL022Old, ctNZIS_DIAGNOSTIC_REPORTDel, ctNZIS_DIAGNOSTIC_REPORTOld);
+                      ctCL022Old, ctNZIS_DIAGNOSTIC_REPORTDel, ctNZIS_DIAGNOSTIC_REPORTOld, ctCertificatesDel, ctCertificatesOld);
 
   TOperationType = (toInsert, toUpdate, toInsertBefore, toInsertAfter, toAddChildFirst, toAddChildLast, toDeleteNode, toChange);  // 2, 3, 4, 5 са за линк-а
 
@@ -254,7 +254,9 @@ type
              vvCL038Root,
              vvCL139Root,
              vvCL088Root,
-             vvNZIS_DIAGNOSTIC_REPORTRoot
+             vvNZIS_DIAGNOSTIC_REPORTRoot,
+             vvCertificates,
+             vvCertificatesRoot
              );
 
 

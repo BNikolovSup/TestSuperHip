@@ -48,11 +48,12 @@ TCertificatesItem = class(TBaseItem)
         SLOT_ID: AnsiString;
         VALID_FROM_DATE: TDate;
         VALID_TO_DATE: TDate;
-        SlotNom: integer;
+        SlotNom: Integer;
         Pin: AnsiString;
         Logical: TlogicalCertificatesSet;
         setProp: TSetProp;
       end;
+
   public
     PRecord: ^TRecCertificates;
 	IndexInt: Integer;
@@ -336,7 +337,6 @@ begin
             end;
             Certificates_VALID_FROM_DATE: stream.Read(Self.PRecord.VALID_FROM_DATE, SizeOf(TDate));
             Certificates_VALID_TO_DATE: stream.Read(Self.PRecord.VALID_TO_DATE, SizeOf(TDate));
-            Certificates_SlotNom: stream.Read(Self.PRecord.SlotNom, SizeOf(Integer));
             Certificates_Pin:
             begin
               stream.Read(lenStr, 2);
@@ -848,7 +848,7 @@ begin
     Certificates_SLOT_ID: str := (Certificates.PRecord.SLOT_ID);
     Certificates_VALID_FROM_DATE: str := AspDateToStr(Certificates.PRecord.VALID_FROM_DATE);
     Certificates_VALID_TO_DATE: str := AspDateToStr(Certificates.PRecord.VALID_TO_DATE);
-    Certificates_SlotNom: str := inttostr(Certificates.PRecord.SlotNom);
+    Certificates_SlotNom: str := AspDateToStr(Certificates.PRecord.SlotNom);
     Certificates_Pin: str := (Certificates.PRecord.Pin);
     Certificates_Logical: str := Certificates.Logical08ToStr(TLogicalData08(Certificates.PRecord.Logical));
   else
@@ -960,7 +960,6 @@ begin
     Certificates_SLOT_ID: str :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Certificates_VALID_FROM_DATE: str :=  AspDateToStr(Certificates.getDateMap(Self.Buf, Self.posData, propIndex));
     Certificates_VALID_TO_DATE: str :=  AspDateToStr(Certificates.getDateMap(Self.Buf, Self.posData, propIndex));
-    Certificates_SlotNom: str :=  inttostr(Certificates.getIntMap(Self.Buf, Self.posData, propIndex));
     Certificates_Pin: str :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Certificates_Logical: str :=  Certificates.Logical08ToStr(Certificates.getLogical08Map(Self.Buf, Self.posData, propIndex));
   else
@@ -1007,7 +1006,6 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
-      Certificates_SlotNom: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
       Certificates_Pin:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
@@ -1161,7 +1159,7 @@ begin
     Certificates_SLOT_ID: Result := actAnsiString;
     Certificates_VALID_FROM_DATE: Result := actTDate;
     Certificates_VALID_TO_DATE: Result := actTDate;
-    Certificates_SlotNom: Result := actinteger;
+    Certificates_SlotNom: Result := actInteger;
     Certificates_Pin: Result := actAnsiString;
     Certificates_Logical: Result := actLogical;
   else
@@ -1197,7 +1195,6 @@ begin
     Certificates_SLOT_ID: isOld :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Certificates_VALID_FROM_DATE: isOld :=  Certificates.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
     Certificates_VALID_TO_DATE: isOld :=  Certificates.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AValue);
-    Certificates_SlotNom: isOld :=  Certificates.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     Certificates_Pin: isOld :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     end;
   end;
@@ -1218,7 +1215,7 @@ begin
     Certificates_SLOT_ID: Certificates.PRecord.SLOT_ID := AValue;
     Certificates_VALID_FROM_DATE: Certificates.PRecord.VALID_FROM_DATE := StrToDate(AValue);
     Certificates_VALID_TO_DATE: Certificates.PRecord.VALID_TO_DATE := StrToDate(AValue);
-    Certificates_SlotNom: Certificates.PRecord.SlotNom := StrToInt(AValue);
+    Certificates_SlotNom: Certificates.PRecord.SlotNom := StrToDate(AValue);
     Certificates_Pin: Certificates.PRecord.Pin := AValue;
     Certificates_Logical: Certificates.PRecord.Logical := tlogicalCertificatesSet(Certificates.StrToLogical08(AValue));
   end;
@@ -1245,7 +1242,6 @@ begin
     Certificates_SLOT_ID: isOld :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Certificates_VALID_FROM_DATE: isOld :=  Certificates.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
     Certificates_VALID_TO_DATE: isOld :=  Certificates.getDateMap(Self.Buf, Self.posData, ACol) = StrToDate(AFieldText);
-    Certificates_SlotNom: isOld :=  Certificates.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     Certificates_Pin: isOld :=  Certificates.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     end;
   end;
@@ -1266,7 +1262,7 @@ begin
     Certificates_SLOT_ID: Certificates.PRecord.SLOT_ID := AFieldText;
     Certificates_VALID_FROM_DATE: Certificates.PRecord.VALID_FROM_DATE := StrToDate(AFieldText);
     Certificates_VALID_TO_DATE: Certificates.PRecord.VALID_TO_DATE := StrToDate(AFieldText);
-    Certificates_SlotNom: Certificates.PRecord.SlotNom := StrToInt(AFieldText);
+    Certificates_SlotNom: Certificates.PRecord.SlotNom := StrToDate(AFieldText);
     Certificates_Pin: Certificates.PRecord.Pin := AFieldText;
     Certificates_Logical: Certificates.PRecord.Logical := tlogicalCertificatesSet(Certificates.StrToLogical08(AFieldText));
   end;
@@ -1296,13 +1292,6 @@ end;
       Certificates_SLOT_ID:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-        begin
-          ListCertificatesSearch.Add(self.Items[i]);
-        end;
-      end;
-      Certificates_SlotNom: 
-      begin
-        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
           ListCertificatesSearch.Add(self.Items[i]);
         end;
@@ -1530,7 +1519,6 @@ begin
   case propIndex of
     Certificates_CERT_ID: SortByIndexAnsiString;
       Certificates_SLOT_ID: SortByIndexAnsiString;
-      Certificates_SlotNom: SortByIndexInt;
       Certificates_Pin: SortByIndexAnsiString;
   end;
 end;

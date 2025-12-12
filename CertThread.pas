@@ -81,8 +81,6 @@ TCertThread = class(TThread)
     function FindCertFromSerNumber(serNom: TArray<System.Byte>): TElX509Certificate;
   public
     Adb_dm: TADBDataModule;
-    //CollDoctor: TRealDoctorColl;
-    //CollCert: TCertificatesColl;
     LstPlugCardDoctor: TList<Cardinal>;
     IsFirst: Boolean;
     constructor Create(CreateSuspended: Boolean);
@@ -136,7 +134,7 @@ var
   LstToken: TList<Integer>;
   egn: string;
   ArrRdn: TArray<string>;
-  Cert: TCertificatesItem;
+  Cert: TRealCertificatesItem;
   fs: TFormatSettings;
 
 begin
@@ -220,7 +218,7 @@ begin
 
                 satrtTime := StrToDateTime(CertStorage.Certificates[0].ValidFrom, fs);
                 endTime := StrToDateTime(CertStorage.Certificates[0].ValidTo, fs);
-                Cert := TCertificatesItem(Adb_dm.CollCertificates.Add);
+                Cert := TRealCertificatesItem(Adb_dm.CollCertificates.Add);
                 New(Cert.PRecord);
                 Cert.PRecord.setProp := [Certificates_SLOT_ID, Certificates_CERT_ID, Certificates_VALID_FROM_DATE,
                                          Certificates_VALID_TO_DATE, Certificates_SlotNom, Certificates_Pin];

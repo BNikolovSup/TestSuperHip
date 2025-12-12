@@ -1,4 +1,4 @@
-unit ADB_DataUnit;
+﻿unit ADB_DataUnit;
         //plannedType  pregNodes   zzzz
 interface
 uses
@@ -209,7 +209,7 @@ uses
     CollNZIS_DIAGNOSTIC_REPORT: TRealNZIS_DIAGNOSTIC_REPORTColl;
     CollNzis_RESULT_DIAGNOSTIC_REPORT: TRealNZIS_RESULT_DIAGNOSTIC_REPORTColl;
     CollNzisToken: TNzisTokenColl;
-    CollCertificates: TCertificatesColl;
+    CollCertificates: TRealCertificatesColl;
     CollMkb: TRealMkbColl;
     CollAnalsNew: TAnalsNewColl;
 
@@ -3594,7 +3594,7 @@ begin
   CollNzisToken := TNzisTokenColl.Create(TNzisTokenItem);
   lstColl[Ord(CollNzisToken.GetCollType)] := CollNzisToken;
 
-  CollCertificates := TCertificatesColl.Create(TCertificatesItem);
+  CollCertificates := TRealCertificatesColl.Create(TRealCertificatesItem);
   lstColl[Ord(CollCertificates.GetCollType)] := CollCertificates;
 
 
@@ -3655,7 +3655,6 @@ begin
 
   ProceduresNomenColl:= TRealProceduresColl.Create(TRealCl006Item);
   lstColl[Ord(ProceduresNomenColl.GetCollType)] := ProceduresNomenColl;
-
 
 
 
@@ -3726,7 +3725,7 @@ begin
   mmoTest.Lines.EndUpdate;
 end;
 
-procedure TADBDataModule.ReInitColl;
+procedure TADBDataModule.ReInitColl;  //CollCertificates
 var
   coll: TBaseCollection;
 begin
@@ -3755,6 +3754,7 @@ begin
       ctNZIS_QUESTIONNAIRE_ANSWER, ctNZIS_ANSWER_VALUE,
       ctNZIS_DIAGNOSTIC_REPORT, ctNZIS_RESULT_DIAGNOSTIC_REPORT,
       ctNzisToken, ctCertificates, ctMkb, ctAnalsNew, ctOtherDoctor:
+
       begin
         if Assigned(AdbMain) then
         begin

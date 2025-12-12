@@ -1,4 +1,4 @@
-unit RealObj.RealHipp; //PREVENTIVE_TYPE   TRealExamAnalysisItem
+﻿unit RealObj.RealHipp; //PREVENTIVE_TYPE   TRealExamAnalysisItem
 
 
 interface
@@ -15,7 +15,7 @@ uses
   Table.NZIS_QUESTIONNAIRE_ANSWER,Table.NZIS_ANSWER_VALUE, Table.NZIS_DIAGNOSTIC_REPORT,
   Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.NzisToken, Table.Mkb, Table.BLANKA_MED_NAPR_3A,
   Table.INC_MDN, Table.HOSPITALIZATION, Table.EXAM_LKK, Table.INC_NAPR, Table.OtherDoctor,
-  Table.Addres,
+  Table.Addres, Table.Certificates,
   msgX001,
 
   RealObj.NzisNomen, RealNasMesto,
@@ -65,6 +65,24 @@ TCollectionForSort = class(TPersistent)
     node: PVirtualNode;
     propIndex: Word;
   end;
+
+  TRealCertificatesItem = class(TCertificatesItem)
+  private
+
+
+  public
+    CertPlug : TsbxCertificate;
+
+end;
+
+TRealCertificatesColl = class(TCertificatesColl)
+  private
+    function GetItem(Index: Integer): TRealCertificatesItem;
+    procedure SetItem(Index: Integer; const Value: TRealCertificatesItem);
+  public
+    property Items[Index: Integer]: TRealCertificatesItem read GetItem write SetItem;
+
+end;
 
   TRealMDNItem = class(TMDNItem)
   private
@@ -7463,6 +7481,19 @@ begin
     sc := TCollectionForSort(Self).FItems;
     QuickSort(0,count-1);
   end;
+end;
+
+{ TRealTCertificatesColl }
+
+function TRealCertificatesColl.GetItem(Index: Integer): TRealCertificatesItem;
+begin
+  Result := TRealCertificatesItem(inherited GetItem(Index));
+end;
+
+procedure TRealCertificatesColl.SetItem(Index: Integer;
+  const Value: TRealCertificatesItem);
+begin
+  inherited SetItem(Index, Value);
 end;
 
 end.

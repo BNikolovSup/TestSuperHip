@@ -483,7 +483,6 @@ object frmSuperHip: TfrmSuperHip
           Color = clInfoBk
           Colors.GridLineColor = 12189116
           DefaultNodeHeight = 27
-          DragMode = dmAutomatic
           DragOperations = [doMove]
           DragType = dtVCL
           Header.AutoSizeIndex = 0
@@ -497,7 +496,7 @@ object frmSuperHip: TfrmSuperHip
           TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
-          TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView, toAlwaysSelectNode]
+          TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
           OnAdvancedHeaderDraw = vtrPregledPatAdvancedHeaderDraw
           OnChange = vtrPreglediChange_Patients
           OnCollapsed = vtrPregledPatCollapsed

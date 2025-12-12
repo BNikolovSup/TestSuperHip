@@ -966,30 +966,30 @@ type
     procedure GetTextToDraw(node: PVirtualNode; Column: TColumnIndex; var text: string; var strPred, strSled, filterText: string);
 
   protected // tempObjects
-    PregledTemp: TPregledNewItem;
-    preg1, preg2: TPregledNewItem;
+    //PregledTemp: TPregledNewItem;
+    //preg1, preg2: TPregledNewItem;
 
     //DiagTemp: TDiagnosisItem;
     //MDNTemp: TMDNItem;
    // MNTemp: TBLANKA_MED_NAPRItem;
-    MnLkkTemp: TRealEXAM_LKKItem;
+    //MnLkkTemp: TRealEXAM_LKKItem;
 
     //ProfCardTemp: t
-    ExamAnalTemp: TExamAnalysisItem;
+    //ExamAnalTemp: TExamAnalysisItem;
     //DoctorTemp: TDoctorItem;
-    AnalTemp: TAnalsNewItem;
-    Cl022temp: TCL022Item;
-    CL132Temp: TRealCl132Item;
-    PR001Temp: TRealPR001Item;
-    CL088Temp: TRealCl088Item;
-    ProcTemp: TRealProceduresItem;
+    //AnalTemp: TAnalsNewItem;
+//    Cl022temp: TCL022Item;
+//    CL132Temp: TRealCl132Item;
+//    PR001Temp: TRealPR001Item;
+//    CL088Temp: TRealCl088Item;
+//    ProcTemp: TRealProceduresItem;
     //FPatientTemp: TRealPatientNewItem;
-    NZIS_PLANNED_TYPETemp: TRealNZIS_PLANNED_TYPEItem;
+    //NZIS_PLANNED_TYPETemp: TRealNZIS_PLANNED_TYPEItem;
     //NZIS_QUESTIONNAIRE_RESPONSETemp: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
     //NZIS_QUESTIONNAIRE_ANSWERTemp: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
     //NZIS_ANSWER_VALUETemp: TRealNZIS_ANSWER_VALUEItem;
-    NZIS_DIAGNOSTIC_REPORTTemp: TRealNZIS_DIAGNOSTIC_REPORTItem;
-    NZIS_Result_DIAGNOSTIC_REPORTTemp: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
+    //NZIS_DIAGNOSTIC_REPORTTemp: TRealNZIS_DIAGNOSTIC_REPORTItem;
+    //NZIS_Result_DIAGNOSTIC_REPORTTemp: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
    // procedure SetPatientTemp(const Value: TRealPatientNewItem);
    // property PatientTemp: TRealPatientNewItem read FPatientTemp write SetPatientTemp;
 
@@ -9319,6 +9319,7 @@ begin
   Adb_DM.OpenDB(FFDbName);
   if FmxProfForm = nil then
     InitFMXDyn;
+  StartCertThread;
 //
 //  if Assigned(Adb_DM.AdbMain) then
 //    begin
@@ -14164,7 +14165,7 @@ begin
 
     if i < 4100 then
     begin
-      profGR.LoadVtrGraph1(pat, i);
+      //profGR.LoadVtrGraph1(pat, i);
     end;
     //FreeAndNil(pat);
   end;
@@ -24266,10 +24267,12 @@ begin
 //        FmxProfForm.Patient.lstGraph.Clear;
 //        FmxProfForm.Patient.FPregledi.Clear;
 //        FmxProfForm.Patient.FNode := Node;
+        Stopwatch := TStopwatch.StartNew;
         GetCurrentPatProf2();//zzzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       end;
-
+      Elapsed := Stopwatch.Elapsed;
       LoadVtrMinaliPregledi1(node, nil); //zzzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
+
       if chkLockNzisMess.Checked then
       begin
         InternalChangeWorkPage(tsNZIS);
@@ -24279,7 +24282,7 @@ begin
         InternalChangeWorkPage(tsMinaliPregledi);
       end;
 
-      Elapsed := Stopwatch.Elapsed;
+
       mmoTest.Lines.Add('Minali za ' + FloatToStr(Elapsed.TotalMilliseconds));
     end;
 
@@ -25251,9 +25254,9 @@ begin
         end;
         vvCl132:
         begin
-          CL132Temp.DataPos := data.DataPos;
-          CellText := CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-          CellText := CellText + '  ' + CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
+          //CL132Temp.DataPos := data.DataPos;
+          CellText := ADB_DM.CL132Coll.getAnsiStringMap(data.DataPos, word(CL132_Key));
+          CellText := CellText + '  ' + ADB_DM.CL132Coll.getAnsiStringMap(data.DataPos, word(CL132_Description));
         end;
         vvNZIS_PLANNED_TYPE:
         begin
@@ -25267,8 +25270,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          PR001Temp.DataPos := data.DataPos;
-          CellText := PR001Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
+          //PR001Temp.DataPos := data.DataPos;
+          CellText := ADB_DM.PR001Coll.getAnsiStringMap(data.DataPos, word(PR001_Description));
         end;
         vvNZIS_QUESTIONNAIRE_RESPONSE:
         begin
@@ -25346,8 +25349,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          CellText := 'CL142|' + NZIS_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE));
+          //NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
+          CellText := 'CL142|' + Adb_DM.CollNZIS_DIAGNOSTIC_REPORT.getAnsiStringMap(data.DataPos, word(NZIS_DIAGNOSTIC_REPORT_CL142_CODE));
         end;
         vvNZIS_RESULT_DIAGNOSTIC_REPORT:
         begin
@@ -25360,17 +25363,17 @@ begin
           begin
             CellText := 'test';
           end;
-          NZIS_Result_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          case NZIS_Result_DIAGNOSTIC_REPORTTemp.getwordMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
-            1: CellText := Double.ToString( NZIS_Result_DIAGNOSTIC_REPORTTemp.getDoubleMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
-            2: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
-            3: CellText := NZIS_Result_DIAGNOSTIC_REPORTTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
+         // NZIS_Result_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
+          case ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getwordMap(data.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_CL028_VALUE_SCALE)) of
+            1: CellText := Double.ToString( ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getDoubleMap(data.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_QUANTITY)));
+            2: CellText := ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(data.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_CODE));
+            3: CellText := ADB_DM.CollNzis_RESULT_DIAGNOSTIC_REPORT.getAnsiStringMap(data.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_VALUE_STRING));
           end;
         end;
         vvCL088:
         begin
-          CL088Temp.DataPos := data.DataPos;
-          CellText := CL088Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
+          //CL088Temp.DataPos := data.DataPos;
+          CellText := Adb_DM.CL088Coll.getAnsiStringMap(data.DataPos, word(CL088_Description));
         end;
         vvdiag:
         begin
@@ -25407,8 +25410,8 @@ begin
           end
           else
           begin
-            ExamAnalTemp.DataPos := Data.DataPos;
-            CellText := 'Изсл. ' + ExamAnalTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(ExamAnalysis_NZIS_CODE_CL22));
+            //ExamAnalTemp.DataPos := Data.DataPos;
+            CellText := 'Изсл. ' + Adb_DM.CollExamAnal.getAnsiStringMap(Data.DataPos, word(ExamAnalysis_NZIS_CODE_CL22));
           end;
         end;
         vvDoctor:
@@ -25431,13 +25434,13 @@ begin
       case data.vid of
         vvProcedures:
         begin
-          ProcTemp.DataPos := Data.DataPos;
+          //ProcTemp.DataPos := Data.DataPos;
           if data.DataPos = 0 then
           begin
             CellText :=  'потребителско';
             Exit;
           end;
-          CellText := ProcTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(Procedures_CODE));
+          CellText := Adb_DM.CollProceduresPreg.getAnsiStringMap(data.DataPos, word(Procedures_CODE));
         end;
         vvPerformer:
         begin
@@ -25572,8 +25575,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_DIAGNOSTIC_REPORTTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS));
+          //NZIS_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
+          nomenPos := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.getCardMap(data.DataPos, word(NZIS_DIAGNOSTIC_REPORT_NOMEN_POS));
 
           CellText := ADB_DM.CL142Coll.getAnsiStringMap(nomenPos, Word(CL142_Description));
         end;
@@ -25584,8 +25587,8 @@ begin
             CellText := 'errrrr';
             exit;
           end;
-          NZIS_Result_DIAGNOSTIC_REPORTTemp.DataPos := data.DataPos;
-          nomenPos := NZIS_Result_DIAGNOSTIC_REPORTTemp.getCardMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
+          //ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.DataPos := data.DataPos;
+          nomenPos := ADB_DM.CollNZIS_DIAGNOSTIC_REPORT.getCardMap(data.DataPos, word(NZIS_RESULT_DIAGNOSTIC_REPORT_NOMEN_POS));
           CellText := ADB_DM.CL144Coll.getAnsiStringMap(nomenPos, Word(CL144_Description));
         end;
         vvDiag:
@@ -25607,8 +25610,8 @@ begin
 
         vvExamAnal:
         begin
-          ExamAnalTemp.DataPos := Data.DataPos;
-          CellText := ExamAnalTemp.getAnsiStringMap(ADB_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(ExamAnalysis_NZIS_DESCRIPTION_CL22));
+          //ExamAnalTemp.DataPos := Data.DataPos;
+          CellText := Adb_DM.CollExamAnal.getAnsiStringMap(Data.DataPos, word(ExamAnalysis_NZIS_DESCRIPTION_CL22));
         end;
 
 
@@ -26406,7 +26409,7 @@ begin
               case dataCL132.vid of
                 vvCl132:
                 begin
-                  CL132Temp.DataPos := dataCL132.DataPos;
+                  //CL132Temp.DataPos := dataCL132.DataPos;
                   if not FindedCl132 then
                   begin
                     FindedCl132 := true;// вдигам флага за намерено цл132 в тоя преглед
@@ -26415,7 +26418,7 @@ begin
                     PlanedPreg.IsDone := True;
                   end;
                   PlanedPreg.Cl132 :=
-                       cl132 + CL132Temp.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key)) + '; ';
+                       cl132 + ADB_DM.CL132Coll.getAnsiStringMap(dataCL132.DataPos, word(CL132_Key)) + '; ';
                 end;
               end;
               runCl132 := runCl132.NextSibling;

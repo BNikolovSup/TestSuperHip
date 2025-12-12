@@ -1,4 +1,4 @@
-unit RealObj.NzisNomen; //zz
+﻿unit RealObj.NzisNomen; //zz
 
 interface
 uses
@@ -45,6 +45,7 @@ TCollectionForSort = class(TPersistent)
    FPregled: TObject;
    FPregNode: PVirtualNode;
    FExamAnal: TObject;
+   FExamAnalPos: Cardinal;  // 0 = няма изследване за този CL132
    CL047: TStringList;
    test: string;
    constructor Create(Collection: TCollection); override;
@@ -285,22 +286,27 @@ TRealCl006Item = class(TCL006Item)
  end;
 
   TRealPR001Item = class(TPr001Item)
-  private
-    FRules: string;
-    procedure SetRules(const Value: string);
- public
-   CL133: TCL133;
-   CL142: TRealCl142Item;
-   FExamAnal: TObject;
-   LstCl134: TList<TRealCl134Item>;
+private
+  FRules: string;
+  procedure SetRules(const Value: string);
+public
+  CL133: TCL133;
+  CL142: TRealCl142Item;
+  /// старото – оставяме го, за да не чупим импорта,
+  /// но в новия код няма да го пипаме.
+  FExamAnal: TObject;
 
-   constructor Create(Collection: TCollection); override;
-   destructor destroy; override;
-   //procedure GenerateMedNapr(mednapr)
+  /// Нова логика – позиция на изследването в ADB (0 = няма)
+  FExamAnalPos: Cardinal;
 
-   property Rules: string read FRules write SetRules;
+  LstCl134: TList<TRealCl134Item>;
 
- end;
+  constructor Create(Collection: TCollection); override;
+  destructor destroy; override;
+
+  property Rules: string read FRules write SetRules;
+end;
+
 
  TRealPR001Coll = class(TPR001Coll)
   private
@@ -429,6 +435,7 @@ begin
   FPregled := nil;
   FPregNode := nil;
   FExamAnal := nil;
+  FExamAnalPos := 0;
   cl047 := TStringList.Create;
   CL047.Text :=
       'Консултация' + #13#10 +
@@ -447,15 +454,15 @@ begin
 end;
 
 destructor TRealCl132Item.destroy;
+var
+  i: Integer;
 begin
-  if Assigned (FListPr001) then
-  begin
-    FListPr001.Clear;
-  end;
-  FreeAndNil(FListPr001);
-  FreeAndNil(FExamAnal);
+  FExamAnal.Free;
+  for i := 0 to FListPr001.Count - 1 do
+    FListPr001[i].Free;
+  FListPr001.Free;
   CL047.Free;
-  inherited;
+  inherited Destroy;
 end;
 
 procedure TRealCl132Item.FindPregled(patNode: PVirtualNode; linkBuf, hipBuf: Pointer);
@@ -494,19 +501,24 @@ end;
 constructor TRealPR001Item.Create(Collection: TCollection);
 begin
   inherited;
-  //CL050 := nil;
   CL142 := nil;
   CL133 := CL133_none;
   LstCl134  := TList<TRealCl134Item>.create;
   FExamAnal := nil;
+  FExamAnalPos := 0;
 end;
 
 destructor TRealPR001Item.destroy;
+var
+  i: Integer;
 begin
-  LstCl134.Clear;
-  FreeAndNil(LstCl134);
-  FreeAndNil(FExamAnal);
-  inherited;
+  FExamAnal.Free;
+
+  for i := 0 to LstCl134.Count - 1 do
+    LstCl134[i].Free;
+  LstCl134.Free;
+
+  inherited Destroy;
 end;
 
 procedure TRealPR001Item.SetRules(const Value: string);
