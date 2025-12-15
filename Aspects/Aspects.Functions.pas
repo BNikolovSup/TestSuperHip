@@ -12,9 +12,48 @@ uses
   procedure DebugMsg(const S: string);
   procedure SwapObj(var A, B: TObject);
   function CeltextFilterObjectFromVid(vid: Word): string;
+  function DatStrToDays(currDay: TDate; str: string): TDate;
 
 implementation
 uses Aspects.Types, System.DateUtils, Winapi.Windows;
+
+function DatStrToDays(currDay: TDate; str: string): TDate;
+var
+  ArrStr: Tarray<string>;
+  Period: string;
+  Count: Integer;
+begin
+  ArrStr := str.Split([' ']);
+
+  Period := ArrStr[1];
+  case Period[1] of
+    'd':// days
+    begin
+      Count := StrToInt(ArrStr[0]);
+      Result := IncDay(currDay, count);
+    end;
+    'w':// weeks
+    begin
+      Count := StrToInt(ArrStr[0]);
+      Result := IncWeek(currDay, count);
+    end;
+    'm'://  months
+    begin
+      Count := StrToInt(ArrStr[0]);
+      Result := IncMonth(currDay, count);
+    end;
+    'y'://years
+    begin
+      Count := StrToInt(ArrStr[0]);
+      Result := IncYear(currDay, count);
+    end;
+    '+'://Recurring +1Y //zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    begin
+      Count := 100;
+      Result := IncYear(currDay, count);
+    end;
+  end;
+end;
 
 function CeltextFilterObjectFromVid(vid: Word): string;
 var

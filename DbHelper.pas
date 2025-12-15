@@ -32,6 +32,7 @@ uses
     Fdm: TDUNzis;
     NasMesto: TRealNasMestoAspects;
     Adb_DM: TADBDataModule;
+    ProfGr: TProfGraph;
     //mkbColl: TRealMkbColl;
 
     constructor create;
@@ -190,8 +191,15 @@ var
 begin
   Include(TempItem.PRecord.setProp, PregledNew_Logical);
   TempItem.PRecord.Logical := [];
-
-  gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
+  if ProfGr.lstAllGraph.Count = 1 then
+  begin
+    gr := ProfGr.lstAllGraph[0][ADB_DM.PatNodesBack.CurrentGraphIndex];
+  end
+  else
+  begin
+    raise Exception.Create('ADB_DM.PatNodesBack.lstGraph ');
+  end;
+  //gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
   case gr.Cl132.getAnsiStringMap(Adb_dm.AdbNomenNzis.Buf, Adb_dm.AdbNomenNzis.FPosData, word(CL132_cl047))[1] of
     '3': //Детско здраве
     begin

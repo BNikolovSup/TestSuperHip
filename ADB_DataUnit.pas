@@ -1,5 +1,5 @@
 ﻿unit ADB_DataUnit;
-        //plannedType  pregNodes   zzzz
+        //plannedType  pregNodes   zzzz  prof
 interface
 uses
   System.Classes, system.IniFiles, system.SysUtils, Winapi.Windows, Vcl.Forms,
@@ -12,7 +12,8 @@ uses
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
   Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto, Table.BLANKA_MED_NAPR,
   Table.INC_NAPR,Table.NzisToken, Table.CL050, Table.NomenNzis, Table.NzisReqResp,
-  ProfGraph, RealObj.NzisNomen, RealNasMesto
+  //ProfGraph,
+  RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
   , SBxCertificateStorage, Nzis.Nomen.baseCL000, DM, Vcl.StdCtrls;
 
@@ -28,7 +29,9 @@ uses
                   L009);
 
 
+
   TListNodes = TList<PVirtualNode>;
+
 
   TNomenNzisRec = class
   public
@@ -97,8 +100,8 @@ uses
     diags: TList<PVirtualNode>;
     pregs: TList<PVirtualNode>;
     CollDiag: TRealDiagnosisColl;
-    lstGraph: TList<TGraphPeriod132>;
-    ListCurrentProf: TList<TGraphPeriod132>;
+    //lstGraph: TLstGraph;
+    ListCurrentProf: TLstGraph;
     NoteProf: string;
     CurrentGraphIndex: Integer;
 
@@ -232,7 +235,6 @@ uses
     ProceduresNomenColl: TRealProceduresColl;
 
     AmsgColl: TNzisReqRespColl;
-    ACollPatGR: TRealPatientNewColl;
     AcollpatFromDoctor: TRealPatientNewColl;
     ACollPatFDB: TRealPatientNewColl;
     ACollNovozapisani: TRealPatientNewColl;
@@ -241,6 +243,7 @@ uses
 
 
     lstPatGraph: TList<TRealPatientNewItem>;
+
     ListPregledForFDB: TList<TPregledNewItem>;
     ListDoctorForFDB: TList<TDoctorItem>;
     ListPregledLinkForInsert: TList<PVirtualNode>;
@@ -3891,21 +3894,21 @@ begin
 //  FreeandNil(CL144Coll);
 //  FreeandNil(PR001Coll);
 //
-//  FreeAndNil(lstPatGraph);
-//  FreeAndNil(ListPregledForFDB);
-//  FreeAndNil(ListDoctorForFDB);
-//  FreeAndNil(ListPregledLinkForInsert);
-//  FreeAndNil(CollPregledVtor);
-//  FreeAndNil(CollPregledPrim);
-//  FreeAndNil(LstPatForExportDB);
-//  FreeAndNil(LstPregForExportDB);
-//  FreeAndNil(ListPatientForFDB);
-//  for i := 0 to ListNomenNzisNames.Count - 1 do
-//  begin
-//    nomen := ListNomenNzisNames[i];
-//    FreeAndNil(nomen);
-//  end;
-//  FreeAndNil(ListNomenNzisNames);
+  FreeAndNil(lstPatGraph);
+  FreeAndNil(ListPregledForFDB);
+  FreeAndNil(ListDoctorForFDB);
+  FreeAndNil(ListPregledLinkForInsert);
+  FreeAndNil(CollPregledVtor);
+  FreeAndNil(CollPregledPrim);
+  FreeAndNil(LstPatForExportDB);
+  FreeAndNil(LstPregForExportDB);
+  FreeAndNil(ListPatientForFDB);
+  for i := 0 to ListNomenNzisNames.Count - 1 do
+  begin
+    nomen := ListNomenNzisNames[i];
+    FreeAndNil(nomen);
+  end;
+  FreeAndNil(ListNomenNzisNames);
 end;
 
 procedure TADBDataModule.SetAdbHipNomenFileName(const Value: string);
@@ -4135,7 +4138,7 @@ begin
   ExamAnals.Clear;
   diags.Clear;
   pregs.Clear;
-  lstGraph.Clear;
+  //lstGraph.Clear;
   NoteProf := '';
 end;
 
@@ -4146,7 +4149,7 @@ begin
   ExamAnals := TList<PVirtualNode>.create;
   diags := TList<PVirtualNode>.create;
   pregs := TList<PVirtualNode>.create;
-  lstGraph := TList<TGraphPeriod132>.create;
+  //lstGraph := TList<TGraphPeriod132>.create;
   ListCurrentProf := TList<TGraphPeriod132>.Create;
   NoteProf := '';
 end;
@@ -4157,7 +4160,7 @@ begin
   FreeAndNil(ExamAnals);
   FreeAndNil(diags);
   FreeAndNil(pregs);
-  FreeAndNil(lstGraph);
+  //FreeAndNil(lstGraph);
   FreeAndNil(ListCurrentProf);
   inherited;
 end;

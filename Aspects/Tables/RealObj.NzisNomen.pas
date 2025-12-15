@@ -3,7 +3,7 @@
 interface
 uses
   System.Generics.Collections, system.SysUtils, system.Classes,
-  Aspects.Types, VirtualTrees,
+  Aspects.Types, VirtualTrees, Aspects.Functions,
   Table.CL024, Table.CL011, table.CL009,
   table.CL132, table.CL134, Table.PR001, table.CL050, table.cl142,
   table.cl088, Table.CL139, Table.CL144, Table.CL038, Table.CL037,
@@ -22,6 +22,17 @@ type
 
 TRealPR001Item = class;
 TRealCl144Item = class;
+TRealCL132Item = class;
+
+TGraphPeriod132 = record
+    Cl132: TRealCL132Item;
+    startDate: TDate;
+    endDate: TDate;
+    repNumber: Integer;
+  end;
+
+TLstGraph = TList<TGraphPeriod132>;
+TListsGraph = TList<TLstGraph>;
 
 TCollectionForSort = class(TPersistent)
   private
@@ -180,6 +191,7 @@ TRealCl006Item = class(TCL006Item)
 
  public
    procedure SortByDataPos;
+   procedure SortByMinDate;
    procedure UpdateCL132;
    property Items[Index: Integer]: TRealCL132Item read GetItem write SetItem;
 
@@ -370,6 +382,46 @@ var
       repeat
         while ((Items[I]).FDataPos) < ((Items[P]).FDataPos) do Inc(I);
         while ((Items[J]).FDataPos) > ((Items[P]).FDataPos) do Dec(J);
+        if I <= J then begin
+          Save := sc.Items[I];
+          sc.Items[I] := sc.Items[J];
+          sc.Items[J] := Save;
+          if P = I then
+            P := J
+          else if P = J then
+            P := I;
+          Inc(I);
+          Dec(J);
+        end;
+      until I > J;
+      if L < J then QuickSort(L, J);
+      L := I;
+    until I >= R;
+  end;
+begin
+  if (count >1 ) then
+  begin
+    sc := TCollectionForSort(Self).FItems;
+    QuickSort(0,count-1);
+  end;
+end;
+
+procedure TRealCL132Coll.SortByMinDate;
+var
+  sc : TList<TCollectionItem>;
+
+  procedure QuickSort(L, R: Integer);
+  var
+    I, J, P : Integer;
+    Save : TCollectionItem;
+  begin
+    repeat
+      I := L;
+      J := R;
+      P := (L + R) shr 1;
+      repeat
+        while DatStrToDays(Date, Self.getAnsiStringMap(Items[I].FDataPos, Word(CL132_min_age))) < DatStrToDays(Date, Self.getAnsiStringMap(Items[P].FDataPos, Word(CL132_min_age))) do Inc(I);
+        while DatStrToDays(Date, Self.getAnsiStringMap(Items[J].FDataPos, Word(CL132_min_age))) > DatStrToDays(Date, Self.getAnsiStringMap(Items[P].FDataPos, Word(CL132_min_age))) do Dec(J);
         if I <= J then begin
           Save := sc.Items[I];
           sc.Items[I] := sc.Items[J];

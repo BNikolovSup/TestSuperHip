@@ -18,8 +18,9 @@ uses
   Table.Addres, Table.Certificates,
   msgX001,
 
-  RealObj.NzisNomen, RealNasMesto,
-  Aspects.Collections, Aspects.Types, ProfGraph, VirtualTrees,
+  RealObj.NzisNomen,
+  RealNasMesto,
+  Aspects.Collections, Aspects.Types, VirtualTrees,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings, Vcl.Graphics,
   classes, system.SysUtils, windows, System.Generics.Collections, system.Math,
   SBX509;

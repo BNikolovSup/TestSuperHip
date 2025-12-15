@@ -810,8 +810,6 @@ type
     procedure vtrTempKeyAction(Sender: TBaseVirtualTree; var CharCode: Word;
       var Shift: TShiftState; var DoDefault: Boolean);
     procedure vtrPregledPatMouseLeave(Sender: TObject);
-    procedure vtrGraphGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
-      Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
     procedure vtrPregledPatDrawText(Sender: TBaseVirtualTree;
       TargetCanvas: TCanvas; Node: PVirtualNode; Column: TColumnIndex;
       const Text: string; const CellRect: TRect; var DefaultDraw: Boolean);
@@ -3775,8 +3773,6 @@ begin
   vtrTemp.EndUpdate;
   Elapsed := Stopwatch.Elapsed;
   pgcTree.ActivePage := tsTempVTR;
-  //pnlGraph.Parent := nil;
-
   mmotest.Lines.Add( 'CopyAnalTree ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
@@ -10461,8 +10457,10 @@ begin
   if profGR = nil then
   begin
     LoadVtrNomenNzis1();
-    profGR := TProfGraph.create;
+    profGR := TProfGraph.create(Adb_DM);
+    FDBHelper.ProfGr := profGR;
     profGR.vtrGraph := vtrGraph;
+    profGR.mmoTest := mmoTest;
   end;
   runPat := Adb_DM.PatNodesBack.patNode;
   runPreg := runPat.FirstChild;
@@ -10508,16 +10506,19 @@ begin
   log := TlogicalPatientNewSet(Adb_DM.CollPatient.getLogical40Map(runDataPat.DataPos, word(PatientNew_Logical)));
   profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
   profGR.CurrDate := dat;
-  profGR.Adb_DM := Adb_DM;
-  profGR.GeneratePeriod1();
-  //vtrGraph.UpdateVerticalScrollBar(true);
-//  vtrGraph.Clear;
-//
-//  vRootGraph := vtrGraph.AddChild(nil, nil);
-//  dataGraph := vtrGraph.GetNodeData(vRootGraph);
-//  dataGraph.vid := vvNone;
-//  dataGraph.index := 0;
-  profGR.LoadVtrGraphOutVtr1();
+
+  if vtrGraph.TotalCount > 1 then
+  begin
+    //profGR.lstAllGraph
+  end
+  else
+  begin
+    profGR.lstAllGraph.Count := 1;
+    profGR.lstAllGraph[0] := TLstGraph.Create;
+  end;
+  profGR.GeneratePeriod1(0);
+
+  profGR.LoadVtrGraphOutVtr1(0);
 
   if Adb_DM.PatNodesBack.CurrentGraphIndex >= 0 then
   begin
@@ -10537,7 +10538,7 @@ begin
             begin
               CL132Key := Adb_dm.CollNZIS_PLANNED_TYPE.getAnsiStringMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_CL132_KEY));
               if (Adb_dm.CollNZIS_PLANNED_TYPE.getDateMap(runDataPregledNodes.DataPos, word(NZIS_PLANNED_TYPE_StartDate))<=
-                Adb_DM.PatNodesBack.lstGraph[Adb_DM.PatNodesBack.CurrentGraphIndex].endDate)then
+                profGR.lstAllGraph[0][Adb_DM.PatNodesBack.CurrentGraphIndex].endDate)then
 
               begin
                 plan := TRealNZIS_PLANNED_TYPEItem.Create(nil);
@@ -14102,17 +14103,6 @@ begin
 end;
 
 procedure TfrmSuperHip.MenuTitleProfGrafClick(Sender: TObject);
-var
-  i: Integer;
-  //MyThreadPool: TThreadPool;
-  MinWorkerThreads: integer;
-  MaxWorkerThreads: integer;
-
-  pat: TRealPatientNewItem;
-  dat: TDate;
-  log: TlogicalPatientNewSet;
-  dataGraph: PAspRec;
-  node: PVirtualNode;
 begin
   FmxTitleBar.p1.IsOpen := False;
   FmxTitleBar.p2.IsOpen := False;
@@ -14120,61 +14110,13 @@ begin
   vtrGraph.SetFocus;
   if profGR = nil then
   begin
-    //LoadVtrNomenNzis1;
-//    OpenBufNomenNzis('c:\temp\NzisNomen.adb');
-    //OpenBufNomenNzis(ParamStr(2) + 'NzisNomen.adb');
     LoadVtrNomenNzis1();
-    profGR := TProfGraph.create;
-
-    profGR := TProfGraph.create;
-
-    //profGR.BufNomen := Adb_DM.AdbNomenNzis.Buf;
-    //profGR.BufADB := AspectsHipFile.Buf;
-    //profGR.posDataADB := AspectsHipFile.FPosData;
+    profGR := TProfGraph.create(Adb_DM);
+    FDBHelper.ProfGr := profGR;
     profGR.vtrGraph := vtrGraph;
-    profGR.Adb_DM := Adb_DM;
+    profGR.mmoTest := mmoTest;
   end;
-  profGR.VisibleMinali := False;
-  profGR.VisibleBudeshti := False;
-
-  vtrGraph.BeginUpdate;
-  vtrGraph.Clear;
-  vRootGraph := vtrGraph.AddChild(nil, nil);
-    dataGraph := vtrGraph.GetNodeData(vRootGraph);
-    dataGraph.vid := vvNone;
-    dataGraph.index := 0;
-  Adb_dm.ACollPatGR.Clear;
-  Adb_dm.CollPatient.FillListNodes(Adb_DM.AdbMainLink, vvPatient);
-  vtrGraph.OnCompareNodes := nil;
-  //vtrGraph.OnGetText := nil;
-  vtrGraph.OnGetImageIndexEx := nil;
-  Stopwatch := TStopwatch.StartNew;
-  for i := 0 to Adb_dm.CollPatient.ListNodes.Count - 1 do
-  begin
-    //node := pointer(PByte(CollPatient.ListNodes[i]) - lenNode);
-    pat := TRealPatientNewItem(Adb_dm.ACollPatGR.Add);
-    //pat := TRealPatientNewItem.Create(nil);
-    pat.DataPos := Adb_dm.CollPatient.ListNodes[i].DataPos;
-    pat.FNode := pointer(PByte(Adb_dm.CollPatient.ListNodes[i]) - lenNode);
-    //pat := CollPatient.Items[i];
-    dat := Adb_dm.CollPatient.getDateMap(Adb_dm.CollPatient.ListNodes[i].DataPos, word(PatientNew_BIRTH_DATE));
-    log := TlogicalPatientNewSet(Adb_dm.CollPatient.getLogical40Map(Adb_dm.CollPatient.ListNodes[i].DataPos, word(PatientNew_Logical)));
-    profGR.SexMale := (TLogicalPatientNew.SEX_TYPE_M in log) ;
-    profGR.CurrDate := dat;
-    profGR.GeneratePeriod1();
-
-    if i < 4100 then
-    begin
-      //profGR.LoadVtrGraph1(pat, i);
-    end;
-    //FreeAndNil(pat);
-  end;
-  Elapsed := Stopwatch.Elapsed;
-  vtrGraph.EndUpdate;
-  //vtrGraph.Clear;
-  //CollPatGR.Clear;
-
-  mmoTest.lines.add(Format('%d nodes за  проф: %f', [vtrGraph.TotalCount, Elapsed.TotalMilliseconds]));
+  profGR.LoadVtr;
 end;
 
 procedure TfrmSuperHip.miListAnalysisClick(Sender: TObject);
@@ -18000,17 +17942,28 @@ begin
   //създаване на прегледа с добавяне в колекцията
   TempItem := TRealPregledNewItem(ADB_DM.CollPregled.Add);
   //TempItem.Fpatient := FmxProfForm.Patient; //zzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
+
   if ADB_DM.PatNodesBack.CurrentGraphIndex < 0 then exit;
-  if ADB_DM.PatNodesBack.lstGraph.Count = 0 then
+  if profGR.lstAllGraph.Count = 1 then
   begin
-    Exit;/////zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    if profGR.lstAllGraph[0].Count = 0 then
+    begin
+      Exit;/////zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+    end;
+    if ADB_DM.PatNodesBack.CurrentGraphIndex > profGR.lstAllGraph[0].Count - 1 then  Exit;
+    gr := profGR.lstAllGraph[0][ADB_DM.PatNodesBack.CurrentGraphIndex];
+  end
+  else
+  begin
+    raise Exception.Create('ADB_DM.PatNodesBack.lstGraph ');
   end;
-  if ADB_DM.PatNodesBack.CurrentGraphIndex > ADB_DM.PatNodesBack.lstGraph.Count - 1 then  Exit;
+
+
 
 
 
   try
-    gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
+    //gr := ADB_DM.PatNodesBack.lstGraph[ADB_DM.PatNodesBack.CurrentGraphIndex];
     TempItem.StartDate := Floor(gr.endDate);// Тука трябва да е последния ден от срока за профилактиката
     TempItem.StartTime := 0;
   except
@@ -22251,24 +22204,28 @@ procedure TfrmSuperHip.vtrGraphCompareNodes(Sender: TBaseVirtualTree;
    Node1, Node2: PVirtualNode; Column: TColumnIndex; var Result: Integer);
 var
   cl132_1, cl132_2: TRealCl132Item;
-  data1, data2: PNodeRec;
+  data1, data2, datapat: PAspRec;
   //pat: TRealPatientNewItem;
 begin
   if Column <> 0 then Exit;
   data1 := Sender.GetNodeData(Node1);
   data2 := Sender.GetNodeData(Node2);
 
-  //cl132_1 := FmxProfForm.Patient.lstGraph[data1.index].Cl132;
-//  cl132_2 := FmxProfForm.Patient.lstGraph[data2.index].Cl132;
-//
-//  if FmxProfForm.Patient.lstGraph[data1.index].endDate > FmxProfForm.Patient.lstGraph[data2.index].endDate then
-//     Result := 1
-//  else
-//  if FmxProfForm.Patient.lstGraph[data1.index].endDate < FmxProfForm.Patient.lstGraph[data2.index].endDate then
-//    Result := -1
-//  else
+  case data1.vid of
+    vvCL132:
+    begin
+      dataPat := vtrGraph.GetNodeData(Node1.Parent.Parent);
+
+     if profGR.lstAllGraph[dataPat.index][data1.index].endDate > profGR.lstAllGraph[dataPat.index][data2.index].endDate then
+       Result := 1
+     else
+       Result := -1;
+
+
 //    Result := StrToInt(cl132_1.cl136) - StrToInt(cl132_2.cl136);//zzzzzzzzzzzzzzzzzzzz pregNodes
    
+    end;
+  end;
 end;
 
 procedure TfrmSuperHip.vtrGraphGetImageIndexEx(Sender: TBaseVirtualTree; Node: PVirtualNode; Kind: TVTImageKind; Column: TColumnIndex; var Ghosted: Boolean;
@@ -22342,279 +22299,6 @@ begin
 //      end; //case
 //    end; //0
 //  end;//zzzzzzzzzzzzzzzzzzz pregNodes
-end;
-
-procedure TfrmSuperHip.vtrGraphGetText(Sender: TBaseVirtualTree;
-  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
-  var CellText: string);
-var
-  data, dataCL132, dataPr001, dataCl134, dataPeriod, dataPat: PAspRec;
-  cl132: TRealCL132Item;
-  cl134: TCL134Item;
-  pr001: TRealPR001Item;
-  CL142: TRealCl142Item;
-  CL088: TRealCL088Item;
-  preg: TRealPregledNewItem;
-  pat: TRealPatientNewItem;
-  i: integer;
-  cl132_CL136Str: string;
-  strtDate: TDate;
-begin
-  if node = nil then Exit;
-
-  data := vtrGraph.GetNodeData(node);
-  case Column of
-    0:
-    begin
-      case data.index of
-        -1: CellText := 'минали';
-        -2: CellText := 'текущи';
-        -3: CellText := 'бъдещи';
-
-      else
-        case data.vid of
-          vvNone:
-          begin
-            CellText := 'Графици';
-          end;
-          vvCl132:
-          begin
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[data.index].Cl132;
-            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
-          end;
-          vvPr001:
-          begin
-            if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-            dataCL132 := vtrGraph.GetNodeData(node.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Description));
-            if (pr001.CL142 <> nil)  and (pr001.CL142.FListCL088.Count =1) then
-            begin
-              cl088 := pr001.CL142.FListCL088[0];
-              CellText  := CellText + ' cl088 ' + CL088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
-            end;
-          end;
-          vvCL088:
-          begin
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            CL142 := pr001.CL142;
-            cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
-          end;
-          vvCl134:
-          begin
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            cl134 := pr001.LstCl134[data.index];
-            CellText := cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_Description));
-          end;
-          vvPatient:
-          begin
-            pat := ADB_DM.ACollPatGR.Items[data.index];
-            CellText := pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_FNAME));
-            CellText := CellText + ' ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_SNAME));
-            CellText := CellText + ' ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPregled.posData, word(PatientNew_LNAME));
-          end;
-        end;
-      end;
-    end;
-    1:
-    begin
-      case data.index of
-        -1: ;//CellText := 'минали';
-        -2: //CellText := 'текущи';
-        begin
-          if data.DataPos <> MaxInt then
-          begin
-            dataPat := vtrGraph.GetNodeData(node.Parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[data.DataPos].Cl132;
-            CellText := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Key));
-            CellText := CellText + '  ' + Cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.CL132Coll.posData, word(CL132_Description));
-          end;
-        end;
-        -3: ;//CellText := 'бъдещи';
-
-      else
-        case data.vid of
-          vvnone:
-          begin
-            CellText := 'Брой пациенти: ' + inttostr(node.ChildCount);
-          end;
-          vvPatient:
-          begin
-            dataPat := vtrGraph.GetNodeData(node);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            CellText := 'ЕГН ' + pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, ADB_DM.CollPatient.posData, word(PatientNew_EGN));
-          end;
-          vvCl132:
-          begin
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            CellText := DateToStr(pat.lstGraph[data.index].startDate) + ' - ' + DateToStr(pat.lstGraph[data.index].endDate);
-            cl132 := pat.lstGraph[data.index].Cl132;
-            cl132_CL136Str := cl132.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(cl132_CL136));
-            case cl132_CL136Str[1] of
-              '1':
-              begin
-                if cl132.FPregled <> nil then
-                begin
-                  strtDate := TRealPregledNewItem(cl132.FPregled).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PregledNew_START_DATE));
-                  CellText := DateToStr(strtDate) + #13#10 + CellText;
-                end;
-              end;
-            else
-              begin
-                pr001 := cl132.FListPr001[0];
-                CellText := CellText + #13#10 + pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Specialty_CL006));//zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz ne e since a rule
-              end;
-            end;
-          end;
-          vvPr001:
-          begin
-            if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-            dataCL132 := vtrGraph.GetNodeData(node.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[data.index];
-            CellText := pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Activity_ID));
-
-            if pr001.CL142 <> nil then
-            begin
-              CellText := CellText + #13#10 + pr001.CL142.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL142_nhif_code));
-            end;
-            if pr001.FExamAnal <> nil then
-            begin
-              strtDate := TRealExamAnalysisItem(pr001.FExamAnal).getDateMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(ExamAnalysis_DATA));
-              CellText := DateToStr(strtDate) + #13#10 + CellText;
-            end;
-          end;
-          vvCL088:
-          begin
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            CL142 := pr001.CL142;
-            cl088 := CL142.FListCL088[data.index];
-            CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_Description));
-          end;
-          vvCl134:
-          begin
-            dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-            dataPr001 := vtrGraph.GetNodeData(node.Parent);
-            dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-            pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-            cl132 := pat.lstGraph[dataCL132.index].Cl132;
-            pr001 := cl132.FListPr001[dataPr001.index];
-            cl134 := pr001.LstCl134[data.index];
-            case cl134.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL134_CL028))[1] of
-              '1': CellText := 'Количествено представяне';
-              '2': CellText := 'Категоризация по номенклатура';
-              '3': CellText := 'Описателен метод';
-              '4': CellText := 'Конкретна дата';
-              '5': CellText := 'Положително или отрицателно';
-            end;
-          end;
-        end;
-      end;
-    end;
-    2:
-    begin
-      //CellText := TRttiEnumerationType.GetName(Data.vid);
-      case data.vid of
-        vvPatient:
-        begin
-          dataPat := vtrGraph.GetNodeData(node);
-          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-          CellText := 'има общо: ' + IntToStr(pat.FPregledi.Count) + ' прегледа';
-        end;
-        vvCL088:
-        begin
-          dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent.parent);
-          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-          dataPr001 := vtrGraph.GetNodeData(node.Parent);
-          dataCL132 := vtrGraph.GetNodeData(node.Parent.Parent);
-          cl132 := pat.lstGraph[dataCL132.index].Cl132;
-          pr001 := cl132.FListPr001[dataPr001.index];
-          CL142 := pr001.CL142;
-          cl088 := CL142.FListCL088[data.index];
-          CellText := cl088.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(CL088_cl028));
-        end;
-        vvPr001:
-        begin
-          if node.Parent.parent.parent = nil then
-            begin
-              CellText := 'errrrr';
-              exit;
-            end;
-          dataCL132 := vtrGraph.GetNodeData(node.Parent);
-          dataPat := vtrGraph.GetNodeData(node.Parent.Parent.parent);
-          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-          cl132 := pat.lstGraph[dataCL132.index].Cl132;
-          pr001 := cl132.FListPr001[data.index];
-          begin
-            case pr001.getAnsiStringMap(Adb_DM.AdbNomenNzis.Buf, ADB_DM.PR001Coll.posData, word(PR001_Nomenclature))[5] of
-              '2': CellText := 'Изследвания';
-              '0': CellText := 'Дейност по профилактика';
-              '3': CellText := 'Въпроси';
-              '8': CellText := 'Имунизации';
-            end;
-          end;
-        end;
-        vvCl132:
-        begin
-          dataPeriod := vtrGraph.GetNodeData(node.Parent);
-          dataPat := vtrGraph.GetNodeData(node.Parent.Parent);
-          pat := ADB_DM.ACollPatGR.Items[dataPat.index];
-          case dataPeriod.index of
-            -1: //минали
-            begin
-              CellText := '++' + inttostr(DaysBetween(pat.lstGraph[data.index].endDate, UserDate));
-            end;
-            -2: //текущи
-            begin
-              cl132 := pat.lstGraph[data.index].Cl132;
-
-              CellText := '+' + inttostr(DaysBetween(pat.lstGraph[data.index].endDate, UserDate));
-            end;
-            -3: //бъдещи
-            begin
-              CellText := '-' + inttostr(DaysBetween(pat.lstGraph[data.index].startDate, UserDate));
-            end;
-          end;
-
-        end;
-      end;
-    end;
-  end;
-
 end;
 
 procedure TfrmSuperHip.vtrGraphGetText1(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
@@ -24268,6 +23952,7 @@ begin
 //        FmxProfForm.Patient.FPregledi.Clear;
 //        FmxProfForm.Patient.FNode := Node;
         Stopwatch := TStopwatch.StartNew;
+        //ProfGraph.
         GetCurrentPatProf2();//zzzzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
       end;
       Elapsed := Stopwatch.Elapsed;

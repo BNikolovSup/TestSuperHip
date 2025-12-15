@@ -256,7 +256,10 @@ type
              vvCL088Root,
              vvNZIS_DIAGNOSTIC_REPORTRoot,
              vvCertificates,
-             vvCertificatesRoot
+             vvCertificatesRoot,
+             vvPeriodPast,
+             vvPeriodCurrent,
+             vvPeriodFuture
              );
 
 
