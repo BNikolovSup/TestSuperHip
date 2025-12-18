@@ -58,7 +58,7 @@ ADB = Aspect DataBase
 
 | **Сегмент** | **Описание** |
 | --- | --- |
-| Header | 64B с позиции на блокове |
+| Header | 100B с позиции на блокове |
 | Metadata | offsets за полетата |
 | Data Segment | реалните стойности |
 | History Chain | 4B pointer към предишна стойност |
