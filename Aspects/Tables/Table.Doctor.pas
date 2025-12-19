@@ -5,7 +5,8 @@ uses
   Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
-  VirtualTrees, VCLTee.Control, System.Generics.Defaults;
+  VirtualTrees, VCLTee.Control, System.Generics.Defaults, Tee.Renders,
+  uGridHelpers  ;
 
 type
 TCollectionForSort = class(TPersistent)
@@ -79,6 +80,10 @@ TDoctorItem = class(TBaseItem)
 	function GetPRecord: Pointer; override;
     procedure FillPRecord(SetOfProp: TParamSetProp; arrstr: TArray<string>); override;
     function GetCollType: TCollectionsType; override;
+  procedure InsertDoctorToRole(ADBStream: TFileStream; var OtherDataPos: Cardinal);
+  procedure AppendInsertDoctorCmdToRole(CmdStreamRole: TFileStream;NewDoctorDataPos: Cardinal);
+	procedure ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree; vCmd: PVirtualNode; CmdItem: TCmdItem);
+	procedure FillPropDoctor(propindex: TPropertyIndex; stream: TStream);
   end;
 
 
@@ -148,10 +153,11 @@ TDoctorItem = class(TBaseItem)
     procedure OnSetNumSearchEDT(Value: Integer; field: Word; Condition: TConditionSet);
     procedure OnSetLogicalSearchEDT(Value: Boolean; field, logIndex: Word);
     procedure OnSetTextSearchLog(Log: TlogicalDoctorSet);
-	procedure CheckForSave(var cnt: Integer);
+	procedure CheckForSave(var cnt: Integer); override;
 	function IsCollVisible(PropIndex: Word): Boolean; override;
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
+	function GetCollDelType: TCollectionsType; override;
   end;
 
 implementation
@@ -199,6 +205,87 @@ begin
   result := Pointer(PRecord);
 end;
 
+procedure TDoctorItem.InsertDoctorToRole(ADBStream: TFileStream; var OtherDataPos: Cardinal);
+var
+  CollType: Word;
+  metaPosition, dataPosition: Cardinal;
+  FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
+  buf: Cardinal;
+
+begin
+  // 1. Четем header
+  ADBStream.Seek(0, soBeginning);
+  ADBStream.ReadBuffer(FPosMetaData, 4);
+  ADBStream.ReadBuffer(FLenMetaData, 4);
+  ADBStream.ReadBuffer(FPosData, 4);
+  ADBStream.ReadBuffer(FLenData, 4);
+
+  metaPosition := FPosMetaData + FLenMetaData;
+  dataPosition := FPosData + FLenData;
+
+  // 2. Записваме тип + версия
+  CollType := Word(ctDoctor);
+  ADBStream.Seek(metaPosition, soBeginning);
+  ADBStream.WriteBuffer(CollType, 2);
+  ADBStream.WriteBuffer(FVersion, 2);
+  Inc(metaPosition, 4);
+
+  // 3. Това е DataPos на доктора
+  //OtherDataPos := metaPosition; // ==> 104
+
+  // 4. Полета (пример: EGN + FNAME)
+  SaveDataToFile(PRecord.EGN, 0, metaPosition, dataPosition, ADBStream, FPosData);
+  //SaveDataToFile(PRecord.FNAME, 0, metaPosition, dataPosition, ADBStream, FPosData);
+
+  // 5. Обновяваме header дължините
+  ADBStream.Seek(4, soBeginning);
+  buf :=  metaPosition - FPosMetaData;
+  ADBStream.WriteBuffer(buf, 4);
+
+  ADBStream.Seek(12, soBeginning);
+  buf :=  dataPosition - FPosData;
+  ADBStream.WriteBuffer(buf, 4);
+end;
+
+procedure TDoctorItem.AppendInsertDoctorCmdToRole(
+  CmdStreamRole: TFileStream;
+  NewDoctorDataPos: Cardinal
+);
+var
+  Props: TLogicalData16;
+  LenPos: Int64;
+  RecStart: Int64;
+  RecEnd: Int64;
+  RecLen: Word;
+begin
+  // 1) Props bitmap: само Doctor_EGN
+  Props := [];
+  Include(Props, Ord(Doctor_EGN)); // ако Doctor_EGN е enum 0..N
+
+  // 2) Пишем header + props
+  RecStart := CmdStreamRole.Position;
+  WriteCmdHeaderToFile_Props16(
+    CmdStreamRole,
+    ctDoctor,
+    toInsert,
+    FVersion,
+    NewDoctorDataPos,
+    Props,
+    LenPos
+  );
+
+  // 3) Payload (само EGN)
+  SaveStringToCmdFile(CmdStreamRole, PRecord.EGN);
+
+  // 4) Backpatch Len
+  RecEnd := CmdStreamRole.Position;
+  RecLen := Word(RecEnd - RecStart);
+  PatchCmdRecordLen(CmdStreamRole, LenPos, RecLen);
+end;
+
+
+
+
 procedure TDoctorItem.InsertDoctor;
 var
   CollType: TCollectionsType;
@@ -229,7 +316,7 @@ begin
       pWordData := pointer(PByte(buf) + metaPosition + 2);
       pWordData^  := FVersion;
       inc(metaPosition, 4);
-	  Self.DataPos := metaPosition;
+	    Self.DataPos := metaPosition;
 	  
       for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
       begin
@@ -287,6 +374,81 @@ begin
   end;
 end;
 
+procedure TDoctorItem.ReadCmd(stream: TStream; vtrTemp: TVirtualStringTree;
+  vCmd: PVirtualNode; CmdItem: TCmdItem);
+var
+  delta: integer;
+  flds08: TLogicalData08;
+  propindexDoctor: TDoctorItem.TPropertyIndex;
+  vCmdProp: PVirtualNode;
+  dataCmdProp: PAspRec;
+begin
+  delta := sizeof(TLogicalData128) - sizeof(TLogicalData08);
+  stream.Read(flds08, sizeof(TLogicalData08));
+  stream.Position := stream.Position + delta;
+  New(self.PRecord);
+
+  self.PRecord.setProp := TDoctorItem.TSetProp(flds08);// тука се записва какво има като полета
+
+
+  for propindexDoctor := Low(TDoctorItem.TPropertyIndex) to High(TDoctorItem.TPropertyIndex) do
+  begin
+    if not (propindexDoctor in self.PRecord.setProp) then
+      continue;
+    if vtrTemp <> nil then
+    begin
+      vCmdProp := vtrTemp.AddChild(vCmd, nil);
+      dataCmdProp := vtrTemp.GetNodeData(vCmdProp);
+      dataCmdProp.index := word(propindexDoctor);
+      dataCmdProp.vid := vvDoctor;
+    end;
+    self.FillPropDoctor(propindexDoctor, stream);
+  end;
+
+  CmdItem.AdbItem := self;
+end;
+
+procedure TDoctorItem.FillPropDoctor(propindex: TPropertyIndex;
+  stream: TStream);
+var
+  lenStr: Word;
+begin
+  case propindex of
+    Doctor_EGN:
+        begin
+          stream.Read(lenStr, 2);
+          SetLength(Self.PRecord.EGN, lenStr);
+          stream.Read(Self.PRecord.EGN[1], lenStr);
+        end;
+            Doctor_FNAME:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.FNAME, lenStr);
+              stream.Read(Self.PRecord.FNAME[1], lenStr);
+            end;
+            Doctor_ID: stream.Read(Self.PRecord.ID, SizeOf(Integer));
+            Doctor_LNAME:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.LNAME, lenStr);
+              stream.Read(Self.PRecord.LNAME[1], lenStr);
+            end;
+            Doctor_SNAME:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.SNAME, lenStr);
+              stream.Read(Self.PRecord.SNAME[1], lenStr);
+            end;
+            Doctor_UIN:
+            begin
+              stream.Read(lenStr, 2);
+              SetLength(Self.PRecord.UIN, lenStr);
+              stream.Read(Self.PRecord.UIN[1], lenStr);
+            end;
+            Doctor_Logical: stream.Read(Self.PRecord.Logical, SizeOf(TLogicalData16));
+  end;
+end;
+
 procedure TDoctorItem.SaveDoctor(Abuf: Pointer; var dataPosition: Cardinal);
 var
   pCardinalData: PCardinal;
@@ -306,7 +468,7 @@ var
   metaPosition, PropPosition: cardinal;
   propIndx: TPropertyIndex;
 begin
-  CollType := ctDoctor;
+  CollType := PCollectionsType(PByte(Buf) + DataPos - 4)^;
   SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), CollType, toUpdate, FVersion, dataPosition);
   case FVersion of
     0:
@@ -462,47 +624,47 @@ begin
     begin
 	  // === проверки за запазване (CheckForSave) ===
 
-  if (Doctor_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_EGN))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_EGN in tempItem.PRecord.setProp) and (tempItem.PRecord.EGN <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_EGN))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_FNAME))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_FNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.FNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_FNAME))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(Doctor_ID))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_ID in tempItem.PRecord.setProp) and (tempItem.PRecord.ID <> Self.getIntMap(tempItem.DataPos, word(Doctor_ID))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_LNAME))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_LNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.LNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_LNAME))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_SNAME))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_SNAME in tempItem.PRecord.setProp) and (tempItem.PRecord.SNAME <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_SNAME))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_UIN in tempItem.PRecord.setProp) and (tempItem.PRecord.UIN <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_UIN))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_UIN in tempItem.PRecord.setProp) and (tempItem.PRecord.UIN <> Self.getAnsiStringMap(tempItem.DataPos, word(Doctor_UIN))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
 
-  if (Doctor_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(Doctor_Logical))) then
-  begin
-    inc(cnt);
-    exit;
-  end;
+      if (Doctor_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(Doctor_Logical))) then
+      begin
+        inc(cnt);
+        exit;
+      end;
     end;
   end;
 end;
@@ -868,6 +1030,11 @@ begin
   Result := ctDoctor;
 end;
 
+function TDoctorColl.GetCollDelType: TCollectionsType;
+begin
+  Result := ctDoctorDel;
+end;
+
 procedure TDoctorColl.GetFieldText(Sender: TObject; const ACol, ARow: Integer; var AFieldText: String);
 var
   Doctor: TDoctorItem;
@@ -1057,10 +1224,7 @@ procedure TDoctorColl.OnSetDateSearchEDT(Value: TDate; field: Word; Condition: T
 begin
   Include(ListForFinder[0].PRecord.setProp, TDoctorItem.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
-  //case TDoctorItem.TPropertyIndex(Field) of
-//
-//  end;
+  
 end;
 
 
@@ -1069,10 +1233,9 @@ procedure TDoctorColl.OnSetNumSearchEDT(Value: Integer; field: Word; Condition: 
 begin
   Include(ListForFinder[0].PRecord.setProp, TDoctorItem.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
-
-  case TDoctorItem.TPropertyIndex(Field) of
-Doctor_ID: ListForFinder[0].PRecord.ID := Value;
-  end;
+case TDoctorItem.TPropertyIndex(Field) of
+    Doctor_ID: ListForFinder[0].PRecord.ID := Value;
+    end;
 end;
 
 
@@ -1301,7 +1464,7 @@ end;
 procedure TDoctorColl.ShowGrid(Grid: TTeeGrid);
 var
   i: word;
-
+  clls: TDiffCellRenderer;
 begin
   Grid.Data:=TVirtualModeData.Create(self.FieldCount + 1, self.Count);
   for i := 0 to self.FieldCount - 1 do
@@ -1317,6 +1480,11 @@ begin
   begin
     Grid.Columns[i].Width.Value := 100;
   end;
+  
+  clls := TDiffCellRenderer.Create(Grid.Cells.OnChange);
+  clls.FGrid := Grid;
+  clls.FCollAdb := Self;
+  Grid.Cells := clls;
 
   Grid.Columns[self.FieldCount].Width.Value := 50;
   Grid.Columns[self.FieldCount].Index := 0;
@@ -1511,5 +1679,6 @@ begin
       Doctor_UIN: SortByIndexAnsiString;
   end;
 end;
+
 
 end.

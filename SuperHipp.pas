@@ -1630,7 +1630,26 @@ begin
 end;
 
 procedure TfrmSuperHip.btnOldHipClick(Sender: TObject);
+var
+  doc: TRealDoctorItem;
+  fstreamAdb, fstreamCmd: TFileStream;
+  otherDataPos: Cardinal;
 begin
+  fstreamAdb := TFileStream.Create('d:\тест360\AspHip{5F1FCB3C-A1DB-46FE-93BF-80D3EAA16979}.adb', fmOpenReadWrite);
+  fstreamCmd := TFileStream.Create('d:\тест360\AspHip{5F1FCB3C-A1DB-46FE-93BF-80D3EAA16979}.cmd', fmOpenReadWrite);
+  doc := Adb_DM.CollDoctor.items[0];
+  New(doc.PRecord);
+  doc.PRecord.setProp := [Doctor_EGN];
+  doc.PRecord.EGN := 'ddddddddddd';
+
+  doc.InsertDoctorToRole(fstreamAdb, otherDataPos);
+  doc.AppendInsertDoctorCmdToRole(fstreamCmd, otherDataPos);
+
+  Dispose(doc.PRecord);
+  doc.PRecord := nil;
+
+
+  Exit;
   tmpVtr.FilterText := edtFilterTemp.Text;
   tmpVtr.ChoiceOldMenu(sender);
   pgcTree.ActivePage := tsTempVTR;

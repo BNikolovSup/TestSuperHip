@@ -102,7 +102,6 @@ uses
   Aspects.Collections in 'Aspects\Aspects.Collections.pas',
   Aspects.Types in 'Aspects\Aspects.Types.pas',
   RealObj.RealNzis in 'Aspects\RealObj.RealNzis.pas',
-  MainRttiExpl in '..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas',
   TitleBar in '..\Popup\TitleBar.pas' {frmTitlebar},
   RoleBar in '..\Popup\RoleBar.pas' {frmRolebar},
   RolePanels in '..\Popup\RolePanels.pas' {frmRolePanels},

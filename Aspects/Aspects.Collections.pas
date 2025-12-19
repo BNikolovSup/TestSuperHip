@@ -341,7 +341,16 @@ TCollectionForSort = class(TPersistent)
 
 
     procedure SaveNull(var metaPosition: cardinal);
+    procedure SaveNullToFile(
+      ADBStream: TFileStream;
+      var metaPosition: Cardinal
+    );
     procedure SaveHeaderData(var PropPosition, dataPosition: Cardinal);
+    procedure SaveHeaderDataToFile(
+      ADBStream: TFileStream;
+      var PropPosition, dataPosition: Cardinal;
+      FDataPos: Cardinal   // DataPos на текущия обект (доктора)
+    );
     procedure UpdateHeaderData(var PropPosition: cardinal; const dataPosition: Cardinal); virtual;
 
     procedure SaveData(const intData: Integer; PropPosition: cardinal;
@@ -453,6 +462,15 @@ TCollectionForSort = class(TPersistent)
                           var metaPosition, dataPosition: Cardinal); overload;
 
     procedure SetPosCMDTemp(posCmd: Cardinal); virtual;
+
+
+    procedure SaveDataToFile(
+      const strData: AnsiString;
+      PropPosition: Cardinal;
+      var metaPosition, dataPosition: Cardinal;
+      ADBStream: TFileStream;
+      BaseDataPos: Cardinal
+    );
   public
     ArrCondition: TArray<TConditionSet>;
     constructor Create(Collection: TCollection); override;
@@ -501,6 +519,26 @@ TCollectionForSort = class(TPersistent)
     function SaveStreamCommandTemp(Props: TLogicalData08; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
     function SaveStreamCommandTemp(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
     function SaveStreamCommandTemp(Props: TLogicalData16; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal = 0): TCommandStream; overload;
+
+    procedure WriteCmdHeaderToFile_Props16(
+      CmdStream: TFileStream;
+      Vid: TCollectionsType;
+      OpType: TOperationType;
+      Ver: Word;
+      DataPos: Cardinal;
+      Props: TLogicalData16;
+      out LenPos: Int64
+    );
+    procedure PatchCmdRecordLen(
+      CmdStream: TFileStream;
+      LenPos: Int64;
+      RecordLen: Word
+    );
+
+    procedure SaveStringToCmdFile(
+      CmdStream: TFileStream;
+      const StrData: AnsiString
+    );
 
 
 
@@ -682,6 +720,77 @@ implementation
 uses
    System.AnsiStrings, uGridHelpers;
 
+procedure TBaseItem.WriteCmdHeaderToFile_Props16(
+  CmdStream: TFileStream;
+  Vid: TCollectionsType;
+  OpType: TOperationType;
+  Ver: Word;
+  DataPos: Cardinal;
+  Props: TLogicalData16;
+  out LenPos: Int64
+);
+var
+  LenPlaceholder: Word;
+begin
+  // Ще backpatch-нем Len накрая
+  LenPlaceholder := 0;
+
+  // Запомняме къде е Len (offset 0 в record-а, не във файла)
+  LenPos := CmdStream.Position;
+
+  // 0..1 Len
+  CmdStream.WriteBuffer(LenPlaceholder, SizeOf(Word));
+
+  // 2..3 OpType (2 bytes)
+  CmdStream.WriteBuffer(OpType, SizeOf(Word));
+
+  // 4..5 Ver
+  CmdStream.WriteBuffer(Ver, SizeOf(Word));
+
+  // 6..7 Vid
+  CmdStream.WriteBuffer(Vid, SizeOf(Word));
+
+  // 8..11 DataPos
+  CmdStream.WriteBuffer(DataPos, SizeOf(Cardinal));
+
+  // 12..15 Props
+  CmdStream.WriteBuffer(Props, SizeOf(TLogicalData16));
+end;
+
+procedure TBaseItem.PatchCmdRecordLen(
+  CmdStream: TFileStream;
+  LenPos: Int64;
+  RecordLen: Word
+);
+var
+  CurPos: Int64;
+begin
+  CurPos := CmdStream.Position;
+  try
+    CmdStream.Seek(LenPos, soBeginning);
+    CmdStream.WriteBuffer(RecordLen, SizeOf(Word));
+  finally
+    CmdStream.Seek(CurPos, soBeginning);
+  end;
+end;
+
+procedure TBaseItem.SaveStringToCmdFile(
+  CmdStream: TFileStream;
+  const StrData: AnsiString
+);
+var
+  Len: Word;
+begin
+  Len := Length(StrData);
+  CmdStream.WriteBuffer(Len, SizeOf(Word));
+  if Len > 0 then
+    CmdStream.WriteBuffer(StrData[1], Len);
+end;
+
+
+
+
+
 procedure TBaseItem.AddForLaterSave(streamPos: Cardinal; obj: TObject; v: PVirtualNode);
 var
   forLater: TForLaterSave;
@@ -736,7 +845,7 @@ end;
 
 destructor TBaseItem.Destroy;
 begin
-  
+
   inherited;
 end;
 
@@ -1843,6 +1952,36 @@ begin
   inc(dataPosition, 4);
 end;
 
+procedure TBaseItem.SaveHeaderDataToFile(
+  ADBStream: TFileStream;
+  var PropPosition, dataPosition: Cardinal;
+  FDataPos: Cardinal   // DataPos на текущия обект (доктора)
+);
+var
+  FPosData, FPosMetaData: Cardinal;
+  ADataPos: Cardinal;
+begin
+  // FPosData @ offset 8
+  ADBStream.Seek(8, soBeginning);
+  ADBStream.ReadBuffer(FPosData, SizeOf(Cardinal));
+
+  // FPosMetaData @ offset 0
+  ADBStream.Seek(0, soBeginning);
+  ADBStream.ReadBuffer(FPosMetaData, SizeOf(Cardinal));
+
+  // Адресът, който ще се върне в meta map-а
+  PropPosition := dataPosition - FPosData + 4;
+
+  // Абсолютен DataPos за историята
+  ADataPos := FDataPos + FPosData + 4;
+
+  // Запис на history pointer
+  ADBStream.Seek(dataPosition, soBeginning);
+  ADBStream.WriteBuffer(ADataPos, SizeOf(Cardinal));
+  Inc(dataPosition, 4);
+end;
+
+
 procedure TBaseItem.SaveData(const intData: Integer; PropPosition: cardinal ; var metaPosition,
   dataPosition: Cardinal);
 var
@@ -1894,6 +2033,20 @@ begin
 //  metaPosition := stream.Position;
 end;
 
+procedure TBaseItem.SaveNullToFile(
+  ADBStream: TFileStream;
+  var metaPosition: Cardinal
+);
+var
+  Zero: Cardinal;
+begin
+  Zero := 0;
+  ADBStream.Seek(metaPosition, soBeginning);
+  ADBStream.WriteBuffer(Zero, SizeOf(Cardinal));
+  Inc(metaPosition, 4);
+end;
+
+
 function TBaseItem.SaveStreamCommand(Props: TLogicalData32; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal): TCommandStream;
 begin
   result := TBaseCollection(Collection).streamComm;
@@ -1904,6 +2057,7 @@ begin
   Result.DataPos := AdataPos;
   Result.Propertys := props;
 end;
+
 
 //function TBaseItem.SaveStreamCommand(Props: TLogicalData40; vid: TCollectionsType; OpType: TOperationType; ver: word; AdataPos: cardinal): TCommandStream;
 //begin
@@ -2065,6 +2219,71 @@ begin
   streamComm.Write(len, 2);
   streamComm.Write(strData[1], len);
 end;
+
+procedure TBaseItem.SaveDataToFile(
+  const strData: AnsiString;
+  PropPosition: Cardinal;
+  var metaPosition, dataPosition: Cardinal;
+  ADBStream: TFileStream;
+  BaseDataPos: Cardinal
+);
+var
+  Len: Word;
+  ADataPos, DatPos: Cardinal;
+  OldMetaValue: Cardinal;
+  ZeroWord: Word;
+begin
+  // 1. Четем DatPos от header-а (offset +8)
+  ADBStream.Seek(8, soBeginning);
+  ADBStream.ReadBuffer(DatPos, SizeOf(Cardinal));
+
+  Len := Length(strData);
+
+  // 2. Изчисляваме ADataPos (абсолютен offset в data area)
+  ADataPos := dataPosition + 4 - DatPos;
+
+  // 3. Четем старата meta стойност (за история)
+  ADBStream.Seek(metaPosition, soBeginning);
+  ADBStream.ReadBuffer(OldMetaValue, SizeOf(Cardinal));
+
+  // 4. Записваме history pointer
+  ADBStream.Seek(ADataPos - 4 + DatPos, soBeginning);
+  ADBStream.WriteBuffer(OldMetaValue, SizeOf(Cardinal));
+
+  // 5. Записваме новия meta pointer
+  ADBStream.Seek(metaPosition, soBeginning);
+  ADBStream.WriteBuffer(ADataPos, SizeOf(Cardinal));
+  Inc(metaPosition, 4);
+
+  // 6. Записваме дължината на стринга
+  ADBStream.Seek(ADataPos + DatPos, soBeginning);
+  ADBStream.WriteBuffer(Len, SizeOf(Word));
+
+  // 7. Записваме самия стринг
+  if Len > 0 then
+  begin
+    ADBStream.WriteBuffer(strData[1], Len);
+  end;
+
+  // 8. Увеличаваме dataPosition
+  Inc(dataPosition, 6 + Len * SizeOf(AnsiChar));
+
+  // 9. Padding (абсолютно същата логика)
+  ZeroWord := 0;
+  if (dataPosition mod 2) = 0 then
+  begin
+    ADBStream.Seek(dataPosition, soBeginning);
+    ADBStream.WriteBuffer(ZeroWord, 2);
+    Inc(dataPosition, 2);
+  end
+  else
+  begin
+    ADBStream.Seek(dataPosition, soBeginning);
+    ADBStream.WriteBuffer(ZeroWord, 1);
+    Inc(dataPosition, 1);
+  end;
+end;
+
 
 procedure TBaseItem.SaveData(const strData: AnsiString;
   PropPosition: cardinal; var metaPosition, dataPosition: Cardinal);

@@ -53,6 +53,7 @@ TCertificatesItem = class(TBaseItem)
         Logical: TlogicalCertificatesSet;
         setProp: TSetProp;
       end;
+
   public
     PRecord: ^TRecCertificates;
 	IndexInt: Integer;

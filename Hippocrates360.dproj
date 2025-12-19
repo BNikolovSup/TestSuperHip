@@ -229,7 +229,6 @@
         <DCCReference Include="Aspects\Aspects.Collections.pas"/>
         <DCCReference Include="Aspects\Aspects.Types.pas"/>
         <DCCReference Include="Aspects\RealObj.RealNzis.pas"/>
-        <DCCReference Include="..\..\Tools\blog-master\RTTI\Rtti Explorer Lite\MainRttiExpl.pas"/>
         <DCCReference Include="..\Popup\TitleBar.pas">
             <Form>frmTitlebar</Form>
         </DCCReference>

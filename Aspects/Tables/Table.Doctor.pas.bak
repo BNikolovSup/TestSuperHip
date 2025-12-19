@@ -21,6 +21,17 @@ end;
 
 TTeeGRD = class(VCLTee.Grid.TTeeGrid);
 
+TLogicalDoctor = (
+    DOC_ACTIVE,
+    DOG_RZOK,
+    IS_DOGOVOR_NEOTLOGNA,
+    IS_EGN,
+    IS_EMERGENCY_CENTER,
+    IS_NAET,
+    IS_PODVIZHNO_LZ,
+    IS_ZAMESTVASHT,
+    IS_);
+TlogicalDoctorSet = set of TLogicalDoctor;
 
 
 TDoctorItem = class(TBaseItem)
@@ -42,11 +53,11 @@ TDoctorItem = class(TBaseItem)
       TRecDoctor = record
         EGN: AnsiString;
         FNAME: AnsiString;
-        ID: Integer;
+        ID: integer;
         LNAME: AnsiString;
         SNAME: AnsiString;
         UIN: AnsiString;
-        Logical: tLogicalDoctorSet;
+        Logical: TlogicalDoctorSet;
         setProp: TSetProp;
       end;
 
@@ -231,7 +242,7 @@ begin
             Doctor_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
             Doctor_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Doctor_UIN: SaveData(PRecord.UIN, PropPosition, metaPosition, dataPosition);
-            Doctor_Logical: SaveData(PRecord.Logical, PropPosition, metaPosition, dataPosition);
+            Doctor_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -270,7 +281,7 @@ begin
             Doctor_LNAME: Result := IsFinded(ATempItem.PRecord.LNAME, buf, FPosDataADB, word(Doctor_LNAME), cot);
             Doctor_SNAME: Result := IsFinded(ATempItem.PRecord.SNAME, buf, FPosDataADB, word(Doctor_SNAME), cot);
             Doctor_UIN: Result := IsFinded(ATempItem.PRecord.UIN, buf, FPosDataADB, word(Doctor_UIN), cot);
-            Doctor_Logical: Result := IsFinded(ATempItem.PRecord.Logical, buf, FPosDataADB, word(Doctor_Logical), cot);
+            Doctor_Logical: Result := IsFinded(TLogicalData16(ATempItem.PRecord.Logical), buf, FPosDataADB, word(Doctor_Logical), cot);
       end;
     end;
   end;
@@ -313,7 +324,7 @@ begin
             Doctor_LNAME: SaveData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
             Doctor_SNAME: SaveData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Doctor_UIN: SaveData(PRecord.UIN, PropPosition, metaPosition, dataPosition);
-            Doctor_Logical: SaveData(PRecord.Logical, PropPosition, metaPosition, dataPosition);
+            Doctor_Logical: SaveData(TLogicalData16(PRecord.Logical), PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -350,7 +361,6 @@ begin
             Doctor_LNAME: UpdateData(PRecord.LNAME, PropPosition, metaPosition, dataPosition);
             Doctor_SNAME: UpdateData(PRecord.SNAME, PropPosition, metaPosition, dataPosition);
             Doctor_UIN: UpdateData(PRecord.UIN, PropPosition, metaPosition, dataPosition);
-            Doctor_Logical: UpdateData(PRecord.Logical, PropPosition, metaPosition, dataPosition);
           end;
         end
         else
@@ -488,7 +498,7 @@ begin
     exit;
   end;
 
-  if (Doctor_Logical in tempItem.PRecord.setProp) and (TLogicalData(tempItem.PRecord.Logical) <> Self.getLogicalMap(tempItem.DataPos, word(Doctor_Logical))) then
+  if (Doctor_Logical in tempItem.PRecord.setProp) and (TLogicalData16(tempItem.PRecord.Logical) <> Self.getLogical16Map(tempItem.DataPos, word(Doctor_Logical))) then
   begin
     inc(cnt);
     exit;
@@ -544,7 +554,15 @@ end;
 function TDoctorColl.DisplayLogicalName(flagIndex: Integer): string;
 begin
   case flagIndex of
-0: Result := 'tLogicalDoctorSet';
+0: Result := 'DOC_ACTIVE';
+    1: Result := 'DOG_RZOK';
+    2: Result := 'IS_DOGOVOR_NEOTLOGNA';
+    3: Result := 'IS_EGN';
+    4: Result := 'IS_EMERGENCY_CENTER';
+    5: Result := 'IS_NAET';
+    6: Result := 'IS_PODVIZHNO_LZ';
+    7: Result := 'IS_ZAMESTVASHT';
+    8: Result := 'IS_';
   else
     Result := '???';
   end;
@@ -776,11 +794,11 @@ begin
   case TDoctorItem.TPropertyIndex(propIndex) of
     Doctor_EGN: str := (Doctor.PRecord.EGN);
     Doctor_FNAME: str := (Doctor.PRecord.FNAME);
-    Doctor_ID: str := (Doctor.PRecord.ID);
+    Doctor_ID: str := inttostr(Doctor.PRecord.ID);
     Doctor_LNAME: str := (Doctor.PRecord.LNAME);
     Doctor_SNAME: str := (Doctor.PRecord.SNAME);
     Doctor_UIN: str := (Doctor.PRecord.UIN);
-    Doctor_Logical: str := (Doctor.PRecord.Logical);
+    Doctor_Logical: str := Doctor.Logical16ToStr(TLogicalData16(Doctor.PRecord.Logical));
   else
     begin
       str := '';
@@ -883,10 +901,11 @@ begin
   case TDoctorItem.TPropertyIndex(propIndex) of
     Doctor_EGN: str :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Doctor_FNAME: str :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
+    Doctor_ID: str :=  inttostr(Doctor.getIntMap(Self.Buf, Self.posData, propIndex));
     Doctor_LNAME: str :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Doctor_SNAME: str :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
     Doctor_UIN: str :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, propIndex);
-    Doctor_Logical: str :=  Doctor.LogicalToStr(Doctor.getLogicalMap(Self.Buf, Self.posData, propIndex));
+    Doctor_Logical: str :=  Doctor.Logical16ToStr(Doctor.getLogical16Map(Self.Buf, Self.posData, propIndex));
   else
     begin
       str := IntToStr(ARow + 1);
@@ -931,6 +950,7 @@ end;
         else
           TempItem.IndexAnsiStr1 := '';
       end;
+      Doctor_ID: TempItem.IndexInt :=  TempItem.getPIntMap(Self.Buf, self.posData, word(propIndex))^;
       Doctor_LNAME:
       begin
         TempItem.IndexAnsiStr :=  TempItem.getPAnsiStringMap(Self.Buf, self.posData, word(propIndex), len);
@@ -1038,9 +1058,9 @@ begin
   Include(ListForFinder[0].PRecord.setProp, TDoctorItem.TPropertyIndex(Field));
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
-  case TDoctorItem.TPropertyIndex(Field) of
-
-  end;
+  //case TDoctorItem.TPropertyIndex(Field) of
+//
+//  end;
 end;
 
 
@@ -1105,7 +1125,7 @@ begin
   case TDoctorItem.TPropertyIndex(propIndex) of
     Doctor_EGN: Result := actAnsiString;
     Doctor_FNAME: Result := actAnsiString;
-    Doctor_ID: Result := actInteger;
+    Doctor_ID: Result := actinteger;
     Doctor_LNAME: Result := actAnsiString;
     Doctor_SNAME: Result := actAnsiString;
     Doctor_UIN: Result := actAnsiString;
@@ -1141,6 +1161,7 @@ begin
     case TDoctorItem.TPropertyIndex(ACol) of
       Doctor_EGN: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Doctor_FNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
+    Doctor_ID: isOld :=  Doctor.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AValue);
     Doctor_LNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Doctor_SNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
     Doctor_UIN: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AValue;
@@ -1161,11 +1182,11 @@ begin
   case TDoctorItem.TPropertyIndex(ACol) of
     Doctor_EGN: Doctor.PRecord.EGN := AValue;
     Doctor_FNAME: Doctor.PRecord.FNAME := AValue;
-    Doctor_ID: Doctor.PRecord.ID := AValue;
+    Doctor_ID: Doctor.PRecord.ID := StrToInt(AValue);
     Doctor_LNAME: Doctor.PRecord.LNAME := AValue;
     Doctor_SNAME: Doctor.PRecord.SNAME := AValue;
     Doctor_UIN: Doctor.PRecord.UIN := AValue;
-    Doctor_Logical: Doctor.PRecord.Logical := AValue;
+    Doctor_Logical: Doctor.PRecord.Logical := tlogicalDoctorSet(Doctor.StrToLogical16(AValue));
   end;
 end;
 
@@ -1188,6 +1209,7 @@ begin
     case TDoctorItem.TPropertyIndex(ACol) of
       Doctor_EGN: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Doctor_FNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
+    Doctor_ID: isOld :=  Doctor.getIntMap(Self.Buf, Self.posData, ACol) = StrToInt(AFieldText);
     Doctor_LNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Doctor_SNAME: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
     Doctor_UIN: isOld :=  Doctor.getAnsiStringMap(Self.Buf, Self.posData, ACol) = AFieldText;
@@ -1208,11 +1230,11 @@ begin
   case TDoctorItem.TPropertyIndex(ACol) of
     Doctor_EGN: Doctor.PRecord.EGN := AFieldText;
     Doctor_FNAME: Doctor.PRecord.FNAME := AFieldText;
-    Doctor_ID: Doctor.PRecord.ID := AFieldText;
+    Doctor_ID: Doctor.PRecord.ID := StrToInt(AFieldText);
     Doctor_LNAME: Doctor.PRecord.LNAME := AFieldText;
     Doctor_SNAME: Doctor.PRecord.SNAME := AFieldText;
     Doctor_UIN: Doctor.PRecord.UIN := AFieldText;
-    Doctor_Logical: Doctor.PRecord.Logical := AFieldText;
+    Doctor_Logical: Doctor.PRecord.Logical := tlogicalDoctorSet(Doctor.StrToLogical16(AFieldText));
   end;
 end;
 
@@ -1240,6 +1262,13 @@ end;
       Doctor_FNAME:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListDoctorSearch.Add(self.Items[i]);
+        end;
+      end;
+      Doctor_ID: 
+      begin
+        if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
           ListDoctorSearch.Add(self.Items[i]);
         end;
@@ -1476,6 +1505,7 @@ begin
   case propIndex of
     Doctor_EGN: SortByIndexAnsiString;
       Doctor_FNAME: SortByIndexAnsiString;
+      Doctor_ID: SortByIndexInt;
       Doctor_LNAME: SortByIndexAnsiString;
       Doctor_SNAME: SortByIndexAnsiString;
       Doctor_UIN: SortByIndexAnsiString;
