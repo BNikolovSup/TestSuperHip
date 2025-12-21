@@ -1635,8 +1635,8 @@ var
   fstreamAdb, fstreamCmd: TFileStream;
   otherDataPos: Cardinal;
 begin
-  fstreamAdb := TFileStream.Create('d:\тест360\AspHip{5F1FCB3C-A1DB-46FE-93BF-80D3EAA16979}.adb', fmOpenReadWrite);
-  fstreamCmd := TFileStream.Create('d:\тест360\AspHip{5F1FCB3C-A1DB-46FE-93BF-80D3EAA16979}.cmd', fmOpenReadWrite);
+  fstreamAdb := TFileStream.Create('d:\тест360\AspHip{073EDA4E-9586-449F-8C9E-03E5C3ABD4A2}.adb', fmOpenReadWrite);
+  fstreamCmd := TFileStream.Create('d:\тест360\AspHip{073EDA4E-9586-449F-8C9E-03E5C3ABD4A2}.cmd', fmOpenReadWrite);
   doc := Adb_DM.CollDoctor.items[0];
   New(doc.PRecord);
   doc.PRecord.setProp := [Doctor_EGN];

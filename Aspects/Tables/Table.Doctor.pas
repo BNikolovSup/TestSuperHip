@@ -211,7 +211,7 @@ var
   metaPosition, dataPosition: Cardinal;
   FPosMetaData, FLenMetaData, FPosData, FLenData: Cardinal;
   buf: Cardinal;
-
+  propIndx: TPropertyIndex;
 begin
   // 1. Четем header
   ADBStream.Seek(0, soBeginning);
@@ -231,11 +231,25 @@ begin
   Inc(metaPosition, 4);
 
   // 3. Това е DataPos на доктора
-  //OtherDataPos := metaPosition; // ==> 104
+  OtherDataPos := metaPosition; // ==> 104
 
-  // 4. Полета (пример: EGN + FNAME)
-  SaveDataToFile(PRecord.EGN, 0, metaPosition, dataPosition, ADBStream, FPosData);
-  //SaveDataToFile(PRecord.FNAME, 0, metaPosition, dataPosition, ADBStream, FPosData);
+  for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
+begin
+  if Assigned(PRecord) and (propIndx in PRecord.setProp) then
+  begin
+   // SaveHeaderDataToFile(ADBStream, PropPosition, dataPosition, Self.DataPos);
+
+    case propIndx of
+      Doctor_EGN:
+        SaveDataToFile(PRecord.EGN, metaPosition, dataPosition, ADBStream, FPosData);
+      Doctor_FNAME:
+        SaveDataToFile(PRecord.FNAME, metaPosition, dataPosition, ADBStream, FPosData);
+    end;
+  end
+  else
+    SaveNullToFile(ADBStream, metaPosition);
+end;
+
 
   // 5. Обновяваме header дължините
   ADBStream.Seek(4, soBeginning);
@@ -259,28 +273,34 @@ var
   RecLen: Word;
 begin
   // 1) Props bitmap: само Doctor_EGN
-  Props := [];
-  Include(Props, Ord(Doctor_EGN)); // ако Doctor_EGN е enum 0..N
+  //Props := [];
+//  Include(Props, Ord(Doctor_EGN)); // ако Doctor_EGN е enum 0..N
+//
+//  // 2) Пишем header + props
+//  RecStart := CmdStreamRole.Position;
+  SaveAnyStreamCommand(@PRecord.setProp, SizeOf(PRecord.setProp), ctDoctor, toInsert, FVersion, NewDoctorDataPos);
+  SaveStringForCmdFile(PRecord.EGN);
+  TBaseCollection(Collection).streamComm.Len := TBaseCollection(Collection).streamComm.Size;
+  CmdStreamRole.Seek(0, soEnd);
+  CmdStreamRole.CopyFrom(TBaseCollection(Collection).streamComm, 0);
 
-  // 2) Пишем header + props
-  RecStart := CmdStreamRole.Position;
-  WriteCmdHeaderToFile_Props16(
-    CmdStreamRole,
-    ctDoctor,
-    toInsert,
-    FVersion,
-    NewDoctorDataPos,
-    Props,
-    LenPos
-  );
+  //WriteCmdHeaderToFile_Props16(
+//    CmdStreamRole,
+//    ctDoctor,
+//    toInsert,
+//    FVersion,
+//    NewDoctorDataPos,
+//    Props,
+//    LenPos
+//  );
 
   // 3) Payload (само EGN)
-  SaveStringToCmdFile(CmdStreamRole, PRecord.EGN);
+  //SaveStringToCmdFile(CmdStreamRole, PRecord.EGN);
 
   // 4) Backpatch Len
-  RecEnd := CmdStreamRole.Position;
-  RecLen := Word(RecEnd - RecStart);
-  PatchCmdRecordLen(CmdStreamRole, LenPos, RecLen);
+  //RecEnd := CmdStreamRole.Position;
+//  RecLen := Word(RecEnd - RecStart);
+//  PatchCmdRecordLen(CmdStreamRole, LenPos, RecLen);
 end;
 
 

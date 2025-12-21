@@ -466,7 +466,6 @@ TCollectionForSort = class(TPersistent)
 
     procedure SaveDataToFile(
       const strData: AnsiString;
-      PropPosition: Cardinal;
       var metaPosition, dataPosition: Cardinal;
       ADBStream: TFileStream;
       BaseDataPos: Cardinal
@@ -539,6 +538,7 @@ TCollectionForSort = class(TPersistent)
       CmdStream: TFileStream;
       const StrData: AnsiString
     );
+    procedure SaveStringForCmdFile(const StrData: AnsiString);
 
 
 
@@ -732,6 +732,7 @@ procedure TBaseItem.WriteCmdHeaderToFile_Props16(
 var
   LenPlaceholder: Word;
 begin
+  CmdStream.Seek(0,soEnd);
   // Ще backpatch-нем Len накрая
   LenPlaceholder := 0;
 
@@ -772,6 +773,16 @@ begin
   finally
     CmdStream.Seek(CurPos, soBeginning);
   end;
+end;
+
+procedure TBaseItem.SaveStringForCmdFile(const StrData: AnsiString);
+var
+  Len: Word;
+begin
+  Len := Length(StrData);
+  TBaseCollection(Collection).streamComm.WriteBuffer(Len, SizeOf(Word));
+  if Len > 0 then
+    TBaseCollection(Collection).streamComm.WriteBuffer(StrData[1], Len);
 end;
 
 procedure TBaseItem.SaveStringToCmdFile(
@@ -2222,7 +2233,6 @@ end;
 
 procedure TBaseItem.SaveDataToFile(
   const strData: AnsiString;
-  PropPosition: Cardinal;
   var metaPosition, dataPosition: Cardinal;
   ADBStream: TFileStream;
   BaseDataPos: Cardinal
@@ -2232,6 +2242,7 @@ var
   ADataPos, DatPos: Cardinal;
   OldMetaValue: Cardinal;
   ZeroWord: Word;
+  streamComm: TCommandStream;
 begin
   // 1. Четем DatPos от header-а (offset +8)
   ADBStream.Seek(8, soBeginning);
@@ -2282,6 +2293,10 @@ begin
     ADBStream.WriteBuffer(ZeroWord, 1);
     Inc(dataPosition, 1);
   end;
+
+  streamComm := TBaseCollection(Collection).streamComm;
+  streamComm.Write(len, 2);
+  streamComm.Write(strData[1], len);
 end;
 
 
