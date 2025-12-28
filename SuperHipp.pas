@@ -1,4 +1,4 @@
-﻿unit SuperHipp;  //getpatnodes
+﻿unit SuperHipp;  //aspect
 interface
 
   uses
@@ -33,7 +33,7 @@ interface
   system.DateUtils,
   NzisThreadFull, System.IOUtils,
 
-  Aspects.Types, SuperObject, superxmlparser,
+  Aspects.Types, Aspects.Roles, SuperObject, superxmlparser,
 
   Table.Role,
   Nzis.Nomen.baseCL000,
@@ -62,6 +62,7 @@ interface
   RealObj.NzisNomen, Aspects.Collections, RealObj.RealHipp, RealNasMesto,
 
   FinderFormFMX, fmxImportNzisForm,
+  FmxAspectSchedule,
   FMX.Types, System.Bindings.Expression,
   System.Bindings.ExpressionDefaults,
 
@@ -931,6 +932,7 @@ type
    //procedure InitColl;
    //procedure FreeColl;
    procedure FreeFMXDin;
+   procedure FreeRoles;
    //procedure ClearColl;
    procedure InitExpression;
    procedure InitFMXDyn;
@@ -1030,6 +1032,7 @@ type
     FmxProfForm: TfrmProfFormFMX;
     FmxImportNzisFrm: TfrmImportNzis;
     FmxTokensForm: TfrmFmxTokens;
+    FmxAspectScheduleForm: TfrmScheduleFmx;
     FmxTitleBar: TfrmTitlebar;
     FmxRoleBar: TfrmRolebar;
     FmxRolePanel: TfrmRolePanels;
@@ -1159,6 +1162,7 @@ type
     vtrTempTopNode: PVirtualNode;
 
     procedure InitAdbDM;
+    procedure InitRoles;
 
     procedure LoadThreadDB(dbName: string);
     procedure StartHistoryThread(dbName: string);
@@ -1201,6 +1205,7 @@ type
     procedure ShowPregledFMX(dataPat,dataPreg: PAspRec; linkPreg:PVirtualNode );
     procedure ShowTokensFMX();
     procedure ShowOptionsFMX();
+    procedure ShowScheduleFMX();
     procedure FindADB(AGUID: TList<TGUID>);
     procedure FindLNK(AGUID: TGUID);
     procedure CalcStatusDB;
@@ -1635,6 +1640,9 @@ var
   fstreamAdb, fstreamCmd: TFileStream;
   otherDataPos: Cardinal;
 begin
+
+  ShowScheduleFMX;
+  Exit;
   fstreamAdb := TFileStream.Create('d:\тест360\AspHip{073EDA4E-9586-449F-8C9E-03E5C3ABD4A2}.adb', fmOpenReadWrite);
   fstreamCmd := TFileStream.Create('d:\тест360\AspHip{073EDA4E-9586-449F-8C9E-03E5C3ABD4A2}.cmd', fmOpenReadWrite);
   doc := Adb_DM.CollDoctor.items[0];
@@ -9924,22 +9932,7 @@ begin
 
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
-  //sgctl1.Licence :=
-//  'eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI3YmM5Y2IxYWIxMGE0NmUxODI2N2E5MTJkYTA2' +
-//  'ZTI3NiIsImV4cCI6MjE0NzQ4MzY0NywiaWF0IjoxNTYwOTUwMjcyLCJyaWdodHMiOlsiU0lHX1NES19DT1JFI' +
-//  'iwiU0lHQ0FQVFhfQUNDRVNTIl0sImRldmljZXMiOlsiV0FDT01fQU5ZIl0sInR5cGUiOiJwcm9kIiwibGljX2' +
-//  '5hbWUiOiJTaWduYXR1cmUgU0RLIiwid2Fjb21faWQiOiI3YmM5Y2IxYWIxMGE0NmUxODI2N2E5MTJkYTA2ZTI' +
-//  '3NiIsImxpY191aWQiOiJiODUyM2ViYi0xOGI3LTQ3OGEtYTlkZS04NDlmZTIyNmIwMDIiLCJhcHBzX3dpbmRv' +
-//  'd3MiOltdLCJhcHBzX2lvcyI6W10sImFwcHNfYW5kcm9pZCI6W10sIm1hY2hpbmVfaWRzIjpbXX0.ONy3iYQ7l' +
-//  'C6rQhou7rz4iJT_OJ20087gWz7GtCgYX3uNtKjmnEaNuP3QkjgxOK_vgOrTdwzD-nm-ysiTDs2GcPlOdUPErS' +
-//  'p_bcX8kFBZVmGLyJtmeInAW6HuSp2-57ngoGFivTH_l1kkQ1KMvzDKHJbRglsPpd4nVHhx9WkvqczXyogldyg' +
-//  'vl0LRidyPOsS5H2GYmaPiyIp9In6meqeNQ1n9zkxSHo7B11mp_WXJXl0k1pek7py8XYCedCNW5qnLi4UCNlfT' +
-//  'd6Mk9qz31arsiWsesPeR9PN121LBJtiPi023yQU8mgb9piw_a-ccciviJuNsEuRDN3sGnqONG3dMSA';
-//  cntrCanvas := TControlCanvas.Create;
-//  cntrCanvas.Control := TControl(hntMain);
-//  cntrCanvas.Font.Size := 20;
-//  cntrCanvas.Free;
-//  Screen.HintFont.Size := 20;
+  InitRoles;
 end;
 
 procedure TfrmSuperHip.FormDestroy(Sender: TObject);
@@ -9982,6 +9975,7 @@ begin
   FreeAndNil(InXmlStream);
   FreeAndNil(streamRes);
   FreeAndNil(tmpVtr);
+  FreeRoles;
 
 end;
 
@@ -10137,6 +10131,11 @@ end;
 
 procedure TfrmSuperHip.FreeFMXDin;
 begin
+end;
+
+procedure TfrmSuperHip.FreeRoles;
+begin
+  RoleOpl.Free;
 end;
 
 procedure TfrmSuperHip.GenerateNzisXml(node: PVirtualNode);
@@ -11484,6 +11483,11 @@ begin
 
   httpNZIS.RuntimeLicense  := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
   CertStorage.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
+end;
+
+procedure TfrmSuperHip.InitRoles;
+begin
+  RoleOpl := TRoleOPL.Create;
 end;
 
 procedure TfrmSuperHip.InitVTRs;
@@ -15769,6 +15773,28 @@ begin
 
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( 'DYN ' + FloatToStr(Elapsed.TotalMilliseconds));
+end;
+
+procedure TfrmSuperHip.ShowScheduleFMX;
+begin  // FmxAspectScheduleForm: TfrmScheduleFmx;
+  Stopwatch := TStopwatch.StartNew;
+  if FmxAspectScheduleForm = nil then
+  begin
+    FmxAspectScheduleForm := TfrmScheduleFmx.Create(nil);
+  end
+  else
+  begin
+    //FmxAspectScheduleForm.FillTokens;
+  end;
+
+  InternalChangeWorkPage(tsFMXForm);
+
+
+  fmxCntrDyn.ChangeActiveForm(FmxAspectScheduleForm);
+  FmxAspectScheduleForm.WindowState := wsMaximized;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( 'FmxAspectScheduleForm ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
 procedure TfrmSuperHip.ShowTokensFMX;

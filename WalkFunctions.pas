@@ -131,6 +131,23 @@ interface
     destructor destroy; override;
   end;
 
+  TAspectScheduleEvent = class
+    Root: TLayout;        // клонира се
+    Body: TRectangle;    // визуалният блок
+    Caption: TText;      // пациент / текст
+    ResizeTopGrip: TRectangle;
+    ResizeBottomGrip: TRectangle;
+    ResizeTopLyt: TLayout;
+    ResizeBottomLyt: TLayout;
+
+    TypeEvent: Integer;
+    StartTime: TTime;
+    EndTime: TTime;
+
+    DataPos: Cardinal;   // по-късно
+    constructor Create;
+  end;
+
   //function WalkChildrenASP(Parent: TFmxObject; Visit: TProc<TFmxObject>): TAspectRecObject;
   function WalkChildrenFLYT(Parent: TFmxObject): TFlowLayout;
   function WalkChildrenFLYTStyle(Parent: TFmxObject; styleName: string): TFlowLayout;
@@ -939,6 +956,13 @@ constructor TDiagLabel.Create;
 begin
   node := nil;
   canValidate := True;
+end;
+
+{ TAspectScheduleEvent }
+
+constructor TAspectScheduleEvent.Create;
+begin
+  DataPos := 0;
 end;
 
 end.

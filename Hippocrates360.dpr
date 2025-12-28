@@ -148,8 +148,10 @@ uses
   uFilterTreeGenerator2 in 'uFilterTreeGenerator2.pas',
   uFilterMagicIndex in 'uFilterMagicIndex.pas',
   uMagicQueryRunner in 'uMagicQueryRunner.pas',
-  Aspects.Attributes in 'Aspects\Aspects.Attributes.pas',
-  FastSearch in 'FastSearch.pas';
+  Aspects.Attributes in 'Aspects\Aspects.Attributes.pas' ,
+  FastSearch in 'FastSearch.pas',
+  Aspects.Roles in 'Aspects\Aspects.Roles.pas',
+  FmxAspectSchedule in '..\Popup\FmxAspectSchedule.pas' {frmScheduleFmx};
 
 {$R *.dres}
 {$R *.res}

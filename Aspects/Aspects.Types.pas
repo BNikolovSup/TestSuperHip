@@ -726,6 +726,7 @@ type
     FS_Nzis: TFormatSettings;
   const
   EPS = 1e-9;
+  DAY_HOURS = 24;
 
 implementation
 

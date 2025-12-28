@@ -234,21 +234,21 @@ begin
   OtherDataPos := metaPosition; // ==> 104
 
   for propIndx := Low(TPropertyIndex) to High(TPropertyIndex) do
-begin
-  if Assigned(PRecord) and (propIndx in PRecord.setProp) then
   begin
-   // SaveHeaderDataToFile(ADBStream, PropPosition, dataPosition, Self.DataPos);
+    if Assigned(PRecord) and (propIndx in PRecord.setProp) then
+    begin
+     // SaveHeaderDataToFile(ADBStream, PropPosition, dataPosition, Self.DataPos);
 
-    case propIndx of
-      Doctor_EGN:
-        SaveDataToFile(PRecord.EGN, metaPosition, dataPosition, ADBStream, FPosData);
-      Doctor_FNAME:
-        SaveDataToFile(PRecord.FNAME, metaPosition, dataPosition, ADBStream, FPosData);
-    end;
-  end
-  else
-    SaveNullToFile(ADBStream, metaPosition);
-end;
+      case propIndx of
+        Doctor_EGN:
+          SaveDataToFile(PRecord.EGN, metaPosition, dataPosition, ADBStream, FPosData);
+        Doctor_FNAME:
+          SaveDataToFile(PRecord.FNAME, metaPosition, dataPosition, ADBStream, FPosData);
+      end;
+    end
+    else
+      SaveNullToFile(ADBStream, metaPosition);
+  end;
 
 
   // 5. Обновяваме header дължините
