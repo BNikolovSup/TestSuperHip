@@ -1230,7 +1230,7 @@ begin
   Self.PRecordSearch.setProp := ListForFinder[0].PRecord.setProp;
 
   case TDoctorItem.TPropertyIndex(Field) of
-Doctor_EGN: ListForFinder[0].PRecord.EGN := AText;
+    Doctor_EGN: ListForFinder[0].PRecord.EGN := AText;
     Doctor_FNAME: ListForFinder[0].PRecord.FNAME := AText;
     Doctor_LNAME: ListForFinder[0].PRecord.LNAME := AText;
     Doctor_SNAME: ListForFinder[0].PRecord.SNAME := AText;
@@ -1435,13 +1435,13 @@ begin
   for i := 0 to self.Count - 1 do
   begin
     case  TDoctorItem.TPropertyIndex(self.FindedRes.PropIndex) of
-	  Doctor_EGN:
-begin
-  if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
-  begin
-    ListDoctorSearch.Add(self.Items[i]);
-  end;
-end;
+	    Doctor_EGN:
+      begin
+        if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
+        begin
+          ListDoctorSearch.Add(self.Items[i]);
+        end;
+      end;
       Doctor_FNAME:
       begin
         if string(self.Items[i].IndexAnsiStr).StartsWith(FSearchingValue) then
@@ -1449,7 +1449,7 @@ end;
           ListDoctorSearch.Add(self.Items[i]);
         end;
       end;
-      Doctor_ID: 
+      Doctor_ID:
       begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
