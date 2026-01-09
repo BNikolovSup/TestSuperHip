@@ -1,5 +1,5 @@
 ﻿unit Aspects.Collections;
-      //arrcond
+      //sct
 interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
@@ -190,12 +190,14 @@ TCollectionForSort = class(TPersistent)
     FPropertys: TLogicalData128;
     FOpType: TOperationType;
     FDataPos: Cardinal;
+    FCmdID: Int64;
     procedure SetLen(const Value: word);
     procedure SetVer(const Value: word);
     procedure SetVid(const Value: TCollectionsType);
     procedure SetPropertys(const Value: TLogicalData128);
     procedure SetOpType(const Value: TOperationType);
     procedure SetDataPos(const Value: Cardinal);
+    procedure SetCmdID(const Value: Int64);
   public
     property Len: word read FLen write SetLen;
     property Ver: word read FVer write SetVer;
@@ -203,6 +205,7 @@ TCollectionForSort = class(TPersistent)
     property DataPos: Cardinal read FDataPos write SetDataPos;
     property Propertys: TLogicalData128 read FPropertys write SetPropertys;
     property OpType: TOperationType read FOpType write SetOpType;
+    property CmdID: Int64 read FCmdID write SetCmdID;
   end;
 
   TXmlStream = class(TStringStream)
@@ -2775,8 +2778,8 @@ begin
  // stream.Write(b, 1);
   //TreeLink := pointer(PByte(Stream.Memory) + stream.Position);//zzzz
   TreeLink.TotalCount := 1;
-  TreeLink.TotalHeight := 27; //zzzzzz
-  TreeLink.NodeHeight := 27;//zzzz
+  TreeLink.TotalHeight := 33; //zzzzzz
+  TreeLink.NodeHeight := 33;//zzzz
   TreeLink.States := [vsVisible];
   TreeLink.Align := 50;
   TreeLink.SetData(vtrData);
@@ -5042,6 +5045,13 @@ end;
 
 { TCommandStream }
 
+procedure TCommandStream.SetCmdID(const Value: Int64);
+begin
+  FCmdID := Value;
+  Position := 12;
+  Write(FCmdID, 8);
+end;
+
 procedure TCommandStream.SetDataPos(const Value: Cardinal);
 begin
   FDataPos := Value;
@@ -5067,7 +5077,7 @@ end;
 
 procedure TCommandStream.SetPropertys(const Value: TLogicalData128);
 begin
-  position := 12;
+  position := 20;
   FPropertys := Value;
   Write(FPropertys, sizeof(TLogicalData128));
 end;
@@ -5446,8 +5456,8 @@ begin
   inc(linkpos, LenData);
 
   TreeLink.TotalCount := 1;
-  TreeLink.TotalHeight := 27;
-  TreeLink.NodeHeight := 27;
+  TreeLink.TotalHeight := 33;
+  TreeLink.NodeHeight := 33;
   TreeLink.States := [vsVisible];
   TreeLink.Align := 50;
   TreeLink.Dummy := dum;
@@ -5807,24 +5817,34 @@ var
   AspectRole: TAspectRole;
 begin
   stream := TMemoryStream.create;
-  size := 106;
-  stream.Size := size;
+  stream.Write(Self.Guid, SizeOf(TGUID));
 
-  stream.Position := 0;
-  AspectRole := arNomenNzis;
-  stream.Write(AspectRole, 2);
-  stream.Write(size, 4);
-  Self.Position := 0;
-  stream.CopyFrom(Self, 100);
-  Self.Position := Self.Size;
+//  size := 106;
+//  stream.Size := size;
+//
+//  stream.Position := 0;
+//  AspectRole := arNomenNzis;
+//  stream.Write(AspectRole, 2);
+//  stream.Write(size, 4);
+//  Self.Position := 0;
+//  stream.CopyFrom(Self, 100);
+//  Self.Position := Self.Size;
   stream.Position := 0;
   Socket.SendStream(stream);
 end;
 
 procedure TFileCMDStream.CopyFromCmdStream(cmdStream: TCommandStream; SendToAspect: Boolean);
+var
+  cmdId: Int64;
 begin
   cmdStream.Len := cmdStream.Size;
+  Self.Position := 0;
+  Self.Read(cmdId, 8);
+  cmdStream.CmdID := cmdId;
+  Self.Position := Self.Size;
   Self.CopyFrom(cmdStream, 0);
+
+
   if SendToAspect then
   begin
     if scktClient = nil then

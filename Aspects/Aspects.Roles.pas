@@ -5,6 +5,18 @@ uses
   System.SysUtils, System.Classes, System.Generics.Collections;
 
 type
+  TAspectActions = class
+  private
+    FOnNzisNomenClick: TNotifyEvent;
+    FOnMKBNomenClick: TNotifyEvent;
+    procedure SetOnNzisNomenClick(const Value: TNotifyEvent);
+    procedure SetOnMKBNomenClick(const Value: TNotifyEvent);
+  public
+    //procedure OnNzisNomenClick(Sender: TObject);
+    property OnNzisNomenClick: TNotifyEvent read FOnNzisNomenClick write SetOnNzisNomenClick;
+    property OnMKBNomenClick: TNotifyEvent read FOnMKBNomenClick write SetOnMKBNomenClick;
+  end;
+
   TAspectMenuItem = class(TObject)
   private
     FCaption: string;
@@ -43,6 +55,7 @@ type
   end;
 
   var
+    AspectActions: TAspectActions;
     RoleOpl: TRoleOPL;
 
 
@@ -53,6 +66,7 @@ implementation
 procedure TRoleOPL.AddMenuOpl;
 var
   ami: TAspectMenuItem;
+  index: Integer;
 begin
   ami := TAspectMenuItem.Create('Дейности', nil);
   LstAspectMainMenu.Add(ami);
@@ -62,7 +76,17 @@ begin
 
 
   LstAspectMainMenu.Add(TAspectMenuItem.Create('Списъци', nil));
-  LstAspectMainMenu.Add(TAspectMenuItem.Create('Номенклатури', nil));
+
+
+
+  index := LstAspectMainMenu.Add(TAspectMenuItem.Create('Номенклатури', nil));
+  LstAspectMainMenu[index].LstSubMenu.Add(TAspectMenuItem.Create('НЗИС', AspectActions.OnNzisNomenClick));
+  LstAspectMainMenu[index].LstSubMenu.Add(TAspectMenuItem.Create('МКБ', AspectActions.OnMKBNomenClick));
+
+
+
+  index := LstAspectMainMenu.Add(TAspectMenuItem.Create('Импорт', nil));
+  LstAspectMainMenu[index].LstSubMenu.Add(TAspectMenuItem.Create('DB', nil));
 end;
 
 constructor TRoleOPL.Create;
@@ -91,6 +115,18 @@ destructor TAspectMenuItem.Destroy;
 begin
   FreeAndNil(LstSubMenu);
   inherited;
+end;
+
+{ TAspectActions }
+
+procedure TAspectActions.SetOnMKBNomenClick(const Value: TNotifyEvent);
+begin
+  FOnMKBNomenClick := Value;
+end;
+
+procedure TAspectActions.SetOnNzisNomenClick(const Value: TNotifyEvent);
+begin
+  FOnNzisNomenClick := Value;
 end;
 
 end.

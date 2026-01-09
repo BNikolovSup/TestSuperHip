@@ -98,7 +98,7 @@
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_IMPLICIT_STRING_CAST>false</DCC_IMPLICIT_STRING_CAST>
-        <DCC_ExeOutput>D:\VSS\Hippocrates40\bin\Hippocrates360</DCC_ExeOutput>
+        <DCC_ExeOutput>D:\360\Hippocrates360</DCC_ExeOutput>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <AppEnableHighDPI>true</AppEnableHighDPI>
         <DCC_MapFile>3</DCC_MapFile>
@@ -134,6 +134,9 @@
         </DelphiCompile>
         <DCCReference Include="FMX\Parnassus.FMXContainer.pas"/>
         <DCCReference Include="FMX\Parnassus.FMXContainerReg.pas"/>
+        <DCCReference Include="..\Popup\TitleBar.pas">
+            <Form>frmTitlebar</Form>
+        </DCCReference>
         <DCCReference Include="SuperHipp.pas">
             <Form>frmSuperHip</Form>
         </DCCReference>
@@ -229,9 +232,6 @@
         <DCCReference Include="Aspects\Aspects.Collections.pas"/>
         <DCCReference Include="Aspects\Aspects.Types.pas"/>
         <DCCReference Include="Aspects\RealObj.RealNzis.pas"/>
-        <DCCReference Include="..\Popup\TitleBar.pas">
-            <Form>frmTitlebar</Form>
-        </DCCReference>
         <DCCReference Include="..\Popup\RoleBar.pas">
             <Form>frmRolebar</Form>
         </DCCReference>

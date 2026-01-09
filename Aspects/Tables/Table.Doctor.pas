@@ -158,6 +158,7 @@ TDoctorItem = class(TBaseItem)
     procedure ApplyVisibilityFromTree(RootNode: PVirtualNode);override;
 	function GetCollType: TCollectionsType; override;
 	function GetCollDelType: TCollectionsType; override;
+  procedure UpdateDoctors;
   end;
 
 implementation
@@ -1697,6 +1698,33 @@ begin
       Doctor_LNAME: SortByIndexAnsiString;
       Doctor_SNAME: SortByIndexAnsiString;
       Doctor_UIN: SortByIndexAnsiString;
+  end;
+end;
+
+procedure TDoctorColl.UpdateDoctors;
+var
+  dataPosition: Cardinal;
+  pCardinalData: PCardinal;
+  cnt, i: Integer;
+  TempItem: TDoctorItem;
+begin
+  cnt := 0;
+  pCardinalData := pointer(PByte(Buf) + 12);
+  dataPosition := pCardinalData^ + self.posData;
+  for i := 0 to Count - 1 do
+  begin
+    TempItem := Items[i];
+    if TempItem.PRecord <> nil then
+    begin
+      TempItem.SaveDoctor(dataPosition);
+      Self.CmdFile.CopyFromCmdStream(self.streamComm, true);
+      inc(cnt);
+    end;
+  end;
+  if cnt > 0 then
+  begin
+    pCardinalData := pointer(PByte(Buf) + 12);
+    pCardinalData^  := dataPosition - self.PosData;
   end;
 end;
 

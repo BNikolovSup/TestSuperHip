@@ -96,6 +96,18 @@
         <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Services\Spech.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="..\..\Aspects\AspectServer\AspectsServer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="D:\Write\supto-desktop\AspectsOld\Projects\Starter\Starter.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="..\..\Aspects_Old\testServer\TestServer.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ComunicationPerfDistr\ComunPerfDistr.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -383,14 +395,50 @@
     <Target Name="Spech:Make">
         <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\Services\Spech.dproj" Targets="Make"/>
     </Target>
+    <Target Name="AspectsServer">
+        <MSBuild Projects="..\..\Aspects\AspectServer\AspectsServer.dproj"/>
+    </Target>
+    <Target Name="AspectsServer:Clean">
+        <MSBuild Projects="..\..\Aspects\AspectServer\AspectsServer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="AspectsServer:Make">
+        <MSBuild Projects="..\..\Aspects\AspectServer\AspectsServer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Starter">
+        <MSBuild Projects="D:\Write\supto-desktop\AspectsOld\Projects\Starter\Starter.dproj"/>
+    </Target>
+    <Target Name="Starter:Clean">
+        <MSBuild Projects="D:\Write\supto-desktop\AspectsOld\Projects\Starter\Starter.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Starter:Make">
+        <MSBuild Projects="D:\Write\supto-desktop\AspectsOld\Projects\Starter\Starter.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="TestServer">
+        <MSBuild Projects="..\..\Aspects_Old\testServer\TestServer.dproj"/>
+    </Target>
+    <Target Name="TestServer:Clean">
+        <MSBuild Projects="..\..\Aspects_Old\testServer\TestServer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="TestServer:Make">
+        <MSBuild Projects="..\..\Aspects_Old\testServer\TestServer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="ComunPerfDistr">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ComunicationPerfDistr\ComunPerfDistr.dproj"/>
+    </Target>
+    <Target Name="ComunPerfDistr:Clean">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ComunicationPerfDistr\ComunPerfDistr.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="ComunPerfDistr:Make">
+        <MSBuild Projects="C:\Users\Administrator1\Documents\Embarcadero\Studio\Projects\ComunicationPerfDistr\ComunPerfDistr.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll;TestAspGtp;Tablet;NZIS;CompSign;TeeGrid_CustomBands;NhisInterpr;mainEuro;Spech"/>
+        <CallTarget Targets="Hippocrates360;Prawa;Popup;TestCmdAdb;AspectTableGenerator;DetectUSB;pkcs11certificatestorage;TeeGrid_Custom_Sorting;ANALYSIS;Rtti_Explorer_Seattle;MemoValidating;TestGoroFmx;Medicine;DragAndDrop;VtrHip;Project4;AspObject;DynCtrl;Menuwww;WordBreak;MiniBrowser;ImportNzis;NzisMessagesDll;TestAspGtp;Tablet;NZIS;CompSign;TeeGrid_CustomBands;NhisInterpr;mainEuro;Spech;AspectsServer;Starter;TestServer;ComunPerfDistr"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean;TestAspGtp:Clean;Tablet:Clean;NZIS:Clean;CompSign:Clean;TeeGrid_CustomBands:Clean;NhisInterpr:Clean;mainEuro:Clean;Spech:Clean"/>
+        <CallTarget Targets="Hippocrates360:Clean;Prawa:Clean;Popup:Clean;TestCmdAdb:Clean;AspectTableGenerator:Clean;DetectUSB:Clean;pkcs11certificatestorage:Clean;TeeGrid_Custom_Sorting:Clean;ANALYSIS:Clean;Rtti_Explorer_Seattle:Clean;MemoValidating:Clean;TestGoroFmx:Clean;Medicine:Clean;DragAndDrop:Clean;VtrHip:Clean;Project4:Clean;AspObject:Clean;DynCtrl:Clean;Menuwww:Clean;WordBreak:Clean;MiniBrowser:Clean;ImportNzis:Clean;NzisMessagesDll:Clean;TestAspGtp:Clean;Tablet:Clean;NZIS:Clean;CompSign:Clean;TeeGrid_CustomBands:Clean;NhisInterpr:Clean;mainEuro:Clean;Spech:Clean;AspectsServer:Clean;Starter:Clean;TestServer:Clean;ComunPerfDistr:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make;TestAspGtp:Make;Tablet:Make;NZIS:Make;CompSign:Make;TeeGrid_CustomBands:Make;NhisInterpr:Make;mainEuro:Make;Spech:Make"/>
+        <CallTarget Targets="Hippocrates360:Make;Prawa:Make;Popup:Make;TestCmdAdb:Make;AspectTableGenerator:Make;DetectUSB:Make;pkcs11certificatestorage:Make;TeeGrid_Custom_Sorting:Make;ANALYSIS:Make;Rtti_Explorer_Seattle:Make;MemoValidating:Make;TestGoroFmx:Make;Medicine:Make;DragAndDrop:Make;VtrHip:Make;Project4:Make;AspObject:Make;DynCtrl:Make;Menuwww:Make;WordBreak:Make;MiniBrowser:Make;ImportNzis:Make;NzisMessagesDll:Make;TestAspGtp:Make;Tablet:Make;NZIS:Make;CompSign:Make;TeeGrid_CustomBands:Make;NhisInterpr:Make;mainEuro:Make;Spech:Make;AspectsServer:Make;Starter:Make;TestServer:Make;ComunPerfDistr:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

@@ -1,4 +1,4 @@
-﻿unit SuperHipp;  //aspect
+﻿unit SuperHipp;  //.cmd  mult
 interface
 
   uses
@@ -448,6 +448,8 @@ type
     Panel2: TPanel;
     Button4: TButton;
     vtrSearch: TVirtualStringTreeAspect;
+    tsUserAspect: TTabSheet;
+    vtrUserAspect: TVirtualStringTreeAspect;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -836,6 +838,8 @@ type
       node: PVirtualNode; const numButton: Integer; r: TRect);
     procedure vtrSearchButtonClick(sender: TVirtualStringTreeAspect;
       node: PVirtualNode; const numButton: Integer);
+    procedure vtrUserAspectGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
+      Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -922,7 +926,7 @@ type
    procedure LoadADB;
    procedure OpenDB(index: Integer);
    //procedure OpenADB(ADB: TMappedFile);
-   //procedure OpenCmd(ADB: TMappedFile);
+   procedure OpenCmdAslectUser(LNK: TMappedLinkFile);
    procedure OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
    procedure OpenLinkPatPreg(LNK: TMappedFile);
    procedure OpenLinkNomenHipAnals;
@@ -932,7 +936,7 @@ type
    //procedure InitColl;
    //procedure FreeColl;
    procedure FreeFMXDin;
-   procedure FreeRoles;
+   //procedure FreeRoles;
    //procedure ClearColl;
    procedure InitExpression;
    procedure InitFMXDyn;
@@ -1136,11 +1140,12 @@ type
     //AspectsLinkPatPregFile : TMappedLinkFile;
     AspectsLinkNomenHipAnalFile : TMappedFile;
     AspectsOptionsLinkFile: TMappedLinkFile;
+    AspectsUserLinkFile: TMappedLinkFile;
     AspectsFilterLinkFile: TMappedLinkFile;
 
     profGR: TProfGraph;
 
-    //streamCmdFile: TFileCmdStream;
+    streamCmdAspectUser: TFileCmdStream;
     streamCmdFileTemp: TFileCmdStream;
     streamCmdFileNomenNzis: TFileCmdStream;
     FDBHelper: TDbHelper;
@@ -1162,7 +1167,8 @@ type
     vtrTempTopNode: PVirtualNode;
 
     procedure InitAdbDM;
-    procedure InitRoles;
+    procedure InitActions;
+    //procedure InitRoles;
 
     procedure LoadThreadDB(dbName: string);
     procedure StartHistoryThread(dbName: string);
@@ -1197,7 +1203,6 @@ type
 
     procedure prepareHeaders(Sender: TObject; Headers: TStringList);
     procedure OnDataNzis(Sender: TObject; Buffer: Pointer; Size: Integer);
-    procedure FillXmlC001(NomenID: string);//номенклатура
     procedure NzisOnSended(Sender: TObject);
     procedure OpenExcels;
     //procedure OpenBufNomenNzis(FileName: string);
@@ -1215,7 +1220,7 @@ type
     procedure FormFMXMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean);
     procedure OnShowGridSearch(sender: TObject);
     procedure OnActivateFMX(sender: TObject);
-    procedure ActiveControlChanged(Sender: TObject);
+    //procedure ActiveControlChanged(Sender: TObject);
     procedure OnSetTextSearch(Sender: TObject);
     procedure OnSetTextSearchEDT(Vid: TVtrVid; Text: string; field: Word; Condition: TConditionSet);
     procedure OnShowFindFprm(Sender: TObject);
@@ -1266,6 +1271,9 @@ type
     procedure RemoveDiag(vPreg: PVirtualNode; diagDataPos: cardinal); overload;
     procedure AddNewPlan(vPreg: PVirtualNode; var gr: TGraphPeriod132; var TreeLinkPlan: PVirtualNode);
     //procedure AddNewPregledOld;
+    procedure AddNewUserAspect(doc: TRealDoctorItem);
+
+
     procedure AddX005Pregled(preg: TRealPregledNewItem);
     procedure AddMdnInPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode;
          var TempItem: TRealMDNItem);
@@ -1334,10 +1342,10 @@ type
     function GetCollectionByType(ACollType: Word): TBaseCollection;
     function GetADBBuffer: Pointer;
     procedure SearchTest;
-    procedure SearchTesCRC_equ;
     procedure SearchTesBMH_contain;
     procedure SearchTesStartsWith;
     procedure SearchTesStartsWith_CI;
+
 
 
     procedure OnAddNewNodeFilter(NewNode, adbNode: PVirtualNode);
@@ -1346,6 +1354,7 @@ type
     procedure CreateFieldGroup(FieldNode: PVirtualNode);
 
     procedure Adb_DMOnClearColl(Sender: TObject);
+    procedure LoaadLinkAspectUser(fileLinkAspUserName: string);// := 'LinkAspUser.lnk';;
 
     property FilterCountPregled: integer read FFilterCountPregled write FFilterCountPregled;
     property SearchTextSpisyci: string read FSearchTextSpisyci write SetSearchTextSpisyci;
@@ -1383,27 +1392,6 @@ begin
     //TStrings(lParam).Add(IntToHex(hwnd, 8));
     SendMessage(hwnd,WM_CLOSE,0,0);
   end;
-end;
-
-procedure AddTagToStream(var stream:TstringStream; NameTag, ValueTag :string; amp: Boolean = true);
-var
-  buf, val: String;
-  startPos: Integer;
-begin
-  val := ValueTag;
-  if Val = '' then
-    buf := '<'+(NameTag)+'>' + #13#10
-  else
-  begin
-    if amp then
-    begin
-      Val:= Val.Replace('&', '&amp;', [rfReplaceAll]);
-      Val := Val.Replace('<', '&lt;', [rfReplaceAll]);
-      Val := Val.Replace('>', '&gt;', [rfReplaceAll]);
-    end;
-    buf :=  ('<'+(NameTag)+' '+(Val)+'/> ' + #13#10);
-  end;
-  stream.WriteString(buf);
 end;
 
 procedure TfrmSuperHip.btn10Click(Sender: TObject);
@@ -1640,7 +1628,11 @@ var
   fstreamAdb, fstreamCmd: TFileStream;
   otherDataPos: Cardinal;
 begin
-
+  //vtrPregledPat.node
+  //vtrPregledPat.DefaultNodeHeight := 33;
+  Exit;
+  LoaadLinkAspectUser('LinkAspUser.lnk');
+  Exit;
   ShowScheduleFMX;
   Exit;
   fstreamAdb := TFileStream.Create('d:\тест360\AspHip{073EDA4E-9586-449F-8C9E-03E5C3ABD4A2}.adb', fmOpenReadWrite);
@@ -2591,7 +2583,7 @@ begin
 // // dlgCert.ShowModal;
 // // CurrentCert := dlgCert.CertHipSelect;
 //  CertForThread := TelX509Certificate.Create(self);
-//  //CurrentCert := TsbxCertificate.Create(self);
+    //CurrentCert := TsbxCertificate.Create(self);
 // // CurrentCert.Clone(CertForThread);
 //  stream := TMemoryStream.Create;
 //  stream.LoadFromFile('d:\certTest.crt');
@@ -6952,43 +6944,6 @@ begin
   end;
 end;
 
-procedure TfrmSuperHip.FillXmlC001(NomenID: string);
-var
-  newGUID: TGUID;
-  strGuid: string;
-  i, j: Integer;
-  ver: string;
-begin
-  CreateGUID(newGUID);
-  strGuid := GUIDToString(newGUID);
-  strGuid := Copy(strGuid, 2, 36);
-  ver := 'NzisNomen';
-  XMLStreamC001.Clear;
-  XMLStreamC001.Writestring(('<?xml version="1.0" encoding="UTF-8"?>' +#13#10));
-  XMLStreamC001.Writestring(('<nhis:message xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:nhis="https://www.his.bg" xsi:schemaLocation="https://www.his.bg https://www.his.bg/api/v1/NHIS-C001.xsd">' +#13#10));
-
-  AddTagToStream(XMLStreamC001,'nhis:header', '', false);
-  AddTagToStream(XMLStreamC001,'nhis:sender', 'value="1"', false);
-
-  AddTagToStream(XMLStreamC001,'nhis:senderId', Format('value="%s"',['6810101723']) , false);
-  AddTagToStream(XMLStreamC001,'nhis:senderISName', Format('value="Hippocrates%s"',[ver]), false);
-  AddTagToStream(XMLStreamC001,'nhis:recipient', 'value="4"', false);
-  AddTagToStream(XMLStreamC001,'nhis:recipientId', 'value="NHIS"', false);
-
-  AddTagToStream(XMLStreamC001,'nhis:messageId', Format('value="%s"',[strGuid]), false);
-  AddTagToStream(XMLStreamC001,'nhis:messageType', 'value="C001"', false);
-  AddTagToStream(XMLStreamC001,'nhis:createdOn', Format('value="%s"', [DateToISO8601(TTimeZone.Local.ToUniversalTime (now))]), false);
-  AddTagToStream(XMLStreamC001,'/nhis:header', '');
-
-  AddTagToStream(XMLStreamC001,'nhis:contents', '', false);
-  AddTagToStream(XMLStreamC001,'nhis:nomenclatureId', Format('value="%s"',[NomenID]), false);
-  AddTagToStream(XMLStreamC001,'/nhis:contents', '');
-  AddTagToStream(XMLStreamC001,'/nhis:message','');
-  XMLStreamC001.Position := 0;
-  //Memo1.Lines.LoadFromStream(XMLStreamC001);
-  //XMLStreamC007.SaveToFile('c:\work\test.xml');
-end;
-
 procedure TfrmSuperHip.FillADBInMsgColl;
 var
   data, dataAction, dataPat, dataPreg: PAspRec;
@@ -9282,6 +9237,32 @@ end;
 //  Adb_DM.cmdFile := streamCmdFile;
 //end;
 
+procedure TfrmSuperHip.OpenCmdAslectUser(LNK: TMappedLinkFile);
+var
+  fileName: string;
+  TempPos: Cardinal;
+begin
+
+  fileName := LNK.FileName.Replace('.lnk', '.cmd');
+
+  if TFile.Exists (fileName) then
+  begin
+    streamCmdAspectUser := TFileCmdStream.Create(fileName, fmOpenReadWrite + fmShareDenyNone);
+    streamCmdAspectUser.Position := 0;
+    streamCmdAspectUser.Read(TempPos, 4);
+    streamCmdAspectUser.AspectDataPos := TempPos;
+  end
+  else
+  begin
+    streamCmdAspectUser := TFileCmdStream.Create(fileName, fmCreate + fmShareDenyNone);
+    streamCmdAspectUser.AspectDataPos := 0;
+    streamCmdAspectUser.Size := 100;
+  end;
+
+  streamCmdAspectUser.Position := streamCmdAspectUser.Size;
+  AspectsUserLinkFile.FStreamCmdFile := streamCmdAspectUser;
+end;
+
 procedure TfrmSuperHip.OpenCmdNomenNzis(ADBNomenNzis: TMappedFile);
 var
   fileName: string;
@@ -9323,6 +9304,7 @@ end;
 
 procedure TfrmSuperHip.OpenDB(index: integer);
 begin
+  Exit;
   if index >= 0 then
   begin
     FFDbName := option.dblist[index];
@@ -9331,61 +9313,35 @@ begin
   begin
     if ParamStr(3) = '' then
     begin
-      FFDbName := '';
+      if dlgOpenDB.Execute then
+      begin
+        //DbName := dlgOpenDB.FileName;
+        //dbPath := Option.dblist[data.index];
+        //Adb_DM.ImportFDB;
+        LoadThreadDB(FDbName);
+        Adb_DM.ImportFDB;
+        pgcTree.ActivePage := tsTreeDBFB;
+        vtrFDB.SetFocus;
+        Exit;
+      end;
     end
     else
     begin
       FFDbName := ParamStr(3);
     end;
   end;
-  Adb_DM.AdbMainLink := Adb_DM.AdbMainLink;
-  Adb_DM.OpenDB(FFDbName);
+  //Adb_DM.AdbMainLink := Adb_DM.AdbMainLink;
+  if false then
+  begin
+    Adb_DM.AdbMainLink.FVTR := vtrPregledPat;
+    Adb_DM.AdbMainLink.FStreamCmdFile := Adb_DM.streamCmdFile;
+    FDBHelper.AdbLink := Adb_DM.AdbMainLink;
+    Adb_DM.OpenDB(FFDbName);
+  end;
   if FmxProfForm = nil then
     InitFMXDyn;
   StartCertThread;
-//
-//  if Assigned(Adb_DM.AdbMain) then
-//    begin
-//      UnmapViewOfFile(Adb_DM.AdbMain.Buf);
-//      //FreeAndNil(Adb_DM.AdbMain);
-//
-//    end;
-//    if AspectsLinkPatPregFile <> nil then
-//    begin
-//      vtrPregledPat.BeginUpdate;
-//      nodeLink := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
-//      vtrPregledPat.InternalDisconnectNode(nodeLink, false);
-//      UnmapViewOfFile(AspectsLinkPatPregFile.Buf);
-//      FreeAndNil(AspectsLinkPatPregFile);
-//      vtrPregledPat.Selected[vtrPregledPat.GetFirstSelected()] := False;
-//      vtrPregledPat.CanClear := True;
-//      vtrPregledPat.AddChild(nil, nil);
-//      //vtrPregledPat.Clear;
-//
-//      vtrPregledPat.CanClear := false;
-//      vtrPregledPat.Repaint;
-//      vtrPregledPat.endUpdate;
-//    end;
-//
-//   // ClearColl;
-//    if FmxProfForm = nil then
-//      InitFMXDyn;
-//
-//
-//
-//    //if Assigned(streamCmdFile) then
-////    begin
-////      streamCmdFile.Free;
-////    end;
-//    vtrGraph.DeleteChildren(vRootGraph);
-//    Adb_dm.lstPatGraph.Clear;
-//    if thrHistPerf <> nil then
-//      thrHistPerf.stop := true;
-//    //if not nnn then
-//    begin
-//      initDB();
-//      vtrFDB.Repaint;
-//    end;
+
 end;
 
 procedure TfrmSuperHip.OpenExcels;
@@ -9632,7 +9588,6 @@ var
   pat: TPatientNewItem;
 begin
   Stopwatch := TStopwatch.StartNew;
-  //ListNodes.Clear;
   vtrPregledPat.BeginUpdate;
 
   pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 4);
@@ -9650,15 +9605,13 @@ begin
   pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 8);
   oldRoot := pCardinalData^;
 
-  //mmotest.Lines.Add(Format('BufLink  = %d', [cardinal(AspectsLinkPatPregFile.Buf)]));
-
   linkPos := 100;
   pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf));
   FPosLinkData := pCardinalData^;
   node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
-  //node.NodeHeight := 27;
 
   Exclude(node.States, vsSelected);
+  Include(node.States, vsMultiline);
   data := pointer(PByte(node) + lenNode);
   if not (data.vid in [vvPatientRevision]) then
     data.index := -1;
@@ -9689,9 +9642,8 @@ begin
       Inc(linkPos, LenData);
 
       node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
-      //node.NodeHeight := 27;
       Exclude(node.States, vsSelected);
-      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      Include(node.States, vsMultiline);
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -9729,7 +9681,7 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        Include(node.States, vsMultiline);
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -9737,24 +9689,18 @@ begin
         end;
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
-        //if data.vid <> vvPatient then
-//          Exclude(node.States, vsFiltered);
         AddToListNodes(data);
       end;
     end
     else
     begin
-      //PregledColl.Capacity := 1000000;
       while linkPos <= FPosLinkData do
       begin
         Inc(linkPos, LenData);
         node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
-        //Exclude(node.States, vsInitialized);
+        Include(node.States, vsMultiline);
         data := pointer(PByte(node) + lenNode);
-        //if data.vid <> vvPatient then
-//          Exclude(node.States, vsFiltered);
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
         AddToListNodes(data);
@@ -9763,15 +9709,10 @@ begin
   end;
 
 
-  //pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
-//  pCardinalData^ := linkpos;
   node := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 100);
-   //node.NodeHeight := 27;
 
   vtrPregledPat.InternalConnectNode_cmd(node, vtrPregledPat.RootNode, vtrPregledPat, amAddChildFirst);
   vtrPregledPat.BufLink := Adb_DM.AdbMainLink.Buf;
-  //node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
-  //vtrPregledPat.InternalDisconnectNode(node, false);
   pCardinalData := pointer(PByte(Adb_DM.AdbMainLink.Buf) + 8);
   pCardinalData^ := Cardinal(vtrPregledPat.RootNode);
   vtrPregledPat.UpdateVerticalScrollBar(true);
@@ -9782,26 +9723,8 @@ begin
   Adb_DM.AdbMainLink.FVTR := vtrPregledPat;
   Adb_DM.AdbMainLink.FStreamCmdFile := Adb_DM.streamCmdFile;
   FDBHelper.AdbLink := Adb_DM.AdbMainLink;
-  //FmxProfForm.AspLink := Adb_DM.AdbMainLink;
-  //Adb_DM.AdbMain := AspectsHipFile;
-  //Adb_DM.AdbLink := Adb_DM.AdbMainLink;
-
-  //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
-
-  //vtrPregledPat.Selected[vtrPregledPat.GetLast()] := True;
-  //vtrPregledPat.IsFiltered[vtrPregledPat.Getlast()] := True;
-  //vtrPregledPat.ReinitNode(vtrPregledPat.GetFirst(), true);
-
-  //Elapsed := Stopwatch.Elapsed;
-
   mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
-  //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
-  //PregledColl.ShowGrid(TeeGrid1);
-
-  //FindOldItemsForInsert;
   CheckCollForSave;
-
-  
 end;
 
 procedure TfrmSuperHip.OpenPregX001(pregNode: PVirtualNode);
@@ -9879,7 +9802,7 @@ begin
   ListHistoryNav := TList<THistoryNav>.Create;
   InitExpression;
   IsIndexedPregled := False;
-  Screen.OnActiveControlChange := ActiveControlChanged;
+  //Screen.OnActiveControlChange := ActiveControlChanged;
 
   InitGlobalValues;
   HideTabs;
@@ -9895,6 +9818,7 @@ begin
   //InitColl;
   InitAdbDM;
   InitVTRs;
+  InitActions;
 
   AZipHelpFile:=TZipFile.Create;
 
@@ -9932,7 +9856,7 @@ begin
 
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
-  InitRoles;
+  //InitRoles;
 end;
 
 procedure TfrmSuperHip.FormDestroy(Sender: TObject);
@@ -9975,7 +9899,7 @@ begin
   FreeAndNil(InXmlStream);
   FreeAndNil(streamRes);
   FreeAndNil(tmpVtr);
-  FreeRoles;
+  AspectActions.free;
 
 end;
 
@@ -10133,10 +10057,10 @@ procedure TfrmSuperHip.FreeFMXDin;
 begin
 end;
 
-procedure TfrmSuperHip.FreeRoles;
-begin
-  RoleOpl.Free;
-end;
+//procedure TfrmSuperHip.FreeRoles;
+//begin
+//  RoleOpl.Free;
+//end;
 
 procedure TfrmSuperHip.GenerateNzisXml(node: PVirtualNode);
 var
@@ -11221,6 +11145,13 @@ begin
 end;
 
 
+procedure TfrmSuperHip.InitActions;
+begin
+  AspectActions := TAspectActions.create;
+  AspectActions.OnNzisNomenClick := mniNzisNomenClick;
+  AspectActions.OnMKBNomenClick := mniMkb10Click;
+end;
+
 procedure TfrmSuperHip.InitAdbDM;
 begin
   Adb_DM := TADBDataModule.Create(vtrLinkNasMesta, vtrPregledPat);
@@ -11485,10 +11416,10 @@ begin
   CertStorage.RuntimeLicense := '5342444641444E585246323032313132303443344D393232353000000000000000000000000000005A5036484E353744000038554650524E4839314636410000';
 end;
 
-procedure TfrmSuperHip.InitRoles;
-begin
-  RoleOpl := TRoleOPL.Create;
-end;
+//procedure TfrmSuperHip.InitRoles;
+//begin
+//  RoleOpl := TRoleOPL.Create;
+//end;
 
 procedure TfrmSuperHip.InitVTRs;
 var
@@ -11813,6 +11744,79 @@ begin
 //  thrSearch.collPregForSearch.posData := AspectsHipFile.FPosData;
 //  grdSearch.Tag := word(vvPregled);
 //  thrSearch.collPregForSearch.ShowLinksGrid(grdSearch);
+end;
+
+procedure TfrmSuperHip.LoaadLinkAspectUser(fileLinkAspUserName: string);
+var
+
+  Fstream: TFileStream;
+  vBranchRoot, vBranchMedical, vOplRoot, vDoctor, vPrac: PVirtualNode;
+  LinkPos: Cardinal;
+  pCardinalData: PCardinal;
+  i: Integer;
+  doc: TRealDoctorItem;
+begin
+  Stopwatch := TStopwatch.StartNew;
+  if AspectsUserLinkFile <> nil then
+  begin
+    vtrUserAspect.InternalDisconnectNode(vtrUserAspect.RootNode.FirstChild, false);
+    AspectsUserLinkFile.Free;
+    AspectsUserLinkFile := nil;
+  end;
+
+  if FileExists(fileLinkAspUserName) then
+  begin
+    AspectsUserLinkFile := TMappedLinkFile.Create(fileLinkAspUserName, false, TGUID.Empty);
+    AspectsUserLinkFile.FVTR := vtrUserAspect;
+  end
+  else
+  begin
+
+    Fstream := TFileStream.Create(fileLinkAspUserName,fmCreate);
+    Fstream.Size := 2000000;
+    Fstream.Free;
+    AspectsUserLinkFile := TMappedLinkFile.Create(fileLinkAspUserName, true, TGUID.Empty);
+    AspectsUserLinkFile.FVTR := vtrUserAspect;
+    AspectsUserLinkFile.FVTR.BufLink := AspectsUserLinkFile.Buf;
+    linkpos := 100;
+
+    OpenCmdAslectUser(AspectsUserLinkFile);
+
+    AspectsUserLinkFile.AddNewNode(vvBranchRoot, 0, vtrUserAspect.RootNode, amAddChildLast, vBranchRoot, linkPos);
+    AspectsUserLinkFile.AddNewNode(vvBranchMedical, 0, vBranchRoot, amAddChildLast, vBranchMedical, linkPos);
+    AspectsUserLinkFile.AddNewNode(vvBranchMedicalOPL, 0, vBranchMedical, amAddChildLast, vOplRoot, linkPos);
+    AspectsUserLinkFile.AddNewNode(vvPracticaRoot, 0, vOplRoot, amAddChildLast, vPrac, linkPos);
+    for i := 0 to Adb_DM.CollDoctor.Count - 1 do
+    begin
+      doc := Adb_DM.CollDoctor.Items[i];
+      AspectsUserLinkFile.AddNewNode(vvDoctor, doc.DataPos, vPrac, amAddChildLast, vDoctor, linkPos);
+    end;
+
+    pCardinalData := pointer(PByte(AspectsUserLinkFile.Buf) + 4);
+    pCardinalData^ := Cardinal(AspectsUserLinkFile.Buf);
+
+    pCardinalData := pointer(PByte(AspectsUserLinkFile.Buf) + 8);
+    pCardinalData^ := Cardinal(vtrUserAspect.RootNode);
+
+    vtrUserAspect.EndUpdate;
+    vtrUserAspect.UpdateScrollBars(true);
+    vtrUserAspect.InvalidateToBottom(vtrUserAspect.RootNode);
+
+    vtrUserAspect.InternalDisconnectNode(vtrUserAspect.RootNode.FirstChild, false);
+    AspectsUserLinkFile.Free;
+    AspectsUserLinkFile := nil;
+
+    AspectsUserLinkFile := TMappedLinkFile.Create(fileLinkAspUserName, false, TGUID.Empty);
+    AspectsUserLinkFile.FVTR := vtrUserAspect;
+  end;
+
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('MapLink за %f',[Elapsed.TotalMilliseconds]));
+
+  AspectsUserLinkFile.OpenLinkFile;
+  Elapsed := Stopwatch.Elapsed;
+  mmoTest.Lines.Add( Format('Зареждане UserAspect %d за %f',[vtrUserAspect.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
+  InternalChangeTreePage(tsUserAspect);
 end;
 
 procedure TfrmSuperHip.LoadADB;
@@ -12843,8 +12847,6 @@ procedure TfrmSuperHip.LoadThreadDB(dbName: string);
 var
   thrLoadDb: TLoadDBThread;
 begin
-  
-
   thrLoadDb := TLoadDBThread.Create(True, dbname);
   thrLoadDb.Buf := Adb_DM.AdbMain.Buf;
   thrLoadDb.FDBHelper := FDBHelper;
@@ -13330,11 +13332,13 @@ var
   vOtherDoc: PVirtualNode;
   vtr: TVirtualStringTreeAspect;
   cnt: Integer;
+  CustomH: Integer;
 begin
   vtr := vtrPregledPat;
   vtr.BeginUpdate;
   vtr.Clear;
 
+  CustomH := 33;
 
   Stopwatch := TStopwatch.StartNew;
   linkpos := 100;
@@ -13349,8 +13353,8 @@ begin
   inc(linkpos, LenData);
 
   TreeLink.TotalCount := 1;
-  TreeLink.TotalHeight := 27;
-  TreeLink.NodeHeight := 27;
+  TreeLink.TotalHeight := CustomH;
+  TreeLink.NodeHeight := CustomH;
   TreeLink.States := [vsVisible];
   TreeLink.Align := 50;
   TreeLink.Dummy := i mod 255;
@@ -13373,8 +13377,8 @@ begin
     inc(linkpos, LenData);
 
     TreeLink.TotalCount := 1;
-    TreeLink.TotalHeight := 27;
-    TreeLink.NodeHeight := 27;
+    TreeLink.TotalHeight := CustomH;
+    TreeLink.NodeHeight := CustomH;
     TreeLink.States := [vsVisible];
     TreeLink.Align := 50;
     TreeLink.Dummy := i mod 255;
@@ -13393,8 +13397,8 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       TreeLink.Dummy := 0;
@@ -13411,15 +13415,15 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       TreeLink.Dummy := 0;
       vtr.InitNode(TreeLink);
       vtr.InternalConnectNode_cmd(TreeLink, vPat, vtr, amAddChildLast, Adb_DM.streamCmdFile);
     end;
-    
+
     for j := 0 to pat.FMDDs.Count - 1 do
     begin
       MDD := TRealINC_MDNItem(pat.FMDDs[j]);
@@ -13431,8 +13435,8 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       //TreeLink.Dummy := j mod 255;
@@ -13456,8 +13460,8 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       //TreeLink.Dummy := j mod 255;
@@ -13474,8 +13478,8 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       //TreeLink.Dummy := j mod 255;
@@ -13502,8 +13506,8 @@ begin
       inc(linkpos, LenData);
 
       TreeLink.TotalCount := 1;
-      TreeLink.TotalHeight := 27;
-      TreeLink.NodeHeight := 27;
+      TreeLink.TotalHeight := CustomH;
+      TreeLink.NodeHeight := CustomH;
       TreeLink.States := [vsVisible];
       TreeLink.Align := 50;
       //TreeLink.Dummy := j mod 255;
@@ -13551,8 +13555,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13572,8 +13576,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           TreeLink.Dummy := 0;
@@ -13597,8 +13601,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := k mod 255;
@@ -13617,8 +13621,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         vtr.InitNode(TreeLink);
@@ -13636,8 +13640,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         //TreeLink.Dummy := k mod 255;
@@ -13663,8 +13667,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13682,8 +13686,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13701,8 +13705,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13721,8 +13725,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13741,8 +13745,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13761,8 +13765,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13781,8 +13785,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13801,8 +13805,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13821,8 +13825,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13841,8 +13845,8 @@ begin
           inc(linkpos, LenData);
 
           TreeLink.TotalCount := 1;
-          TreeLink.TotalHeight := 27;
-          TreeLink.NodeHeight := 27;
+          TreeLink.TotalHeight := CustomH;
+          TreeLink.NodeHeight := CustomH;
           TreeLink.States := [vsVisible];
           TreeLink.Align := 50;
           vtr.InitNode(TreeLink);
@@ -13861,8 +13865,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13880,8 +13884,8 @@ begin
         inc(linkpos, LenData);
 
         TreeLink.TotalCount := 1;
-        TreeLink.TotalHeight := 27;
-        TreeLink.NodeHeight := 27;
+        TreeLink.TotalHeight := CustomH;
+        TreeLink.NodeHeight := CustomH;
         TreeLink.States := [vsVisible];
         TreeLink.Align := 50;
         TreeLink.Dummy := 0;
@@ -13907,6 +13911,7 @@ begin
   Elapsed := Stopwatch.Elapsed;
   mmoTest.Lines.Add( Format('ЗаpisLink %d за %f',[vtr.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
 end;
+
 
 
 
@@ -14120,6 +14125,7 @@ end;
 procedure TfrmSuperHip.MenuTitleLoadDBClick(Sender: TObject);
 begin
   //SubButonImportFDBClick(Sender);
+
   FmxTitleBar.p1.IsOpen := False;
   pgcTree.ActivePage := tsTreeDBFB;
   vtrFDB.SetFocus;
@@ -15239,57 +15245,6 @@ begin
 
   Elapsed := Stopwatch.Elapsed;
   mmotest.Lines.Add('loop-BMH-contains ' + FloatToStr(Elapsed.TotalMilliseconds));
-end;
-
-procedure TfrmSuperHip.SearchTesCRC_equ;
-function CRC32(const data: PAnsiChar; len: Integer): Cardinal;
-var
-  i: Integer;
-  c: Cardinal;
-begin
-  c := $FFFFFFFF;
-  for i := 0 to len - 1 do
-    c := CRC32_TABLE[(c xor Ord(data[i])) and $FF] xor (c shr 8);
-  Result := not c;
-end;
-
-var
-  target: AnsiString;
-  targetLen: Word;
-  targetCRC, crc: Cardinal;
-  p: PAnsiChar;
-  len: Word;
-  i: Integer;
-  data, dataRun: PAspRec;
-  run, node: PVirtualNode;
-  
-begin
-  target := '24075307A67D';
-  targetLen := Length(target);
-  targetCRC := CRC32(PAnsiChar(target), targetLen);
-
-  Stopwatch := TStopwatch.StartNew;
-  node := vtrSearch.GetFirstSelected();
-  data := Pointer(PByte(node)+ lenNode);
-
-  for i := 0 to  Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList.Count - 1 do
-  begin
-    run := Adb_DM.AdbMainLink.JoinResult[Data.index].AdbList[i];
-    dataRun := Pointer(PByte(run) + lenNode);
-
-    p := Adb_DM.CollPregled.getPAnsiStringMap(dataRun.DataPos, Word(PregledNew_NRN_LRN), len);
-    if (p = nil) or (len <> targetLen) then
-      Continue;
-
-    crc := CRC32(p, len);
-    if crc <> targetCRC then
-      Continue;
-
-    if CompareMem(p, PAnsiChar(target), len) then
-      Break;
-  end;
-
-  mmotest.Lines.Add('loop-CRC-fast ' + FloatToStr(Elapsed.TotalMilliseconds));
 end;
 
 procedure TfrmSuperHip.SelectDoctor(sender: TObject);
@@ -17104,12 +17059,12 @@ end;
 //
 //end;
 
-procedure TfrmSuperHip.ActiveControlChanged(Sender: TObject);
-begin
-  //Caption := ActiveControl.ClassType.ClassName;
-  //Caption := ' смяна ' + FormatDateTime('hh:mm:ss', Now );
-  EnumChildWindows(GetDesktopWindow, @EnumChildren, 0);
-end;
+//procedure TfrmSuperHip.ActiveControlChanged(Sender: TObject);
+//begin
+//  //Caption := ActiveControl.ClassType.ClassName;
+//  //Caption := ' смяна ' + FormatDateTime('hh:mm:ss', Now );
+//  EnumChildWindows(GetDesktopWindow, @EnumChildren, 0);
+//end;
 
 procedure TfrmSuperHip.Adb_DMOnClearColl(Sender: TObject);
 begin
@@ -18315,6 +18270,21 @@ begin
   begin
     OnGetPlanedTypeL009_1(TempItem);
   end;
+end;
+
+procedure TfrmSuperHip.AddNewUserAspect(doc: TRealDoctorItem);
+var
+  i: Integer;
+  msg: TNzisReqRespItem;
+  CurrentNrn: string;
+
+begin
+  New(doc.PRecord);
+  doc.PRecord.setProp := [Doctor_UIN, Doctor_FNAME, Doctor_LNAME];
+  doc.PRecord.UIN := Adb_DM.CollDoctor.getAnsiStringMap(doc.DataPos, Word(Doctor_UIN));
+  doc.PRecord.FNAME := Adb_DM.CollDoctor.getAnsiStringMap(doc.DataPos, Word(Doctor_FNAME));
+  doc.PRecord.LNAME := Adb_DM.CollDoctor.getAnsiStringMap(doc.DataPos, Word(Doctor_LNAME));
+  //Adb_DM.streamCmdFile.CopyFromCmdStream()
 end;
 
 procedure TfrmSuperHip.AddNzisImport;
@@ -24348,28 +24318,30 @@ begin
           ArrStr := Nodetext.Split([' ']);
           Canvas.Font.Assign(vtrPregledPat.Font);
 
-          p := Sender.ScreenToClient(Mouse.CursorPos);
+          p := sender.ScreenToClient(Mouse.CursorPos);
+          p.X := p.X - sender.Header.Columns[Column].GetRect.Left;
+          //p.X := p.X + Column.ScreenToClient()
           //vtrPregledPat.Header.Columns[Column].Text := Format('%d   %d', [p.X, p.y]);
           vtrPregledPat.Header.Columns[Column].Text := Format('%d   %d', [-RText.Left + p.x, RText.Top- p.y]);
-          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0])) then
+          if (p.x) < (Canvas.TextWidth(ArrStr[0])) then
           begin
             vtrPregledPat.Header.Columns[Column].Text := 'Име на пациента';
             vtrPregledPat.Header.Columns[Column].Tag := 0;
           end
           else
-          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1])) then
+          if (p.x ) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1])) then
           begin
             vtrPregledPat.Header.Columns[Column].Text := 'Презиме на пациента';
             vtrPregledPat.Header.Columns[Column].Tag := 1;
           end
           else
-          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2])) then
+          if (p.x ) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2])) then
           begin
             vtrPregledPat.Header.Columns[Column].Text := 'Фамилия на пациента';
             vtrPregledPat.Header.Columns[Column].Tag := 2;
           end
           else
-          if (p.x - RText.Left) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2]+ ' ' + ArrStr[3]+ ' ' + ArrStr[4])) then
+          if (p.x) < (Canvas.TextWidth(ArrStr[0]+ ' ' + ArrStr[1]+ ' ' + ArrStr[2]+ ' ' + ArrStr[3]+ ' ' + ArrStr[4])) then
           begin
             vtrPregledPat.Header.Columns[Column].Text := 'Възраст на пациента';
             vtrPregledPat.Header.Columns[Column].Tag := 3;
@@ -25668,7 +25640,12 @@ begin
     case numButton of
       0:
       begin
-        OpenDB(-1);
+        if dlgOpenDB.Execute then
+
+        begin
+          Option.AddToDbList(dlgOpenDB.FileName);
+          //Adb_DM.OpenDB(dlgOpenDB.FileName);
+        end;
       end;
     end;
   end
@@ -25683,8 +25660,9 @@ begin
       1:
       begin
         dbPath := Option.dblist[data.index];
+        FDbName := dbPath;
         Adb_DM.ImportFDB;
-        LoadThreadDB(FDbName);
+        LoadThreadDB(dbPath);
         pgcTree.ActivePage := tsTreeDBFB;
         vtrFDB.SetFocus;
       end;
@@ -25710,7 +25688,10 @@ begin
     end;
     if FmxProfForm <> nil then
       FmxProfForm.ClearBlanka;
-    OpenDB(data.index);
+    Adb_DM.OpenDB(option.dblist[data.index]);
+    if FmxProfForm = nil then
+      InitFMXDyn;
+    StartCertThread;
     if vtrPregledPat.RootNode.ChildCount > 0 then
     begin
       pnlRoleView.ActivePanel := RolPnlDoctorSpec;
@@ -25838,6 +25819,76 @@ end;
 procedure TfrmSuperHip.vTrTestGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
 begin
   CellText := Format('Level %d, Index %d', [Sender.GetNodeLevel(Node), Node.Index]);
+end;
+
+procedure TfrmSuperHip.vtrUserAspectGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  data: PAspRec;
+  doc: TRealDoctorItem;
+  buf: Pointer;
+  posdata: Cardinal;
+begin
+  buf := Adb_DM.AdbMain.Buf;
+  posdata := Adb_DM.AdbMain.FPosData;
+  data := PAspRec(PByte(Node) + lenNode);
+  case data.vid of
+    vvBranchRoot:
+    begin
+      case Column of
+        0: CellText := 'Браншове';
+      end;
+    end;
+    vvBranchMedical:
+    begin
+      case Column of
+        0: CellText := 'Медицина';
+      end;
+    end;
+    vvBranchMedicalOPL:
+    begin
+      case Column of
+        0: CellText := 'Общо практикуващи лекари';
+      end;
+    end;
+    vvDoctor:
+    begin
+      case Column of
+        0:
+        begin
+          CellText :=
+          ADB_DM.CollDoctor.getAnsiStringMap(data.DataPos, word(Doctor_FNAME)) + ' ' +
+          ADB_DM.CollDoctor.getAnsiStringMap(data.DataPos, word(Doctor_SNAME)) + ' ' +
+          ADB_DM.CollDoctor.getAnsiStringMap(data.DataPos, word(Doctor_LNAME));
+        end;
+        1:
+        begin
+          CellText :=
+          'ЕГН ' + ADB_DM.CollDoctor.getAnsiStringMap(data.DataPos, word(Doctor_EGN)) + #13#10 +
+          'УИН ' + ADB_DM.CollDoctor.getAnsiStringMap(data.DataPos, word(Doctor_UIN));
+        end;
+      end;
+    end;
+    //vvRootDeput:
+//    begin
+//      case Column of
+//        0:
+//        begin
+//          CellText := 'Заместници'
+//        end;
+//      end;
+//    end;
+//    vvCert:
+//    begin
+//      case Column of
+//        0:
+//        begin
+//          CellText := 'Сертификат'
+//        end;
+//      end;
+//    end;
+  end;
 end;
 
 procedure TfrmSuperHip.WmAfterLoadDB(var Msg: TMessage);
@@ -25971,11 +26022,23 @@ begin
     Adb_DM.streamCmdFile.free;
     Adb_DM.streamCmdFile := nil;
   end;
+  //if Assigned(Adb_DM.AdbMainLink) then
+//  begin
+//    Adb_DM.AdbMainLink.FVTR := vtrPregledPat;
+//    Adb_DM.AdbMainLink.FStreamCmdFile := Adb_DM.streamCmdFile;
+//    FDBHelper.AdbLink := Adb_DM.AdbMainLink;
+//    if FmxProfForm = nil then
+//      InitFMXDyn;
+//    StartCertThread;
+//  end;
   if option.dblist.Count = 1 then
   begin
     if ParamStr(3) = '' then
     begin
-      OpenDB(0);
+      Adb_DM.OpenDB(option.dblist[0]);// OpenDB(0);
+      if FmxProfForm = nil then
+        InitFMXDyn;
+      StartCertThread;
     end
     else
     begin

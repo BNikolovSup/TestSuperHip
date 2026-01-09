@@ -1,4 +1,4 @@
-unit Aspects.Types;
+unit Aspects.Types;  //pasprec
 
 interface
 uses
@@ -260,7 +260,10 @@ type
              vvCertificatesRoot,
              vvPeriodPast,
              vvPeriodCurrent,
-             vvPeriodFuture
+             vvPeriodFuture,
+             vvBranchRoot,
+             vvBranchMedical,
+             vvBranchMedicalOPL
              );
 
 

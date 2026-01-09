@@ -144,6 +144,11 @@ interface
     StartTime: TTime;
     EndTime: TTime;
 
+    rank: Integer;
+    percentOfGroup: Single;
+    OffsetGroup: Single;
+    lstGroup: TList<TAspectScheduleEvent>;
+
     DataPos: Cardinal;   // по-късно
     constructor Create;
   end;
@@ -963,6 +968,10 @@ end;
 constructor TAspectScheduleEvent.Create;
 begin
   DataPos := 0;
+  percentOfGroup := 100;
+  OffsetGroup := 20;
+  rank := - 1;
+  lstGroup := TList<TAspectScheduleEvent>.create;
 end;
 
 end.

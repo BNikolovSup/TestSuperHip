@@ -757,7 +757,7 @@ TRealDoctorColl = class(TDoctorColl)
     function MaxWidth(canvas: TCanvas): integer;
     procedure SortByDoctorID;
     procedure ClearUnfav;
-    procedure UpdateDoctors;
+    //procedure UpdateDoctors;
     procedure UpdateDoctorsTemp(doc: TRealDoctorItem);
     function FindDoctorFromDataPos(dataPos: cardinal): TRealDoctorItem;
     function FindDoctorFromUinSpec(UinSpec: string): TRealDoctorItem;
@@ -4009,34 +4009,34 @@ begin
   end;
 end;
 
-procedure TRealDoctorColl.UpdateDoctors;
-var
-  dataPosition: Cardinal;
-  pCardinalData: PCardinal;
-  cnt, i: Integer;
-  doc: TRealDoctorItem;
-
-begin
-  cnt := 0;
-  pCardinalData := pointer(PByte(Buf) + 12);
-  dataPosition := pCardinalData^ + self.posData;
-  for i := 0 to Count - 1 do
-  begin
-    doc := Items[i];
-    if doc.PRecord <> nil then
-    begin
-      doc.SaveDoctor(dataPosition);
-      self.streamComm.Len := self.streamComm.Size;
-      Self.CmdFile.CopyFrom(self.streamComm, 0);
-      inc(cnt);
-    end;
-  end;
-  if cnt > 0 then
-  begin
-    pCardinalData := pointer(PByte(Buf) + 12);
-    pCardinalData^  := dataPosition - self.PosData;
-  end;
-end;
+//procedure TRealDoctorColl.UpdateDoctors;
+//var
+//  dataPosition: Cardinal;
+//  pCardinalData: PCardinal;
+//  cnt, i: Integer;
+//  doc: TRealDoctorItem;
+//
+//begin
+//  cnt := 0;
+//  pCardinalData := pointer(PByte(Buf) + 12);
+//  dataPosition := pCardinalData^ + self.posData;
+//  for i := 0 to Count - 1 do
+//  begin
+//    doc := Items[i];
+//    if doc.PRecord <> nil then
+//    begin
+//      doc.SaveDoctor(dataPosition);
+//      //self.streamComm.Len := self.streamComm.Size;
+//      Self.CmdFile.CopyFromCmdStream(self.streamComm, true);
+//      inc(cnt);
+//    end;
+//  end;
+//  if cnt > 0 then
+//  begin
+//    pCardinalData := pointer(PByte(Buf) + 12);
+//    pCardinalData^  := dataPosition - self.PosData;
+//  end;
+//end;
 
 procedure TRealDoctorColl.UpdateDoctorsTemp(doc: TRealDoctorItem);
 begin

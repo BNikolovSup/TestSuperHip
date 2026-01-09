@@ -1,5 +1,5 @@
 program Hippocrates360;
-
+       //title
 
 {$R *.dres}
 
@@ -11,6 +11,7 @@ uses
   Winapi.Windows,
   System.SysUtils,
   System.StrUtils,
+  TitleBar in '..\Popup\TitleBar.pas' {frmTitlebar},
   SuperHipp in 'SuperHipp.pas' {frmSuperHip},
   Vcl.Themes,
   Vcl.Styles,
@@ -102,7 +103,7 @@ uses
   Aspects.Collections in 'Aspects\Aspects.Collections.pas',
   Aspects.Types in 'Aspects\Aspects.Types.pas',
   RealObj.RealNzis in 'Aspects\RealObj.RealNzis.pas',
-  TitleBar in '..\Popup\TitleBar.pas' {frmTitlebar},
+
   RoleBar in '..\Popup\RoleBar.pas' {frmRolebar},
   RolePanels in '..\Popup\RolePanels.pas' {frmRolePanels},
   OptionsForm in '..\Popup\OptionsForm.pas' {frmOptionsForm},
@@ -169,7 +170,9 @@ begin
   Application.UpdateFormatSettings := False;
   LoadKeyBoardLayout('00040402',1);//https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-language-pack-default-values?view=windows-11
 
+
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
+  //Application.CreateForm(TfrmTitlebar, frmTitlebar);
   Application.CreateForm(TfrmFmxControls, frmFmxControls);
   Application.CreateForm(TfrmImportNzis, frmImportNzis);
   //Application.CreateForm(TfrmRolePanels, frmRolePanels);

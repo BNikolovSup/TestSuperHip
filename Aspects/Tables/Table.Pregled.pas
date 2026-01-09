@@ -2321,7 +2321,7 @@ begin
         if IntToStr(self.Items[i].IndexInt) = FSearchingValue then
         begin
           ListPregledSearch.Add(self.Items[i]);
-        end;      end;    end;  end;end;
+        end;      end;    end;  end;end;
 
 procedure TPregledColl.ShowGrid(Grid: TTeeGrid);
 var

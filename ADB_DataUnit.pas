@@ -150,6 +150,7 @@ uses
     FPatNodesBack: TPatNodes;
     FPatNodesActive: TPatNodes;
     FPregNodesActive: TPregledNodes;
+    FAdbUserAspect: TMappedFile;
     procedure SetAdbMain(const Value: TMappedFile);
     procedure SetAdbNomenHip(const Value: TMappedFile);
     procedure SetAdbNomenNzis(const Value: TMappedFile);
@@ -161,6 +162,7 @@ uses
     procedure SetAdbNzisNomenFileName(const Value: string);
     procedure SetAdbNzokNomenFileName(const Value: string);
     procedure SetAdbOptionFileName(const Value: string);
+    procedure SetAdbUserAspect(const Value: TMappedFile);
   protected
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
@@ -322,6 +324,8 @@ uses
     property AdbNomenNzis: TMappedFile read FAdbNomenNzis write SetAdbNomenNzis;// нзис-ка номенклатура
     property AdbNomenHip: TMappedFile read FAdbNomenHip write SetAdbNomenHip; // Наша номенклатура
     property AdbNomenNZOK: TMappedFile read FAdbNomenNZOK write SetAdbNomenNZOK; // НЗОК номенклатура
+    property AdbUserAspect: TMappedFile read FAdbUserAspect write SetAdbUserAspect; // адб на главните колекции
+
 
     property AdbMainLink: TMappedLinkFile read FAdbMainLink write FAdbMainLink;
     //property NasMestaLink: TMappedLinkFile read FNasMestaLink write SetNasMestaLink;
@@ -3003,11 +3007,12 @@ begin
     end;
     if FAdbMainLink <> nil then
     begin
+      FAdbMainLink.FVTR := Self.VtrMain;
       FAdbMainLink.FVTR.BeginUpdate;
       nodeLink := pointer(PByte(FAdbMainLink.Buf) + 100);
       FAdbMainLink.FVTR.InternalDisconnectNode(nodeLink, false);
       UnmapViewOfFile(FAdbMainLink.Buf);
-      FreeAndNil(FAdbMainLink);
+
       FAdbMainLink.FVTR.Selected[FAdbMainLink.FVTR.GetFirstSelected()] := False;
       FAdbMainLink.FVTR.CanClear := True;
       FAdbMainLink.FVTR.AddChild(nil, nil);
@@ -3015,6 +3020,7 @@ begin
       FAdbMainLink.FVTR.CanClear := false;
       FAdbMainLink.FVTR.Repaint;
       FAdbMainLink.FVTR.endUpdate;
+      FreeAndNil(FAdbMainLink);
     end;
 
     ClearColl;
@@ -3045,7 +3051,6 @@ var
   pat: TPatientNewItem;
 begin
   Stopwatch := TStopwatch.StartNew;
-  //ListNodes.Clear;
   LNK.FVTR := VtrMain;
   LNK.FVTR.BeginUpdate;
 
@@ -3064,15 +3069,14 @@ begin
   pCardinalData := pointer(PByte(LNK.Buf) + 8);
   oldRoot := pCardinalData^;
 
-  //mmotest.Lines.Add(Format('BufLink  = %d', [cardinal(AspectsLinkPatPregFile.Buf)]));
-
   linkPos := 100;
   pCardinalData := pointer(PByte(LNK.Buf));
   FPosLinkData := pCardinalData^;
   node := pointer(PByte(LNK.Buf) + linkpos);
-  //node.NodeHeight := 27;
 
   Exclude(node.States, vsSelected);
+  Include(node.States, vsMultiline);
+  //node.NodeHeight := 27;
   data := pointer(PByte(node) + lenNode);
   if not (data.vid in [vvPatientRevision]) then
     data.index := -1;
@@ -3103,9 +3107,9 @@ begin
       Inc(linkPos, LenData);
 
       node := pointer(PByte(LNK.Buf) + linkpos);
-      //node.NodeHeight := 27;
       Exclude(node.States, vsSelected);
-      //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+      Include(node.States, vsMultiline);
+      //node.NodeHeight := 27;
       data := pointer(PByte(node) + lenNode);
       if not (data.vid in [vvPatientRevision]) then
         data.index := -1;
@@ -3143,7 +3147,8 @@ begin
         Inc(linkPos, LenData);
         node := pointer(PByte(LNK.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured]; // zzzzzzzzzzzzzzzzzzz за опция за редове
+        Include(node.States, vsMultiline);
+        //node.NodeHeight := 27;
         data := pointer(PByte(node) + lenNode);
         if data.vid = vvEvntList then
         begin
@@ -3151,24 +3156,19 @@ begin
         end;
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
-        //if data.vid <> vvPatient then
-//          Exclude(node.States, vsFiltered);
         AddToListNodes(data);
       end;
     end
     else
     begin
-      //PregledColl.Capacity := 1000000;
       while linkPos <= FPosLinkData do
       begin
         Inc(linkPos, LenData);
         node := pointer(PByte(LNK.Buf) + linkpos);
         Exclude(node.States, vsSelected);
-        //Node.States := node.States + [vsMultiline] + [vsHeightMeasured];  // zzzzzzzzzzzzzzzzzzz за опция за редове
-        //Exclude(node.States, vsInitialized);
+        Include(node.States, vsMultiline);
+        //node.NodeHeight := 27;
         data := pointer(PByte(node) + lenNode);
-        //if data.vid <> vvPatient then
-//          Exclude(node.States, vsFiltered);
         if not (data.vid in [vvPatientRevision]) then
           data.index := -1;
         AddToListNodes(data);
@@ -3176,45 +3176,19 @@ begin
     end;
   end;
 
-
-  //pCardinalData := pointer(PByte(AspectsLinkPatPregFile.Buf));
-//  pCardinalData^ := linkpos;
   node := pointer(PByte(LNK.Buf) + 100);
-   //node.NodeHeight := 27;
 
   LNK.FVTR.InternalConnectNode_cmd(node, LNK.FVTR.RootNode, LNK.FVTR, amAddChildFirst);
   LNK.FVTR.BufLink := LNK.Buf;
-  //node := pointer(PByte(AspectsLinkPatPregFile.Buf) + 100);
-  //vtrPregledPat.InternalDisconnectNode(node, false);
+
   pCardinalData := pointer(PByte(LNK.Buf) + 8);
   pCardinalData^ := Cardinal(LNK.FVTR.RootNode);
   LNK.FVTR.UpdateVerticalScrollBar(true);
   LNK.FVTR.EndUpdate;
   Stopwatch.StartNew;
-  //vtrPregledPat.Sort(vtrPregledPat.RootNode.FirstChild, 0, sdAscending, false);
   Elapsed := Stopwatch.Elapsed;
-  //LNK.FVTR := LNK.FVTR;
   LNK.FStreamCmdFile := streamCmdFile;
-  //FDBHelper.AdbLink := LNK;
-  //FmxProfForm.AspLink := LNK;
   FAdbMainLink := LNK;
-
-  //vtrPregledPat.ValidateNode(vtrPregledPat.RootNode.FirstChild.FirstChild,True);
-
-  //vtrPregledPat.Selected[vtrPregledPat.GetLast()] := True;
-  //vtrPregledPat.IsFiltered[vtrPregledPat.Getlast()] := True;
-  //vtrPregledPat.ReinitNode(vtrPregledPat.GetFirst(), true);
-
-  //Elapsed := Stopwatch.Elapsed;
-
-  //mmoTest.Lines.Add( Format('ЗарежданеLink %d за %f',[vtrPregledPat.RootNode.TotalCount,  Elapsed.TotalMilliseconds]));
-  //CalcStatusDB(GetFileSize(AfileLink, @Int64Rec(AInt64).Hi), 100, linkpos, 0, 0);
-  //PregledColl.ShowGrid(TeeGrid1);
-
-  //FindOldItemsForInsert;
-  //CheckCollForSave;
-
-
 end;
 
 procedure TADBDataModule.ReadXmlL010(streamL010: TStream; ls: TStrings);
@@ -3969,6 +3943,11 @@ end;
 procedure TADBDataModule.SetAdbOptionFileName(const Value: string);
 begin
   FAdbOptionFileName := Value;
+end;
+
+procedure TADBDataModule.SetAdbUserAspect(const Value: TMappedFile);
+begin
+  FAdbUserAspect := Value;
 end;
 
 procedure TADBDataModule.SetCmdColl;
