@@ -1,4 +1,4 @@
-﻿unit WordBreakF;
+unit WordBreakF;
 
 interface
 
