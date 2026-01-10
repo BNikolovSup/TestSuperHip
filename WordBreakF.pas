@@ -1,4 +1,4 @@
-unit WordBreakF;
+﻿unit WordBreakF;
 
 interface
 
@@ -8,6 +8,13 @@ uses
 
 type
   TWordBreaks = AnsiString;
+  //TWordRow = TPoint;
+  TWordHit = record
+    VisualRow: Integer;   // редът, на който е щракнато
+    WordInRow: Integer;   // индекс в ls[VisualRow]
+    GlobalWord: Integer; // индекс в оригиналния текст
+    Text: string;        // думата
+  end;
 
   TWordBreakF = class(TObject)
   private
@@ -30,6 +37,8 @@ type
     procedure WrapMemo;
     procedure OutLine(const str: AnsiString; cntBreakChar: Integer);
     procedure OutMemo;
+    function WordAtPoint(const P: TPoint; LineHeight: Integer;
+       out WordRow: TWordHit): Boolean;
 
     property size: Integer read Fsize write Fsize;
     property size1: Integer read Fsize1 write Fsize1;
@@ -39,8 +48,8 @@ type
   end;
 
 const
-  gl: set of AnsiChar = ['�', '�', '�', '�', '�', '�', '�', '�', '�', '�', 'A', 'E'];
-  r_sogl: set of AnsiChar = ['�', '�'];
+  gl: set of AnsiChar = ['А', 'Е', 'Ё', 'И', 'О', 'У', 'Ы', 'Э', 'Ю', 'Я', 'A', 'E'];
+  r_sogl: set of AnsiChar = ['Ъ', 'Ь'];
   spaces: set of AnsiChar = [' ', '.', ',', '-'];
 
 
@@ -97,6 +106,44 @@ begin
   ls.AddObject(str, TObject(cntBreakChar));
   Inc(Fsize, Fsize1);
 end;
+function TWordBreakF.WordAtPoint(const P: TPoint; LineHeight: Integer;
+  out WordRow: TWordHit): Boolean;
+var
+  i, x, w, r, VisualRow, AWord: Integer;
+  AccWidth: Integer;
+  Words: TArray<string>;
+begin
+  VisualRow := P.Y div LineHeight;
+  if (VisualRow < 0) or (VisualRow >= ls.Count) then Exit(False);
+
+  Words := ls[VisualRow].Split([' ']);
+  AccWidth := 0;
+
+  for i := 0 to High(Words) do
+  begin
+    W := Canvas.TextWidth(Words[i]);
+
+    if P.X < AccWidth + W then
+    begin
+      WordRow.WordInRow := i;
+      Break;
+    end;
+
+    AccWidth := AccWidth + W + Canvas.TextWidth(' ');
+  end;
+  WordRow.GlobalWord := 0;
+
+  // всички думи в редовете преди този
+  for r := 0 to VisualRow - 1 do
+    Inc(WordRow.GlobalWord, Length(ls[r].Split([' '])));
+
+  // + думата в текущия ред
+  Inc(WordRow.GlobalWord, WordRow.WordInRow);
+
+
+  Result := True;
+end;
+
 procedure TWordBreakF.WrapLine(const s: AnsiString);
   var
     i, cur, beg, last, LoopPos: Integer;
@@ -177,7 +224,7 @@ procedure TWordBreakF.WrapLine(const s: AnsiString);
             begin
               delta := FEndFilter - beg + 1;
             end;
-            //else // ���� ����, ������ ��� ��������� �� ������� �����
+            //else // тука идва, когато има търсеното на няколко места
 //            if s[beg] = s[FEndFilter] then
 //            begin
 //              delta := 1;
@@ -244,9 +291,9 @@ procedure TWordBreakF.WrapLine(const s: AnsiString);
     i: Integer;
     posHippHeigth: Integer;
   begin
-    size := 0;// ��������
+    size := 0;// височина
     size1 := - Canvas.Font.Height ;
-    //maxwidth := AWidth ; // ��������
+    //maxwidth := AWidth ; // широчина
 
     for i := 0 to InLs.Count - 1 do
     begin
