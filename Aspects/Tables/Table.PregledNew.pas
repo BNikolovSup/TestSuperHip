@@ -2,7 +2,7 @@ unit Table.PregledNew;
 
 interface
 uses
-  Aspects.Collections, Aspects.Types, Aspects.Functions, Vcl.Dialogs,
+  Vcl.Dialogs,Aspects.Collections, Aspects.Types, Aspects.Functions,
   VCLTee.Grid, Tee.Grid.Columns, Tee.GridData.Strings,
   classes, system.SysUtils, windows, System.Generics.Collections,
   VirtualTrees, VCLTee.Control, System.Generics.Defaults;

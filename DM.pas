@@ -4,8 +4,8 @@ interface
 
 uses
   System.SysUtils, System.Classes, IBX.IBSQL, IBX.IBDatabase, Data.DB,
-   Winapi.Windows, dialogs, System.Generics.Collections, RealObj.RealHipp,
-  IBX.IBScript;
+   Winapi.Windows, dialogs, System.Generics.Collections,// ,
+  IBX.IBScript, Table.Diagnosis, Table.PregledNew;
 
 type
   TDUNzis = class(TDataModule)
@@ -68,7 +68,7 @@ type
     procedure InitDb(DBName: string);
     function GetDoctorNameFromDB(uin: string): string;
     procedure SetIndex;
-    procedure InsertDiag(posData, posDataPreg: cardinal; collDiag: TRealDiagnosisColl; collPreg: TRealPregledNewColl);
+    procedure InsertDiag(posData, posDataPreg: cardinal; collDiag: TDiagnosisColl; collPreg: TPregledNewColl);
     property IsGP: Boolean read FIsGP;
 
   end;
@@ -82,8 +82,8 @@ implementation
 
 { TDU }
 
-uses
-  Table.PregledNew, Table.Diagnosis;
+//uses
+  //Table.PregledNew, Table.Diagnosis, RealObj.RealHipp;
 
 procedure TDUNzis.DataModuleCreate(Sender: TObject);
 begin
@@ -183,8 +183,8 @@ begin
   end;
 end;
 
-procedure TDUNzis.InsertDiag(posData, posDataPreg: cardinal; collDiag: TRealDiagnosisColl;
-      collPreg: TRealPregledNewColl);
+procedure TDUNzis.InsertDiag(posData, posDataPreg: cardinal; collDiag: TDiagnosisColl;
+      collPreg: TPregledNewColl);
 var
   StatDiag: TlogicalDiagnosisSet;
   statDiagInt: Integer;

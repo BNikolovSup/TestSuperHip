@@ -606,6 +606,7 @@ object DUNzis: TDUNzis
       'pr.RECKNNO'
       ''
       'from pregled pr'
+      '--where pr.id > 242256'
       ''
       ''
       ''

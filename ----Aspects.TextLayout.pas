@@ -1,22 +1,25 @@
-unit WordBreakF;
+﻿unit Aspects.TextLayout;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
-  Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Dialogs, Vcl.StdCtrls, System.Generics.Collections;
 
 type
   TWordBreaks = AnsiString;
-  //TWordRow = TPoint;
+
+  IsHyphenation = boolean;
+
   TWordHit = record
     VisualRow: Integer;   // редът, на който е щракнато
     WordInRow: Integer;   // индекс в ls[VisualRow]
     GlobalWord: Integer; // индекс в оригиналния текст
     Text: string;        // думата
+    rectWord: TRect;
   end;
 
-  TWordBreakF = class(TObject)
+  TAspectWordBreak = class(TObject)
   private
     b: TWordBreaks;
     canvas: TCanvas;
@@ -30,12 +33,13 @@ type
 
   public
     ls: TStringList;
+    lstHyphenation: TList<IsHyphenation>;
     Inls: TStringList;
     constructor create(Acanvas: TCanvas);
     destructor destroy; override;
     function BreakWord(s: AnsiString): TWordBreaks;
     procedure WrapMemo;
-    procedure OutLine(const str: AnsiString; cntBreakChar: Integer);
+    procedure OutLine(const str: AnsiString; cntBreakChar: Integer; hyphenation: Boolean = False);
     procedure OutMemo;
     function WordAtPoint(const P: TPoint; LineHeight: Integer;
        out WordRow: TWordHit): Boolean;
@@ -57,8 +61,7 @@ const
 
 implementation
 
-
-function TWordBreakF.BreakWord(s: AnsiString): TWordBreaks;
+function TAspectWordBreak.BreakWord(s: AnsiString): TWordBreaks;
 var
   i: Integer;
   CanBreak: Boolean;
@@ -87,26 +90,30 @@ begin
   end;
 end;
 
-constructor TWordBreakF.create(Acanvas: TCanvas);
+constructor TAspectWordBreak.create(Acanvas: TCanvas);
 begin
   canvas := Acanvas;
   ls := TStringList.Create;
   inls := TStringList.Create;
+  lstHyphenation := TList<IsHyphenation>.Create;
 end;
 
-destructor TWordBreakF.destroy;
+destructor TAspectWordBreak.destroy;
 begin
   ls.Free;
   inls.Free;
+  lstHyphenation.Free;
   inherited;
 end;
 
-procedure TWordBreakF.OutLine(const str: AnsiString; cntBreakChar: Integer);
+procedure TAspectWordBreak.OutLine(const str: AnsiString; cntBreakChar: Integer; hyphenation: Boolean);
 begin
   ls.AddObject(str, TObject(cntBreakChar));
+  lstHyphenation.add(hyphenation);
   Inc(Fsize, Fsize1);
 end;
-function TWordBreakF.WordAtPoint(const P: TPoint; LineHeight: Integer;
+
+function TAspectWordBreak.WordAtPoint(const P: TPoint; LineHeight: Integer;
   out WordRow: TWordHit): Boolean;
 var
   i, x, w, r, VisualRow, AWord: Integer;
@@ -126,6 +133,8 @@ begin
     if P.X < AccWidth + W then
     begin
       WordRow.WordInRow := i;
+      WordRow.rectWord.Top := (VisualRow * 13);
+      WordRow.rectWord.left := 4;
       Break;
     end;
 
@@ -135,7 +144,7 @@ begin
 
   // всички думи в редовете преди този
   for r := 0 to VisualRow - 1 do
-    Inc(WordRow.GlobalWord, Length(ls[r].Split([' '])));
+    Inc(WordRow.GlobalWord, Length(ls[r].Split([' ']))- integer(lstHyphenation[r]));
 
   // + думата в текущия ред
   Inc(WordRow.GlobalWord, WordRow.WordInRow);
@@ -144,7 +153,7 @@ begin
   Result := True;
 end;
 
-procedure TWordBreakF.WrapLine(const s: AnsiString);
+procedure TAspectWordBreak.WrapLine(const s: AnsiString);
   var
     i, cur, beg, last, LoopPos: Integer;
     WasBreak, CRLF: Boolean;
@@ -229,7 +238,7 @@ procedure TWordBreakF.WrapLine(const s: AnsiString);
 //            begin
 //              delta := 1;
 //            end;
-            OutLine(Copy(s, beg, last - beg + 1) + '-', delta)
+            OutLine(Copy(s, beg, last - beg + 1) + '-', delta, true)
           end
           else
           if s[last] = ' ' then
@@ -286,7 +295,7 @@ procedure TWordBreakF.WrapLine(const s: AnsiString);
     end;
   end;
 
-  procedure TWordBreakF.OutMemo;
+  procedure TAspectWordBreak.OutMemo;
   var
     i: Integer;
     posHippHeigth: Integer;
@@ -301,7 +310,7 @@ procedure TWordBreakF.WrapLine(const s: AnsiString);
     end;
   end;
 
-procedure TWordBreakF.WrapMemo;
+procedure TAspectWordBreak.WrapMemo;
 begin
 
   ls.Clear;

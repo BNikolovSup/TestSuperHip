@@ -3,7 +3,7 @@ program WordBreak;
 uses
   Vcl.Forms,
   MainWordBreak in 'MainWordBreak.pas' {Form1},
-  WordBreakF in '..\..\WordBreakF.pas';
+  Aspects.TextLayout in '..\..\Aspects.TextLayout.pas';
 
 {$R *.res}
 

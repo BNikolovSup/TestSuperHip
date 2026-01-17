@@ -29,7 +29,7 @@ interface
     RealObj.RealHipp,
     ADB_DataUnit,
     WalkFunctions,
-    WordBreakF,
+    Aspects.TextLayout,
     CertThread,
 
     Table.PregledNew,
@@ -1542,7 +1542,7 @@ procedure TTempVtrHelper.vtrDrawTextMKB(Sender: TBaseVirtualTree;
 var
   rText, r: TRect;
   i, p: Integer;
-  wb: TWordBreakF;
+  wb: TAspectWordBreak;
   strPred, strSled, strFltr: string;
   data: PAspRec;
 begin
@@ -1561,7 +1561,7 @@ begin
   rText := CellRect;
 
   //Exit;
-  wb := TWordBreakF.create(TargetCanvas);
+  wb := TAspectWordBreak.create(TargetCanvas);
   wb.Inls.Text := Text;
 
   rText := CellRect;

@@ -169,7 +169,7 @@ begin
     if activeFilters.Count = 0 then
     begin
       // Няма обектни филтри -> всички top-level adb children са кандидати (проектирани към себе си)
-      adbChild := AdbLinkFile.FVTR.RootNode.FirstChild;
+      adbChild := AdbLinkFile.FVTR.GetFirstChild(AdbLinkFile.FVTR.GetRootNode);
       while adbChild <> nil do
       begin
         Result.Add(adbChild);
@@ -186,7 +186,7 @@ begin
 
       // колко object-стъпки има от корена до този filter node
       // depth = брой object-възли в пътя
-      depth := ComputeObjectDepthFilterNode(filterNode, FilterLinkFile.FVTR);
+      depth := ComputeObjectDepthFilterNode(filterNode, FilterLinkFile.FVTR as TVirtualStringTreeAspect);
       // stepsUp = depth - 1; ако depth=1 -> stepsUp=0 (вече сме на пациента)
       stepsUp := depth - 1;
       if stepsUp < 0 then stepsUp := 0;

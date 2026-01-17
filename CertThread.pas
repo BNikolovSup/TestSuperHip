@@ -7,7 +7,7 @@ uses
   Vcl.Forms, Vcl.ExtCtrls, Winapi.Windows, Vcl.Graphics, Vcl.ComCtrls, system.Math,
   System.Generics.Collections, DM, Winapi.ActiveX, system.Variants, VirtualTrees,
   SBxTypes, SBxCertificateStorage, SBX509, SBWinCertStorage,  SBUtils,
-  DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr,
+  //DBCollection.Patient, DBCollection.Pregled, DBCollection.Diagnosis, DBCollection.MedNapr,
   VCLTee.Grid, Tee.Grid.Ticker, Aspects.Collections,
   RealObj.RealHipp, VirtualStringTreeAspect, Table.Unfav, Table.PregledNew, Table.PatientNew,
   Table.Doctor, Table.Certificates, ADB_DataUnit,

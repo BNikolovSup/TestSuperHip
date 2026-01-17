@@ -12,6 +12,7 @@ uses
   Table.NZIS_DIAGNOSTIC_REPORT, Table.NZIS_RESULT_DIAGNOSTIC_REPORT, Table.CL144,
   Table.Certificates, Table.Mkb, Table.AnalsNew, Table.NasMesto, Table.BLANKA_MED_NAPR,
   Table.INC_NAPR,Table.NzisToken, Table.CL050, Table.NomenNzis, Table.NzisReqResp,
+  Aspects.Interfaces,
   //ProfGraph,
   RealObj.NzisNomen, RealNasMesto
   , Nzis.Types, RealObj.RealHipp, L010, Xml.XMLDoc
@@ -128,7 +129,7 @@ uses
   end;
 
 
-  TADBDataModule = class(TObject)
+  TADBDataModule = class(TObject, IADBProvider)
   private
     FPatEgn: string;
     FAdbMain: TMappedFile;
@@ -167,6 +168,10 @@ uses
     Stopwatch: TStopwatch;
     Elapsed: TTimeSpan;
     ver: string;
+
+    function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
+    function _AddRef: Integer; stdcall;
+    function _Release: Integer; stdcall;
 
 
     procedure AddTagToStream(XmlStream: TXmlStream;NameTag, ValueTag :string; amp: Boolean = true; Node: PVirtualNode = nil);
@@ -318,6 +323,7 @@ uses
     procedure SwapNodesBuffers;
 
     procedure ImportFDB;
+    procedure GetName;
 
     property patEgn: string read FPatEgn;
     property AdbMain: TMappedFile read FAdbMain write SetAdbMain; // адб на главните колекции
@@ -511,7 +517,7 @@ begin
   Dispose(newPat.PRecord);
   newPat.PRecord := nil;
   Pat.DataPos := newPat.DataPos;
-  FAdbMainLink.AddNewNode(vvPatient, newPat.DataPos, FAdbMainLink.FVTR.RootNode.FirstChild, amAddChildFirst, patnode, linkPos);
+  FAdbMainLink.AddNewNode(vvPatient, newPat.DataPos, FAdbMainLink.FVTR.GetFirstChild(FAdbMainLink.FVTR.GetRootNode), amAddChildFirst, patnode, linkPos);
   Pat.FNode := patnode;
 
   newAddres := TRealAddresItem(NasMesto.addresColl.Add);
@@ -766,6 +772,16 @@ begin
   SwapObj(TObject(FPregNodesActive), TObject(FPregNodesBack));
 end;
 
+function TADBDataModule._AddRef: Integer;
+begin
+  Result := -1; //non-refcounted
+end;
+
+function TADBDataModule._Release: Integer;
+begin
+  Result := -1; //non-refcounted
+end;
+
 constructor TADBDataModule.Create(AvtrNasMesto, AvtrAdb: TVirtualStringTreeAspect);
 begin
   VtrNasMesta := AvtrNasMesto;
@@ -791,7 +807,6 @@ end;
 
 destructor TADBDataModule.Destroy;
 begin
-  //FreeAndNil(XMLStream);
   FreeAndNil(LstNodeSended);
   FreeAndNil(listLog);
   FreeAndNil(ListPrimDocuments);
@@ -2165,6 +2180,11 @@ begin
   end;
 end;
 
+procedure TADBDataModule.GetName;
+begin
+
+end;
+
 function TADBDataModule.GetNzisNomenCollectionFromID(
   id: Integer): TBaseCollection;
 var
@@ -3010,15 +3030,15 @@ begin
       FAdbMainLink.FVTR := Self.VtrMain;
       FAdbMainLink.FVTR.BeginUpdate;
       nodeLink := pointer(PByte(FAdbMainLink.Buf) + 100);
-      FAdbMainLink.FVTR.InternalDisconnectNode(nodeLink, false);
+      FAdbMainLink.FVTR.DisconnectNode(nodeLink, false);
       UnmapViewOfFile(FAdbMainLink.Buf);
 
-      FAdbMainLink.FVTR.Selected[FAdbMainLink.FVTR.GetFirstSelected()] := False;
-      FAdbMainLink.FVTR.CanClear := True;
-      FAdbMainLink.FVTR.AddChild(nil, nil);
-
-      FAdbMainLink.FVTR.CanClear := false;
-      FAdbMainLink.FVTR.Repaint;
+      FAdbMainLink.FVTR.SetSelected(FAdbMainLink.FVTR.GetFirstSelectedI, false);
+      //FAdbMainLink.FVTR.CanClear := True;
+//      FAdbMainLink.FVTR.AddChild(nil, nil);
+//
+//      FAdbMainLink.FVTR.CanClear := false;
+//      FAdbMainLink.FVTR.Repaint;  //zzzzzzzzzzzzzzzzzzzz
       FAdbMainLink.FVTR.endUpdate;
       FreeAndNil(FAdbMainLink);
     end;
@@ -3178,17 +3198,25 @@ begin
 
   node := pointer(PByte(LNK.Buf) + 100);
 
-  LNK.FVTR.InternalConnectNode_cmd(node, LNK.FVTR.RootNode, LNK.FVTR, amAddChildFirst);
-  LNK.FVTR.BufLink := LNK.Buf;
+  LNK.FVTR.ConnectNode_cmd(node, LNK.FVTR.GetRootNode, LNK.FVTR, TAspectNodeAttachMode(amAddChildFirst));
+  LNK.FVTR.SetBufLink(LNK.Buf);
 
   pCardinalData := pointer(PByte(LNK.Buf) + 8);
-  pCardinalData^ := Cardinal(LNK.FVTR.RootNode);
+  pCardinalData^ := Cardinal(LNK.FVTR.GetRootNode);
   LNK.FVTR.UpdateVerticalScrollBar(true);
   LNK.FVTR.EndUpdate;
   Stopwatch.StartNew;
   Elapsed := Stopwatch.Elapsed;
   LNK.FStreamCmdFile := streamCmdFile;
   FAdbMainLink := LNK;
+end;
+
+function TADBDataModule.QueryInterface(const IID: TGUID; out Obj): HResult;
+begin
+  if GetInterface(IID, Obj) then
+    Result := S_OK
+  else
+    Result := E_NOINTERFACE;
 end;
 
 procedure TADBDataModule.ReadXmlL010(streamL010: TStream; ls: TStrings);

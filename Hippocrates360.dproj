@@ -96,6 +96,8 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
+        <DCC_UnitSearchPath>..\..\Aspects;..\..\Aspects\Tables;..\XML;..\UnitHelpers;..\RealObjects;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_DcuOutput>..\UnitsDCU</DCC_DcuOutput>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_IMPLICIT_STRING_CAST>false</DCC_IMPLICIT_STRING_CAST>
         <DCC_ExeOutput>D:\360\Hippocrates360</DCC_ExeOutput>
@@ -134,14 +136,12 @@
         </DelphiCompile>
         <DCCReference Include="FMX\Parnassus.FMXContainer.pas"/>
         <DCCReference Include="FMX\Parnassus.FMXContainerReg.pas"/>
-        <DCCReference Include="..\Popup\TitleBar.pas">
-            <Form>frmTitlebar</Form>
-        </DCCReference>
         <DCCReference Include="SuperHipp.pas">
             <Form>frmSuperHip</Form>
         </DCCReference>
-        <DCCReference Include="NzisThreadFull.pas"/>
-        <DCCReference Include="ThreadLoadDB.pas"/>
+        <DCCReference Include="..\Popup\TitleBar.pas">
+            <Form>frmTitlebar</Form>
+        </DCCReference>
         <DCCReference Include="Options.pas"/>
         <DCCReference Include="DbHelper.pas"/>
         <DCCReference Include="VTREditors.pas"/>
@@ -152,86 +152,17 @@
         <DCCReference Include="ADB_DataUnit.pas"/>
         <DCCReference Include="Fmx.HipTypes.pas"/>
         <DCCReference Include="FMX\ProfForm.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.PatientNew.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.PregledNew.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL050.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL088.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL132.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL134.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL139.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL142.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL022.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL024.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL038.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL006.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Role.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Unfav.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Diagnosis.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.DiagnosticReport.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Doctor.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Exam_boln_list.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.ExamImmunization.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.MDN.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Mkb.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NasMesto.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NomenNzis.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Oblast.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Obshtina.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.PatientNZOK.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.PR001.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Practica.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Procedures.pas"/>
-        <DCCReference Include="Aspects\Tables\RealObj.RealHipp.pas"/>
-        <DCCReference Include="Aspects\ProfGraph.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.ExamAnalysis.pas"/>
-        <DCCReference Include="Aspects\Tables\RealObj.NzisNomen.pas"/>
         <DCCReference Include="DM.pas"/>
-        <DCCReference Include="HistoryThread.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Patient.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Pregled.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Therapy.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Types.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Addres.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Assessment.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Consult.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Diagnosis.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.Doctor.pas"/>
-        <DCCReference Include="DBCollections\DBCollection.MedNapr.pas"/>
-        <DCCReference Include="Nzis.Types.pas"/>
-        <DCCReference Include="DynWinPanel\RoleButton.pas"/>
-        <DCCReference Include="DynWinPanel\DynSpeedButton.pas"/>
         <DCCReference Include="FMX\FinderFormFMX.pas"/>
-        <DCCReference Include="X006.pas"/>
         <DCCReference Include="FmxWelcomeScreen.pas">
             <Form>frmWelcomeScreen</Form>
         </DCCReference>
-        <DCCReference Include="Aspects\Tables\Table.KARTA_PROFILAKTIKA2017.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_QUESTIONNAIRE_RESPONSE.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_PLANNED_TYPE.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.BLANKA_MED_NAPR.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_ANSWER_VALUE.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_QUESTIONNAIRE_ANSWER.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_RESULT_DIAGNOSTIC_REPORT.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.NZIS_DIAGNOSTIC_REPORT.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL144.pas"/>
-        <DCCReference Include="L010.pas"/>
-        <DCCReference Include="CertHelper.pas"/>
-        <DCCReference Include="X004.pas"/>
         <DCCReference Include="AspectPerformerThread.pas"/>
-        <DCCReference Include="x010.pas"/>
-        <DCCReference Include="X014.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.CL037.pas"/>
         <DCCReference Include="WalkFunctions.pas"/>
         <DCCReference Include="CertThread.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.Certificates.pas"/>
         <DCCReference Include="FMX\Tokens.pas">
             <Form>frmFmxTokens</Form>
         </DCCReference>
-        <DCCReference Include="Aspects\SearchThread.pas"/>
-        <DCCReference Include="Aspects\Nzis.Nomen.baseCL000.pas"/>
-        <DCCReference Include="Aspects\Aspects.Collections.pas"/>
-        <DCCReference Include="Aspects\Aspects.Types.pas"/>
-        <DCCReference Include="Aspects\RealObj.RealNzis.pas"/>
         <DCCReference Include="..\Popup\RoleBar.pas">
             <Form>frmRolebar</Form>
         </DCCReference>
@@ -243,8 +174,6 @@
         </DCCReference>
         <DCCReference Include="C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas"/>
         <DCCReference Include="..\--component\RegisterBrushObject.pas"/>
-        <DCCReference Include="WordBreakF.pas"/>
-        <DCCReference Include="Aspects\Aspects.Functions.pas"/>
         <DCCReference Include="TempVtrHelper.pas"/>
         <DCCReference Include="DynamicButtons.pas"/>
         <DCCReference Include="Execute.libPDFium.pas"/>
@@ -252,49 +181,18 @@
         <DCCReference Include="..\Popup\FmxControls.pas">
             <Form>frmFmxControls</Form>
         </DCCReference>
-        <DCCReference Include="XML\msgX001.pas"/>
-        <DCCReference Include="XML\msgX002.pas"/>
         <DCCReference Include="msgR002.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.BLANKA_MED_NAPR_3A.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.INC_MDN.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.AnalResult.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.HOSPITALIZATION.pas"/>
         <DCCReference Include="msgR016.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.EXAM_LKK.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.INC_NAPR.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.OtherDoctor.pas"/>
         <DCCReference Include="..\Popup\fmxImportNzisForm.pas">
             <Form>frmImportNzis</Form>
         </DCCReference>
-        <DCCReference Include="Aspects\Tables\Table.Addres.pas"/>
-        <DCCReference Include="RealNasMesto.pas"/>
         <DCCReference Include="uFuzzyMatch.pas"/>
-        <DCCReference Include="Aspects\Tables\Table.DEPUTIZING.pas"/>
         <DCCReference Include="NzisImport\Nzis.NzisImport.pas"/>
-        <DCCReference Include="XML\Nzis.XMLHelper.pas"/>
         <DCCReference Include="HISXMLHelper.pas"/>
-        <DCCReference Include="XML\msgX003.pas"/>
-        <DCCReference Include="msgX013.pas"/>
-        <DCCReference Include="msgR001.pas"/>
-        <DCCReference Include="InterruptibleSort.pas"/>
-        <DCCReference Include="uGridHelpers.pas"/>
-        <DCCReference Include="uVSTSyncHelper.pas"/>
-        <DCCReference Include="uKeyThrottle.pas"/>
         <DCCReference Include="FilterFieldGenerator.pas"/>
-        <DCCReference Include="uFilterTreeLoader.pas"/>
-        <DCCReference Include="uFilterTreeUtils.pas"/>
-        <DCCReference Include="uFilterTreeGenerator1.pas"/>
-        <DCCReference Include="uFilterTreeGenerator2.pas"/>
-        <DCCReference Include="uFilterMagicIndex.pas"/>
-        <DCCReference Include="uMagicQueryRunner.pas"/>
-        <DCCReference Include="Aspects\Aspects.Attributes.pas">
-            <Form>$R *.dres</Form>
-        </DCCReference>
         <DCCReference Include="FastSearch.pas"/>
-        <DCCReference Include="Aspects\Aspects.Roles.pas"/>
         <DCCReference Include="..\Popup\FmxAspectSchedule.pas">
             <Form>frmScheduleFmx</Form>
-            <FormType>fmx</FormType>
         </DCCReference>
         <RcItem Include="Res\MKB_Groups.txt">
             <ContainerId>ResourceItem</ContainerId>
@@ -340,7 +238,7 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="..\..\..\Hippocrates40\bin\Hippocrates360\Hippocrates360.exe" Configuration="Debug" Class="ProjectOutput">
+                <DeployFile LocalName="D:\360\Hippocrates360\Hippocrates360.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>Hippocrates360.exe</RemoteName>
                         <Overwrite>true</Overwrite>
@@ -358,27 +256,12 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -732,12 +615,27 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>
