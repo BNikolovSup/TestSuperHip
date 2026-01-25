@@ -1,4 +1,4 @@
-﻿unit SuperHipp;  //CRC32
+﻿unit SuperHipp;  //colle
 interface
 
   uses
@@ -82,7 +82,8 @@ interface
   SBPKCS11CertStorage, SBCertValidator, SBSSLCommon,SBLists,
   SBXMLAdESIntf, SBStrUtils, SBSSLConstants, SBHTTPSConstants, CertHelper, TempVtrHelper,
   Vcl.DBCtrls, System.Actions, Vcl.ActnList, Vcl.PlatformDefaultStyleActnCtrls,
-  Aspects.TextLayout, WMPLib_TLB
+  Aspects.TextLayout, WMPLib_TLB, Aspects.Interfaces, RegisterBrushObject,
+  FmxControls, Aspects.Images
   ;
   const
   EM_GETZOOM = (WM_USER + 224);
@@ -120,14 +121,10 @@ type
     str: string;
   end;
 
-  //TFinderRec = record
-//    vid: TVtrVid;
-//    strSearch: string;
-//    LastFindedStr: string;
-//    IsFinded: Boolean;
-//    node: PVirtualNode;
-//    ACol: TColumnIndex;
-//  end;
+  TAspectServices = record
+    class var IconProvider: IIconProvider;
+    class var Images: TListAspImages;
+  end;
 
   TPregledPlanedInfo = record  //  за стария Хипократ
     PregledID: Integer;
@@ -427,6 +424,7 @@ type
     vtrHelpHip: TVirtualStringTreeHipp;
     tsFmxRoleSelect: TTabSheet;
     fmxCntrRoleSelect: TFireMonkeyContainer;
+    ilDum: TImageList;
     Procedure sizeMove (var msg: TWMSize); message WM_SIZE;
     procedure WMMove(var Msg: TWMMove); message WM_MOVE;
     procedure WMShowGrid(var Msg: TMessage); message WM_SHOW_GRID;
@@ -798,6 +796,9 @@ type
       node: PVirtualNode; const numButton: Integer);
     procedure vtrUserAspectGetText(Sender: TBaseVirtualTree; Node: PVirtualNode;
       Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);
+    procedure vtrPregledPatInitFinderRec(sender: TVirtualStringTreeAspect;
+      AFinderRec: TFinderRec);
+    procedure btnhelpClick(Sender: TObject);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -927,34 +928,8 @@ type
     procedure UpdateRoot(const root: ISuperObject; Cl000Coll: TCL000EntryCollection);
     procedure GetTextToDraw(node: PVirtualNode; Column: TColumnIndex; var text: string; var strPred, strSled, filterText: string);
 
-  protected // tempObjects
-    //PregledTemp: TPregledNewItem;
-    //preg1, preg2: TPregledNewItem;
-
-    //DiagTemp: TDiagnosisItem;
-    //MDNTemp: TMDNItem;
-   // MNTemp: TBLANKA_MED_NAPRItem;
-    //MnLkkTemp: TRealEXAM_LKKItem;
-
-    //ProfCardTemp: t
-    //ExamAnalTemp: TExamAnalysisItem;
-    //DoctorTemp: TDoctorItem;
-    //AnalTemp: TAnalsNewItem;
-//    Cl022temp: TCL022Item;
-//    CL132Temp: TRealCl132Item;
-//    PR001Temp: TRealPR001Item;
-//    CL088Temp: TRealCl088Item;
-//    ProcTemp: TRealProceduresItem;
-    //FPatientTemp: TRealPatientNewItem;
-    //NZIS_PLANNED_TYPETemp: TRealNZIS_PLANNED_TYPEItem;
-    //NZIS_QUESTIONNAIRE_RESPONSETemp: TRealNZIS_QUESTIONNAIRE_RESPONSEItem;
-    //NZIS_QUESTIONNAIRE_ANSWERTemp: TRealNZIS_QUESTIONNAIRE_ANSWERItem;
-    //NZIS_ANSWER_VALUETemp: TRealNZIS_ANSWER_VALUEItem;
-    //NZIS_DIAGNOSTIC_REPORTTemp: TRealNZIS_DIAGNOSTIC_REPORTItem;
-    //NZIS_Result_DIAGNOSTIC_REPORTTemp: TRealNZIS_RESULT_DIAGNOSTIC_REPORTItem;
-   // procedure SetPatientTemp(const Value: TRealPatientNewItem);
-   // property PatientTemp: TRealPatientNewItem read FPatientTemp write SetPatientTemp;
-
+  protected
+    procedure vtrPregPatInitFinderRec(sender: TVirtualStringTreeAspect; AFinderRec: TFinderRec);
 
   protected
     procedure DoUSBArrival(sender: TObject);
@@ -1128,6 +1103,8 @@ type
     FSearchNodes: TArray<PVirtualNode>;
     FNodeToIndex: TDictionary<PVirtualNode, Integer>;
     FSearchVid: TVtrVid;
+    ScaleBase: Integer;
+    AspectServices: TAspectServices;
 
     procedure InitAdbDM;
     procedure InitActions;
@@ -1538,7 +1515,25 @@ var
   node, nodePat: PVirtualNode;
   data: PAspRec;
   collPatExport: TRealPatientNewColl;
+  newScale: Integer;
+  scale: Extended;
+  NewH: Integer;
 begin
+  Stopwatch := TStopwatch.StartNew;
+  vtrPregledPat.BeginUpdate;
+  vtrPregledPat.Font.Size := vtrPregledPat.Font.Size + 1;
+  newScale := MeasureFontHeight(vtrPregledPat.Canvas);
+  scale := newScale/ScaleBase;
+  ilDum.Width := Round(16 * scale);
+  ilDum.Height := Round(16 * scale);
+  //vtrPregledPat.NodeHeight[vtrPregledPat.GetFirstSelectedI] := Round(33 * scale);
+  NewH := Round(33 * scale);
+  Adb_DM.AdbMainLink.SetNodeHeight(newh);
+  vtrPregledPat.EndUpdate;
+  vtrPregledPat.Repaint;
+  Elapsed := Stopwatch.Elapsed;
+  mmotest.Lines.Add( 'Adb_DM.AdbMainLink.SetNodeHeight ' + FloatToStr(Elapsed.TotalMilliseconds));
+  Exit;
   TestMagicIndex1;
   //FindDiagInMDN;
   //ExportNzisToDb;
@@ -1594,7 +1589,10 @@ var
   Adata: PAspRec;
   node, nodeSel: PVirtualNode;
 begin
-
+  ilDum.Width := ilDum.Width - 1;
+  ilDum.Height := ilDum.Height - 1;
+  vtrPregledPat.Repaint;
+  Exit;
   mmotest.Lines.Add( 'br ' + IntToStr(vtrPregledPat.TotalCount));
   Stopwatch := TStopwatch.StartNew;
   if lstNodeTotal.Count = 0 then
@@ -1952,6 +1950,11 @@ procedure TfrmSuperHip.btnGetSeekClick(Sender: TObject);
 begin
  // Caption := MPHip.controls.currentPosition.ToString;
  MPHip.controls.currentPosition := 2800.299;
+end;
+
+procedure TfrmSuperHip.btnhelpClick(Sender: TObject);
+begin
+
 end;
 
 //procedure TfrmSuperHip.btnHelpClick(Sender: TObject);
@@ -9674,8 +9677,8 @@ var
   cntrCanvas: TControlCanvas;
 begin
   Visible := False;
-  edt1.Parent := grdSearch;
-  edt1.SetBounds(0,0,1, 1);
+  //edt1.Parent := grdSearch;
+  //edt1.SetBounds(0,0,1, 1);
   //TTeeGRD(grdNom).renOnPaintCell := GridPaintCell;
 
   vtrPregledPat.TakeFocus := False;
@@ -9773,6 +9776,10 @@ begin
   mmoTest.Lines.Add( Format('FNasMesto.LinkToColl  за %f',[ Elapsed.TotalMilliseconds]));
   lstNodeTotal := TList<PVirtualNode>.Create;
   FNodeToIndex := TDictionary<PVirtualNode, Integer>.create;
+  ScaleBase := MeasureFontHeight(vtrPregledPat.Canvas);
+  AspectServices.Images := frmFmxControls.ListAspImages1; // design-time component
+  AspectServices.IconProvider := TFMXIconProvider.Create(AspectServices.Images);
+  vtrPregledPat.IconProvider := AspectServices.IconProvider;
 end;
 
 procedure TfrmSuperHip.FormDestroy(Sender: TObject);
@@ -24788,7 +24795,7 @@ begin
           dateBrd := ADB_DM.CollPatient.getDateMap(DataPat.DataPos, word(PatientNew_BIRTH_DATE));
           dateIncNapr := ADB_DM.CollIncMN.getDateMap(Data.DataPos, word(INC_NAPR_ISSUE_DATE));
           PatAge := TRealPatientNewItem.CalcAge(dateIncNapr, dateBrd);
-          CellText := 'Консулт. ' + ADB_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
+          CellText := 'Консулт ' + ADB_DM.CollIncMN.getAnsiStringMap(Data.DataPos, word(INC_NAPR_NRN));
           CellText := CellText + '  ' + IntToStr(PatAge) + ' год.';
         end;
 
@@ -25266,6 +25273,12 @@ begin
   Elements := [hpeText];
 end;
 
+procedure TfrmSuperHip.vtrPregledPatInitFinderRec(
+  sender: TVirtualStringTreeAspect; AFinderRec: TFinderRec);
+begin
+  edt1.Text := (Format('ARec.ACol %d    , ARec.StrNumber %d', [AFinderRec.ACol, AFinderRec.StrNumber]))
+end;
+
 procedure TfrmSuperHip.vtrPregledPatKeyAction(Sender: TBaseVirtualTree; var CharCode: Word; var Shift: TShiftState; var DoDefault: Boolean);
 var
   node: PVirtualNode;
@@ -25351,6 +25364,12 @@ procedure TfrmSuperHip.vtrPregledPatSaveNode(Sender: TBaseVirtualTree;
 var
   data: PAspRec;
 begin
+end;
+
+procedure TfrmSuperHip.vtrPregPatInitFinderRec(sender: TVirtualStringTreeAspect;
+  AFinderRec: TFinderRec);
+begin
+  //edt1  AFinderRec
 end;
 
 procedure TfrmSuperHip.vtrProfRegGetText(Sender: TBaseVirtualTree; Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType; var CellText: string);

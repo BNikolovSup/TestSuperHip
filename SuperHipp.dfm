@@ -488,9 +488,9 @@ object frmSuperHip: TfrmSuperHip
           Header.Height = 35
           Header.Images = imgList1
           Header.Options = [hoColumnResize, hoDrag, hoOwnerDraw, hoShowImages, hoShowSortGlyphs, hoVisible]
-          Images = imgList1
+          Images = ilDum
           Indent = 10
-          StateImages = imgList1
+          StateImages = ilDum
           TabOrder = 0
           TreeOptions.AutoOptions = [toAutoScrollOnExpand, toAutoTristateTracking, toAutoDeleteMovedNodes, toAutoChangeScale]
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
@@ -614,6 +614,7 @@ object frmSuperHip: TfrmSuperHip
           ColumnAspect = 0
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
+          OnInitFinderRec = vtrPregledPatInitFinderRec
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -1593,10 +1594,6 @@ object frmSuperHip: TfrmSuperHip
       object tsGraph: TTabSheet
         Caption = 'tsGraph'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrGraph: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -3185,6 +3182,7 @@ object frmSuperHip: TfrmSuperHip
         Top = 0
         Caption = 'btnhelp'
         ImageIndex = 100
+        OnClick = btnhelpClick
       end
       object btn11: TToolButton
         Left = 256
@@ -3203,7 +3201,7 @@ object frmSuperHip: TfrmSuperHip
       object edt1: TEdit
         Left = 318
         Top = 0
-        Width = 121
+        Width = 190
         Height = 30
         TabOrder = 0
         Text = 'edt1'
@@ -3623,10 +3621,6 @@ object frmSuperHip: TfrmSuperHip
       object tsMemo: TTabSheet
         Caption = 'tsMemo'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object mmoTest: TMemo
           Left = 0
           Top = 0
@@ -3891,10 +3885,6 @@ object frmSuperHip: TfrmSuperHip
       object tsSpisaci: TTabSheet
         Caption = 'tsSpisaci'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrSpisyci: TVirtualStringTreeHipp
           Left = 0
           Top = 64
@@ -4683,10 +4673,6 @@ object frmSuperHip: TfrmSuperHip
         DoubleBuffered = False
         ImageIndex = 9
         ParentDoubleBuffered = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlTopExcel: TPanel
           Left = 0
           Top = 0
@@ -8387,10 +8373,6 @@ object frmSuperHip: TfrmSuperHip
       object tsExpression: TTabSheet
         Caption = 'tsExpression'
         ImageIndex = 15
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object mmoIn: TMemo
           Left = 40
           Top = 24
@@ -8941,7 +8923,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C010170008804981610001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010170008804FC1710001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000D0010000010020000000000000D0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -12888,7 +12870,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 360
     Bitmap = {
-      494C010164006814541618001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164006814B81718001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000006000000070020000010020000000000000A8
       0300000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -20724,7 +20706,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 720
     Top = 296
     Bitmap = {
-      494C0101060008004C0218001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010106000800B00318001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000003000000001002000000000000048
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -21329,5 +21311,11 @@ object frmSuperHip: TfrmSuperHip
     Filter = 'NZIS|*.txt'
     Left = 952
     Top = 248
+  end
+  object ilDum: TImageList
+    ColorDepth = cd32Bit
+    AllocBy = 40
+    Left = 824
+    Top = 344
   end
 end

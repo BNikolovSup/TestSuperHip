@@ -96,7 +96,7 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_UnitSearchPath>..\..\Aspects;..\..\Aspects\Tables;..\XML;..\UnitHelpers;..\RealObjects;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>..\..\Aspects;..\..\Aspects\Tables;..\XML;..\UnitHelpers;..\RealObjects;..\..\Aspects\Common;..\FMX;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
         <DCC_DcuOutput>..\UnitsDCU</DCC_DcuOutput>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <DCC_IMPLICIT_STRING_CAST>false</DCC_IMPLICIT_STRING_CAST>
@@ -134,8 +134,6 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="FMX\Parnassus.FMXContainer.pas"/>
-        <DCCReference Include="FMX\Parnassus.FMXContainerReg.pas"/>
         <DCCReference Include="SuperHipp.pas">
             <Form>frmSuperHip</Form>
         </DCCReference>
@@ -149,20 +147,13 @@
         <DCCReference Include="NZISSuperAddress.pas"/>
         <DCCReference Include="DlgSuperCert23.pas"/>
         <DCCReference Include="FILE_SUBM_PL.pas"/>
-        <DCCReference Include="ADB_DataUnit.pas"/>
         <DCCReference Include="Fmx.HipTypes.pas"/>
-        <DCCReference Include="FMX\ProfForm.pas"/>
         <DCCReference Include="DM.pas"/>
-        <DCCReference Include="FMX\FinderFormFMX.pas"/>
         <DCCReference Include="FmxWelcomeScreen.pas">
             <Form>frmWelcomeScreen</Form>
         </DCCReference>
         <DCCReference Include="AspectPerformerThread.pas"/>
-        <DCCReference Include="WalkFunctions.pas"/>
         <DCCReference Include="CertThread.pas"/>
-        <DCCReference Include="FMX\Tokens.pas">
-            <Form>frmFmxTokens</Form>
-        </DCCReference>
         <DCCReference Include="..\Popup\RoleBar.pas">
             <Form>frmRolebar</Form>
         </DCCReference>
@@ -172,15 +163,10 @@
         <DCCReference Include="..\Popup\OptionsForm.pas">
             <Form>frmOptionsForm</Form>
         </DCCReference>
-        <DCCReference Include="C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas"/>
-        <DCCReference Include="..\--component\RegisterBrushObject.pas"/>
         <DCCReference Include="TempVtrHelper.pas"/>
         <DCCReference Include="DynamicButtons.pas"/>
         <DCCReference Include="Execute.libPDFium.pas"/>
         <DCCReference Include="PDFium.Frame.pas"/>
-        <DCCReference Include="..\Popup\FmxControls.pas">
-            <Form>frmFmxControls</Form>
-        </DCCReference>
         <DCCReference Include="msgR002.pas"/>
         <DCCReference Include="msgR016.pas"/>
         <DCCReference Include="..\Popup\fmxImportNzisForm.pas">
@@ -194,6 +180,8 @@
         <DCCReference Include="..\Popup\FmxAspectSchedule.pas">
             <Form>frmScheduleFmx</Form>
         </DCCReference>
+        <DCCReference Include="..\FMX\FmxControls.pas"/>
+        <DCCReference Include="..\..\Source\RegisterBrushObject.pas"/>
         <RcItem Include="Res\MKB_Groups.txt">
             <ContainerId>ResourceItem</ContainerId>
             <ResourceType>RCDATA</ResourceType>
@@ -256,12 +244,27 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployClass Name="ProjectiOSDeviceResourceRules">
+                <DeployClass Name="DependencyModule">
+                    <Platform Name="Win32">
+                        <Operation>0</Operation>
+                        <Extensions>.dll;.bpl</Extensions>
+                    </Platform>
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="OSX32">
+                        <RemoteDir>Contents\MacOS</RemoteDir>
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
+                    </Platform>
+                    <Platform Name="iOSSimulator">
+                        <Operation>1</Operation>
+                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <DeployClass Name="ProjectOSXResource">
@@ -615,27 +618,12 @@
                         <Operation>1</Operation>
                     </Platform>
                 </DeployClass>
-                <DeployClass Name="DependencyModule">
-                    <Platform Name="Win32">
-                        <Operation>0</Operation>
-                        <Extensions>.dll;.bpl</Extensions>
-                    </Platform>
+                <DeployClass Name="ProjectiOSDeviceResourceRules">
                     <Platform Name="iOSDevice64">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="OSX32">
-                        <RemoteDir>Contents\MacOS</RemoteDir>
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                     <Platform Name="iOSDevice32">
                         <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
-                    </Platform>
-                    <Platform Name="iOSSimulator">
-                        <Operation>1</Operation>
-                        <Extensions>.dylib</Extensions>
                     </Platform>
                 </DeployClass>
                 <ProjectRoot Platform="iOSDevice64" Name="$(PROJECTNAME).app"/>

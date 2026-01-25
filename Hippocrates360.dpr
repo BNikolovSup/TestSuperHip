@@ -6,8 +6,6 @@ program Hippocrates360;
 
 uses
   Vcl.Controls,
-  Parnassus.FMXContainer in 'FMX\Parnassus.FMXContainer.pas',
-  Parnassus.FMXContainerReg in 'FMX\Parnassus.FMXContainerReg.pas',
   Vcl.Forms,
   Winapi.Windows,
   System.SysUtils,
@@ -23,26 +21,18 @@ uses
   NZISSuperAddress in 'NZISSuperAddress.pas',
   DlgSuperCert23 in 'DlgSuperCert23.pas',
   FILE_SUBM_PL in 'FILE_SUBM_PL.pas',
-  ADB_DataUnit in 'ADB_DataUnit.pas',
   Fmx.HipTypes in 'Fmx.HipTypes.pas',
-  ProfForm in 'FMX\ProfForm.pas',
   DM in 'DM.pas',
-  FinderFormFMX in 'FMX\FinderFormFMX.pas',
   FmxWelcomeScreen in 'FmxWelcomeScreen.pas' {frmWelcomeScreen},
   AspectPerformerThread in 'AspectPerformerThread.pas',
-  WalkFunctions in 'WalkFunctions.pas',
   CertThread in 'CertThread.pas',
-  Tokens in 'FMX\Tokens.pas' {frmFmxTokens},
   RoleBar in '..\Popup\RoleBar.pas' {frmRolebar},
   RolePanels in '..\Popup\RolePanels.pas' {frmRolePanels},
   OptionsForm in '..\Popup\OptionsForm.pas' {frmOptionsForm},
-  FMX.GifUtils in 'C:\Users\Administrator1\Downloads\FMXGif\FMX.GifUtils.pas',
-  RegisterBrushObject in '..\--component\RegisterBrushObject.pas',
   TempVtrHelper in 'TempVtrHelper.pas',
   DynamicButtons in 'DynamicButtons.pas',
   Execute.libPDFium in 'Execute.libPDFium.pas',
   PDFium.Frame in 'PDFium.Frame.pas',
-  FmxControls in '..\Popup\FmxControls.pas' {frmFmxControls},
   msgR002 in 'msgR002.pas',
   msgR016 in 'msgR016.pas',
   fmxImportNzisForm in '..\Popup\fmxImportNzisForm.pas' {frmImportNzis},
@@ -51,7 +41,11 @@ uses
   HISXMLHelper in 'HISXMLHelper.pas',
   FilterFieldGenerator in 'FilterFieldGenerator.pas',
   FastSearch in 'FastSearch.pas',
-  FmxAspectSchedule in '..\Popup\FmxAspectSchedule.pas'; {frmScheduleFmx}
+  FmxAspectSchedule in '..\Popup\FmxAspectSchedule.pas' {frmScheduleFmx},
+  FmxControls in '..\FMX\FmxControls.pas',
+  RegisterBrushObject in '..\..\Source\RegisterBrushObject.pas';
+
+{frmScheduleFmx}
   //Aspects.Interfaces in '..\..\Aspects\Aspects.Interfaces.pas';
 
 {$R *.dres}
@@ -70,10 +64,10 @@ begin
   Application.UpdateFormatSettings := False;
   LoadKeyBoardLayout('00040402',1);//https://learn.microsoft.com/en-us/windows-hardware/manufacture/desktop/windows-language-pack-default-values?view=windows-11
 
+  Application.CreateForm(TfrmFmxControls, frmFmxControls);
 
   Application.CreateForm(TfrmSuperHip, frmSuperHip);
   //Application.CreateForm(TfrmTitlebar, frmTitlebar);
-  Application.CreateForm(TfrmFmxControls, frmFmxControls);
   Application.CreateForm(TfrmImportNzis, frmImportNzis);
   //Application.CreateForm(TfrmRolePanels, frmRolePanels);
   //Application.CreateForm(TfrmOptionsForm, frmOptionsForm);
