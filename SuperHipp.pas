@@ -1,4 +1,4 @@
-﻿unit SuperHipp;  //colle
+﻿unit SuperHipp;  //без адрес
 interface
 
   uses
@@ -799,6 +799,9 @@ type
     procedure vtrPregledPatInitFinderRec(sender: TVirtualStringTreeAspect;
       AFinderRec: TFinderRec);
     procedure btnhelpClick(Sender: TObject);
+    procedure vtrLinkNasMestaGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+      var CellText: string);
   private  //RootNodes;
     vRootRole: PVirtualNode;
     vRootNomenNzis: PVirtualNode;
@@ -831,7 +834,7 @@ type
 
   private
 
-    Fdm: TDUNzis;
+    //Fdm: TDUNzis;
     frRTF: frxRichEdit.TRxRichEdit;
     httpNZIS: TElHTTPSClient;
     WinCertStorage: TElWinCertStorage;
@@ -1215,16 +1218,12 @@ type
 
 
     procedure AddX005Pregled(preg: TRealPregledNewItem);
-    procedure AddMdnInPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode;
-         var TempItem: TRealMDNItem);
+    procedure AddMdnInPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode);
     procedure AddMnInPregled(sender: tobject; var PregledLink, MnLink: PVirtualNode;
          var TempItem: TRealBLANKA_MED_NAPRItem);
-    procedure DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode;
-         var mdn: TRealMDNItem);
-    procedure AddAnalInMdn(sender: tobject; var MdnLink, AnalLink: PVirtualNode;
-         var TempItem: TRealExamAnalysisItem);
-    procedure DeleteAnalFromMdn(sender: tobject; var MdnLink, AnalLink: PVirtualNode;
-         var TempItem: TRealExamAnalysisItem);
+    procedure DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode);
+    procedure AddAnalInMdn(sender: tobject; var MdnLink, AnalLink: PVirtualNode);
+    procedure DeleteAnalFromMdn(sender: tobject; var MdnLink, AnalLink: PVirtualNode);
     procedure DeleteDiag(sender: tobject; var PregledLink, DiagLink: PVirtualNode;
          var TempItem: TRealDiagnosisItem);
 
@@ -1519,6 +1518,8 @@ var
   scale: Extended;
   NewH: Integer;
 begin
+  ExportNzisToDb;
+  Exit;
   Stopwatch := TStopwatch.StartNew;
   vtrPregledPat.BeginUpdate;
   vtrPregledPat.Font.Size := vtrPregledPat.Font.Size + 1;
@@ -1589,6 +1590,8 @@ var
   Adata: PAspRec;
   node, nodeSel: PVirtualNode;
 begin
+  mniImportNzisClick(nil);
+  Exit;
   ilDum.Width := ilDum.Width - 1;
   ilDum.Height := ilDum.Height - 1;
   vtrPregledPat.Repaint;
@@ -1754,7 +1757,7 @@ begin
   pat.FNode := vtrPregledPat.GetFirstSelected();
   data := Pointer(PByte(pat.FNode) + lenNode);
   pat.DataPos := Data.DataPos;
-  FDBHelper.SavePatientFDB(pat, Fdm.ibsqlCommand);
+  FDBHelper.SavePatientFDB(pat, Adb_DM.Fdm.ibsqlCommand);
   //fmxCntrDyn.ChangeActiveForm(FmxProfForm);
 end;
 
@@ -3291,11 +3294,11 @@ begin
     if (data.vid = vvDiag) and (dataPreg.vid = vvPregledNew) then
     begin
       inc(i);
-      Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, Adb_DM.CollDiag, Adb_DM.CollPregled);
+      Adb_DM.Fdm.InsertDiag(Data.DataPos, dataPreg.DataPos, Adb_DM.CollDiag, Adb_DM.CollPregled);
     end;
     Inc(linkPos, LenData);
   end;
-  Fdm.ibsqlDiag.Transaction.CommitRetaining;
+  Adb_DM.Fdm.ibsqlDiag.Transaction.CommitRetaining;
   Button2.Caption := IntToStr(i);
   Exit;
  // vtrPregledPat.FullCollapse();
@@ -3588,11 +3591,11 @@ begin
         end;
         if nrn = '22164C019A10' then
           Caption := 'ddd';
-        Fdm.ibsqlCommand.Close;
-        Fdm.ibsqlCommand.SQL.Text := 'select Count(*) from pregled pr where pr.copied_from_nrn = :nrn';
-        Fdm.ibsqlCommand.Params[0].AsString := nrn;
-        Fdm.ibsqlCommand.ExecQuery;
-        cntDB := Fdm.ibsqlCommand.Fields[0].AsInteger;
+        Adb_DM.Fdm.ibsqlCommand.Close;
+        Adb_DM.Fdm.ibsqlCommand.SQL.Text := 'select Count(*) from pregled pr where pr.copied_from_nrn = :nrn';
+        Adb_DM.Fdm.ibsqlCommand.Params[0].AsString := nrn;
+        Adb_DM.Fdm.ibsqlCommand.ExecQuery;
+        cntDB := Adb_DM.Fdm.ibsqlCommand.Fields[0].AsInteger;
         cnt360 := 0;
         prId[0] := -1;
         prId[1] := -1;
@@ -3611,13 +3614,13 @@ begin
       end;
       if cntDB <> cnt360 then
       begin
-        Fdm.ibsqlCommand.Close;
-        Fdm.ibsqlCommand.SQL.Text := 'update pregled  set copied_from_nrn = :NewNrn  where id in( :id, :id1, :id2 )';
-        Fdm.ibsqlCommand.ParamByName('NewNrn').AsString := nrn;
-        Fdm.ibsqlCommand.ParamByName('id').AsInteger := prId[0];
-        Fdm.ibsqlCommand.ParamByName('id1').AsInteger := prId[1];
-        Fdm.ibsqlCommand.ParamByName('id2').AsInteger := prId[2];
-        Fdm.ibsqlCommand.ExecQuery;
+        Adb_DM.Fdm.ibsqlCommand.Close;
+        Adb_DM.Fdm.ibsqlCommand.SQL.Text := 'update pregled  set copied_from_nrn = :NewNrn  where id in( :id, :id1, :id2 )';
+        Adb_DM.Fdm.ibsqlCommand.ParamByName('NewNrn').AsString := nrn;
+        Adb_DM.Fdm.ibsqlCommand.ParamByName('id').AsInteger := prId[0];
+        Adb_DM.Fdm.ibsqlCommand.ParamByName('id1').AsInteger := prId[1];
+        Adb_DM.Fdm.ibsqlCommand.ParamByName('id2').AsInteger := prId[2];
+        Adb_DM.Fdm.ibsqlCommand.ExecQuery;
 
         mmoTest.Lines.Add(Format('cntDB: %d    cnt360: %d -- nrn: %s ; egn: %s', [cntDB, cnt360, nrn, egn]));
       end;
@@ -3625,7 +3628,7 @@ begin
     end;
     patNode := patNode.NextSibling;
   end;
-  Fdm.ibsqlCommand.Transaction.CommitRetaining;
+  Adb_DM.Fdm.ibsqlCommand.Transaction.CommitRetaining;
 end;
 
 procedure TfrmSuperHip.CheckIncMNInPat;
@@ -3657,11 +3660,11 @@ begin
 
         if nrn = '22164C019A10' then
           Caption := 'ddd';
-        Fdm.ibsqlCommand.Close;
-        Fdm.ibsqlCommand.SQL.Text := 'select imn.pacient_id from inc_napr imn where imn.nrn = :nrn';
-        Fdm.ibsqlCommand.Params[0].AsString := nrn;
-        Fdm.ibsqlCommand.ExecQuery;
-        IdPatDB := Fdm.ibsqlCommand.Fields[0].AsInteger;
+        Adb_DM.Fdm.ibsqlCommand.Close;
+        Adb_DM.Fdm.ibsqlCommand.SQL.Text := 'select imn.pacient_id from inc_napr imn where imn.nrn = :nrn';
+        Adb_DM.Fdm.ibsqlCommand.Params[0].AsString := nrn;
+        Adb_DM.Fdm.ibsqlCommand.ExecQuery;
+        IdPatDB := Adb_DM.Fdm.ibsqlCommand.Fields[0].AsInteger;
         IdPat360 := Adb_DM.CollPatient.getIntMap(dataPat.DataPos, word(PatientNew_ID));
         //runPreg := run.FirstChild;
 //        while runPreg <> nil do
@@ -3921,7 +3924,7 @@ begin
 end;
 
 procedure TfrmSuperHip.DeleteAnalFromMdn(sender: tobject; var MdnLink,
-  AnalLink: PVirtualNode; var TempItem: TRealExamAnalysisItem);
+  AnalLink: PVirtualNode);
 
 begin
   if AnalLink = nil then Exit;
@@ -3971,7 +3974,7 @@ begin
   Adb_DM.streamCmdFile.CopyFrom(Adb_DM.CollPregled.streamComm, 0);
 end;
 
-procedure TfrmSuperHip.DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode; var mdn: TRealMDNItem);
+procedure TfrmSuperHip.DeleteMdnFromPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode);
 
 begin
   if MdnLink = nil then Exit;
@@ -4945,7 +4948,7 @@ begin
       begin
         //mmoTest.Lines.Add('нов пациент ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
         Adb_DM.LstPatForExportDB.Add(pat);
-        FDBHelper.SavePatientFDB(pat, Fdm.ibsqlCommand);
+        FDBHelper.SavePatientFDB(pat, Adb_DM.Fdm.ibsqlCommand);
         RunInPat(pat, true);
       end
       else
@@ -5179,7 +5182,7 @@ begin
     if Adb_DM.CollDoctor.Items[iDoc].DoctorId = Adb_DM.CollPregled.Items[iPreg].DoctorId then
     begin
       preg := Adb_DM.CollPregled.Items[iPreg];
-      if Fdm.IsGP then
+      if Adb_DM.Fdm.IsGP then
       begin
         if (preg.IS_ZAMESTVASHT) or (preg.IS_NAET) then
         begin
@@ -9812,9 +9815,9 @@ begin
   if Adb_DM.AdbMainLink <> nil then
     Adb_DM.AdbMainLink.Free;
   //FreeAndNil(ListNodes);
-  if Fdm <> nil then
+  if Adb_DM.Fdm <> nil then
   begin
-    Fdm.Free;
+    Adb_DM.Fdm.Free;
   end;
   Option.Free;
   FreeAndNil(FDBHelper);
@@ -11082,7 +11085,7 @@ end;
 procedure TfrmSuperHip.InitAdbDM;
 begin
   Adb_DM := TADBDataModule.Create(vtrLinkNasMesta, vtrPregledPat);
-  Adb_DM.FDM := Fdm;
+  Adb_DM.FDM := Adb_DM.Fdm;
   Adb_DM.mmoTest := mmoTest;
   Adb_DM.AdbMainFileName := '';
   Adb_DM.OnClearColl := Adb_DMOnClearColl;
@@ -11592,7 +11595,7 @@ var
   ibSql: TIBSQL;
   patID: Integer;
 begin
-  ibsql :=  Fdm.ibsqlCommand;
+  ibsql :=  Adb_DM.Fdm.ibsqlCommand;
   Adata := Sender.GetNodeData(Node);
   case Adata.vid of
     vvPatient:
@@ -14758,7 +14761,7 @@ begin
 
         if Adb_dm.CollPregled.getIntMap(dataInIncMn.DataPos, word(PregledNew_ID)) = 0 then
         begin
-          FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
+          FDBHelper.SavePregledFDB(preg, Adb_DM.Fdm.ibsqlCommand);
           dataIncMN := Pointer(PByte(IncMnNode)+ lenNode);
 
           PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInIncMn.DataPos, Word(PregledNew_NRN_LRN));
@@ -14829,7 +14832,7 @@ begin
         patient.FPregledi.Add(preg);
         if Adb_dm.CollPregled.getIntMap(dataInPat.DataPos, word(PregledNew_ID)) = 0 then
         begin
-          FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
+          FDBHelper.SavePregledFDB(preg, Adb_dm.Fdm.ibsqlCommand);
           dataPat := Pointer(PByte(patNode)+ lenNode);
 
           PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInPat.DataPos, Word(PregledNew_NRN_LRN));
@@ -14886,12 +14889,12 @@ begin
 
           PregledNRN := Adb_dm.CollPregled.getAnsiStringMap(dataInPreg.DataPos, Word(PregledNew_NRN_LRN));
           MdnNrn := Adb_dm.CollMDN.getAnsiStringMap(dataMDN.DataPos, Word(MDN_NRN));
-          FDBHelper.SaveMdn(mdn, Fdm.ibsqlCommand);
+          FDBHelper.SaveMdn(mdn, Adb_DM.Fdm.ibsqlCommand);
           for k :=  mdn.FExamAnals.Count - 1 downto 0 do
           begin
             anal := mdn.FExamAnals[k];
             anal.FMdn := mdn;
-            FDBHelper.SaveExamAnals(anal, Fdm.ibsqlCommand);
+            FDBHelper.SaveExamAnals(anal, Adb_DM.Fdm.ibsqlCommand);
             //mdn.FExamAnals.Delete(k);
           end;
           if isNew then
@@ -15126,6 +15129,8 @@ procedure TfrmSuperHip.SelectMKB(sender: TObject);
 var
   diagNode: TRealDiagnosisItem;
 begin
+  tmpVtr.ChoiceMKB(sender);
+  pgcTree.ActivePage := tsTempVTR;
   //if TVtrVid(vtrTemp.Tag) <> vvDiag then
 //  begin
 //    ChoiceMKB(FmxProfForm.Pregled);
@@ -15285,7 +15290,7 @@ begin
           mmoTest.Lines.Add(format('Fill mdn.DataPos = %d', [mdn.DataPos]));
           mdn.LinkNode := run;
         end;
-       // FmxProfForm.Pregled.FMdns.Add(mdn);//zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
+        //FmxProfForm.Pregled.FMdns.Add(mdn);//zzzzzzzzzzzzzzzzzzzzzzzzz pregNodes
 
 
         runAnal := run.FirstChild;
@@ -16412,7 +16417,7 @@ var
   cnt: Integer;
 begin
   cnt := 0;
-  ibsql := Fdm.ibsqlCommand;
+  ibsql := Adb_DM.Fdm.ibsqlCommand;
   for i := 0 to Adb_dm.ACollPatFDB.Count - 1 do
   begin
     pat := Adb_dm.ACollPatFDB.Items[i];
@@ -16469,7 +16474,7 @@ var
   data: PAspRec;
 begin
   vtrTemp.IterateSubtree(vHipZapisani, IterateRemontPat, nil);
-  Fdm.ibsqlCommand.Transaction.CommitRetaining;
+  Adb_DM.Fdm.ibsqlCommand.Transaction.CommitRetaining;
  // vPat := vHipZapisani.FirstChild
 end;
 
@@ -16918,7 +16923,7 @@ begin
 end;
 
 procedure TfrmSuperHip.AddAnalInMdn(sender: tobject; var MdnLink,
-  AnalLink: PVirtualNode; var TempItem: TRealExamAnalysisItem);
+  AnalLink: PVirtualNode);
 var
   p: PInt;
   i, k: Integer;
@@ -16928,6 +16933,8 @@ var
   TreeLink, Run, nodeMdn: PVirtualNode;
   linkpos: Cardinal;
   data: PAspRec;
+
+  TempItem: TRealExamAnalysisItem;
 
 begin
   // намиране на mdn, към който ще се добави мдн;
@@ -17021,7 +17028,7 @@ begin
   vtrNomenNzis.EndUpdate;
 end;
 
-procedure TfrmSuperHip.AddMdnInPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode; var TempItem: TRealMDNItem);
+procedure TfrmSuperHip.AddMdnInPregled(sender: tobject; var PregledLink, MdnLink: PVirtualNode);
 var
   p: PInt;
   i, k: Integer;
@@ -17032,7 +17039,7 @@ var
   linkpos: Cardinal;
   data: PAspRec;
   diag: TRealDiagnosisItem;
-
+  TempItem: TRealMDNItem;
   //vMdn: PVirtualNode;
 
 begin
@@ -19005,19 +19012,19 @@ begin
       RunMdn := RunMdn.NextSibling;
     end;
     try
-      FDBHelper.SavePregledFDB(preg, Fdm.ibsqlCommand);
+      FDBHelper.SavePregledFDB(preg, Adb_DM.Fdm.ibsqlCommand);
       ADB_DM.ListPregledLinkForInsert.Delete(i);
       for j := preg.FMdns.Count - 1 downto 0  do
       begin
         mdn := preg.FMdns[j];
         mdn.PregledID := preg.PregledID;
         mdn.FPregled := preg;
-        FDBHelper.SaveMdn(mdn, Fdm.ibsqlCommand);
+        FDBHelper.SaveMdn(mdn, Adb_DM.Fdm.ibsqlCommand);
         for k :=  mdn.FExamAnals.Count - 1 downto 0 do
         begin
           anal := mdn.FExamAnals[k];
           anal.FMdn := mdn;
-          FDBHelper.SaveExamAnals(anal, Fdm.ibsqlCommand);
+          FDBHelper.SaveExamAnals(anal, Adb_DM.Fdm.ibsqlCommand);
           mdn.FExamAnals.Delete(k);
         end;
         preg.FMdns.Delete(j);
@@ -19309,9 +19316,9 @@ procedure TfrmSuperHip.mniImportNzisClick(Sender: TObject);
 var
   fileName: string;
 begin
-  if dlgOpenNZIS.Execute then
+  //if dlgOpenNZIS.Execute then
   begin
-    fileName := dlgOpenNZIS.FileName;
+    fileName := 'D:\Biser\bazaDanni\HIPPOCRATES_zlatina_mileva\2100000286.txt'; //dlgOpenNZIS.FileName;
     FmxTitleBar.p1.IsOpen := False;
     ImpNzis := TNzisImport.create;
     impNzis.VtrImport := vtrTemp;
@@ -19327,7 +19334,7 @@ begin
     impNzis.tsFMXForm := tsFMXForm;
     impNzis.ProcChangeWorkTS := InternalChangeWorkPage;
     impNzis.ProcAddNewPat := Adb_DM.AddNewImportNzisPat;
-    //impNzis.NasMesto := FNasMesto;
+    impNzis.NasMesto := Adb_DM.FNasMesto;
     impNzis.CollPractica := ADB_DM.CollPractica;
     impNzis.CollDoctor := ADB_DM.CollDoctor;
     impNzis.Adb_DM := Adb_DM;
@@ -19343,7 +19350,7 @@ begin
   end;
 
 
-  //Exit;
+  Exit;
 //  nzisXml := TNzisXMLHelper.Create;
 //  vtrTemp.DefaultNodeHeight := 30;
 //  vtrTemp.Header.AutoSizeIndex := 1;
@@ -19366,7 +19373,7 @@ begin
 //
 //  FillMsgXXXInPregled;// след това нещо, може да са останали в лстХХХХ такива съобщения, които нямат НРН в базата
 //  FillMsgRIncMNInIncMN;// LstRIncMN- списък със всички евентуални входящи направления
-//  AddNewPreg;// търсим новите съобщения и попълваме с нови прегледи
+  AddNewPreg;// търсим новите съобщения и попълваме с нови прегледи
 //
 //
 //
@@ -19667,17 +19674,17 @@ begin
       begin
         if doc.FListUnfavDB[j] = nil then Continue;
         doc.FListUnfavDB[j] := nil;
-        fdm.ibsqlCommandUdost.Close;
-        fdm.ibsqlCommandUdost.SQL.Text :=
+        Adb_DM.Fdm.ibsqlCommandUdost.Close;
+        Adb_DM.Fdm.ibsqlCommandUdost.SQL.Text :=
             'delete from unfav  u' + #13#10 +
             'where u.doctor_id_prac = :doctor_id_prac' + #13#10 +
             'and u.year_unfav = :year_unfav' + #13#10 +
             'and u.month_unfav = :month_unfav';
-        fdm.ibsqlCommandUdost.ParamByName('doctor_id_prac').AsInteger := doc.DoctorID;
-        fdm.ibsqlCommandUdost.ParamByName('year_unfav').AsInteger := yr;
-        fdm.ibsqlCommandUdost.ParamByName('month_unfav').AsInteger := mnt;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('doctor_id_prac').AsInteger := doc.DoctorID;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('year_unfav').AsInteger := yr;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('month_unfav').AsInteger := mnt;
 
-        fdm.ibsqlCommandUdost.ExecQuery;
+        Adb_DM.Fdm.ibsqlCommandUdost.ExecQuery;
 
         ADB_DM.CollUnfav.DeleteAUnfav(doc.DoctorID, mnt, yr);
       end
@@ -19685,23 +19692,23 @@ begin
       begin
         if doc.FListUnfavDB[j] <> nil then Continue;
         doc.FListUnfavDB[j] := doc.FListUnfav[j];
-        fdm.ibsqlCommandUdost.Close;
-        fdm.ibsqlCommandUdost.SQL.Text :=
+        Adb_DM.Fdm.ibsqlCommandUdost.Close;
+        Adb_DM.Fdm.ibsqlCommandUdost.SQL.Text :=
             'UPDATE OR INSERT INTO UNFAV (DOCTOR_ID_PRAC, YEAR_UNFAV, MONTH_UNFAV)' + #13#10 +
             'VALUES (:DOCTOR_ID_PRAC, :YEAR_UNFAV, :MONTH_UNFAV)' + #13#10 +
             'matching (DOCTOR_ID_PRAC, YEAR_UNFAV, MONTH_UNFAV)';
 
 
-        fdm.ibsqlCommandUdost.ParamByName('doctor_id_prac').AsInteger := doc.DoctorID;
-        fdm.ibsqlCommandUdost.ParamByName('year_unfav').AsInteger := yr;
-        fdm.ibsqlCommandUdost.ParamByName('month_unfav').AsInteger := mnt;
-        fdm.ibsqlCommandUdost.ExecQuery;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('doctor_id_prac').AsInteger := doc.DoctorID;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('year_unfav').AsInteger := yr;
+        Adb_DM.Fdm.ibsqlCommandUdost.ParamByName('month_unfav').AsInteger := mnt;
+        Adb_DM.Fdm.ibsqlCommandUdost.ExecQuery;
 
         ADB_DM.CollUnfav.InsertAUnfav(doc.DoctorID, mnt, yr);
       end;
     end;
   end;
-  fdm.ibsqlCommandUdost.Transaction.CommitRetaining;
+  Adb_DM.Fdm.ibsqlCommandUdost.Transaction.CommitRetaining;
 end;
 
 procedure TfrmSuperHip.URLClick(Sender: TObject; const URL: string;
@@ -22450,6 +22457,37 @@ begin
 
 end;
 
+procedure TfrmSuperHip.vtrLinkNasMestaGetText(Sender: TBaseVirtualTree;
+  Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+  var CellText: string);
+var
+  data, dataParent: PAspRec;
+begin
+  data := Pointer(PByte(Node) + lenNode);
+  case Column of
+    0:
+    begin
+      case data.vid of
+        vvOblast:
+        begin
+          CellText := Adb_dm.FNasMesto.OblColl.getAnsiStringMap(Data.DataPos, word(Oblast_OblastName))
+           + ' ' + IntToStr(Adb_dm.FNasMesto.OblColl.getwordMap(Data.DataPos, word(Oblast_OblastID)))
+        end;
+        vvObshtina:
+        begin
+          CellText := Adb_dm.FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(Obshtina_ObshtinaName));
+          CellText := CellText + ' ' + IntToStr(Adb_dm.FNasMesto.obshtColl.getWordMap(Data.DataPos, word(Obshtina_RZOKR)));
+        end;
+        vvNasMesto:
+        begin
+          CellText := Adb_dm.FNasMesto.nasMestoColl.getAnsiStringMap(Data.DataPos, word(NasMesto_NasMestoName));
+          CellText := CellText + ' ' + Adb_dm.FNasMesto.obshtColl.getAnsiStringMap(Data.DataPos, word(NasMesto_RCZR));
+        end;
+      end;
+    end;
+  end;
+end;
+
 procedure TfrmSuperHip.vtrLinkOptionsChange(Sender: TBaseVirtualTree;
   Node: PVirtualNode);
 var
@@ -24364,7 +24402,7 @@ begin
     begin
       if i = wb.ls.Count - 1 then
       begin
-        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i])- 1, rText, TA_LEFT);
+        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i]), rText, TA_LEFT);
       end
       else
       begin
@@ -24429,7 +24467,7 @@ begin
       TargetCanvas.Rectangle(rText);
       if i = wb.ls.Count - 1 then
       begin
-        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i])- 1, rText, TA_LEFT);
+        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i]), rText, TA_LEFT);
       end
       else
       begin
@@ -25813,16 +25851,16 @@ begin
   FillOtherDocInIncMN;
   FillIncMNInPRegNrn;
   FillIncMNInPRegNomer;
-  if Fdm = nil then
+  if Adb_DM.Fdm = nil then
   begin
-    Fdm := TDUNzis.Create(nil);
+    Adb_DM.Fdm := TDUNzis.Create(nil);
     if FDbName = '' then
     exit;
-    Fdm.InitDb(FDbName);
+    Adb_DM.Fdm.InitDb(FDbName);
   end;
 
 
-  if not Fdm.IsGP then
+  if not Adb_DM.Fdm.IsGP then
   begin
     FillOwnerDoctorInPrgled;
   end;
@@ -25905,6 +25943,7 @@ begin
   vtrFDB.Repaint;
   CalcStatusDB;
   WmAfterShow(Msg);
+  close;
 end;
 
 procedure TfrmSuperHip.WmAfterShow(var Msg: TMessage);

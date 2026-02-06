@@ -1583,7 +1583,7 @@ begin
     begin
       if i = wb.ls.Count - 1 then
       begin
-        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i])- 1, rText, TA_LEFT );
+        Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls[i]), Length(wb.ls[i]), rText, TA_LEFT );
       end
       else
       begin
@@ -1641,7 +1641,7 @@ begin
   else
   begin
     wb.WrapMemo;
-    Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls.Text), Length(wb.ls.Text) - 3, rText, TA_LEFT);//43024);
+    Winapi.Windows.DrawTextW(TargetCanvas.Handle, PWideChar(wb.ls.Text), Length(wb.ls.Text) , rText, TA_LEFT);//43024);
   end;
   wb.Destroy;
 end;

@@ -901,7 +901,7 @@ begin
   else
     ibsqlPatientNew := Fdm.ibsqlPatNew_S;
 
-  FDBHelper.cmdFile := cmdFile;
+  //FDBHelper.cmdFile := cmdFile;
   Stopwatch := TStopwatch.StartNew;
   ibsqlPatientNew.ExecQuery;
   while not ibsqlPatientNew.Eof do
@@ -1482,7 +1482,7 @@ begin
     inherited;
     //while  not Terminated do
     begin
-      FDBHelper.Fdm := Fdm;
+      //FDBHelper.Fdm := Fdm;
       GetCountFromDB;
       Adb_dm.CollPregled.FCollProceduresPreg := Adb_dm.CollProceduresPreg;
       Adb_dm.Collmdn.FCollDiag := Adb_dm.CollDiag;

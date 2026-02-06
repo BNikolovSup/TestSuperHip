@@ -289,10 +289,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTreePregledi: TTabSheet
         Caption = 'tsTreePregledi'
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrPregledi: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -615,6 +611,8 @@ object frmSuperHip: TfrmSuperHip
           TakeFocus = True
           OnDrawButton = vtrPregledPatDrawButton
           OnInitFinderRec = vtrPregledPatInitFinderRec
+          ExplicitLeft = -1
+          ExplicitTop = -1
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -644,10 +642,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTreeRole: TTabSheet
         Caption = 'tsTreeRole'
         ImageIndex = 2
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pgcRole: TPageControl
           Left = 0
           Top = 0
@@ -662,10 +656,6 @@ object frmSuperHip: TfrmSuperHip
           object tsRoleManager: TTabSheet
             Caption = #1059#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1085#1072' '#1088#1086#1083#1080#1090#1077
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object vtrRole: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -821,10 +811,6 @@ object frmSuperHip: TfrmSuperHip
             Caption = #1055#1086#1084#1086#1097#1085#1072' '#1080#1085#1092'. '#1079#1072' '#1056#1086#1083#1080#1090#1077
             ImageIndex = 2
             OnShow = tsRoleDescrShow
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object vtrHelpHip: TVirtualStringTreeHipp
               Left = 0
               Top = 0
@@ -980,10 +966,6 @@ object frmSuperHip: TfrmSuperHip
           object tsFmxRoleSelect: TTabSheet
             Caption = 'tsFmxRoleSelect'
             ImageIndex = 3
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object fmxCntrRoleSelect: TFireMonkeyContainer
               Left = 0
               Top = 0
@@ -998,10 +980,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNomenNzis: TTabSheet
         Caption = 'tsNomenNzis'
         ImageIndex = 3
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrNomenNzis: TVirtualStringTreeHipp
           Left = 0
           Top = 41
@@ -1184,10 +1162,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTreeDBFB: TTabSheet
         Caption = 'tsTreeDBFB'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrFDB: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -1346,10 +1320,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTempVTR: TTabSheet
         Caption = 'tsTempVTR'
         ImageIndex = 5
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrTemp: TVirtualStringTreeHipp
           Left = 0
           Top = 65
@@ -1809,10 +1779,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNomenAnal: TTabSheet
         Caption = 'tsNomenAnal'
         ImageIndex = 7
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrNewAnal: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -1951,7 +1917,7 @@ object frmSuperHip: TfrmSuperHip
               Options = [coAllowClick, coDraggable, coEnabled, coParentBidiMode, coParentColor, coResizable, coShowDropMark, coVisible, coAllowFocus, coUseCaptionAlignment, coEditable]
               Position = 0
               Text = #1048#1079#1089#1083#1077#1076#1074#1072#1085#1080#1103
-              Width = 184
+              Width = 180
             end
             item
               Alignment = taRightJustify
@@ -1974,10 +1940,6 @@ object frmSuperHip: TfrmSuperHip
       object tsOptions: TTabSheet
         Caption = 'tsOptions'
         ImageIndex = 8
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrOptions: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -2137,10 +2099,6 @@ object frmSuperHip: TfrmSuperHip
       object tsVtrSearch: TTabSheet
         Caption = 'tsVtrSearch'
         ImageIndex = 9
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrSearch: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -2303,10 +2261,6 @@ object frmSuperHip: TfrmSuperHip
       object tsVTRDoctors: TTabSheet
         Caption = 'tsVTRDoctors'
         ImageIndex = 10
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrDoctor: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -2468,10 +2422,6 @@ object frmSuperHip: TfrmSuperHip
       object tsProfReg: TTabSheet
         Caption = 'tsProfReg'
         ImageIndex = 11
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrProfReg: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -2627,10 +2577,6 @@ object frmSuperHip: TfrmSuperHip
       object tsLinkOptions: TTabSheet
         Caption = 'tsLinkOptions'
         ImageIndex = 12
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrLinkOptions: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -2789,10 +2735,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNasMesta: TTabSheet
         Caption = 'tsNasMesta'
         ImageIndex = 13
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrLinkNasMesta: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -2814,11 +2756,7 @@ object frmSuperHip: TfrmSuperHip
           TreeOptions.MiscOptions = [toAcceptOLEDrop, toCheckSupport, toFullRepaintOnResize, toInitOnSave, toWheelPanning]
           TreeOptions.PaintOptions = [toPopupMode, toShowButtons, toShowDropmark, toShowHorzGridLines, toShowRoot, toShowTreeLines, toShowVertGridLines, toThemeAware, toUseBlendedImages, toGhostedIfUnfocused, toFullVertGridLines]
           TreeOptions.SelectionOptions = [toFullRowSelect, toRightClickSelect, toCenterScrollIntoView]
-          OnChange = vtrLinkOptionsChange
-          OnDragAllowed = vtrLinkOptionsDragAllowed
-          OnDragOver = vtrLinkOptionsDragOver
-          OnDragDrop = vtrLinkOptionsDragDrop
-          OnGetText = vtrLinkOptionsGetText
+          OnGetText = vtrLinkNasMestaGetText
           ImageWaitPiss.Data = {
             0954474946496D61676547494638396110001000C40000FFFFFF0326FBF0F2FD
             8B9BFCE0E4FD4861FB7B8DFC0326FB5970FC2644FBACB8FDBEC7FD1637FB9DAA
@@ -2918,7 +2856,6 @@ object frmSuperHip: TfrmSuperHip
           ColumnAction = 2
           ColumnAspect = 0
           TakeFocus = True
-          OnDragDropFMX = vtrLinkOptionsDragDropFMX
           Columns = <
             item
               CaptionAlignment = taCenter
@@ -2949,10 +2886,6 @@ object frmSuperHip: TfrmSuperHip
       object tsUserAspect: TTabSheet
         Caption = 'tsUserAspect'
         ImageIndex = 14
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrUserAspect: TVirtualStringTreeAspect
           Left = 0
           Top = 0
@@ -3261,7 +3194,7 @@ object frmSuperHip: TfrmSuperHip
       Top = 42
       Width = 1080
       Height = 325
-      ActivePage = tsMinaliPregledi
+      ActivePage = tsTest
       Align = alClient
       DoubleBuffered = True
       ParentDoubleBuffered = False
@@ -3270,10 +3203,6 @@ object frmSuperHip: TfrmSuperHip
       OnResize = pgcWorkResize
       object tsDynPanel: TTabSheet
         Caption = 'tsDynPanel'
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
       object tsMinaliPregledi: TTabSheet
         Caption = 'tsMinaliPregledi'
@@ -3457,10 +3386,6 @@ object frmSuperHip: TfrmSuperHip
         DoubleBuffered = True
         ImageIndex = 2
         ParentDoubleBuffered = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object vtrTestFilter: TVirtualStringTreeHipp
           Left = 0
           Top = 0
@@ -3644,10 +3569,6 @@ object frmSuperHip: TfrmSuperHip
       object tsPdf: TTabSheet
         Caption = 'tsPdf'
         ImageIndex = 4
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnButtons: TPanel
           Left = 0
           Top = 54
@@ -4286,10 +4207,6 @@ object frmSuperHip: TfrmSuperHip
         Tag = 32
         Caption = 'tsRTF'
         ImageIndex = 6
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlEditRtf: TPanel
           Left = 0
           Top = 0
@@ -4326,10 +4243,6 @@ object frmSuperHip: TfrmSuperHip
         ParentDoubleBuffered = False
         OnHide = tsVideoHide
         OnShow = tsVideoShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object MPHip: TWindowsMediaPlayer
           Left = 0
           Top = 41
@@ -4370,10 +4283,6 @@ object frmSuperHip: TfrmSuperHip
       object tsTest: TTabSheet
         Caption = 'tsTest'
         ImageIndex = 8
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object pnlStatusDB: TPanel
           Left = 0
           Top = 0
@@ -4709,10 +4618,6 @@ object frmSuperHip: TfrmSuperHip
       object tsGrid: TTabSheet
         Caption = 'tsGrid'
         ImageIndex = 10
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object grdNom: TTeeGrid
           AlignWithMargins = True
           Left = 3
@@ -4795,10 +4700,6 @@ object frmSuperHip: TfrmSuperHip
       object tsVTR_XML: TTabSheet
         Caption = 'tsVTR_XML'
         ImageIndex = 11
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object treeview: TVirtualStringTree
           Left = 0
           Top = 0
@@ -4846,10 +4747,6 @@ object frmSuperHip: TfrmSuperHip
       object tsXML: TTabSheet
         Caption = 'tsXML'
         ImageIndex = 12
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object tlbXml: TToolBar
           Left = 0
           Top = 0
@@ -4950,10 +4847,6 @@ object frmSuperHip: TfrmSuperHip
       object tsOptionsNotes: TTabSheet
         Caption = 'tsOptionsNotes'
         ImageIndex = 13
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object imgOptionNote: TImage
           Left = 640
           Top = 11
@@ -8353,10 +8246,6 @@ object frmSuperHip: TfrmSuperHip
         ParentDoubleBuffered = False
         OnMouseEnter = tsFMXFormMouseEnter
         OnResize = tsFMXFormResize
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object fmxCntrDyn: TFireMonkeyContainer
           Left = 0
           Top = 0
@@ -8402,10 +8291,6 @@ object frmSuperHip: TfrmSuperHip
       object tsNZIS: TTabSheet
         Caption = 'tsNZIS'
         ImageIndex = 16
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object btnToken: TButton
           Left = 16
           Top = 3
@@ -8576,10 +8461,6 @@ object frmSuperHip: TfrmSuperHip
         Caption = 'tsHtml'
         ImageIndex = 17
         OnShow = tsHtmlShow
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
       end
     end
     object pnlNav: TPanel
@@ -8923,7 +8804,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 248
     Bitmap = {
-      494C010170008804FC1710001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010170008804041810001000FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       000000000000360000002800000040000000D0010000010020000000000000D0
       0100000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -12870,7 +12751,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 728
     Top = 360
     Bitmap = {
-      494C010164006814B81718001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
+      494C010164006814C01718001800FFFFFFFF2110FFFFFFFFFFFFFFFF424D3600
       00000000000036000000280000006000000070020000010020000000000000A8
       0300000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -20706,7 +20587,7 @@ object frmSuperHip: TfrmSuperHip
     Left = 720
     Top = 296
     Bitmap = {
-      494C010106000800B00318001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010106000800B80318001800FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000600000003000000001002000000000000048
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

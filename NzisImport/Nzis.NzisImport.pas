@@ -1,4 +1,4 @@
-unit Nzis.NzisImport; //find
+unit Nzis.NzisImport; //ibsql
 
 interface
 uses
@@ -132,7 +132,7 @@ type
     property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
     //property ProcAddNewPat: TProc<TRealPatientNewItem, PVirtualNode> read FProcAddNewPat write FProcAddNewPat;
     //property ProcAddNewPreg: TProc<TRealPregledNewItem, PVirtualNode> read FProcAddNewPreg write FProcAddNewPreg;
-    //property NasMesto: TRealNasMestoAspects read FNasMesto write SetNasMesto;
+    property NasMesto: TRealNasMestoAspects read FNasMesto write SetNasMesto;
     property CollPractica: TPracticaColl read FCollPractica write SetCollPractica;
     property CollDoctor: TRealDoctorColl read FCollDoctor write SetCollDoctor;
     property RCZSelf: string read FRCZSelf;
@@ -681,7 +681,7 @@ begin
         begin
           addr := TRealAddresItem.Create(nil);
           addr.DataPos := Data.DataPos;
-          //pat.FAdresi.Add(addr);
+          pat.FAdresi.Add(addr);
         end;
         vvPregledNew:
         begin
@@ -756,16 +756,8 @@ begin
   begin
     if msgColl.collAddres.Items[iAddr].Ekatte = msgColl.CollPat.Items[iPac].Ekatte then
     begin
-      //if msgColl.collAddres.Items[iAddr].FLstMsgImportNzis.Count > 0 then
-//      begin
-//        if msgColl.collAddres.Items[iAddr].NRN = '252462095FD4' then
-//        begin
-//
-//        end;
-//        msgColl.CollPat.Items[iPac].FPregledi.Add(msgColl.CollPreg.Items[iAddr]);
-//        msgColl.collAddres.Items[iAddr].FPatient := msgColl.CollPat.Items[iPac];
-//        //msgColl.CollPreg.Items[iamb].FPatient
-//      end;
+      msgColl.CollPat.Items[iPac].FAdresi.Add(msgColl.collAddres.Items[iAddr]);
+      //msgColl.collAddres.Items[iAddr].Patient := msgColl.CollPat.Items[iPac];
       inc(iAddr);
     end
     else if msgColl.collAddres.Items[iAddr].Ekatte > msgColl.CollPat.Items[iPac].Ekatte then
@@ -928,6 +920,7 @@ var
   msg: TNzisReqRespItem;
   vPat: PVirtualNode;
   data: PAspRec;
+  test: string;
 begin
   msgColl.SortListByNRN(LstXXXX);
   msgColl.CollPreg.IndexValue(TPregledNewItem.TPropertyIndex.PregledNew_NRN_LRN);
@@ -939,9 +932,10 @@ begin
   begin
     if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 = LstXXXX[iMsg].PRecord.NRN then
     begin
-
+      test := LstXXXX[iMsg].PRecord.NRN;
       msg := LstXXXX[iMsg];
       msg.preg := msgColl.CollPreg.Items[iPreg];
+
       //if msg.PRecord.msgNom = 3 then
 //      begin
 //        msgColl.CollPreg.Items[iPreg].COPIED_FROM_NRN := msg.PRecord.BaseOn;
@@ -952,12 +946,14 @@ begin
     else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 > LstXXXX[iMsg].PRecord.NRN then
     begin
       begin
+        test := LstXXXX[iMsg].PRecord.NRN;
         inc(iMsg);
 
       end;
     end
     else if msgColl.CollPreg.Items[iPreg].IndexAnsiStr1 < LstXXXX[iMsg].PRecord.NRN then
     begin
+      test := LstXXXX[iMsg].PRecord.NRN;
       inc(iPreg);
     end;
   end;
@@ -1475,6 +1471,7 @@ begin
         data.vid := vvDiag;
         data.DataPos := diag.DataPos;
         data.index := k;
+        diag.Node := vdiag;
         if diag.DataPos = 0 then
         begin
           //Self.Tag := Integer(vMdn);
@@ -1498,6 +1495,7 @@ begin
 
         for m := 0 to mdn.FLstMsgImportNzis.Count - 1 do
         begin
+
           msg := mdn.FLstMsgImportNzis[m];
           vMsg := VtrImport.AddChild(vMdn, nil);
           data := VtrImport.GetNodeData(vMsg);
