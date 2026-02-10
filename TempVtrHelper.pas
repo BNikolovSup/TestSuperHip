@@ -1353,7 +1353,7 @@ var
   posCl22: cardinal;//AspectsNomHipFile.Buf
 begin
  // if Sender = vtrNewAnal then
-    data := pointer(PByte(Node) + lenNode);
+  //  data := pointer(PByte(Node) + lenNode);
  // else
     data := Sender.GetNodeData(node);
   case data.vid of

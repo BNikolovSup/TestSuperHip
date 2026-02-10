@@ -710,6 +710,9 @@ type
       TargetCanvas: TCanvas; Node: PVirtualNode; var NodeHeight: Integer);
     procedure mniMkb10Click(Sender: TObject);
     procedure mniNzisNomenClick(Sender: TObject);
+    procedure mniAnalClick(Sender: TObject);
+
+
     procedure dtp1Change(Sender: TObject);
     procedure fmxCntrTitleBarCreateFMXForm(var Form: TCommonCustomForm);
     function appEvntsMainHelp(Command: Word; Data: NativeInt;
@@ -4946,7 +4949,7 @@ begin
       pat.FNode := node;
       if Adb_DM.CollPatient.getintMap(data.DataPos, Word(PatientNew_ID)) = 0 then //now pacient
       begin
-        //mmoTest.Lines.Add('нов пациент ' + collPatExport.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
+        //mmoTest.Lines.Add('нов пациент ' + Adb_DM.CollPatient.getAnsiStringMap(data.DataPos, Word(PatientNew_EGN)));
         Adb_DM.LstPatForExportDB.Add(pat);
         FDBHelper.SavePatientFDB(pat, Adb_DM.Fdm.ibsqlCommand);
         RunInPat(pat, true);
@@ -5716,6 +5719,10 @@ begin
           //diagMdn.PregDiag := diagPreg;
           mdn.FDiagnosis.Clear;
           Break;
+        end
+        else
+        begin
+          diagPreg := preg.FDiagnosis[i];
         end;
       end;
       inc(imdn);
@@ -11080,6 +11087,7 @@ begin
   AspectActions := TAspectActions.create;
   AspectActions.OnNzisNomenClick := mniNzisNomenClick;
   AspectActions.OnMKBNomenClick := mniMkb10Click;
+  AspectActions.OnAnalNomenClick := miListAnalysisClick;
 end;
 
 procedure TfrmSuperHip.InitAdbDM;
@@ -14211,6 +14219,11 @@ end;
 
 
 
+procedure TfrmSuperHip.mniAnalClick(Sender: TObject);
+begin
+  //vtrte  ChoiceAnal(nil);
+end;
+
 procedure TfrmSuperHip.mniClearFilterClick(Sender: TObject);
 var
   node: PVirtualNode;
@@ -16939,11 +16952,11 @@ var
 begin
   // намиране на mdn, към който ще се добави мдн;
   nodeMdn := MdnLink;
-  //създаване на mdn с добавяне в колекцията
+  //създаване на ExamAnalysis с добавяне в колекцията
   TempItem := TRealExamAnalysisItem(ADB_DM.CollExamAnal.Add);
   New(TempItem.PRecord);
   TempItem.PRecord.setProp := [];
-  //FDBHelper.InsertAdbMdnField(TempItem);
+  FDBHelper.InsertAdbExamAnalField(TempItem);
 
   TempItem.InsertExamAnalysis;
 

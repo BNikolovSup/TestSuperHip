@@ -30,7 +30,7 @@ uses
     //cmdFile: TFileStream;
     Vtr: TVirtualStringTreeAspect;
     //Fdm: TDUNzis;
-    NasMesto: TRealNasMestoAspects;
+    //NasMesto: TRealNasMestoAspects;
     Adb_DM: TADBDataModule;
     ProfGr: TProfGraph;
     //mkbColl: TRealMkbColl;
@@ -67,6 +67,7 @@ uses
     //ADB
     procedure InsertAdbPregledField(TempItem: TRealPregledNewItem);
     procedure InsertAdbMdnField(TempItem: TRealMDNItem);
+    procedure InsertAdbExamAnalField(TempItem: TRealExamAnalysisItem);
     procedure InsertAdbMnField(TempItem: TRealBLANKA_MED_NAPRItem);
 
     //saveToHip
@@ -161,6 +162,14 @@ begin
     end;
     diagNode := diagNode.NextSibling;
   end;
+end;
+
+procedure TDbHelper.InsertAdbExamAnalField(TempItem: TRealExamAnalysisItem);
+begin
+  TempItem.PRecord.NZIS_CODE_CL22 := TempItem.Cl022;
+  Include(TempItem.PRecord.setProp, ExamAnalysis_NZIS_CODE_CL22);
+  TempItem.PRecord.ID := 0;
+  Include(TempItem.PRecord.setProp, ExamAnalysis_ID);
 end;
 
 procedure TDbHelper.InsertAdbMdnField(TempItem: TRealMDNItem);
@@ -2714,10 +2723,11 @@ var
 begin
   PatNodes := Adb_DM.GetPatNodes(Pat.FNode);
   dataDoc := Pointer(PByte(PatNodes.docNode) + lenNode);
+  //NasMesto.LstNasMestoDataPos := Adb_DM.list
   if PatNodes.addresses.Count > 0 then
   begin
     dataAddr := Pointer(PByte(PatNodes.addresses[0]) + lenNode);
-    nasMest := NasMesto.FindNasMestFromDataPos(AddresLinkPos);
+    nasMest := Adb_DM.FNasMesto.FindNasMestFromDataPos(AddresLinkPos);
   end;
 
   logData40 := pat.getLogical40Map(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PatientNew_Logical));
@@ -2739,10 +2749,10 @@ begin
     end;
   end;
   //addr := Pat.FAdresi[0];
-  //AddresLinkPos := NasMesto.addresColl.getIntMap(dataAddr.DataPos, word(Addres_LinkPos));
-  //rhifAreaNumber := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
+  AddresLinkPos := Adb_DM.FNasMesto.addresColl.getIntMap(dataAddr.DataPos, word(Addres_LinkPos));
+  rhifAreaNumber := Adb_DM.FNasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_RCZR));
 
-  rhifAreaNumber := '0101';
+  //rhifAreaNumber := '0101';
 
 
 
@@ -2794,10 +2804,10 @@ begin
     ibsql.ParamByName('SEX_TYPE').AsInteger := 1
   else
     ibsql.ParamByName('SEX_TYPE').AsInteger := 0;
-  //ibsql.ParamByName('NAS_MQSTO').AsString := NasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_NasMestoName));
-  //ibsql.ParamByName('OBLAST').AsString := NasMesto.OblColl.getAnsiStringMap(nasMest.FObl.DataPos, word(Oblast_OblastName));
-  //ibsql.ParamByName('OBSHTINA').AsString :=  NasMesto.obshtColl.getAnsiStringMap(nasMest.FObsh.DataPos, word(Obshtina_ObshtinaName));
-  //ibsql.ParamByName('EKATTE_RESIDENTIAL_ADDRESS').AsString := NasMesto.nasMestoColl.getAnsiStringMap(nasMest.DataPos, word(NasMesto_EKATTE));
+  ibsql.ParamByName('NAS_MQSTO').AsString := Adb_DM.FNasMesto.nasMestoColl.getAnsiStringMap(AddresLinkPos, word(NasMesto_NasMestoName));
+  ibsql.ParamByName('OBLAST').AsString := Adb_DM.FNasMesto.OblColl.getAnsiStringMap(nasMest.FObl.DataPos, word(Oblast_OblastName));
+  ibsql.ParamByName('OBSHTINA').AsString :=  Adb_DM.FNasMesto.obshtColl.getAnsiStringMap(nasMest.FObsh.DataPos, word(Obshtina_ObshtinaName));
+  ibsql.ParamByName('EKATTE_RESIDENTIAL_ADDRESS').AsString := Adb_DM.FNasMesto.nasMestoColl.getAnsiStringMap(nasMest.DataPos, word(NasMesto_EKATTE));
   ibsql.ParamByName('GRAJD').AsString := 'българско';
   ibsql.ParamByName('PID_TYPE').AsString := 'E';  //zzzzzzzzzzzzzzzzzzzzz
   ibsql.ParamByName('EGN').AsString := pat.getAnsiStringMap(Adb_DM.AdbMain.Buf, Adb_DM.AdbMain.FPosData, word(PatientNew_EGN));
