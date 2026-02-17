@@ -2654,7 +2654,6 @@ var
   diagStr, diagAddStr: string;
   examAnal: TRealExamAnalysisItem;
 begin
-  Exit;
   run := mdn.FNode.FirstChild;
   while run <> nil do
   begin
